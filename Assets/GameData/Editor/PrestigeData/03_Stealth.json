@@ -1,0 +1,30 @@
+{
+  "items": [
+    {
+      "id": "P_STEALTH",
+      "nameKey": "UI_PRESTIGE_STEALTH_NAME",
+      "descKey": "UI_PRESTIGE_STEALTH_DESC",
+      "bonusType": "TraceReduction",
+      "maxLevel": 5,
+      "baseCost": 20.0,
+      "costMult": 1.6,
+      "bonus": 0.05,
+      "posX": 0.0,
+      "posY": -1.0,
+      "prerequisiteId": "P_ROOT"
+    },
+    {
+      "id": "P_EMERG",
+      "nameKey": "UI_PRESTIGE_EMERG_NAME",
+      "descKey": "UI_PRESTIGE_EMERG_DESC",
+      "bonusType": "UnlockEmergencyButton",
+      "maxLevel": 1,
+      "baseCost": 100.0,
+      "costMult": 1.0,
+      "bonus": 1.0,
+      "posX": 0.0,
+      "posY": -2.0,
+      "prerequisiteId": "P_STEALTH"
+    }
+  ]
+}

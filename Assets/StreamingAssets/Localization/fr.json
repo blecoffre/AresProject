@@ -1,0 +1,80 @@
+{
+  "Items": [
+    {
+      "Key": "MONEY",
+      "Value": "Money"
+    },
+     {
+      "Key": "COMPUTER_POWER",
+      "Value": "Computer Power"
+    },
+     {
+      "Key": "TRACE",
+      "Value": "Trace"
+    },
+    {
+      "Key": "CYCLES",
+      "Value": "Cycles"
+    },
+    {
+      "Key": "CONSOLE_LOGS",
+      "Value": "Console Logs"
+    },
+    {
+      "Key": "OVERCLOCK",
+      "Value": "Overclock"
+    },
+    {
+      "Key": "BUY",
+      "Value": "Acheter"
+    },
+    {
+      "Key": "LOG_NETWORK_CONNECTED",
+      "Value": "Connexion au réseau local établie..."
+    },
+    {
+      "Key": "LOG_BREACH_STARTED",
+      "Value": "Lancement de BREACH-CORE..."
+    },
+    {
+      "Key": "LOG_MANUAL_OVERCLOCK",
+      "Value": "Overclock manuel : +{0}% temps gagné."
+    },
+    {
+      "Key": "LOG_UPGRADE_PURCHASED",
+      "Value": "Matériel {0} amélioré au niveau {1}"
+    },
+    {
+      "Key": "LOG_NEW_HARDWARE",
+      "Value": "[NOUVEAU MATÉRIEL DÉTECTÉ] : {0}"
+    },
+    {
+      "Key": "UI_GENERATES_DATAS",
+      "Value": "Génère {0} Datas par cycle"
+    },
+    {
+      "Key": "UPGRADE_NAME_BREACH_CORE",
+      "Value": "BREACH-CORE"
+    },
+    {
+      "Key": "UPGRADE_NAME_BOTNET",
+      "Value": "SCRIPT BOTNET"
+    },
+    {
+      "Key": "UI_GENERATOR_LEVEL",
+      "Value": "Niv. {0}"
+    },
+    {
+      "Key": "UI_GENERATOR_COST",
+      "Value": "Coût: {0}"
+    },
+    {
+      "Key": "UI_GAME_OVER_NARRATIVE",
+      "Value": "GAME OVER"
+    },
+    {
+      "Key": "UI_GAME_OVER_BILAN",
+      "Value": "BILAN"
+    }
+  ]
+}

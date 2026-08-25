@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08038215e9d14fa45ae47737875bf522, type: 3}
+  m_Name: P_POWER_START
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Models.Economy.PrestigeConfigSO
+  _id: P_POWER_START
+  _displayNameKey: UI_PRESTIGE_POWER_NAME
+  _displayDescriptionKey: UI_PRESTIGE_POWER_DESC
+  _bonusType: 5
+  _maxLevel: 5
+  _baseCost: 50
+  _costMultiplier: 2
+  _bonusPerLevel: 5
+  _uiPosition: {x: 2, y: 2}
+  _prerequisite: {fileID: 11400000, guid: aa52381dd1c0e3d43852547ee40a3096, type: 2}
+  _targetUpgradeId: 

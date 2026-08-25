@@ -1,0 +1,17 @@
+{
+  "items": [
+    {
+      "id": "P_ROOT",
+      "nameKey": "UI_PRESTIGE_ROOT_NAME",
+      "descKey": "UI_PRESTIGE_ROOT_DESC",
+      "bonusType": "StartingMoney",
+      "maxLevel": 1,
+      "baseCost": 0.0,
+      "costMult": 1.0,
+      "bonus": 0.0,
+      "posX": 0.0,
+      "posY": 0.0,
+      "prerequisiteId": ""
+    }
+  ]
+}

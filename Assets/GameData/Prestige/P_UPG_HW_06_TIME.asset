@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08038215e9d14fa45ae47737875bf522, type: 3}
+  m_Name: P_UPG_HW_06_TIME
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Models.Economy.PrestigeConfigSO
+  _id: P_UPG_HW_06_TIME
+  _displayNameKey: ' (Opti Vitesse)'
+  _displayDescriptionKey: "Am\xE9liore les statistiques sp\xE9cifiques de : ."
+  _bonusType: 9
+  _maxLevel: 5
+  _baseCost: 300
+  _costMultiplier: 1.4
+  _bonusPerLevel: 0.1
+  _uiPosition: {x: -20, y: -1}
+  _prerequisite: {fileID: 11400000, guid: e6cfb012deb395241b49e026b81e8c86, type: 2}
+  _targetUpgradeId: HW_06
