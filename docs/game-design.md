@@ -6,7 +6,7 @@ Validées par Bertrand le 2026-08-25. Ne pas réinventer ces règles ; si l'une 
 
 | Ressource | Rôle | Source |
 |---|---|---|
-| **Argent (`$`)** | Monnaie d'achat unique : Scripts et Proxies | Cycles des Scripts |
+| **Argent (`$`)** | Monnaie d'achat unique : Scripts, Proxies **et Hardware** | Cycles des Scripts |
 | **TFlops** | Capacité de calcul — n'achète rien, **modifie** les deux autres piliers | Hardware possédé |
 | **Trace (A.M.I.)** | Jauge de Game Over | Générée par les upgrades, dissipée par les Proxies |
 | **CPU Cycles** | Monnaie de méta-progression, survit au wipe | Fin de run |
@@ -16,6 +16,8 @@ Principe directeur : **aucune ressource ne doit flotter**. Si un joueur peut ign
 ## Les TFlops sont une CAPACITÉ dérivée, pas un stock
 
 `TFlops = Σ rendement des Hardware possédés (+ StartingComputerPower du prestige)`
+
+**Magnitude des bonus de prestige (tranché le 2026-08-26)** : `StartingMoney` et `StartingComputerPower` se calculent avec `BonusPerLevel × niveau`, comme les cinq autres types de bonus — et **non** avec `BaseCost × niveau` comme le fait le code actuel. Indexer l'effet d'un nœud sur son prix couple deux réglages qui doivent bouger séparément pendant l'équilibrage.
 
 La valeur ne bouge qu'à l'achat d'un Hardware. Elle ne s'accumule pas dans le temps et ne se dépense pas.
 
@@ -27,12 +29,14 @@ Les TFlops agissent à deux endroits :
 ```
 TempsReel = TempsBase / (1 + TFlops × 0.05)
 ```
+
 10 s de base avec 20 TFlops → 5 s. Décroissance asymptotique : ne tombe jamais à zéro.
 
 **2. Efficacité des Proxies**
 ```
 DissipationTrace = ProxyBase × (1 + log10(1 + TFlops))
 ```
+
 Le `log10` donne un gros boost au début puis aplatit la courbe — le joueur ne doit **jamais** devenir indétectable.
 
 ## Cycles de production — Scripts uniquement
@@ -41,24 +45,32 @@ Chaque Script a sa propre barre et verse son montant **à la fin** de son cycle.
 
 Le niveau augmente **toujours** le versement (`BaseProductionYield × niveau`). Les bonus supplémentaires viennent de **paliers explicites** listés par Script (voir `cycles.md`).
 
-**Automatisation par seuil, propre à chaque Script.** Sous le seuil, le joueur lance chaque cycle à la main ; au-dessus, il se relance seul. Un nœud de prestige ciblé (`TargetUpgradeId`), achetable par rangs, abaissera ce seuil de quelques niveaux par rang — **ce nœud reste à écrire dans les données**.
+**Automatisation par seuil, propre à chaque Script.** Sous le seuil, le joueur lance chaque cycle à la main ; au-dessus, il se relance seul. Un nœud de prestige ciblé (`TargetUpgradeId`), achetable par rangs, abaissera ce seuil de quelques niveaux par rang. *(Note technique : s'assurer d'ajouter le champ `TargetUpgradeId` de type `string` dans le modèle de données `PrestigeItemData` du script de désérialisation JSON).*
 
-Le clic global (Overclock) **n'est pas un démarreur** : il avance tous les cycles déjà en cours de `0,5 s × ClickPowerMultiplier`.
+**Action de l'Overclock (Clic manuel) :** Le clic global (Overclock) agit comme un **réveil**. S'il y a des Scripts inactifs (car sous le seuil d'automatisation), le clic de l'Overclock les démarre en priorité. Si les cycles sont déjà en cours, il avance le temps de tous les cycles de `0,5 s × ClickPowerMultiplier`.
+
+**Précision tranchée le 2026-08-26 — un clic fait les DEUX, jamais l'un ou l'autre.** Un même clic démarre d'un coup **tous** les Scripts possédés à l'arrêt, *et* avance de `0,5 s × ClickPowerMultiplier` ceux qui tournaient déjà. Aucun clic n'est donc perdu, et sa valeur reste constante à tous les stades de la partie. Ne pas implémenter de priorité exclusive (« tant qu'il reste un inactif, on ne fait que réveiller ») : en début de partie, chaque clic ne servirait qu'à relancer et jamais à accélérer.
 
 Les cycles sont **gelés** en fin de run et remis à zéro au redémarrage. La progression partielle n'est pas sauvegardée.
 
 ## Trace — les Proxies agissent sur le débit, jamais sur la jauge
 
 ```
-TraceBrute  = Σ TraceScripts × (1 − ReductionPrestige)
+TraceBrute  = (Σ TraceScriptsActifs + Σ TraceHardwarePossédés) × (1 − ReductionPrestige)
 DebitTrace  = max(0, TraceBrute − Σ DissipationProxies)
 ```
 
 La réduction de prestige s'applique **avant** la soustraction des Proxies.
 
+**Génération de la Trace :** Un Script génère de la Trace **uniquement pendant qu'un cycle tourne**. Cela renforce le concept de risk/reward (l'A.M.I. ne repère le piratage que lorsqu'il est actif), particulièrement en début de partie quand le lancement est strictement manuel.
+
+**Le Hardware, lui, chauffe en permanence** (tranché le 2026-08-26) : sa `traceGeneratedPerSecond` s'applique en continu dès l'achat, puisqu'il n'a pas de cycle. C'est ce qui maintient un risque sur l'onglet le plus rentable — sans quoi le Hardware deviendrait un achat sans contrepartie.
+
+**Attention au nom du champ.** `traceGeneratedPerSecond` porte une **génération** pour les Scripts et les Hardware, mais une **dissipation** pour les Proxies (dont le `baseProductionYield` vaut 0). Le nom ment pour ce troisième type : c'est la valeur qui alimente `ProxyBase` dans la formule de dissipation ci-dessus, et elle doit être **soustraite**, jamais ajoutée.
+
 La jauge elle-même n'est réduite que par le **Bouton d'Urgence** (coût exponentiel, ×3 par clic) et par le wipe. Règle d'or : *« le FBI n'oublie jamais, sauf si tu formates tout. »* Il faut un mur qui pousse inévitablement au wipe — sinon le joueur trouve une planque parfaite (`ΔTrace = 0`) et le danger disparaît.
 
-## Exfiltration volontaire — « Protocole Terre Brûlée » (à implémenter)
+## Exfiltration volontaire — « Protocole Terre Brûlée »
 
 | | Déclencheur | Récompense |
 |---|---|---|
@@ -100,7 +112,3 @@ L'objectif ultime du joueur est de récupérer **une photo de chat sur une clé 
 ## Steam
 
 Pas de page Steam ni d'AppId pour l'instant. La sauvegarde **locale fait autorité** ; le cloud viendra plus tard et servira de miroir, départagé par horodatage.
-
-## Question de design encore ouverte
-
-Un Script génère-t-il de la Trace en permanence dès qu'il est possédé (comportement actuel), ou **seulement pendant qu'un cycle tourne** ? Le second est plus cohérent avec le modèle manuel/auto mais change le rythme du début de partie. À trancher avec Bertrand au lot 2b.
