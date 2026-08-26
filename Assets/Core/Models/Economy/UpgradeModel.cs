@@ -101,7 +101,15 @@ namespace Core.Models.Economy
         /// <summary>Durée d'un cycle, paliers inclus, plancher appliqué.</summary>
         public float GetCurrentCycleDuration() => _cachedCycleDuration;
 
-        public float GetCurrentTracePerSecond()
+        /// <summary>
+        /// Magnitude de Trace par seconde, à ce niveau. Le SENS dépend du type du générateur :
+        /// c'est une <b>génération</b> pour un Script ou un Hardware, mais une <b>dissipation</b>
+        /// pour un Proxy — dont le rendement de production vaut zéro et dont tout l'effet passe
+        /// par ce champ. Le nom du champ de données (`traceGeneratedPerSecond`) ment pour ce
+        /// troisième cas ; l'interprétation du signe appartient à l'UpgradeManager, qui est le
+        /// seul à connaître le type.
+        /// </summary>
+        public float GetTraceMagnitudePerSecond()
         {
             return (float)(Config.BaseTraceGeneratedPerSecond * _currentLevel.CurrentValue);
         }

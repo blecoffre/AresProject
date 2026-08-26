@@ -49,7 +49,19 @@ namespace Core.Services.Economy
         /// </summary>
         public ReactiveProperty<double> TotalTFlops { get; } = new(0d);
 
-        public ReactiveProperty<float> TotalTracePerSecond { get; } = new(0f);
+        /// <summary>
+        /// Trace générée en continu par le parc Hardware possédé. Un Hardware n'a pas de cycle :
+        /// il chauffe dès l'achat, contrairement aux Scripts dont la Trace ne court que pendant
+        /// un cycle actif. Cette part-là est donc statique et ne bouge qu'à l'achat.
+        /// </summary>
+        public ReactiveProperty<float> HardwareTracePerSecond { get; } = new(0f);
+
+        /// <summary>
+        /// Dissipation cumulée des Proxies, TFlops déjà appliquées :
+        /// Σ (base × niveau) × (1 + log10(1 + TFlops)).
+        /// Valeur POSITIVE, à soustraire du débit brut — c'est le second rôle des TFlops.
+        /// </summary>
+        public ReactiveProperty<float> ProxyDissipationPerSecond { get; } = new(0f);
 
         public UpgradeManager(
             UpgradeCatalogSO catalog,
@@ -226,28 +238,44 @@ namespace Core.Services.Economy
             }
 
             // Passe 2 — les agrégats qui dépendent des durées fraîchement recalculées.
+            //
+            // Le SIGNE dépend du type, et c'est tout l'enjeu : additionner aveuglément
+            // GetTraceMagnitudePerSecond() sur les trois types faisait qu'acheter un Proxy
+            // AUGMENTAIT la Trace au lieu de la dissiper.
             double moneyPerSecond = 0d;
-            float totalTrace = 0f;
+            float hardwareTrace = 0f;
+            float proxyBase = 0f;
 
             foreach (var model in _activeUpgrades.Values)
             {
-                // TODO (lot 2b-2) : ce cumul ignore encore le type. La Trace des Scripts ne doit
-                // courir que pendant un cycle actif, et celle des Proxies doit être SOUSTRAITE.
-                totalTrace += model.GetCurrentTracePerSecond();
-
-                if (model.Config.Type == UpgradeType.Script)
+                switch (model.Config.Type)
                 {
-                    // Débit théorique (versement ÷ durée de cycle), pas un versement par seconde.
-                    moneyPerSecond += model.GetYieldPerSecond();
+                    case UpgradeType.Script:
+                        // Débit théorique (versement ÷ durée de cycle), pas un versement par seconde.
+                        moneyPerSecond += model.GetYieldPerSecond();
+
+                        // Sa Trace n'est PAS comptée ici : elle ne court que pendant un cycle
+                        // actif, et seul le ScriptCycleRunner sait lesquels tournent.
+                        break;
+
+                    case UpgradeType.Hardware:
+                        hardwareTrace += model.GetTraceMagnitudePerSecond();
+                        break;
+
+                    case UpgradeType.Proxy:
+                        proxyBase += model.GetTraceMagnitudePerSecond();
+                        break;
                 }
             }
 
+            // Second rôle des TFlops. Le log10 donne un gros gain au début puis aplatit la
+            // courbe : le joueur ne doit jamais devenir indétectable.
+            double dissipationFactor = 1d + Math.Log10(1d + totalTFlops);
+
             TotalMoneyYieldPerSecond.Value = moneyPerSecond;
             TotalTFlops.Value = totalTFlops;
-
-            // La génération globale de trace ne peut pas devenir négative : les Proxies
-            // ralentissent l'enquête, ils ne l'effacent pas.
-            TotalTracePerSecond.Value = UnityEngine.Mathf.Max(0f, totalTrace);
+            HardwareTracePerSecond.Value = hardwareTrace;
+            ProxyDissipationPerSecond.Value = (float)(proxyBase * dissipationFactor);
         }
 
         public void Dispose()
@@ -264,7 +292,8 @@ namespace Core.Services.Economy
             OnUpgradeRevealed.Dispose();
             TotalMoneyYieldPerSecond.Dispose();
             TotalTFlops.Dispose();
-            TotalTracePerSecond.Dispose();
+            HardwareTracePerSecond.Dispose();
+            ProxyDissipationPerSecond.Dispose();
         }
     }
 }

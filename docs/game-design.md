@@ -107,6 +107,8 @@ L'objectif ultime du joueur est de récupérer **une photo de chat sur une clé 
 - Autosave toutes les **5 minutes**, plus fin de run et achat de prestige.
 - Save d'urgence à la fermeture (croix, Alt+F4). Ne couvre ni un kill process ni un crash.
 - **Aucune progression hors-ligne, aucun rattrapage au retour.**
+- **`runInBackground` est à `true`** (tranché le 2026-08-26). « Hors-ligne » veut dire *jeu fermé*, pas *fenêtre en arrière-plan* : le joueur peut laisser tourner Ares pendant qu'il fait autre chose, et l'A.M.I. continue de le traquer. Le mettre à `false` offrirait une planque parfaite et gratuite — il suffirait d'alt-tab pour geler la Trace.
+  *Note pour les tests : ce réglage ne s'applique qu'au build. Dans l'éditeur, le player loop reste figé tant que la fenêtre Unity n'a pas le focus (`Time.frameCount` ne bouge pas). Pour vérifier un `ITickable` sans focus, appeler `Tick()` à la main plutôt que d'attendre des frames.*
 - Fichier en JSON lisible et éditable à la main — choix assumé jusqu'à la sortie Steam.
 
 ## Steam

@@ -46,6 +46,19 @@ namespace Core.Services.Economy
 
         private DisposableBag _disposables;
 
+        /// <summary>
+        /// Trace par seconde des seuls Scripts dont un cycle tourne à cet instant.
+        ///
+        /// Champ simple et non ReactiveProperty, volontairement : la valeur change à chaque
+        /// frame, et notifier ~15 abonnés soixante fois par seconde pour un unique lecteur
+        /// (le SimulationTicker) serait du gaspillage pur.
+        ///
+        /// Elle est rafraîchie à la fin de Tick(). Si le SimulationTicker s'exécute avant ce
+        /// runner sur une frame donnée, il lit la valeur de la frame précédente — un décalage
+        /// d'une frame sur une jauge qui met des minutes à se remplir, sans conséquence.
+        /// </summary>
+        public float ActiveScriptTracePerSecond { get; private set; }
+
         public ScriptCycleRunner(
             UserCurrencies currencies,
             UpgradeManager upgradeManager,
@@ -135,6 +148,7 @@ namespace Core.Services.Economy
             if (!_sessionManager.IsGameActive.CurrentValue) return;
 
             float deltaTime = Time.deltaTime;
+            float activeTrace = 0f;
 
             for (int i = 0; i < _slotCount; i++)
             {
@@ -154,8 +168,15 @@ namespace Core.Services.Economy
                     }
                 }
 
+                // Un Script ne laisse de trace que TANT QU'IL TOURNE : l'A.M.I. ne repère le
+                // piratage que lorsqu'il est actif. Le cumul se fait dans la boucle qu'on
+                // parcourt déjà — un simple accumulateur float, aucune allocation.
+                activeTrace += _slots[i].Model.GetTraceMagnitudePerSecond();
+
                 AdvanceSlot(i, deltaTime);
             }
+
+            ActiveScriptTracePerSecond = activeTrace;
         }
 
         private void AdvanceSlot(int index, float seconds)
@@ -231,6 +252,10 @@ namespace Core.Services.Economy
 
             _slotCount = 0;
             _slotIndexById.Clear();
+
+            // Sans cette remise à zéro, la Trace des cycles d'AVANT le wipe continuerait à
+            // remplir la jauge tant qu'aucune frame n'a recalculé l'accumulateur.
+            ActiveScriptTracePerSecond = 0f;
         }
 
         public void Dispose()
