@@ -68,6 +68,7 @@ namespace Core.Services.Persistence
                 data.Money,
                 data.CpuCycles,
                 data.TotalMoney,
+                data.RunMoney,
                 data.TotalCpuCycles,
                 data.TotalDetections);
 
@@ -99,6 +100,7 @@ namespace Core.Services.Persistence
             _buffer.CpuCycles = _currencies.CpuCycles.Amount.CurrentValue;
 
             _buffer.TotalMoney = _currencies.TotalMoneyGenerated.CurrentValue;
+            _buffer.RunMoney = _currencies.RunMoneyGenerated.CurrentValue;
             _buffer.TotalCpuCycles = _currencies.TotalCpuCyclesGenerated.CurrentValue;
             _buffer.TotalDetections = _currencies.TotalNumberOfDetections.CurrentValue;
 

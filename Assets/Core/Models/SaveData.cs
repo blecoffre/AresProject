@@ -34,7 +34,7 @@ namespace Core.Models
         /// correspondant dans Migrate(). Sans ça, le premier changement post-lancement casse
         /// silencieusement les sauvegardes des joueurs.
         /// </summary>
-        public const int CurrentVersion = 2;
+        public const int CurrentVersion = 3;
 
         public int Version;
 
@@ -58,6 +58,13 @@ namespace Core.Models
         // l'état réel — et le total cumulé n'avait plus de sens pour une grandeur qu'on
         // n'accumule pas. Retirés en v2.
         public double Money;
+
+        /// <summary>
+        /// Argent généré depuis le début de la run. Pilote le gain de CPU Cycles en fin de run —
+        /// c'est de l'état de RUN, pas une statistique cumulée, d'où sa place dans ce bloc.
+        /// </summary>
+        public double RunMoney;
+
         public float NormalizedThreat;
         public int EmergencyUsesInRun;
         public List<UpgradeSaveEntry> Upgrades;
@@ -80,6 +87,7 @@ namespace Core.Models
             PrestigeUpgrades = new List<UpgradeSaveEntry>(),
 
             Money = 10d,
+            RunMoney = 0d,
             NormalizedThreat = 0f,
             EmergencyUsesInRun = 0,
             Upgrades = new List<UpgradeSaveEntry>(),
@@ -101,6 +109,7 @@ namespace Core.Models
             if (EmergencyUsesInRun < 0) EmergencyUsesInRun = 0;
 
             if (Money < 0d) Money = 0d;
+            if (RunMoney < 0d) RunMoney = 0d;
             if (CpuCycles < 0d) CpuCycles = 0d;
             if (TotalDetections < 0) TotalDetections = 0;
         }
@@ -133,6 +142,15 @@ namespace Core.Models
                     goto case 2;
 
                 case 2:
+                    // v2 -> v3 : RunMoney apparaît. Une sauvegarde antérieure ne distinguait pas
+                    // l'argent de la run du cumul à vie ; on repart de zéro pour la run en cours
+                    // plutôt que de recopier le cumul, ce qui offrirait un gain de prestige
+                    // immérité pour une run déjà entamée.
+                    data.RunMoney = 0d;
+                    data.Version = 3;
+                    goto case 3;
+
+                case 3:
                     // Format courant : rien à faire.
                     break;
 

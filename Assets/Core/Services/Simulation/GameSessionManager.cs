@@ -91,6 +91,7 @@ namespace Core.Services.Simulation
         private void WipeRun()
         {
             _userCurrencies.Money.Reset(BaseStartingMoney + _prestigeManager.StartingMoney.CurrentValue);
+            _userCurrencies.ResetRunCounters();
             _emergencyProtocolSystem.ResetSystem();
             _threatManager.ReduceThreat(1f);
             _upgradeManager.InitializeFromSave(EmptyLevels);
