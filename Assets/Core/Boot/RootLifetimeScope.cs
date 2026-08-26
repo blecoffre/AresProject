@@ -61,6 +61,10 @@ namespace Core.Infrastructure
             builder.Register<EmergencyProtocolSystem>(Lifetime.Singleton);
             builder.Register<GameSessionManager>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
 
+            // La sortie volontaire termine une run : elle appartient à la partie, pas à
+            // l'affichage, donc au scope racine comme le reste.
+            builder.Register<ExfiltrationSystem>(Lifetime.Singleton);
+
             // 7. Points d'entrée
             builder.RegisterEntryPoint<GameBootstrapper>();
             builder.RegisterEntryPoint<SaveScheduler>();

@@ -21,6 +21,14 @@ namespace Core.Services.Simulation
         /// </summary>
         private const double BaseStartingMoney = 10d;
 
+        /// <summary>
+        /// Bonus « Clean Exit » : +20 % de CPU Cycles quand le joueur sort de lui-même au lieu
+        /// de se faire saisir. C'est ce qui doit le pousser à flirter avec 95 % de Trace plutôt
+        /// qu'à wiper dès qu'il le peut.
+        /// TODO (BalancingConfigSO) : cette constante doit rejoindre les autres réglages.
+        /// </summary>
+        private const double CleanExitMultiplier = 1.2d;
+
         /// <summary>Tampon réutilisé : un wipe ne doit pas allouer un dictionnaire à chaque fois.</summary>
         private static readonly System.Collections.Generic.Dictionary<string, int> EmptyLevels =
             new System.Collections.Generic.Dictionary<string, int>();
@@ -58,13 +66,37 @@ namespace Core.Services.Simulation
                 .AddTo(ref _disposables);
         }
 
+        /// <summary>Saisie Fédérale : la Trace a atteint 100 %, aucun bonus.</summary>
         private void HandleGameOver()
         {
             Debug.Log("[GameSessionManager] A.M.I. CORRUPTION DÉTECTÉE. Fin de session en cours...");
+            _userCurrencies.RecordDetection();
+
+            EndRun(1d);
+        }
+
+        /// <summary>
+        /// Effacement Propre : le joueur sort de lui-même avant les 100 %, et touche le bonus
+        /// « Clean Exit ». Pas de détection enregistrée — il n'a jamais été pris.
+        ///
+        /// Retourne false si la run est déjà terminée : le presenter peut appeler pendant que
+        /// l'écran de fin s'affiche.
+        /// </summary>
+        public bool TryEndRunVoluntarily()
+        {
+            if (!IsGameActive.CurrentValue) return false;
+
+            Debug.Log("[GameSessionManager] Exfiltration volontaire. Effacement propre.");
+            EndRun(CleanExitMultiplier);
+            return true;
+        }
+
+        private void EndRun(double prestigeMultiplier)
+        {
             IsGameActive.Value = false;
 
-            _userCurrencies.RecordDetection();
-            double pendingPrestige = _userCurrencies.CalculatePendingCpuCycles();
+            double pendingPrestige = _userCurrencies.CalculatePendingCpuCycles() * prestigeMultiplier;
+            pendingPrestige = Math.Floor(pendingPrestige);
 
             if (pendingPrestige > 0d)
             {

@@ -79,7 +79,17 @@ La jauge elle-même n'est réduite que par le **Bouton d'Urgence** (coût expone
 
 Le bonus pousse le joueur à flirter avec 95 % de Trace puis à sortir juste avant l'arrestation.
 
-**Déblocage :** bouton cliquable uniquement si la run génère au moins 1 CPU Cycle. Placé bien visible, en rouge, dans le Header.
+**Déblocage (précisé le 2026-08-26) :** condition UNIQUE — avoir de quoi gagner au moins 1 CPU Cycle, soit **1 000 Datas générées sur la run** (dépensées ou non), puisque `Cycles = floor(sqrt(RunMoney / 1000))`.
+
+Pas de palier d'upgrade ni de seuil de TFlops : verrouiller derrière un achat précis casserait la liberté systémique, alors qu'un joueur qui joue mal doit pouvoir sortir s'il a farmé assez longtemps. Les TFlops sont un accélérateur, un moyen d'arriver à la fin — pas la condition de fin.
+
+**Trois états du bouton**, la jauge portant l'explication à la place d'un texte d'aide :
+
+1. `[VERROUILLÉ] Compilation du 1er Cycle CPU : 45 %` — barre remplie à `RunMoney / 1000`
+2. `[PRÊT] WIPE SYSTÈME (Gain : +1 Cycle CPU)` — bordures rouges, cliquable
+3. `[PRÊT] WIPE SYSTÈME (Gain : +2 Cycles CPU) → Prochain à 9 000 Datas` — le seuil suivant vaut `(n+1)² × 1 000`, ce qui donne au joueur une raison de repousser sa sortie
+
+*Note technique : en éditeur et en build de développement, le bouton est toujours cliquable même à zéro cycle, pour enchaîner des runs de test sans farmer.* Placé bien visible, en rouge, dans le Header.
 
 - Grisé, au survol : `[ERREUR] Données insuffisantes pour compiler un nouveau noyau.`
 - Débloqué : rouge clignotant, au survol `[PRÊT] Formatage recommandé. Gain estimé : +X Cycles CPU`

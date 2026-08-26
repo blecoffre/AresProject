@@ -1,0 +1,113 @@
+using Core.Models.Economy;
+using R3;
+using System;
+
+namespace Core.Services.Simulation
+{
+    /// <summary>
+    /// Le « Protocole Terre Brûlée » : la sortie volontaire de run.
+    ///
+    /// Jusqu'ici, seule la Trace à 100 % menait à l'écran de prestige — donc la seule façon de
+    /// boucler la méta-progression était d'attendre de se faire prendre. Ce système donne au
+    /// joueur la main sur la fin de sa run, avec un bonus à la clé pour l'inciter à repousser
+    /// le moment plutôt qu'à sortir dès qu'il le peut.
+    ///
+    /// La condition de déblocage est volontairement UNIQUE : avoir de quoi gagner au moins un
+    /// CPU Cycle. Pas de palier d'upgrade, pas de seuil de TFlops — verrouiller derrière un achat
+    /// précis casserait la liberté systémique, alors qu'un joueur qui farme mal doit quand même
+    /// pouvoir sortir s'il a farmé assez longtemps.
+    /// </summary>
+    public class ExfiltrationSystem : IDisposable
+    {
+        /// <summary>
+        /// Datas à générer sur la run pour valoir un premier CPU Cycle.
+        /// Découle de la formule de prestige : Cycles = floor(sqrt(RunMoney / 1000)).
+        /// TODO (BalancingConfigSO) : cette constante doit rejoindre les autres réglages.
+        /// </summary>
+        public const double MoneyPerFirstCycle = 1000d;
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        /// <summary>
+        /// En éditeur et en build de test, le bouton est TOUJOURS cliquable, y compris à zéro
+        /// cycle : c'est ce qui permet d'enchaîner des runs vides pour tester l'équilibrage sans
+        /// attendre d'avoir farmé. Jamais actif dans un build de production.
+        /// </summary>
+        private const bool BypassUnlockCondition = true;
+#else
+        private const bool BypassUnlockCondition = false;
+#endif
+
+        private readonly UserCurrencies _currencies;
+        private readonly GameSessionManager _sessionManager;
+
+        private readonly ReadOnlyReactiveProperty<double> _pendingCycles;
+        private readonly ReadOnlyReactiveProperty<bool> _isUnlocked;
+        private readonly ReadOnlyReactiveProperty<float> _progressToFirstCycle;
+
+        /// <summary>
+        /// CPU Cycles que rapporterait une sortie maintenant, bonus Clean Exit inclus.
+        ///
+        /// `DistinctUntilChanged` est indispensable, pas cosmétique : l'argent de la run bouge à
+        /// chaque cycle de Script, plusieurs fois par seconde, alors que ce nombre entier ne
+        /// change qu'une poignée de fois sur toute une run. Sans lui, la vue se reconstruirait
+        /// en boucle pour afficher la même valeur.
+        /// </summary>
+        public ReadOnlyReactiveProperty<double> PendingCycles => _pendingCycles;
+
+        /// <summary>Le bouton est-il utilisable. Toujours vrai en éditeur et en build de test.</summary>
+        public ReadOnlyReactiveProperty<bool> IsUnlocked => _isUnlocked;
+
+        /// <summary>
+        /// Avancement vers le premier CPU Cycle, de 0 à 1. Sert la jauge du bouton verrouillé et
+        /// n'a de sens que dans cet état — au-delà, elle reste à 1.
+        /// </summary>
+        public ReadOnlyReactiveProperty<float> ProgressToFirstCycle => _progressToFirstCycle;
+
+        public ExfiltrationSystem(UserCurrencies currencies, GameSessionManager sessionManager)
+        {
+            _currencies = currencies;
+            _sessionManager = sessionManager;
+
+            _pendingCycles = _currencies.RunMoneyGenerated
+                .Select(_ => _currencies.CalculatePendingCpuCycles())
+                .DistinctUntilChanged()
+                .ToReadOnlyReactiveProperty();
+
+            _isUnlocked = _pendingCycles
+                .Select(cycles => BypassUnlockCondition || cycles >= 1d)
+                .DistinctUntilChanged()
+                .ToReadOnlyReactiveProperty();
+
+            _progressToFirstCycle = _currencies.RunMoneyGenerated
+                .Select(money => (float)Math.Min(1d, money / MoneyPerFirstCycle))
+                .ToReadOnlyReactiveProperty();
+        }
+
+        /// <summary>
+        /// Datas à générer sur la run pour décrocher le cycle SUIVANT. Sert le « Prochain à
+        /// X Datas » du bouton, qui donne un objectif au joueur qui hésite à continuer.
+        /// </summary>
+        public double GetNextCycleThreshold()
+        {
+            double next = _pendingCycles.CurrentValue + 1d;
+            return next * next * MoneyPerFirstCycle;
+        }
+
+        /// <summary>
+        /// Déclenche la sortie volontaire. Retourne false si la run est déjà finie ou si la
+        /// condition n'est pas remplie — la vue grise le bouton, mais elle n'est pas la garde.
+        /// </summary>
+        public bool TryExfiltrate()
+        {
+            if (!_isUnlocked.CurrentValue) return false;
+            return _sessionManager.TryEndRunVoluntarily();
+        }
+
+        public void Dispose()
+        {
+            _pendingCycles.Dispose();
+            _isUnlocked.Dispose();
+            _progressToFirstCycle.Dispose();
+        }
+    }
+}
