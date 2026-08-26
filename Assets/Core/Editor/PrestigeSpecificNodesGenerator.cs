@@ -15,6 +15,9 @@ namespace Core.Economy.Tools
         private string _proxyBranchRootId = "P_STEALTH";
         private string _outputFileName = "04_SpecificUpgrades.json";
 
+        /// <summary>Seule source légitime d'upgrades : le dossier que génère UpgradeCatalogGenerator.</summary>
+        private const string UpgradeFolder = "Assets/GameData/Upgrades";
+
         [MenuItem("Tools/Core/Générer JSON (Grille - Arête de poisson Corrigée)")]
         public static void ShowWindow()
         {
@@ -41,19 +44,31 @@ namespace Core.Economy.Tools
 
         private void GenerateGridJson()
         {
-            string[] guids = AssetDatabase.FindAssets("t:UpgradeConfigSO");
+            // Recherche LIMITÉE au dossier généré. Un FindAssets sur tout le projet ramassait
+            // Assets/Data/Addressables/Upgrades/NewUpgradeConfig.asset, un orphelin dont l'id
+            // vaut « 000 » — d'où trois nœuds de prestige ciblant une upgrade inexistante.
+            string[] guids = AssetDatabase.FindAssets("t:UpgradeConfigSO", new[] { UpgradeFolder });
             List<UpgradeConfigSO> allUpgrades = new List<UpgradeConfigSO>();
 
             foreach (string guid in guids)
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
                 UpgradeConfigSO config = AssetDatabase.LoadAssetAtPath<UpgradeConfigSO>(path);
-                if (config != null) allUpgrades.Add(config);
+
+                if (config == null) continue;
+
+                if (string.IsNullOrEmpty(config.Id))
+                {
+                    Debug.LogWarning("[Générateur] Asset sans id ignoré : " + path);
+                    continue;
+                }
+
+                allUpgrades.Add(config);
             }
 
             if (allUpgrades.Count == 0)
             {
-                Debug.LogError("[Générateur] Aucune UpgradeConfigSO trouvée dans le projet !");
+                Debug.LogError("[Générateur] Aucune UpgradeConfigSO trouvée dans " + UpgradeFolder + " !");
                 return;
             }
 
@@ -102,14 +117,23 @@ namespace Core.Economy.Tools
                 db.items.Add(CreateGridItem(mainCostId, target, "SpecificUpgradeCostReduction", currentPrereq, currentPos));
 
                 // --- 2. RAMIFICATION HAUT : BOOST DE RENDEMENT ---
+                // Pertinent pour les trois types, mais pas avec le même sens : versement du
+                // cycle pour un Script, capacité TFlops pour un Hardware, et efficacité de
+                // DISSIPATION pour un Proxy — dont le rendement de production vaut zéro.
                 string prodId = $"P_UPG_{target.Id}_PROD";
                 Vector2Int prodPos = currentPos + new Vector2Int(0, 1);
                 db.items.Add(CreateGridItem(prodId, target, "SpecificUpgradeYieldBoost", mainCostId, prodPos));
 
-                // --- 3. RAMIFICATION BAS : RÉDUCTION DE TEMPS ---
-                string timeId = $"P_UPG_{target.Id}_TIME";
-                Vector2Int timePos = currentPos + new Vector2Int(0, -1);
-                db.items.Add(CreateGridItem(timeId, target, "SpecificUpgradeTimeReduction", mainCostId, timePos));
+                // --- 3. RAMIFICATION BAS : RÉDUCTION DE TEMPS, SCRIPTS UNIQUEMENT ---
+                // Seuls les Scripts ont un cycle. Générer ce nœud pour un Hardware ou un Proxy
+                // (baseCycleDuration = 0) produisait un piège à débutant : un nœud achetable,
+                // payé en CPU Cycles, et sans le moindre effet.
+                if (target.Type == UpgradeType.Script)
+                {
+                    string timeId = $"P_UPG_{target.Id}_TIME";
+                    Vector2Int timePos = currentPos + new Vector2Int(0, -1);
+                    db.items.Add(CreateGridItem(timeId, target, "SpecificUpgradeTimeReduction", mainCostId, timePos));
+                }
 
                 // --- MISE À JOUR POUR LE PROCHAIN TOUR ---
                 // On mémorise le nœud COST actuel pour qu'il devienne le parent du suivant

@@ -20,6 +20,6 @@ MonoBehaviour:
   _baseCost: 500
   _costMultiplier: 1.4
   _bonusPerLevel: 0.1
-  _uiPosition: {x: -30, y: 5}
+  _uiPosition: {x: -22, y: 5}
   _prerequisite: {fileID: 11400000, guid: dc941bb893229cd49b78ffe9bfca1535, type: 2}
   _targetUpgradeId: SCR_10

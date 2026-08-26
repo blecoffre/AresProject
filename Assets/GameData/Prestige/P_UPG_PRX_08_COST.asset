@@ -20,6 +20,6 @@ MonoBehaviour:
   _baseCost: 400
   _costMultiplier: 1.4
   _bonusPerLevel: 0.1
-  _uiPosition: {x: -22, y: -6}
-  _prerequisite: {fileID: 11400000, guid: c702769d48deed149911b2993082c4aa, type: 2}
+  _uiPosition: {x: -18, y: -6}
+  _prerequisite: {fileID: 11400000, guid: de595a68cde24b4439b028e86b14f94a, type: 2}
   _targetUpgradeId: PRX_08

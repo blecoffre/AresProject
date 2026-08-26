@@ -20,6 +20,6 @@ MonoBehaviour:
   _baseCost: 350
   _costMultiplier: 1.4
   _bonusPerLevel: 0.1
-  _uiPosition: {x: -22, y: -1}
+  _uiPosition: {x: -16, y: -1}
   _prerequisite: {fileID: 11400000, guid: c14821c89bb547b478e215084f6a78d8, type: 2}
   _targetUpgradeId: HW_07
