@@ -1,4 +1,4 @@
-﻿using Core.Economy.Data;
+using Core.Economy.Data;
 using Core.Models.Economy;
 using Core.Services.Localization;
 using System;
@@ -118,10 +118,20 @@ namespace Core.Economy.Editor
             // On injecte tout dans le catalogue !
             UpdateCatalogAsset(allCreatedConfigs);
 
+            // Purge APRÈS la mise à jour du catalogue : si la génération avait échoué en route,
+            // on n'aura pas supprimé d'assets encore référencés.
+            HashSet<string> keptIds = new HashSet<string>();
+            for (int i = 0; i < allItems.Count; i++)
+            {
+                if (!string.IsNullOrEmpty(allItems[i].id)) keptIds.Add(allItems[i].id);
+            }
+
+            int pruned = GeneratedAssetPruner.Prune(TargetFolder, keptIds, "[PrestigeGenerator]");
+
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
-            Debug.Log($"<color=green>[PrestigeGenerator]</color> Génération terminée ! {allItems.Count} items créés à partir de {jsonFiles.Length} fichiers.");
+            Debug.Log($"<color=green>[PrestigeGenerator]</color> Génération terminée ! {allItems.Count} items créés à partir de {jsonFiles.Length} fichiers, {pruned} orphelin(s) supprimé(s).");
         }
 
         /// <summary>

@@ -112,10 +112,20 @@ namespace Core.Economy.Editor
 
             UpdateCatalogAsset(createdConfigs);
 
+            // Purge APRÈS la mise à jour du catalogue : si la génération avait échoué en route,
+            // on n'aura pas supprimé d'assets encore référencés.
+            HashSet<string> keptIds = new HashSet<string>();
+            for (int i = 0; i < createdConfigs.Count; i++)
+            {
+                if (createdConfigs[i] != null) keptIds.Add(createdConfigs[i].Id);
+            }
+
+            int pruned = GeneratedAssetPruner.Prune(TargetFolder, keptIds, "[UpgradeGenerator]");
+
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
-            Debug.Log($"<color=green>[UpgradeGenerator]</color> Catalogue généré : {createdConfigs.Count} améliorations, {milestoneCount} paliers.");
+            Debug.Log($"<color=green>[UpgradeGenerator]</color> Catalogue généré : {createdConfigs.Count} améliorations, {milestoneCount} paliers, {pruned} orphelin(s) supprimé(s).");
         }
 
         private static UpgradeConfigSO CreateOrUpdateUpgradeConfig(UpgradeItemData data, UpgradeType type)
