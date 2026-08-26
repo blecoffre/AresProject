@@ -38,7 +38,7 @@
     },
     {
       "Key": "LOG_MANUAL_OVERCLOCK",
-      "Value": "Overclock manuel : +{0}% temps gagné."
+      "Value": "Overclock manuel : +{0} s sur les cycles en cours."
     },
     {
       "Key": "LOG_UPGRADE_PURCHASED",
@@ -75,6 +75,22 @@
     {
       "Key": "UI_GAME_OVER_BILAN",
       "Value": "BILAN"
+    },
+    {
+      "Key": "UI_PRESTIGE_LEVEL",
+      "Value": "Niv. {0} / {1}"
+    },
+    {
+      "Key": "UI_PRESTIGE_COST",
+      "Value": "{0} CPU"
+    },
+    {
+      "Key": "UI_MAX_LEVEL",
+      "Value": "MAX"
+    },
+    {
+      "Key": "UI_ACQUIRED",
+      "Value": "ACQUIS"
     }
   ]
 }

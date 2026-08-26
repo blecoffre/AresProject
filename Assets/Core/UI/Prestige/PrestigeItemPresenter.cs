@@ -76,12 +76,18 @@ namespace Core.UI.Prestige
             double cost = _config.BaseCost * Math.Pow(_config.CostMultiplier, currentLevel);
             bool canAfford = _currencies.CpuCycles.Amount.CurrentValue >= cost;
 
-            string costText = CurrencyFormatter.Format(cost) + " CPU";
+            // Tout ce qui part à l'écran passe par une clé : ni le suffixe de monnaie, ni le
+            // gabarit « Niv. x / y », ni la mention de niveau max ne sont écrits en dur.
+            string costText = isMaxedOut
+                ? _loc.GetText("UI_MAX_LEVEL")
+                : _loc.GetText("UI_PRESTIGE_COST", CurrencyFormatter.Format(cost));
 
-            string levelText = "";
+            string levelText = string.Empty;
             if (_config.MaxLevel > 1)
             {
-                levelText = isMaxedOut ? _loc.GetText("UI_MAX_LEVEL") : $"Niv. {currentLevel} / {_config.MaxLevel}";
+                levelText = isMaxedOut
+                    ? _loc.GetText("UI_MAX_LEVEL")
+                    : _loc.GetText("UI_PRESTIGE_LEVEL", currentLevel, _config.MaxLevel);
             }
             else if (isMaxedOut)
             {

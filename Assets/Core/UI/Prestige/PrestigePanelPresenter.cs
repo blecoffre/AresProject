@@ -19,7 +19,12 @@ namespace Core.UI.Prestige
 
         private readonly List<PrestigeItemPresenter> _childPresenters = new();
 
-        private readonly Vector2 _gridCellSize = new Vector2(600f, 300f);
+        /// <summary>
+        /// Position finale, en pixels, de chaque nœud déjà placé. Indispensable au tracé des
+        /// liens : un prérequis peut apparaître APRÈS son enfant dans le catalogue, donc les
+        /// lignes ne peuvent être tracées qu'une fois tous les nœuds positionnés.
+        /// </summary>
+        private Dictionary<string, Vector2> _nodePositions;
 
         public PrestigePanelPresenter(
             PrestigePanelView view,
@@ -37,65 +42,83 @@ namespace Core.UI.Prestige
 
         public void Start()
         {
-            // On spawn tous les nœuds de la toile d'araignée
-            foreach (var config in _catalog.GetAllUpgrades())
-            {
-                var nodeView = _view.SpawnNode();
-                var nodePresenter = new PrestigeItemPresenter(config, nodeView, _prestigeManager, _currencies, _loc);
+            IReadOnlyList<PrestigeConfigSO> configs = _catalog.GetAllUpgrades();
 
-                _childPresenters.Add(nodePresenter);
+            // Boucles indexées et collections dimensionnées d'avance : la construction de l'arbre
+            // instancie déjà ~170 nœuds, inutile d'y ajouter des redimensionnements de listes.
+            _childPresenters.Capacity = configs.Count;
+            _nodePositions = new Dictionary<string, Vector2>(configs.Count);
+
+            BuildNodes(configs);
+            BuildLinks(configs);
+        }
+
+        /// <summary>
+        /// Instancie, place et lie un nœud par entrée du catalogue — <b>un seul</b>.
+        /// </summary>
+        private void BuildNodes(IReadOnlyList<PrestigeConfigSO> configs)
+        {
+            for (int i = 0; i < configs.Count; i++)
+            {
+                PrestigeConfigSO config = configs[i];
+
+                // La coordonnée du JSON est une case de grille, pas un pixel. La conversion
+                // appartient à la vue, qui est le seul endroit à connaître l'échelle d'affichage.
+                Vector2 pixelPosition = _view.GridToPixels(config.UiPosition);
+
+                PrestigeItemView node = _view.SpawnNode(pixelPosition);
+                _nodePositions[config.Id] = pixelPosition;
+
+                _childPresenters.Add(
+                    new PrestigeItemPresenter(config, node, _prestigeManager, _currencies, _loc));
             }
+        }
 
-            var nodePositions = new Dictionary<string, Vector2>();
-
-            // Étape 1 : On place tous les nœuds
-            foreach (var config in _catalog.GetAllUpgrades())
+        /// <summary>
+        /// Trace un lien par nœud possédant un prérequis. Passe séparée de <see cref="BuildNodes"/>
+        /// car les deux extrémités doivent déjà être positionnées.
+        /// </summary>
+        private void BuildLinks(IReadOnlyList<PrestigeConfigSO> configs)
+        {
+            for (int i = 0; i < configs.Count; i++)
             {
-                // 1. Calcul de la position finale en multipliant la coordonnée JSON par la taille de la cellule
-                Vector2 finalPosition = new Vector2(
-                    config.UiPosition.x * _gridCellSize.x,
-                    config.UiPosition.y * _gridCellSize.y
-                );
+                PrestigeConfigSO config = configs[i];
+                if (config.Prerequisite == null) continue;
 
-                // 2. Instanciation et placement
-                PrestigeItemView node = _view.SpawnNode();
-                node.GetComponent<RectTransform>().anchoredPosition = finalPosition;
-
-                // On sauvegarde la position finale pour le tracé des lignes
-                nodePositions[config.Id] = finalPosition;
-
-                var nodePresenter = new PrestigeItemPresenter(config, node, _prestigeManager, _currencies, _loc);
-                _childPresenters.Add(nodePresenter);
-            }
-
-            // Étape 2 : On trace les lignes
-            foreach (var config in _catalog.GetAllUpgrades())
-            {
-                if (config.Prerequisite != null)
+                if (!_nodePositions.TryGetValue(config.Prerequisite.Id, out Vector2 parentPosition))
                 {
-                    if (nodePositions.TryGetValue(config.Prerequisite.Id, out Vector2 parentPos))
-                    {
-                        UILineConnection line = _view.SpawnLine();
-                        line.DrawLine(parentPos, config.UiPosition);
-
-                        // On récupère ou on crée les flux réactifs du niveau actuel
-                        var parentLevelObs = _prestigeManager.GetLevelObservable(config.Prerequisite.Id);
-                        var childLevelObs = _prestigeManager.GetLevelObservable(config.Id);
-
-                        // On lie l'état de la ligne à la progression de l'arbre
-                        line.BindState(parentLevelObs, childLevelObs, config.MaxLevel);
-                    }
+                    // Prérequis absent du catalogue : le lien ne mène nulle part. On le signale
+                    // plutôt que de tracer une ligne vers l'origine.
+                    Debug.LogError(
+                        $"[PRESTIGE] Le nœud '{config.Id}' déclare le prérequis '{config.Prerequisite.Id}', " +
+                        "absent du catalogue. Lien ignoré.");
+                    continue;
                 }
+
+                // Les DEUX extrémités doivent être lues dans le même repère, en pixels. L'ancien
+                // code passait `config.UiPosition` — une coordonnée de grille — ce qui écrasait
+                // toutes les lignes près de l'origine.
+                if (!_nodePositions.TryGetValue(config.Id, out Vector2 childPosition)) continue;
+
+                UILineConnection line = _view.SpawnLine();
+                line.DrawLine(parentPosition, childPosition);
+
+                line.BindState(
+                    _prestigeManager.GetLevelObservable(config.Prerequisite.Id),
+                    _prestigeManager.GetLevelObservable(config.Id),
+                    config.MaxLevel);
             }
         }
 
         public void Dispose()
         {
-            foreach (var presenter in _childPresenters)
+            for (int i = 0; i < _childPresenters.Count; i++)
             {
-                presenter.Dispose();
+                _childPresenters[i].Dispose();
             }
+
             _childPresenters.Clear();
+            _nodePositions?.Clear();
         }
     }
 }
