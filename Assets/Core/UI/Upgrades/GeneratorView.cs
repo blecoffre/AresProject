@@ -13,6 +13,9 @@ namespace Core.UI.Upgrades
         [SerializeField] private TextMeshProUGUI _costText;
         [SerializeField] private TextMeshProUGUI _statsText;
 
+        [Tooltip("Facultatif : laisser vide tant que le prefab n'affiche pas de description.")]
+        [SerializeField] private TextMeshProUGUI _descriptionText;
+
         [Tooltip("Image en Filled : c'est la barre de progression du cycle.")]
         [SerializeField] private Image _sweepBackgroundImage;
 
@@ -53,9 +56,10 @@ namespace Core.UI.Upgrades
         /// <summary>Signale au presenter si ce prefab dispose d'un bouton de lancement câblé.</summary>
         public bool HasRunButton => _runButton != null;
 
-        public void InitializeStaticData(string generatorName, string stats)
+        public void InitializeStaticData(string generatorName, string description, string stats)
         {
             if (_nameText != null) _nameText.text = generatorName;
+            if (_descriptionText != null) _descriptionText.text = description;
             if (_statsText != null) _statsText.text = stats;
         }
 

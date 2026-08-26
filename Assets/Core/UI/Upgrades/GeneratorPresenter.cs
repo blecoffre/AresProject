@@ -46,6 +46,7 @@ namespace Core.UI.Upgrades
 
             _view.InitializeStaticData(
                 _loc.GetText(_model.Config.DisplayNameKey),
+                _loc.GetText(_model.Config.DisplayDescriptionKey),
                 BuildStatsText());
 
             _view.OnBuyClicked += HandleBuyRequest;
@@ -134,9 +135,12 @@ namespace Core.UI.Upgrades
         {
             if (_isScript)
             {
+                // Clé DISTINCTE, et non la même avec un argument de plus : GetText passe par
+                // string.Format, donc un gabarit portant {1} lèverait une FormatException sur
+                // l'appel à un seul argument des onglets Hardware et Proxy.
                 // Pour un Script, la donnée utile est le versement et la cadence, pas un débit abstrait.
                 return _loc.GetText(
-                    "UI_GENERATES_DATAS",
+                    "UI_GENERATES_DATAS_CYCLE",
                     CurrencyFormatter.Format(_model.GetCurrentYield()),
                     _model.GetCurrentCycleDuration().ToString("0.##"));
             }

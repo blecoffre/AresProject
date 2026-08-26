@@ -32,13 +32,10 @@ namespace Core.UI.Prestige
 
             _disposables = new CompositeDisposable();
 
-            // Initialisation statique
-            string name = _loc.GetText(_config.DisplayNameKey);
-            string desc = _loc.GetText(_config.DisplayDescriptionKey);
-            _view.InitializeStaticData(name, desc);
-
-            // Placement du nœud (si tu ajoutes un champ _uiPosition dans le SO)
-            // _view.SetNodePosition(_config.UiPosition);
+            // Initialisation statique. Nom et description ne changent jamais : ils sont résolus
+            // ici, une seule fois, et jamais depuis RefreshView() qui tourne à chaque variation
+            // de CPU Cycles pour chacun des ~170 nœuds.
+            _view.InitializeStaticData(ResolveName(), ResolveDescription());
 
             // Abonnement réactif : on écoute les changements de budget (CpuCycles)
             // Pour être ultra précis, il faudrait exposer un Subject dans le PrestigeManager 
@@ -50,6 +47,85 @@ namespace Core.UI.Prestige
             _view.OnBuyClicked += HandleBuyRequest;
 
             RefreshView(); // Premier affichage
+        }
+
+        /// <summary>
+        /// Les nœuds ciblant une upgrade précise n'ont pas de nom en base : on compose
+        /// « &lt;nom de l'upgrade&gt; (Opti Coût) » depuis un gabarit localisé. Les autres portent
+        /// leur propre clé, dérivée de leur id par le générateur.
+        /// </summary>
+        private string ResolveName()
+        {
+            string templateKey = GetSpecificNameTemplate(_config.BonusType);
+
+            return templateKey == null
+                ? _loc.GetText(_config.DisplayNameKey)
+                : _loc.GetText(templateKey, ResolveTargetUpgradeName());
+        }
+
+        private string ResolveDescription()
+        {
+            string templateKey = GetSpecificDescriptionTemplate(_config.BonusType);
+
+            return templateKey == null
+                ? _loc.GetText(_config.DisplayDescriptionKey)
+                : _loc.GetText(templateKey, ResolveTargetUpgradeName());
+        }
+
+        /// <summary>
+        /// Résout le nom de l'upgrade ciblée par sa seule clé, sans passer par le catalogue :
+        /// la clé se dérive de l'id, donc le presenter n'a aucune dépendance à injecter pour ça.
+        /// </summary>
+        private string ResolveTargetUpgradeName()
+        {
+            if (string.IsNullOrEmpty(_config.TargetUpgradeId))
+            {
+                // Nœud marqué « spécifique » mais sans cible : donnée incohérente, on le dit.
+                UnityEngine.Debug.LogError(
+                    $"[PRESTIGE] Le nœud '{_config.Id}' a un bonus ciblé ({_config.BonusType}) " +
+                    "mais aucun targetUpgradeId. Son libellé sera incomplet.");
+
+                return string.Empty;
+            }
+
+            return _loc.GetText(LocalizationKeys.UpgradeName(_config.TargetUpgradeId));
+        }
+
+        /// <summary>Retourne null si le bonus n'est pas ciblé — le nœud a alors sa propre clé.</summary>
+        private static string GetSpecificNameTemplate(PrestigeBonusType bonusType)
+        {
+            switch (bonusType)
+            {
+                case PrestigeBonusType.SpecificUpgradeCostReduction:
+                    return LocalizationKeys.PrestigeSpecificCostName;
+
+                case PrestigeBonusType.SpecificUpgradeYieldBoost:
+                    return LocalizationKeys.PrestigeSpecificYieldName;
+
+                case PrestigeBonusType.SpecificUpgradeTimeReduction:
+                    return LocalizationKeys.PrestigeSpecificTimeName;
+
+                default:
+                    return null;
+            }
+        }
+
+        private static string GetSpecificDescriptionTemplate(PrestigeBonusType bonusType)
+        {
+            switch (bonusType)
+            {
+                case PrestigeBonusType.SpecificUpgradeCostReduction:
+                    return LocalizationKeys.PrestigeSpecificCostDescription;
+
+                case PrestigeBonusType.SpecificUpgradeYieldBoost:
+                    return LocalizationKeys.PrestigeSpecificYieldDescription;
+
+                case PrestigeBonusType.SpecificUpgradeTimeReduction:
+                    return LocalizationKeys.PrestigeSpecificTimeDescription;
+
+                default:
+                    return null;
+            }
         }
 
         private void RefreshView()

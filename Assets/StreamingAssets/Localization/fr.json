@@ -53,6 +53,10 @@
       "Value": "Génère {0} Datas par cycle"
     },
     {
+      "Key": "UI_GENERATES_DATAS_CYCLE",
+      "Value": "Génère {0} Datas toutes les {1} s"
+    },
+    {
       "Key": "UPGRADE_NAME_BREACH_CORE",
       "Value": "BREACH-CORE"
     },
