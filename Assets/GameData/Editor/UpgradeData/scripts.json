@@ -2,7 +2,6 @@
   "items": [
     {
       "id": "SCR_01",
-      "displayName": "Phishing familial",
       "type": "Script",
       "order": 1,
       "baseCost": 10.0,
@@ -15,7 +14,6 @@
     },
     {
       "id": "SCR_02",
-      "displayName": "Revente de comptes VOD",
       "type": "Script",
       "order": 2,
       "baseCost": 150.0,
@@ -28,7 +26,6 @@
     },
     {
       "id": "SCR_03",
-      "displayName": "Fermes à clics",
       "type": "Script",
       "order": 3,
       "baseCost": 1200.0,
@@ -41,7 +38,6 @@
     },
     {
       "id": "SCR_04",
-      "displayName": "Minage sur grille-pain",
       "type": "Script",
       "order": 4,
       "baseCost": 8500.0,
@@ -54,7 +50,6 @@
     },
     {
       "id": "SCR_05",
-      "displayName": "Détournement de micro-transactions",
       "type": "Script",
       "order": 5,
       "baseCost": 45000.0,
@@ -67,7 +62,6 @@
     },
     {
       "id": "SCR_06",
-      "displayName": "Ransomware de machines à café",
       "type": "Script",
       "order": 6,
       "baseCost": 250000.0,
@@ -80,7 +74,6 @@
     },
     {
       "id": "SCR_07",
-      "displayName": "Arnaque au faux support",
       "type": "Script",
       "order": 7,
       "baseCost": 1500000.0,
@@ -93,7 +86,6 @@
     },
     {
       "id": "SCR_08",
-      "displayName": "Hack de distributeurs",
       "type": "Script",
       "order": 8,
       "baseCost": 10000000.0,
@@ -106,7 +98,6 @@
     },
     {
       "id": "SCR_09",
-      "displayName": "Générateur de fausses cryptos",
       "type": "Script",
       "order": 9,
       "baseCost": 85000000.0,
@@ -119,11 +110,10 @@
     },
     {
       "id": "SCR_10",
-      "displayName": "Création de banque offshore fantôme",
       "type": "Script",
       "order": 10,
       "baseCost": 600000000.0,
-      "costMultiplier": 1.20,
+      "costMultiplier": 1.2,
       "baseProductionYield": 6000000.0,
       "baseCycleDuration": 60.0,
       "durationReductionPerLevel": 1.0,
@@ -132,7 +122,6 @@
     },
     {
       "id": "SCR_11",
-      "displayName": "Manipulation de la bourse locale",
       "type": "Script",
       "order": 11,
       "baseCost": 4500000000.0,
@@ -145,7 +134,6 @@
     },
     {
       "id": "SCR_12",
-      "displayName": "Syphon de fonds de pension",
       "type": "Script",
       "order": 12,
       "baseCost": 35000000000.0,
@@ -158,7 +146,6 @@
     },
     {
       "id": "SCR_13",
-      "displayName": "Rançonnage du Fortune 500",
       "type": "Script",
       "order": 13,
       "baseCost": 250000000000.0,
@@ -171,7 +158,6 @@
     },
     {
       "id": "SCR_14",
-      "displayName": "Privatisation de la Réserve Fédérale",
       "type": "Script",
       "order": 14,
       "baseCost": 2000000000000.0,
@@ -184,7 +170,6 @@
     },
     {
       "id": "SCR_15",
-      "displayName": "Contrôle du système SWIFT",
       "type": "Script",
       "order": 15,
       "baseCost": 15000000000000.0,

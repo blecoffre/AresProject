@@ -2,7 +2,6 @@
   "items": [
     {
       "id": "HW_01",
-      "displayName": "Overclocking du CPU familial",
       "type": "Hardware",
       "order": 1,
       "baseCost": 50.0,
@@ -15,7 +14,6 @@
     },
     {
       "id": "HW_02",
-      "displayName": "Extension à 48 Go de RAM",
       "type": "Hardware",
       "order": 2,
       "baseCost": 350.0,
@@ -28,7 +26,6 @@
     },
     {
       "id": "HW_03",
-      "displayName": "Refroidissement Noctua massif",
       "type": "Hardware",
       "order": 3,
       "baseCost": 1500.0,
@@ -41,11 +38,10 @@
     },
     {
       "id": "HW_04",
-      "displayName": "Alimentation Corsair RM850x",
       "type": "Hardware",
       "order": 4,
       "baseCost": 6000.0,
-      "costMultiplier": 1.20,
+      "costMultiplier": 1.2,
       "baseProductionYield": 120.0,
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
@@ -54,7 +50,6 @@
     },
     {
       "id": "HW_05",
-      "displayName": "Cluster de RTX 5080",
       "type": "Hardware",
       "order": 5,
       "baseCost": 25000.0,
@@ -67,7 +62,6 @@
     },
     {
       "id": "HW_06",
-      "displayName": "Moniteur Samsung Odyssey Neo G9",
       "type": "Hardware",
       "order": 6,
       "baseCost": 120000.0,
@@ -80,7 +74,6 @@
     },
     {
       "id": "HW_07",
-      "displayName": "Architecture Asynchrone (UniTask)",
       "type": "Hardware",
       "order": 7,
       "baseCost": 650000.0,
@@ -93,7 +86,6 @@
     },
     {
       "id": "HW_08",
-      "displayName": "Injection de Dépendances (VContainer)",
       "type": "Hardware",
       "order": 8,
       "baseCost": 3000000.0,
@@ -106,7 +98,6 @@
     },
     {
       "id": "HW_09",
-      "displayName": "Flux de données réactifs (R3 / UniRx)",
       "type": "Hardware",
       "order": 9,
       "baseCost": 15000000.0,
@@ -119,11 +110,10 @@
     },
     {
       "id": "HW_10",
-      "displayName": "Rendu par ShaderGraph",
       "type": "Hardware",
       "order": 10,
       "baseCost": 80000000.0,
-      "costMultiplier": 1.30,
+      "costMultiplier": 1.3,
       "baseProductionYield": 450000.0,
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
@@ -132,7 +122,6 @@
     },
     {
       "id": "HW_11",
-      "displayName": "Détournement de serveurs Cloud (AWS)",
       "type": "Hardware",
       "order": 11,
       "baseCost": 450000000.0,
@@ -145,7 +134,6 @@
     },
     {
       "id": "HW_12",
-      "displayName": "Botnet d'infrastructures",
       "type": "Hardware",
       "order": 12,
       "baseCost": 2500000000.0,
@@ -158,7 +146,6 @@
     },
     {
       "id": "HW_13",
-      "displayName": "Réquisition de supercalculateurs",
       "type": "Hardware",
       "order": 13,
       "baseCost": 15000000000.0,
@@ -171,7 +158,6 @@
     },
     {
       "id": "HW_14",
-      "displayName": "Ordinateur quantique volé",
       "type": "Hardware",
       "order": 14,
       "baseCost": 100000000000.0,
@@ -184,7 +170,6 @@
     },
     {
       "id": "HW_15",
-      "displayName": "Singularité IA",
       "type": "Hardware",
       "order": 15,
       "baseCost": 800000000000.0,

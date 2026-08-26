@@ -13,13 +13,16 @@ MonoBehaviour:
   m_Name: PRX_02
   m_EditorClassIdentifier: Assembly-CSharp::Core.Models.Economy.UpgradeConfigSO
   _id: PRX_02
-  _displayName: 
+  _displayNameKey: UPG_PRX_02_NAME
+  _displayDescriptionKey: UPG_PRX_02_DESC
   _type: 2
   _order: 2
   _baseCost: 800
   _costMultiplier: 1.1
   _baseProductionYield: 0
-  _baseCycleDuration: 1
-  _durationReductionPerLevel: 0.01
-  _minCycleDuration: 0.1
   _traceGeneratedPerSecond: 5
+  _baseCycleDuration: 1
+  _minCycleDuration: 0.1
+  _durationReductionPerLevel: 0
+  _automationLevel: 10
+  _milestones: []

@@ -2,8 +2,6 @@
   "items": [
     {
       "id": "P_REFAC",
-      "nameKey": "UI_PRESTIGE_REFAC_NAME",
-      "descKey": "UI_PRESTIGE_REFAC_DESC",
       "bonusType": "CostMultiplierReduction",
       "maxLevel": 5,
       "baseCost": 10.0,
@@ -15,8 +13,6 @@
     },
     {
       "id": "P_DATAM",
-      "nameKey": "UI_PRESTIGE_DATAM_NAME",
-      "descKey": "UI_PRESTIGE_DATAM_DESC",
       "bonusType": "GlobalComputeMultiplier",
       "maxLevel": 10,
       "baseCost": 25.0,

@@ -2,8 +2,6 @@
   "items": [
     {
       "id": "P_CLICK",
-      "nameKey": "UI_PRESTIGE_CLICK_NAME",
-      "descKey": "UI_PRESTIGE_CLICK_DESC",
       "bonusType": "ClickPowerMultiplier",
       "maxLevel": 10,
       "baseCost": 15.0,
@@ -15,8 +13,6 @@
     },
     {
       "id": "P_POWER_START",
-      "nameKey": "UI_PRESTIGE_POWER_NAME",
-      "descKey": "UI_PRESTIGE_POWER_DESC",
       "bonusType": "StartingComputerPower",
       "maxLevel": 5,
       "baseCost": 50.0,

@@ -73,7 +73,7 @@ namespace Core.UI.Upgrades
                     SpawnAndBindGenerator(newModel);
 
                     _console.Log(
-                        _loc.GetText("LOG_NEW_HARDWARE", _loc.GetText(newModel.Config.DisplayName)),
+                        _loc.GetText("LOG_NEW_HARDWARE", _loc.GetText(newModel.Config.DisplayNameKey)),
                         ConsoleLogType.Narrative);
                 })
                 .AddTo(_disposables);

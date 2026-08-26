@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: P_UPG_000_TIME
   m_EditorClassIdentifier: Assembly-CSharp::Core.Models.Economy.PrestigeConfigSO
   _id: P_UPG_000_TIME
-  _displayNameKey: Test001 (Opti Vitesse)
-  _displayDescriptionKey: "Am\xE9liore les statistiques sp\xE9cifiques de : Test001."
+  _displayNameKey: 
+  _displayDescriptionKey: 
   _bonusType: 9
   _maxLevel: 5
   _baseCost: 0

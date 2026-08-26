@@ -1,5 +1,6 @@
 ﻿using Core.Economy.Data;
 using Core.Models.Economy;
+using Core.Services.Localization;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,8 +19,6 @@ namespace Core.Economy.Editor
     public class PrestigeItemData
     {
         public string id;
-        public string nameKey;
-        public string descKey;
         public string bonusType;
         public int maxLevel;
         public double baseCost;
@@ -125,6 +124,17 @@ namespace Core.Economy.Editor
             Debug.Log($"<color=green>[PrestigeGenerator]</color> Génération terminée ! {allItems.Count} items créés à partir de {jsonFiles.Length} fichiers.");
         }
 
+        /// <summary>
+        /// Les trois bonus ciblant une upgrade précise. Leur libellé est composé à l'affichage,
+        /// pas stocké.
+        /// </summary>
+        private static bool IsSpecificBonus(PrestigeBonusType type)
+        {
+            return type == PrestigeBonusType.SpecificUpgradeCostReduction
+                || type == PrestigeBonusType.SpecificUpgradeYieldBoost
+                || type == PrestigeBonusType.SpecificUpgradeTimeReduction;
+        }
+
         private static PrestigeConfigSO CreateNodeBase(PrestigeItemData data, PrestigeBonusType type)
         {
             string assetPath = $"{TargetFolder}/{data.id}.asset";
@@ -141,8 +151,18 @@ namespace Core.Economy.Editor
             SerializedObject so = new SerializedObject(asset);
 
             so.FindProperty("_id").stringValue = data.id;
-            so.FindProperty("_displayNameKey").stringValue = data.nameKey;
-            so.FindProperty("_displayDescriptionKey").stringValue = data.descKey;
+
+            // Un nœud « spécifique » n'a pas de nom propre : le presenter compose son libellé à
+            // partir d'un gabarit et du nom de l'upgrade ciblée. Lui fabriquer une clé dédiée
+            // imposerait 324 entrées de traduction quasi identiques dans fr.json.
+            bool isSpecific = IsSpecificBonus(type);
+
+            so.FindProperty("_displayNameKey").stringValue =
+                isSpecific ? string.Empty : LocalizationKeys.PrestigeName(data.id);
+
+            so.FindProperty("_displayDescriptionKey").stringValue =
+                isSpecific ? string.Empty : LocalizationKeys.PrestigeDescription(data.id);
+
             so.FindProperty("_bonusType").enumValueIndex = (int)type;
             so.FindProperty("_maxLevel").intValue = data.maxLevel;
             so.FindProperty("_baseCost").doubleValue = data.baseCost;

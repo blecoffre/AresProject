@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: P_EMERG
   m_EditorClassIdentifier: Assembly-CSharp::Core.Models.Economy.PrestigeConfigSO
   _id: P_EMERG
-  _displayNameKey: UI_PRESTIGE_EMERG_NAME
-  _displayDescriptionKey: UI_PRESTIGE_EMERG_DESC
+  _displayNameKey: PRESTIGE_P_EMERG_NAME
+  _displayDescriptionKey: PRESTIGE_P_EMERG_DESC
   _bonusType: 6
   _maxLevel: 1
   _baseCost: 100

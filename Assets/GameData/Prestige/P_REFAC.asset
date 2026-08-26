@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: P_REFAC
   m_EditorClassIdentifier: Assembly-CSharp::Core.Models.Economy.PrestigeConfigSO
   _id: P_REFAC
-  _displayNameKey: UI_PRESTIGE_REFAC_NAME
-  _displayDescriptionKey: UI_PRESTIGE_REFAC_DESC
+  _displayNameKey: PRESTIGE_P_REFAC_NAME
+  _displayDescriptionKey: PRESTIGE_P_REFAC_DESC
   _bonusType: 3
   _maxLevel: 5
   _baseCost: 10

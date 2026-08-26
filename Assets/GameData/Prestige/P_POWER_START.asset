@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: P_POWER_START
   m_EditorClassIdentifier: Assembly-CSharp::Core.Models.Economy.PrestigeConfigSO
   _id: P_POWER_START
-  _displayNameKey: UI_PRESTIGE_POWER_NAME
-  _displayDescriptionKey: UI_PRESTIGE_POWER_DESC
+  _displayNameKey: PRESTIGE_P_POWER_START_NAME
+  _displayDescriptionKey: PRESTIGE_P_POWER_START_DESC
   _bonusType: 5
   _maxLevel: 5
   _baseCost: 50

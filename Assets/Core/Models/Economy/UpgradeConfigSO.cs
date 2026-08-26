@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Core.Models.Economy
 {
@@ -15,7 +16,16 @@ namespace Core.Models.Economy
     {
         [Header("Identifiants & Catégorisation")]
         [SerializeField] private string _id;
-        [SerializeField] private string _displayName;
+
+        // Renommage assumé : le champ contenait un libellé français, il contient désormais une
+        // CLÉ de localisation. FormerlySerializedAs évite de perdre la valeur des .asset déjà
+        // sérialisés le temps que les générateurs soient relancés.
+        [Tooltip("Clé de localisation, dérivée de l'id : UPG_<id>_NAME. Écrite par le générateur.")]
+        [SerializeField, FormerlySerializedAs("_displayName")] private string _displayNameKey;
+
+        [Tooltip("Clé de localisation, dérivée de l'id : UPG_<id>_DESC. Écrite par le générateur.")]
+        [SerializeField] private string _displayDescriptionKey;
+
         [SerializeField] private UpgradeType _type;
         [SerializeField] private int _order;
 
@@ -50,7 +60,8 @@ namespace Core.Models.Economy
         [SerializeField] private List<UpgradeMilestone> _milestones = new List<UpgradeMilestone>();
 
         public string Id => _id;
-        public string DisplayName => _displayName;
+        public string DisplayNameKey => _displayNameKey;
+        public string DisplayDescriptionKey => _displayDescriptionKey;
         public UpgradeType Type => _type;
         public int Order => _order;
         public double BaseCost => _baseCost;

@@ -13,13 +13,16 @@ MonoBehaviour:
   m_Name: HW_12
   m_EditorClassIdentifier: Assembly-CSharp::Core.Models.Economy.UpgradeConfigSO
   _id: HW_12
-  _displayName: 
+  _displayNameKey: UPG_HW_12_NAME
+  _displayDescriptionKey: UPG_HW_12_DESC
   _type: 1
   _order: 12
   _baseCost: 2500000000
   _costMultiplier: 1.34
   _baseProductionYield: 10000000
-  _baseCycleDuration: 1
-  _durationReductionPerLevel: 0.01
-  _minCycleDuration: 0.1
   _traceGeneratedPerSecond: 4000
+  _baseCycleDuration: 1
+  _minCycleDuration: 0.1
+  _durationReductionPerLevel: 0
+  _automationLevel: 10
+  _milestones: []

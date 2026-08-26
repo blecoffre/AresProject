@@ -13,13 +13,16 @@ MonoBehaviour:
   m_Name: SCR_11
   m_EditorClassIdentifier: Assembly-CSharp::Core.Models.Economy.UpgradeConfigSO
   _id: SCR_11
-  _displayName: 
+  _displayNameKey: UPG_SCR_11_NAME
+  _displayDescriptionKey: UPG_SCR_11_DESC
   _type: 0
   _order: 11
   _baseCost: 4500000000
   _costMultiplier: 1.21
   _baseProductionYield: 35000000
-  _baseCycleDuration: 1
-  _durationReductionPerLevel: 0.01
-  _minCycleDuration: 0.1
   _traceGeneratedPerSecond: 80000
+  _baseCycleDuration: 120
+  _minCycleDuration: 15
+  _durationReductionPerLevel: 2
+  _automationLevel: 10
+  _milestones: []

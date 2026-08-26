@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: P_UPG_SCR_SPIDER_PROD
   m_EditorClassIdentifier: Assembly-CSharp::Core.Models.Economy.PrestigeConfigSO
   _id: P_UPG_SCR_SPIDER_PROD
-  _displayNameKey: SPIDER (Opti Rendement)
-  _displayDescriptionKey: "Am\xE9liore les statistiques sp\xE9cifiques de : SPIDER."
+  _displayNameKey: 
+  _displayDescriptionKey: 
   _bonusType: 8
   _maxLevel: 5
   _baseCost: 50

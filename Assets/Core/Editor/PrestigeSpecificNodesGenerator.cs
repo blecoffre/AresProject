@@ -1,4 +1,4 @@
-﻿using Core.Economy.Editor;
+using Core.Economy.Editor;
 using Core.Models.Economy;
 using System.Collections.Generic;
 using System.IO;
@@ -99,17 +99,17 @@ namespace Core.Economy.Tools
                 // Tous les suivants s'accrochent STRICTEMENT au dernier mainCostId créé.
                 string currentPrereq = (i == 0) ? branchRootPrereqId : lastCostId;
 
-                db.items.Add(CreateGridItem(mainCostId, target, "SpecificUpgradeCostReduction", currentPrereq, currentPos, "Opti Coût"));
+                db.items.Add(CreateGridItem(mainCostId, target, "SpecificUpgradeCostReduction", currentPrereq, currentPos));
 
                 // --- 2. RAMIFICATION HAUT : BOOST DE RENDEMENT ---
                 string prodId = $"P_UPG_{target.Id}_PROD";
                 Vector2Int prodPos = currentPos + new Vector2Int(0, 1);
-                db.items.Add(CreateGridItem(prodId, target, "SpecificUpgradeYieldBoost", mainCostId, prodPos, "Opti Rendement"));
+                db.items.Add(CreateGridItem(prodId, target, "SpecificUpgradeYieldBoost", mainCostId, prodPos));
 
                 // --- 3. RAMIFICATION BAS : RÉDUCTION DE TEMPS ---
                 string timeId = $"P_UPG_{target.Id}_TIME";
                 Vector2Int timePos = currentPos + new Vector2Int(0, -1);
-                db.items.Add(CreateGridItem(timeId, target, "SpecificUpgradeTimeReduction", mainCostId, timePos, "Opti Vitesse"));
+                db.items.Add(CreateGridItem(timeId, target, "SpecificUpgradeTimeReduction", mainCostId, timePos));
 
                 // --- MISE À JOUR POUR LE PROCHAIN TOUR ---
                 // On mémorise le nœud COST actuel pour qu'il devienne le parent du suivant
@@ -120,13 +120,17 @@ namespace Core.Economy.Tools
             }
         }
 
-        private PrestigeItemData CreateGridItem(string id, UpgradeConfigSO target, string bonusType, string prereqId, Vector2Int pos, string nameSuffix)
+        /// <summary>
+        /// Ces nœuds ne portent plus de libellé : leur nom est composé à l'affichage à partir
+        /// d'un gabarit de localisation et du nom de l'upgrade ciblée, retrouvée via
+        /// targetUpgradeId. Écrire ici « Phishing familial (Opti Coût) » remettrait du français
+        /// en dur dans les données et obligerait à régénérer tout l'arbre au moindre renommage.
+        /// </summary>
+        private PrestigeItemData CreateGridItem(string id, UpgradeConfigSO target, string bonusType, string prereqId, Vector2Int pos)
         {
             return new PrestigeItemData
             {
                 id = id,
-                nameKey = $"{target.DisplayName} ({nameSuffix})",
-                descKey = $"Améliore les statistiques spécifiques de : {target.DisplayName}.",
                 bonusType = bonusType,
                 targetUpgradeId = target.Id,
                 maxLevel = 5,

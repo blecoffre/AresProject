@@ -29,6 +29,16 @@
 - Ne jamais utiliser `GameObject.Find()`, `FindObjectOfType()` ou des `GetComponent()` à la volée hors initialisation.
 - Proscrire les Coroutines Unity (`IEnumerator`) et `System.Threading.Tasks` au profit exclusif d'UniTask.
 - Ne jamais proposer de pseudo-code ou de classes incomplètes.
+- **Aucun texte affichable en dur, nulle part — règle absolue.** Ni dans le code (`"MAX"`, `$"Niv. {n}"`), ni dans les vues, ni dans les données. Tout texte destiné à l'écran passe par une clé de localisation résolue par `ILocalizationService`, et la clé est définie dans `Assets/StreamingAssets/Localization/<langue>.json`. Cela vaut aussi pour les champs `displayName` / `nameKey` / `descKey` des JSON de `GameData` : ils portent une **clé**, jamais un libellé. Seuls les logs `Debug.Log` destinés au développeur échappent à cette règle.
+
+  **Convention de nommage des clés (tranchée le 2026-08-25) : la clé se dérive mécaniquement de l'id.**
+
+  | Donnée | Clé |
+  |---|---|
+  | Upgrade `SCR_01` | `UPG_SCR_01_NAME`, `UPG_SCR_01_DESC` |
+  | Nœud de prestige `P_ROOT` | `PRESTIGE_P_ROOT_NAME`, `PRESTIGE_P_ROOT_DESC` |
+
+  Le but est qu'une clé soit **calculable depuis l'id**, donc générable par les outils d'éditeur et vérifiable automatiquement par le `LocalizationAnalyzerWindow`. À 214 clés, une convention parlante maintenue à la main dériverait. Ne jamais inventer de clé « lisible » hors de ce gabarit.
 
 ## 5. Protocole d'incertitude
 
@@ -92,5 +102,7 @@ Ce projet n'a **aucun test automatisé** (voir `backlog.md`). La boucle de véri
 1. Laisser Unity recompiler et lire la console — zéro erreur, zéro warning nouveau.
 2. Entrer en Play Mode et suivre le protocole de test du lot.
 3. Si le serveur MCP for Unity est connecté, l'utiliser pour compiler, lire la console et piloter le Play Mode plutôt que de demander à Bertrand de le faire à la main.
+
+**Fenêtre Unity sans focus.** Unity cesse de faire tourner sa boucle quand sa fenêtre n'a pas le focus : le Play Mode reste bloqué en `playmode_transition` et aucun GameObject de la scène chargée n'est interrogeable. La compilation et la lecture de console fonctionnent, l'inspection de scène non. Le signaler à Bertrand et lui demander de mettre Unity au premier plan — ne jamais conclure d'un `find_gameobjects` vide que l'objet n'existe pas sans avoir vérifié `mcpforunity://editor/state` (`play_mode.is_changing`).
 
 Ne jamais annoncer qu'un lot fonctionne sans qu'une de ces étapes ait réellement eu lieu.

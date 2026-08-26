@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: P_STEALTH
   m_EditorClassIdentifier: Assembly-CSharp::Core.Models.Economy.PrestigeConfigSO
   _id: P_STEALTH
-  _displayNameKey: UI_PRESTIGE_STEALTH_NAME
-  _displayDescriptionKey: UI_PRESTIGE_STEALTH_DESC
+  _displayNameKey: PRESTIGE_P_STEALTH_NAME
+  _displayDescriptionKey: PRESTIGE_P_STEALTH_DESC
   _bonusType: 1
   _maxLevel: 5
   _baseCost: 20

@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: P_UPG_PRX_VPN_TIME
   m_EditorClassIdentifier: Assembly-CSharp::Core.Models.Economy.PrestigeConfigSO
   _id: P_UPG_PRX_VPN_TIME
-  _displayNameKey: VPN (Opti Vitesse)
-  _displayDescriptionKey: "Am\xE9liore les statistiques sp\xE9cifiques de : VPN."
+  _displayNameKey: 
+  _displayDescriptionKey: 
   _bonusType: 9
   _maxLevel: 5
   _baseCost: 300

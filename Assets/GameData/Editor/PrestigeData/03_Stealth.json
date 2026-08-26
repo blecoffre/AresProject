@@ -2,8 +2,6 @@
   "items": [
     {
       "id": "P_STEALTH",
-      "nameKey": "UI_PRESTIGE_STEALTH_NAME",
-      "descKey": "UI_PRESTIGE_STEALTH_DESC",
       "bonusType": "TraceReduction",
       "maxLevel": 5,
       "baseCost": 20.0,
@@ -15,8 +13,6 @@
     },
     {
       "id": "P_EMERG",
-      "nameKey": "UI_PRESTIGE_EMERG_NAME",
-      "descKey": "UI_PRESTIGE_EMERG_DESC",
       "bonusType": "UnlockEmergencyButton",
       "maxLevel": 1,
       "baseCost": 100.0,

@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: P_CLICK
   m_EditorClassIdentifier: Assembly-CSharp::Core.Models.Economy.PrestigeConfigSO
   _id: P_CLICK
-  _displayNameKey: UI_PRESTIGE_CLICK_NAME
-  _displayDescriptionKey: UI_PRESTIGE_CLICK_DESC
+  _displayNameKey: PRESTIGE_P_CLICK_NAME
+  _displayDescriptionKey: PRESTIGE_P_CLICK_DESC
   _bonusType: 2
   _maxLevel: 10
   _baseCost: 15

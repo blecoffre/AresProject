@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: P_ROOT
   m_EditorClassIdentifier: Assembly-CSharp::Core.Models.Economy.PrestigeConfigSO
   _id: P_ROOT
-  _displayNameKey: UI_PRESTIGE_ROOT_NAME
-  _displayDescriptionKey: UI_PRESTIGE_ROOT_DESC
+  _displayNameKey: PRESTIGE_P_ROOT_NAME
+  _displayDescriptionKey: PRESTIGE_P_ROOT_DESC
   _bonusType: 4
   _maxLevel: 1
   _baseCost: 0

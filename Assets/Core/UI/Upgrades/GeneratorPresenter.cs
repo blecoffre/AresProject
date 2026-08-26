@@ -45,7 +45,7 @@ namespace Core.UI.Upgrades
             _disposables = new CompositeDisposable();
 
             _view.InitializeStaticData(
-                _loc.GetText(_model.Config.DisplayName),
+                _loc.GetText(_model.Config.DisplayNameKey),
                 BuildStatsText());
 
             _view.OnBuyClicked += HandleBuyRequest;
@@ -157,7 +157,7 @@ namespace Core.UI.Upgrades
             _console.Log(
                 _loc.GetText(
                     "LOG_UPGRADE_PURCHASED",
-                    _loc.GetText(_model.Config.DisplayName),
+                    _loc.GetText(_model.Config.DisplayNameKey),
                     _model.CurrentLevel.CurrentValue),
                 ConsoleLogType.Standard);
         }

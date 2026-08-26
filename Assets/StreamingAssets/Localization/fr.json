@@ -4,11 +4,11 @@
       "Key": "MONEY",
       "Value": "Money"
     },
-     {
+    {
       "Key": "COMPUTER_POWER",
       "Value": "Computer Power"
     },
-     {
+    {
       "Key": "TRACE",
       "Value": "Trace"
     },
@@ -91,6 +91,210 @@
     {
       "Key": "UI_ACQUIRED",
       "Value": "ACQUIS"
+    },
+    {
+      "Key": "UPG_HW_01_NAME",
+      "Value": "Overclocking du CPU familial"
+    },
+    {
+      "Key": "UPG_HW_02_NAME",
+      "Value": "Extension à 48 Go de RAM"
+    },
+    {
+      "Key": "UPG_HW_03_NAME",
+      "Value": "Refroidissement Noctua massif"
+    },
+    {
+      "Key": "UPG_HW_04_NAME",
+      "Value": "Alimentation Corsair RM850x"
+    },
+    {
+      "Key": "UPG_HW_05_NAME",
+      "Value": "Cluster de RTX 5080"
+    },
+    {
+      "Key": "UPG_HW_06_NAME",
+      "Value": "Moniteur Samsung Odyssey Neo G9"
+    },
+    {
+      "Key": "UPG_HW_07_NAME",
+      "Value": "Architecture Asynchrone (UniTask)"
+    },
+    {
+      "Key": "UPG_HW_08_NAME",
+      "Value": "Injection de Dépendances (VContainer)"
+    },
+    {
+      "Key": "UPG_HW_09_NAME",
+      "Value": "Flux de données réactifs (R3 / UniRx)"
+    },
+    {
+      "Key": "UPG_HW_10_NAME",
+      "Value": "Rendu par ShaderGraph"
+    },
+    {
+      "Key": "UPG_HW_11_NAME",
+      "Value": "Détournement de serveurs Cloud (AWS)"
+    },
+    {
+      "Key": "UPG_HW_12_NAME",
+      "Value": "Botnet d'infrastructures"
+    },
+    {
+      "Key": "UPG_HW_13_NAME",
+      "Value": "Réquisition de supercalculateurs"
+    },
+    {
+      "Key": "UPG_HW_14_NAME",
+      "Value": "Ordinateur quantique volé"
+    },
+    {
+      "Key": "UPG_HW_15_NAME",
+      "Value": "Singularité IA"
+    },
+    {
+      "Key": "UPG_PRX_01_NAME",
+      "Value": "Navigation Privée"
+    },
+    {
+      "Key": "UPG_PRX_02_NAME",
+      "Value": "Spoofing d'adresse MAC"
+    },
+    {
+      "Key": "UPG_PRX_03_NAME",
+      "Value": "VPN Gratuit"
+    },
+    {
+      "Key": "UPG_PRX_04_NAME",
+      "Value": "Routage Oignon (Tor)"
+    },
+    {
+      "Key": "UPG_PRX_05_NAME",
+      "Value": "Générateur de faux logs"
+    },
+    {
+      "Key": "UPG_PRX_06_NAME",
+      "Value": "Brouilleur d'IP Dynamique"
+    },
+    {
+      "Key": "UPG_PRX_07_NAME",
+      "Value": "Serveurs rebonds en Antarctique"
+    },
+    {
+      "Key": "UPG_PRX_08_NAME",
+      "Value": "Faux-fuyant numérique"
+    },
+    {
+      "Key": "UPG_PRX_09_NAME",
+      "Value": "Protocole de l'Arche de Noé"
+    },
+    {
+      "Key": "UPG_PRX_10_NAME",
+      "Value": "Corruption des algorithmes d'Interpol"
+    },
+    {
+      "Key": "UPG_PRX_11_NAME",
+      "Value": "Falsification de casiers judiciaires"
+    },
+    {
+      "Key": "UPG_PRX_12_NAME",
+      "Value": "Brouillage satellite"
+    },
+    {
+      "Key": "UPG_PRX_13_NAME",
+      "Value": "Coupure des fibres sous-marines"
+    },
+    {
+      "Key": "UPG_PRX_14_NAME",
+      "Value": "Impulsion Électromagnétique (EMP)"
+    },
+    {
+      "Key": "UPG_PRX_15_NAME",
+      "Value": "Effacement Temporel"
+    },
+    {
+      "Key": "UPG_SCR_01_NAME",
+      "Value": "Phishing familial"
+    },
+    {
+      "Key": "UPG_SCR_02_NAME",
+      "Value": "Revente de comptes VOD"
+    },
+    {
+      "Key": "UPG_SCR_03_NAME",
+      "Value": "Fermes à clics"
+    },
+    {
+      "Key": "UPG_SCR_04_NAME",
+      "Value": "Minage sur grille-pain"
+    },
+    {
+      "Key": "UPG_SCR_05_NAME",
+      "Value": "Détournement de micro-transactions"
+    },
+    {
+      "Key": "UPG_SCR_06_NAME",
+      "Value": "Ransomware de machines à café"
+    },
+    {
+      "Key": "UPG_SCR_07_NAME",
+      "Value": "Arnaque au faux support"
+    },
+    {
+      "Key": "UPG_SCR_08_NAME",
+      "Value": "Hack de distributeurs"
+    },
+    {
+      "Key": "UPG_SCR_09_NAME",
+      "Value": "Générateur de fausses cryptos"
+    },
+    {
+      "Key": "UPG_SCR_10_NAME",
+      "Value": "Création de banque offshore fantôme"
+    },
+    {
+      "Key": "UPG_SCR_11_NAME",
+      "Value": "Manipulation de la bourse locale"
+    },
+    {
+      "Key": "UPG_SCR_12_NAME",
+      "Value": "Syphon de fonds de pension"
+    },
+    {
+      "Key": "UPG_SCR_13_NAME",
+      "Value": "Rançonnage du Fortune 500"
+    },
+    {
+      "Key": "UPG_SCR_14_NAME",
+      "Value": "Privatisation de la Réserve Fédérale"
+    },
+    {
+      "Key": "UPG_SCR_15_NAME",
+      "Value": "Contrôle du système SWIFT"
+    },
+    {
+      "Key": "PRESTIGE_SPECIFIC_COST_NAME",
+      "Value": "{0} (Opti Coût)"
+    },
+    {
+      "Key": "PRESTIGE_SPECIFIC_YIELD_NAME",
+      "Value": "{0} (Opti Rendement)"
+    },
+    {
+      "Key": "PRESTIGE_SPECIFIC_TIME_NAME",
+      "Value": "{0} (Opti Temps)"
+    },
+    {
+      "Key": "PRESTIGE_SPECIFIC_COST_DESC",
+      "Value": "Réduit le coût de base de {0}."
+    },
+    {
+      "Key": "PRESTIGE_SPECIFIC_YIELD_DESC",
+      "Value": "Augmente le rendement de base de {0}."
+    },
+    {
+      "Key": "PRESTIGE_SPECIFIC_TIME_DESC",
+      "Value": "Réduit la durée de cycle de {0}."
     }
   ]
 }

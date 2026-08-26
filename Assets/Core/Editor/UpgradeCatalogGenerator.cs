@@ -1,5 +1,6 @@
 using Core.Economy.Data;
 using Core.Models.Economy;
+using Core.Services.Localization;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -26,8 +27,12 @@ namespace Core.Economy.Editor
     public class UpgradeItemData
     {
         public string id;
+
+        // Conservés uniquement pour DÉTECTER un fichier resté à l'ancien format : les clés sont
+        // désormais dérivées de l'id, et un libellé écrit ici serait ignoré en silence.
         public string displayNameKey;
-        public string displayName; // Alias historique : certains fichiers utilisent ce nom.
+        public string displayName;
+
         public string type;        // "Script", "Hardware", "Proxy"
         public int order;
         public double baseCost;
@@ -130,10 +135,18 @@ namespace Core.Economy.Editor
 
             so.FindProperty("_id").stringValue = data.id;
 
-            // displayNameKey d'abord, displayName en repli : les deux graphies coexistent
-            // dans les fichiers existants.
-            so.FindProperty("_displayName").stringValue =
-                !string.IsNullOrEmpty(data.displayNameKey) ? data.displayNameKey : data.displayName;
+            // Les clés se DÉRIVENT de l'id, elles ne sont plus lues depuis le JSON : c'est ce qui
+            // rend impossible une désynchronisation entre la donnée et la table de localisation.
+            so.FindProperty("_displayNameKey").stringValue = LocalizationKeys.UpgradeName(data.id);
+            so.FindProperty("_displayDescriptionKey").stringValue = LocalizationKeys.UpgradeDescription(data.id);
+
+            if (!string.IsNullOrEmpty(data.displayName) || !string.IsNullOrEmpty(data.displayNameKey))
+            {
+                Debug.LogWarning(
+                    $"[UpgradeGenerator] '{data.id}' porte encore un champ displayName/displayNameKey. " +
+                    "Il est IGNORÉ : la clé est dérivée de l'id. Déplace ce texte dans " +
+                    $"Localization/fr.json sous '{LocalizationKeys.UpgradeName(data.id)}', puis retire le champ du JSON.");
+            }
 
             so.FindProperty("_type").enumValueIndex = (int)type;
             so.FindProperty("_order").intValue = data.order;

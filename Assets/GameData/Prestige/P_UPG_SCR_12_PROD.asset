@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: P_UPG_SCR_12_PROD
   m_EditorClassIdentifier: Assembly-CSharp::Core.Models.Economy.PrestigeConfigSO
   _id: P_UPG_SCR_12_PROD
-  _displayNameKey: ' (Opti Rendement)'
-  _displayDescriptionKey: "Am\xE9liore les statistiques sp\xE9cifiques de : ."
+  _displayNameKey: 
+  _displayDescriptionKey: 
   _bonusType: 8
   _maxLevel: 5
   _baseCost: 600
