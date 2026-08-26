@@ -16,6 +16,17 @@ namespace Core.Services.Economy
         private readonly Dictionary<string, ReactiveProperty<int>> _prestigeLevels = new();
 
         private readonly Subject<string> _onPrestigePurchased = new();
+        private readonly Subject<Unit> _onBonusesRecalculated = new();
+
+        /// <summary>Bonus ciblés, indexés par l'id de l'upgrade visée. Reconstruite à chaque recalcul.</summary>
+        private readonly Dictionary<string, SpecificUpgradeBonuses> _specificBonuses = new();
+
+        /// <summary>
+        /// Émis après CHAQUE recalcul — achat de nœud comme chargement de sauvegarde.
+        /// À préférer à OnPrestigePurchased pour quiconque doit refléter les bonus : ce dernier
+        /// n'est pas émis par InitializeFromSave, donc s'y abonner raterait le chargement.
+        /// </summary>
+        public Observable<Unit> OnBonusesRecalculated => _onBonusesRecalculated;
 
         /// <summary>
         /// Émet l'ID du nœud acheté. Le SaveScheduler s'en sert pour forcer une écriture : un achat
@@ -124,6 +135,10 @@ namespace Core.Services.Economy
 
         private void RecalculateBonuses()
         {
+            // Table reconstruite intégralement : un nœud dont le niveau retombe à zéro doit voir
+            // son apport disparaître, pas rester coincé dans une entrée obsolète.
+            _specificBonuses.Clear();
+
             float computeBonus = 0f;
             float traceReduction = 0f;
             float clickBonus = 0f;
@@ -158,21 +173,31 @@ namespace Core.Services.Economy
                         costReduction += totalBonus;
                         break;
 
+                    // BonusPerLevel et non BaseCost : indexer l'effet d'un nœud sur son PRIX
+                    // couplait deux réglages qui doivent bouger séparément à l'équilibrage.
                     case PrestigeBonusType.StartingMoney:
-                        startingFunds += (config.BaseCost * currentLevel);
+                        startingFunds += totalBonus;
                         break;
 
                     case PrestigeBonusType.StartingComputerPower:
-                        startingPower += (config.BaseCost * currentLevel);
+                        startingPower += totalBonus;
                         break;
 
                     case PrestigeBonusType.UnlockEmergencyButton:
                         if (currentLevel > 0) emergencyUnlocked = true;
                         break;
 
-                    // TODO (thème Économie) : SpecificUpgradeCostReduction, SpecificUpgradeYieldBoost
-                    // et SpecificUpgradeTimeReduction ne sont pas encore traités. Les nœuds
-                    // correspondants sont achetables mais n'appliquent rien.
+                    case PrestigeBonusType.SpecificUpgradeCostReduction:
+                        AccumulateSpecific(config.TargetUpgradeId, totalBonus, SpecificKind.Cost);
+                        break;
+
+                    case PrestigeBonusType.SpecificUpgradeYieldBoost:
+                        AccumulateSpecific(config.TargetUpgradeId, totalBonus, SpecificKind.Yield);
+                        break;
+
+                    case PrestigeBonusType.SpecificUpgradeTimeReduction:
+                        AccumulateSpecific(config.TargetUpgradeId, totalBonus, SpecificKind.Time);
+                        break;
                 }
             }
 
@@ -184,6 +209,50 @@ namespace Core.Services.Economy
             StartingMoney.Value = startingFunds;
             StartingComputerPower.Value = startingPower;
             IsEmergencyUnlocked.Value = emergencyUnlocked;
+
+            // Émis EN DERNIER, une fois la table et les scalaires cohérents. C'est ce signal qui
+            // pousse les bonus ciblés dans les UpgradeModel : sans lui, ils seraient ignorés au
+            // chargement, puisque le GameStateGateway restaure les générateurs (étape 2) AVANT
+            // le prestige (étape 3).
+            _onBonusesRecalculated.OnNext(Unit.Default);
+        }
+
+        private enum SpecificKind { Cost, Yield, Time }
+
+        /// <summary>
+        /// Cumule un bonus ciblé dans la table. Plusieurs nœuds peuvent viser la même upgrade —
+        /// c'est même la règle : chaque upgrade a son COST, son PROD et, pour les Scripts, son TIME.
+        /// </summary>
+        private void AccumulateSpecific(string targetUpgradeId, float amount, SpecificKind kind)
+        {
+            if (string.IsNullOrEmpty(targetUpgradeId)) return;
+
+            _specificBonuses.TryGetValue(targetUpgradeId, out SpecificUpgradeBonuses current);
+
+            switch (kind)
+            {
+                case SpecificKind.Cost:
+                    current = current.WithCostReduction(current.CostReduction + amount);
+                    break;
+
+                case SpecificKind.Yield:
+                    current = current.WithYieldBoost(current.YieldBoost + amount);
+                    break;
+
+                case SpecificKind.Time:
+                    current = current.WithTimeReduction(current.TimeReduction + amount);
+                    break;
+            }
+
+            _specificBonuses[targetUpgradeId] = current;
+        }
+
+        /// <summary>Bonus cumulés visant cette upgrade. Retourne None si aucun nœud ne la cible.</summary>
+        public SpecificUpgradeBonuses GetSpecificBonuses(string upgradeId)
+        {
+            return _specificBonuses.TryGetValue(upgradeId, out SpecificUpgradeBonuses bonuses)
+                ? bonuses
+                : SpecificUpgradeBonuses.None;
         }
 
         public void Dispose()
@@ -195,6 +264,8 @@ namespace Core.Services.Economy
             _prestigeLevels.Clear();
 
             _onPrestigePurchased.Dispose();
+            _onBonusesRecalculated.Dispose();
+            _specificBonuses.Clear();
 
             GlobalComputeMultiplier.Dispose();
             TraceReductionMultiplier.Dispose();

@@ -20,6 +20,13 @@ namespace Core.Models.Economy
         /// </summary>
         private const double TFlopsTimeCompression = 0.05d;
 
+        /// <summary>
+        /// Plafond des réductions ciblées. Avec maxLevel 5 et 0,1 par rang on plafonne à 0,5, donc
+        /// cette borne ne sert à rien aujourd'hui — elle existe pour qu'augmenter maxLevel plus
+        /// tard ne rende jamais un générateur gratuit ni son cycle instantané.
+        /// </summary>
+        private const float MaxReduction = 0.95f;
+
         public UpgradeConfigSO Config { get; }
 
         private readonly ReactiveProperty<int> _currentLevel;
@@ -36,6 +43,12 @@ namespace Core.Models.Economy
         /// jamais les cycles déjà en cache.
         /// </summary>
         private double _tflops;
+
+        /// <summary>
+        /// Bonus de prestige visant CE générateur. Poussés par l'UpgradeManager sur le signal
+        /// OnBonusesRecalculated, comme les TFlops — jamais lus dans une boucle chaude.
+        /// </summary>
+        private SpecificUpgradeBonuses _bonuses = SpecificUpgradeBonuses.None;
 
         /// <summary>
         /// Niveaux retirés au seuil d'automatisation par les nœuds de prestige ciblés.
@@ -82,8 +95,29 @@ namespace Core.Models.Economy
         }
 
         /// <summary>
-        /// Coût du prochain niveau : C(n) = C_base * M^n.
-        /// Sans réduction de prestige, la valeur mise en cache est renvoyée directement.
+        /// Applique les bonus de prestige ciblant ce générateur. Même garde d'égalité que
+        /// SetTFlops : la valeur est poussée à tous les modèles à chaque recalcul, et la plupart
+        /// ne sont visés par aucun nœud.
+        /// </summary>
+        public void SetSpecificBonuses(SpecificUpgradeBonuses bonuses)
+        {
+            if (bonuses.CostReduction == _bonuses.CostReduction
+                && bonuses.YieldBoost == _bonuses.YieldBoost
+                && bonuses.TimeReduction == _bonuses.TimeReduction)
+            {
+                return;
+            }
+
+            _bonuses = bonuses;
+            RecalculateCache();
+        }
+
+        /// <summary>
+        /// Coût du prochain niveau : C(n) = C_base_ajusté * M^n.
+        ///
+        /// Deux réductions de prestige distinctes s'appliquent, et il ne faut pas les confondre :
+        /// un nœud CIBLÉ rabote le coût de BASE (déjà intégré au cache), un nœud GLOBAL rabote le
+        /// MULTIPLICATEUR M, ce qui aplatit la courbe entière.
         /// </summary>
         public double GetCurrentCost(float costMultiplierReduction = 0f)
         {
@@ -92,8 +126,12 @@ namespace Core.Models.Economy
             // On empêche le multiplicateur de descendre sous 1.01, sinon la courbe de coût s'aplatit
             // et l'économie n'a plus de frein.
             double finalMultiplier = Math.Max(1.01d, Config.CostMultiplier - costMultiplierReduction);
-            return Config.BaseCost * Math.Pow(finalMultiplier, _currentLevel.CurrentValue);
+            return AdjustedBaseCost * Math.Pow(finalMultiplier, _currentLevel.CurrentValue);
         }
+
+        /// <summary>Coût de base après réduction ciblée. Bornée pour qu'un générateur ne soit jamais gratuit.</summary>
+        private double AdjustedBaseCost =>
+            Config.BaseCost * (1d - Math.Min(MaxReduction, _bonuses.CostReduction));
 
         /// <summary>Montant versé à la fin d'un cycle, paliers inclus.</summary>
         public double GetCurrentYield() => _cachedYield;
@@ -111,7 +149,18 @@ namespace Core.Models.Economy
         /// </summary>
         public float GetTraceMagnitudePerSecond()
         {
-            return (float)(Config.BaseTraceGeneratedPerSecond * _currentLevel.CurrentValue);
+            float magnitude = (float)(Config.BaseTraceGeneratedPerSecond * _currentLevel.CurrentValue);
+
+            // Pour un Proxy, le « boost de rendement » du prestige augmente la DISSIPATION —
+            // son rendement de production valant zéro, c'est le seul sens que ce bonus puisse
+            // prendre. Surtout ne pas l'appliquer à un Script ou à un Hardware : il augmenterait
+            // la trace GÉNÉRÉE, soit l'exact inverse d'un bonus.
+            if (Config.Type == UpgradeType.Proxy)
+            {
+                magnitude *= 1f + _bonuses.YieldBoost;
+            }
+
+            return magnitude;
         }
 
         /// <summary>Rendement théorique par seconde si le cycle tourne en continu. Sert à l'affichage.</summary>
@@ -131,8 +180,12 @@ namespace Core.Models.Economy
         {
             int level = _currentLevel.CurrentValue;
 
-            double yield = Config.BaseProductionYield * level;
-            float duration = Config.BaseCycleDuration;
+            // Les bonus ciblés s'appliquent aux valeurs de BASE — c'est le sens littéral des
+            // trois types de nœuds (« réduit le coût de base », « augmente le rendement de
+            // base », « réduit le temps de cycle »). Les paliers puis les TFlops s'appliquent
+            // ensuite par-dessus, et le plancher tranche en dernier.
+            double yield = Config.BaseProductionYield * (1d + _bonuses.YieldBoost) * level;
+            float duration = Config.BaseCycleDuration * (1f - Math.Min(MaxReduction, _bonuses.TimeReduction));
 
             // Paliers : effets multiplicatifs, cumulatifs, et définitifs une fois atteints.
             var milestones = Config.Milestones;
@@ -159,7 +212,7 @@ namespace Core.Models.Economy
 
             _cachedYield = yield;
             _cachedCycleDuration = Math.Max(Config.MinCycleDuration, (float)compressed);
-            _cachedCost = Config.BaseCost * Math.Pow(Config.CostMultiplier, level);
+            _cachedCost = AdjustedBaseCost * Math.Pow(Config.CostMultiplier, level);
         }
 
         public void Dispose()

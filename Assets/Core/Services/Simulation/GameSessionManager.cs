@@ -13,6 +13,18 @@ namespace Core.Services.Simulation
     /// </summary>
     public class GameSessionManager : IStartable, IDisposable
     {
+        /// <summary>
+        /// Argent de départ d'une run neuve, AVANT le bonus de prestige — qui s'y ajoute au lieu
+        /// de le remplacer. Sans ce plancher, un joueur sans nœud StartingMoney repartait à zéro
+        /// et ne pouvait même pas acheter son premier Script.
+        /// TODO (BalancingConfigSO) : cette constante doit rejoindre les autres réglages.
+        /// </summary>
+        private const double BaseStartingMoney = 10d;
+
+        /// <summary>Tampon réutilisé : un wipe ne doit pas allouer un dictionnaire à chaque fois.</summary>
+        private static readonly System.Collections.Generic.Dictionary<string, int> EmptyLevels =
+            new System.Collections.Generic.Dictionary<string, int>();
+
         private readonly UserCurrencies _userCurrencies;
         private readonly ThreatManager _threatManager;
         private readonly UpgradeManager _upgradeManager;
@@ -59,28 +71,39 @@ namespace Core.Services.Simulation
                 _userCurrencies.AddCpuCycles(pendingPrestige);
             }
 
-            // 1. Réinitialisation des monnaies avec les bonus de Prestige !
-            // Seul l'argent se remet à une valeur de départ. Les TFlops sont dérivées du parc
-            // Hardware : elles retombent d'elles-mêmes quand les niveaux sont remis à zéro, et
-            // StartingComputerPower est déjà intégré au total par l'UpgradeManager.
-            _userCurrencies.Money.Reset(_prestigeManager.StartingMoney.CurrentValue);
+            // La run est effacée ICI, en entier, et AVANT la notification.
+            //
+            // Le SaveScheduler écrit sur OnSessionEnded. Tant que les niveaux d'upgrades n'étaient
+            // effacés que par ResetSession() — au clic sur Restart —, la sauvegarde de fin de run
+            // capturait un état à moitié réinitialisé : fermer le jeu sur l'écran de Game Over
+            // rendait tous les générateurs au niveau max, avec zéro Trace. Une run gratuite.
+            WipeRun();
 
-            // 2. Remise à zéro de l'inflation du bouton d'urgence
-            _emergencyProtocolSystem.ResetSystem();
-
-            // 3. Réinitialisation de la trace
-            _threatManager.ReduceThreat(1f);
-
-            // NOUVEAU : On notifie l'UI et on envoie le montant gagné
+            // On notifie l'UI et on envoie le montant gagné.
             OnSessionEnded.OnNext(pendingPrestige);
         }
 
+        /// <summary>
+        /// Remet la run à son état de départ, bonus de méta-progression appliqués.
+        /// Les TFlops n'y figurent pas : elles sont dérivées du parc Hardware, donc elles
+        /// retombent d'elles-mêmes quand les niveaux sont remis à zéro.
+        /// </summary>
+        private void WipeRun()
+        {
+            _userCurrencies.Money.Reset(BaseStartingMoney + _prestigeManager.StartingMoney.CurrentValue);
+            _emergencyProtocolSystem.ResetSystem();
+            _threatManager.ReduceThreat(1f);
+            _upgradeManager.InitializeFromSave(EmptyLevels);
+        }
+
+        /// <summary>
+        /// Redémarre une partie après l'écran de fin. La run a déjà été effacée par
+        /// HandleGameOver : il ne reste qu'à réarmer, et à réappliquer l'argent de départ au cas
+        /// où un nœud de prestige aurait été acheté depuis l'écran de fin.
+        /// </summary>
         public void ResetSession()
         {
-            _threatManager.ReduceThreat(1f);
-            _userCurrencies.Money.Reset(10d); // Valeur de départ
-            _upgradeManager.InitializeFromSave(new System.Collections.Generic.Dictionary<string, int>());
-
+            WipeRun();
             IsGameActive.Value = true;
         }
 

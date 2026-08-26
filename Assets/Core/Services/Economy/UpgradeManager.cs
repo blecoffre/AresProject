@@ -86,14 +86,30 @@ namespace Core.Services.Economy
 
         public void Start()
         {
-            // Les TFlops incluent StartingComputerPower, qui bouge à l'achat d'un nœud de
-            // prestige. Sans cet abonnement, un tel achat n'aurait aucun effet avant le
-            // prochain achat de générateur.
+            // Un seul abonnement pour TOUS les bonus de prestige : ciblés comme globaux. S'abonner
+            // aux sept propriétés séparément serait fragile, et OnPrestigePurchased ne suffirait
+            // pas — il n'est pas émis par InitializeFromSave, donc le chargement d'une partie
+            // n'appliquerait aucun bonus.
             // Abonnement dans Start() et non dans le constructeur : un constructeur appelé par
             // le conteneur ne doit pas avoir d'effets de bord.
-            _prestigeManager.StartingComputerPower
-                .Subscribe(_ => RecalculateTotals())
+            _prestigeManager.OnBonusesRecalculated
+                .Subscribe(_ => ApplyPrestigeBonuses())
                 .AddTo(ref _disposables);
+        }
+
+        /// <summary>
+        /// Redistribue les bonus ciblés dans les modèles, puis recalcule les agrégats.
+        /// Les deux dans cet ordre : les totaux dépendent des rendements et des durées que ces
+        /// bonus viennent de modifier.
+        /// </summary>
+        private void ApplyPrestigeBonuses()
+        {
+            foreach (var kvp in _activeUpgrades)
+            {
+                kvp.Value.SetSpecificBonuses(_prestigeManager.GetSpecificBonuses(kvp.Key));
+            }
+
+            RecalculateTotals();
         }
 
         public void InitializeFromSave(Dictionary<string, int> savedUpgradeLevels)
@@ -129,7 +145,10 @@ namespace Core.Services.Economy
                 _upgradesByType[AllTypes[i]].Sort((a, b) => a.Config.Order.CompareTo(b.Config.Order));
             }
 
-            RecalculateTotals();
+            // Les modèles viennent d'être recréés : ils repartent sans bonus. On les réapplique
+            // avant tout calcul, sinon un rechargement de sauvegarde perdrait la méta-progression
+            // ciblée jusqu'au prochain achat de nœud.
+            ApplyPrestigeBonuses();
 
             // Notifié en dernier : les abonnés doivent voir un état complet et cohérent.
             _onUpgradesRebuilt.OnNext(Unit.Default);
@@ -177,7 +196,7 @@ namespace Core.Services.Economy
         {
             if (!_activeUpgrades.TryGetValue(upgradeId, out var model)) return false;
 
-            double currentCost = model.GetCurrentCost(); // TODO (thème Prestige) : passer CostMultiplierReduction.
+            double currentCost = model.GetCurrentCost(_prestigeManager.CostMultiplierReduction.CurrentValue);
 
             if (_userCurrencies.Money.TryRemove(currentCost))
             {
@@ -226,7 +245,10 @@ namespace Core.Services.Economy
                 hardwareTFlops += hardwareList[i].GetCurrentYield();
             }
 
-            double totalTFlops = hardwareTFlops + _prestigeManager.StartingComputerPower.CurrentValue;
+            // Le multiplicateur global de calcul s'applique à la capacité ENTIÈRE, bonus de
+            // départ compris : c'est une amélioration du matériel, pas de son seul parc acheté.
+            double totalTFlops = (hardwareTFlops + _prestigeManager.StartingComputerPower.CurrentValue)
+                               * _prestigeManager.GlobalComputeMultiplier.CurrentValue;
 
             // Poussée dans les modèles : c'est ce qui invalide leur cache de durée. Seuls les
             // Scripts ont un cycle, mais on pousse à tous — SetTFlops s'auto-garde sur l'égalité,
