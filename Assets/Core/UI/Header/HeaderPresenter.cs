@@ -33,7 +33,8 @@ namespace Core.UI.Header
             })
             .AddTo(ref _disposables);
 
-            _userCurrencies.ComputerPower.Amount.Subscribe(val =>
+            // Capacité de calcul dérivée, et non plus une monnaie accumulée.
+            _upgradeManager.TotalTFlops.Subscribe(val =>
             {
                 _view.UpdateComputerPowerDisplay(CurrencyFormatter.Format(val));
             })

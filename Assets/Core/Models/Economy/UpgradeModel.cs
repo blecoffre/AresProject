@@ -12,6 +12,14 @@ namespace Core.Models.Economy
     /// </summary>
     public class UpgradeModel : IDisposable
     {
+        /// <summary>
+        /// Coefficient de compression du temps par TFlop : TempsReel = TempsBase / (1 + TFlops × k).
+        /// Décroissance asymptotique — la durée tend vers zéro sans jamais l'atteindre, et le
+        /// plancher MinCycleDuration reprend la main avant.
+        /// TODO (BalancingConfigSO) : cette constante doit rejoindre les autres réglages.
+        /// </summary>
+        private const double TFlopsTimeCompression = 0.05d;
+
         public UpgradeConfigSO Config { get; }
 
         private readonly ReactiveProperty<int> _currentLevel;
@@ -20,6 +28,14 @@ namespace Core.Models.Economy
         private double _cachedYield;
         private double _cachedCost;
         private float _cachedCycleDuration;
+
+        /// <summary>
+        /// Capacité de calcul globale du joueur. Elle ne dépend pas de CE générateur mais de tout
+        /// le parc Hardware : c'est l'UpgradeManager qui la pousse ici à chaque variation, ce qui
+        /// invalide le cache de durée. Sans cette poussée, acheter un Hardware ne raccourcirait
+        /// jamais les cycles déjà en cache.
+        /// </summary>
+        private double _tflops;
 
         /// <summary>
         /// Niveaux retirés au seuil d'automatisation par les nœuds de prestige ciblés.
@@ -49,6 +65,20 @@ namespace Core.Models.Economy
         public void SetAutomationThresholdReduction(int levels)
         {
             _automationThresholdReduction = levels < 0 ? 0 : levels;
+        }
+
+        /// <summary>
+        /// Met à jour la capacité de calcul et recalcule la durée de cycle si elle a changé.
+        /// La garde d'égalité compte : l'UpgradeManager pousse la valeur à tous les modèles à
+        /// chaque achat, et un achat de Script ne change pas les TFlops.
+        /// </summary>
+        public void SetTFlops(double tflops)
+        {
+            double safe = tflops < 0d ? 0d : tflops;
+            if (safe == _tflops) return;
+
+            _tflops = safe;
+            RecalculateCache();
         }
 
         /// <summary>
@@ -113,8 +143,14 @@ namespace Core.Models.Economy
                 }
             }
 
+            // Compression par les TFlops, APRÈS les paliers et AVANT le plancher : le tooltip du
+            // champ dit « plancher absolu, aucun palier ni bonus ne peut descendre sous cette
+            // durée ». Les TFlops sont un bonus comme un autre, ils ne le franchissent pas.
+            // Calcul en double : à 1,5e9 TFlops, un float perdrait la précision du diviseur.
+            double compressed = duration / (1d + _tflops * TFlopsTimeCompression);
+
             _cachedYield = yield;
-            _cachedCycleDuration = Math.Max(Config.MinCycleDuration, duration);
+            _cachedCycleDuration = Math.Max(Config.MinCycleDuration, (float)compressed);
             _cachedCost = Config.BaseCost * Math.Pow(Config.CostMultiplier, level);
         }
 

@@ -25,7 +25,8 @@ SaveScheduler (IAsyncStartable + IDisposable, EntryPoint du Root)
 
 ## Fichiers
 
-- **`Models/SaveData.cs`** — **classe**, pas struct : elle porte deux `List<>`, et une copie de struct partagerait les références en donnant l'illusion d'une copie indépendante. `CurrentVersion = 1`, `EnsureValid()` (répare une désérialisation), `Migrate()` (cas chaînés par `goto case`).
+- **`Models/SaveData.cs`** — **classe**, pas struct : elle porte deux `List<>`, et une copie de struct partagerait les références en donnant l'illusion d'une copie indépendante. `CurrentVersion = 2`, `EnsureValid()` (répare une désérialisation), `Migrate()` (cas chaînés par `goto case`).
+  **v1 → v2 (lot 2b-1)** : `ComputerPower` et `TotalComputerPower` retirés. Les TFlops sont devenues une capacité dérivée du parc Hardware, entièrement recalculable depuis `Upgrades` — les sauvegarder créait une seconde source de vérité qui pouvait diverger. Aucun report n'est nécessaire : `JsonUtility` ignore simplement les champs en trop d'un ancien fichier, la migration se contente de tamponner la version.
 - **`Services/Persistence/GameStateGateway.cs`** — `Restore` / `Capture`. Tampon `SaveData` et deux `Dictionary` réutilisés : un autosave n'alloue rien hors la chaîne JSON.
 - **`Services/Persistence/SaveScheduler.cs`** — les trois déclencheurs. `_isWriting` évite d'empiler les écritures.
 - **`Services/Persistence/ISyncSaveService.cs`** — voie synchrone, fermeture uniquement.

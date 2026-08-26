@@ -53,7 +53,9 @@ namespace Core.Infrastructure
             // 6. Systèmes métier
             //    Tous en Singleton : un service enregistré en Scoped ICI serait ré-instancié dans
             //    chaque scope enfant, et la scène de jeu manipulerait alors une seconde instance.
-            builder.Register<UpgradeManager>(Lifetime.Singleton);
+            // AsImplementedInterfaces : l'UpgradeManager est devenu IStartable, il doit
+            // s'abonner à StartingComputerPower pour tenir les TFlops à jour.
+            builder.Register<UpgradeManager>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
             builder.Register<PrestigeManager>(Lifetime.Singleton);
             builder.Register<ThreatManager>(Lifetime.Singleton);
             builder.Register<EmergencyProtocolSystem>(Lifetime.Singleton);

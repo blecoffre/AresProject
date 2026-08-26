@@ -4,10 +4,11 @@ using Core.Models.Economy;
 using R3;
 using System;
 using System.Collections.Generic;
+using VContainer.Unity;
 
 namespace Core.Services.Economy
 {
-    public class UpgradeManager : IDisposable
+    public class UpgradeManager : IStartable, IDisposable
     {
         // Tableau statique plutôt qu'un ToList() sur les clés du dictionnaire : pas de LINQ en
         // code runtime, et aucune allocation à la réinitialisation.
@@ -20,6 +21,9 @@ namespace Core.Services.Economy
 
         private readonly UpgradeCatalogSO _catalog;
         private readonly UserCurrencies _userCurrencies;
+        private readonly PrestigeManager _prestigeManager;
+
+        private DisposableBag _disposables;
 
         private readonly Dictionary<string, UpgradeModel> _activeUpgrades;
         private readonly Dictionary<UpgradeType, List<UpgradeModel>> _upgradesByType;
@@ -38,13 +42,23 @@ namespace Core.Services.Economy
         /// <summary>Rendement théorique cumulé des Scripts, si tous leurs cycles tournaient en continu.</summary>
         public ReactiveProperty<double> TotalMoneyYieldPerSecond { get; } = new(0d);
 
-        public ReactiveProperty<double> TotalTFlopsYieldPerSecond { get; } = new(0d);
+        /// <summary>
+        /// Capacité de calcul totale du joueur : somme du parc Hardware possédé, plus le bonus
+        /// persistant de prestige. Ce n'est PAS un débit — la valeur ne bouge qu'à l'achat, elle
+        /// ne s'accumule pas et ne se dépense pas. D'où l'abandon du suffixe « PerSecond ».
+        /// </summary>
+        public ReactiveProperty<double> TotalTFlops { get; } = new(0d);
+
         public ReactiveProperty<float> TotalTracePerSecond { get; } = new(0f);
 
-        public UpgradeManager(UpgradeCatalogSO catalog, UserCurrencies userCurrencies)
+        public UpgradeManager(
+            UpgradeCatalogSO catalog,
+            UserCurrencies userCurrencies,
+            PrestigeManager prestigeManager)
         {
             _catalog = catalog;
             _userCurrencies = userCurrencies;
+            _prestigeManager = prestigeManager;
 
             _activeUpgrades = new Dictionary<string, UpgradeModel>();
 
@@ -56,6 +70,18 @@ namespace Core.Services.Economy
             };
 
             OnUpgradeRevealed = new Subject<UpgradeModel>();
+        }
+
+        public void Start()
+        {
+            // Les TFlops incluent StartingComputerPower, qui bouge à l'achat d'un nœud de
+            // prestige. Sans cet abonnement, un tel achat n'aurait aucun effet avant le
+            // prochain achat de générateur.
+            // Abonnement dans Start() et non dans le constructeur : un constructeur appelé par
+            // le conteneur ne doit pas avoir d'effets de bord.
+            _prestigeManager.StartingComputerPower
+                .Subscribe(_ => RecalculateTotals())
+                .AddTo(ref _disposables);
         }
 
         public void InitializeFromSave(Dictionary<string, int> savedUpgradeLevels)
@@ -172,36 +198,52 @@ namespace Core.Services.Economy
 
         public IReadOnlyDictionary<string, UpgradeModel> GetAllActiveUpgrades() => _activeUpgrades;
 
+        /// <summary>
+        /// Deux passes, et l'ordre n'est pas négociable : le débit théorique d'un Script se
+        /// calcule à partir de sa durée de cycle, laquelle dépend des TFlops. Tout sommer en une
+        /// seule passe utiliserait les durées de l'achat PRÉCÉDENT.
+        /// </summary>
         private void RecalculateTotals()
         {
+            // Passe 1 — la capacité de calcul, seule grandeur dont rien d'autre ne dépend.
+            double hardwareTFlops = 0d;
+
+            var hardwareList = _upgradesByType[UpgradeType.Hardware];
+            for (int i = 0; i < hardwareList.Count; i++)
+            {
+                hardwareTFlops += hardwareList[i].GetCurrentYield();
+            }
+
+            double totalTFlops = hardwareTFlops + _prestigeManager.StartingComputerPower.CurrentValue;
+
+            // Poussée dans les modèles : c'est ce qui invalide leur cache de durée. Seuls les
+            // Scripts ont un cycle, mais on pousse à tous — SetTFlops s'auto-garde sur l'égalité,
+            // et un Hardware n'a pas de durée à recalculer de toute façon.
+            var scriptList = _upgradesByType[UpgradeType.Script];
+            for (int i = 0; i < scriptList.Count; i++)
+            {
+                scriptList[i].SetTFlops(totalTFlops);
+            }
+
+            // Passe 2 — les agrégats qui dépendent des durées fraîchement recalculées.
             double moneyPerSecond = 0d;
-            double tflopsCapacity = 0d;
             float totalTrace = 0f;
 
             foreach (var model in _activeUpgrades.Values)
             {
+                // TODO (lot 2b-2) : ce cumul ignore encore le type. La Trace des Scripts ne doit
+                // courir que pendant un cycle actif, et celle des Proxies doit être SOUSTRAITE.
                 totalTrace += model.GetCurrentTracePerSecond();
 
-                switch (model.Config.Type)
+                if (model.Config.Type == UpgradeType.Script)
                 {
-                    case UpgradeType.Script:
-                        // Désormais un débit théorique (versement ÷ durée de cycle) et non plus
-                        // un versement par seconde : c'est ce que le Header doit afficher.
-                        moneyPerSecond += model.GetYieldPerSecond();
-                        break;
-
-                    case UpgradeType.Hardware:
-                        tflopsCapacity += model.GetCurrentYield();
-                        break;
-
-                    case UpgradeType.Proxy:
-                        // Le Proxy ne produit rien, il n'agit que sur la trace.
-                        break;
+                    // Débit théorique (versement ÷ durée de cycle), pas un versement par seconde.
+                    moneyPerSecond += model.GetYieldPerSecond();
                 }
             }
 
             TotalMoneyYieldPerSecond.Value = moneyPerSecond;
-            TotalTFlopsYieldPerSecond.Value = tflopsCapacity;
+            TotalTFlops.Value = totalTFlops;
 
             // La génération globale de trace ne peut pas devenir négative : les Proxies
             // ralentissent l'enquête, ils ne l'effacent pas.
@@ -210,6 +252,8 @@ namespace Core.Services.Economy
 
         public void Dispose()
         {
+            _disposables.Dispose();
+
             foreach (var model in _activeUpgrades.Values)
             {
                 model.Dispose();
@@ -219,7 +263,7 @@ namespace Core.Services.Economy
             _onUpgradesRebuilt.Dispose();
             OnUpgradeRevealed.Dispose();
             TotalMoneyYieldPerSecond.Dispose();
-            TotalTFlopsYieldPerSecond.Dispose();
+            TotalTFlops.Dispose();
             TotalTracePerSecond.Dispose();
         }
     }

@@ -60,8 +60,10 @@ namespace Core.Services.Simulation
             }
 
             // 1. Réinitialisation des monnaies avec les bonus de Prestige !
+            // Seul l'argent se remet à une valeur de départ. Les TFlops sont dérivées du parc
+            // Hardware : elles retombent d'elles-mêmes quand les niveaux sont remis à zéro, et
+            // StartingComputerPower est déjà intégré au total par l'UpgradeManager.
             _userCurrencies.Money.Reset(_prestigeManager.StartingMoney.CurrentValue);
-            _userCurrencies.ComputerPower.Reset(_prestigeManager.StartingComputerPower.CurrentValue);
 
             // 2. Remise à zéro de l'inflation du bouton d'urgence
             _emergencyProtocolSystem.ResetSystem();
@@ -77,7 +79,6 @@ namespace Core.Services.Simulation
         {
             _threatManager.ReduceThreat(1f);
             _userCurrencies.Money.Reset(10d); // Valeur de départ
-            _userCurrencies.ComputerPower.Reset(0d);
             _upgradeManager.InitializeFromSave(new System.Collections.Generic.Dictionary<string, int>());
 
             IsGameActive.Value = true;

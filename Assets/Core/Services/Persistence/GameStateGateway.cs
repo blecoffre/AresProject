@@ -66,10 +66,8 @@ namespace Core.Services.Persistence
             // 1. Monnaies et compteurs cumulés
             _currencies.LoadFromSave(
                 data.Money,
-                data.ComputerPower,
                 data.CpuCycles,
                 data.TotalMoney,
-                data.TotalComputerPower,
                 data.TotalCpuCycles,
                 data.TotalDetections);
 
@@ -95,12 +93,12 @@ namespace Core.Services.Persistence
         /// </summary>
         public SaveData Capture()
         {
+            // Les TFlops ne sont pas capturées : elles se recalculent depuis les niveaux
+            // d'Upgrades, qui le sont. Les écrire créerait une seconde source de vérité.
             _buffer.Money = _currencies.Money.Amount.CurrentValue;
-            _buffer.ComputerPower = _currencies.ComputerPower.Amount.CurrentValue;
             _buffer.CpuCycles = _currencies.CpuCycles.Amount.CurrentValue;
 
             _buffer.TotalMoney = _currencies.TotalMoneyGenerated.CurrentValue;
-            _buffer.TotalComputerPower = _currencies.TotalComputerPowerAcquired.CurrentValue;
             _buffer.TotalCpuCycles = _currencies.TotalCpuCyclesGenerated.CurrentValue;
             _buffer.TotalDetections = _currencies.TotalNumberOfDetections.CurrentValue;
 

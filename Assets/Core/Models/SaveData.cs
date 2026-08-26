@@ -34,7 +34,7 @@ namespace Core.Models
         /// correspondant dans Migrate(). Sans ça, le premier changement post-lancement casse
         /// silencieusement les sauvegardes des joueurs.
         /// </summary>
-        public const int CurrentVersion = 1;
+        public const int CurrentVersion = 2;
 
         public int Version;
 
@@ -43,7 +43,6 @@ namespace Core.Models
         // ---------------------------------------------------------------------
         public double CpuCycles;
         public double TotalMoney;
-        public double TotalComputerPower;
         public double TotalCpuCycles;
         public int TotalDetections;
         public List<UpgradeSaveEntry> PrestigeUpgrades;
@@ -53,8 +52,12 @@ namespace Core.Models
         // La Trace et le compteur d'urgence en font partie — sans eux, fermer et rouvrir
         // le jeu vide la jauge gratuitement, ce qui rend le Bouton d'Urgence inutile.
         // ---------------------------------------------------------------------
+        // Note : ni ComputerPower ni TotalComputerPower ne figurent plus ici. Les TFlops sont
+        // devenues une capacité DÉRIVÉE du parc Hardware possédé, donc entièrement recalculable
+        // depuis Upgrades. Les sauvegarder revenait à stocker une valeur qui pouvait diverger de
+        // l'état réel — et le total cumulé n'avait plus de sens pour une grandeur qu'on
+        // n'accumule pas. Retirés en v2.
         public double Money;
-        public double ComputerPower;
         public float NormalizedThreat;
         public int EmergencyUsesInRun;
         public List<UpgradeSaveEntry> Upgrades;
@@ -72,13 +75,11 @@ namespace Core.Models
 
             CpuCycles = 0d,
             TotalMoney = 0d,
-            TotalComputerPower = 0d,
             TotalCpuCycles = 0d,
             TotalDetections = 0,
             PrestigeUpgrades = new List<UpgradeSaveEntry>(),
 
             Money = 10d,
-            ComputerPower = 10d,
             NormalizedThreat = 0f,
             EmergencyUsesInRun = 0,
             Upgrades = new List<UpgradeSaveEntry>(),
@@ -100,7 +101,6 @@ namespace Core.Models
             if (EmergencyUsesInRun < 0) EmergencyUsesInRun = 0;
 
             if (Money < 0d) Money = 0d;
-            if (ComputerPower < 0d) ComputerPower = 0d;
             if (CpuCycles < 0d) CpuCycles = 0d;
             if (TotalDetections < 0) TotalDetections = 0;
         }
@@ -125,6 +125,14 @@ namespace Core.Models
                     goto case 1;
 
                 case 1:
+                    // v1 -> v2 : ComputerPower et TotalComputerPower disparaissent. Les TFlops
+                    // sont désormais recalculées depuis les niveaux d'Upgrades, donc il n'y a
+                    // rien à reporter — JsonUtility ignore simplement les champs en trop d'un
+                    // ancien fichier. On se contente de tamponner la version.
+                    data.Version = 2;
+                    goto case 2;
+
+                case 2:
                     // Format courant : rien à faire.
                     break;
 
