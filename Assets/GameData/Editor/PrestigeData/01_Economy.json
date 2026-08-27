@@ -24,8 +24,6 @@
     },
     {
       "id": "P_EXPLOIT_CHARGES",
-      "nameKey": "UI_PRESTIGE_EXPLOIT_CHARGES_NAME",
-      "descKey": "UI_PRESTIGE_EXPLOIT_CHARGES_DESC",
       "bonusType": "UnlockExploitCharges",
       "maxLevel": 5,
       "baseCost": 100.0,
@@ -37,8 +35,6 @@
     },
     {
       "id": "P_EXPLOIT_MULT",
-      "nameKey": "UI_PRESTIGE_EXPLOIT_MULT_NAME",
-      "descKey": "UI_PRESTIGE_EXPLOIT_MULT_DESC",
       "bonusType": "ExploitYieldBoost",
       "maxLevel": 10,
       "baseCost": 250.0,
@@ -50,8 +46,6 @@
     },
     {
       "id": "P_EXPLOIT_TRACE_REDUC",
-      "nameKey": "UI_PRESTIGE_EXPLOIT_TRACE_NAME",
-      "descKey": "UI_PRESTIGE_EXPLOIT_TRACE_DESC",
       "bonusType": "ExploitTracePenaltyReduction",
       "maxLevel": 5,
       "baseCost": 400.0,

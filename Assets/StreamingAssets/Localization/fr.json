@@ -397,6 +397,30 @@
       "Value": "[PRÊT] DATA WIPER — Trace −{0} pts / {1} % des TFlops hors ligne {2} s"
     },
     {
+      "Key": "PRESTIGE_P_OVERCLOCK_POWER_1_NAME",
+      "Value": "Surtension I"
+    },
+    {
+      "Key": "PRESTIGE_P_OVERCLOCK_POWER_1_DESC",
+      "Value": "Chaque overclock manuel fait gagner davantage de temps aux cycles en cours."
+    },
+    {
+      "Key": "PRESTIGE_P_OVERCLOCK_POWER_2_NAME",
+      "Value": "Surtension II"
+    },
+    {
+      "Key": "PRESTIGE_P_OVERCLOCK_POWER_2_DESC",
+      "Value": "Amplifie encore le gain de temps de chaque overclock manuel."
+    },
+    {
+      "Key": "PRESTIGE_P_OVERCLOCK_POWER_3_NAME",
+      "Value": "Surtension III"
+    },
+    {
+      "Key": "PRESTIGE_P_OVERCLOCK_POWER_3_DESC",
+      "Value": "Pousse le gain de temps de l'overclock manuel à son maximum."
+    },
+    {
       "Key": "PRESTIGE_P_OVERCLOCK_AWAKE_NAME",
       "Value": "Injecteur Automatique"
     },

@@ -10,16 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 08038215e9d14fa45ae47737875bf522, type: 3}
-  m_Name: P_OVERCLOCK_AWAKE
+  m_Name: P_OVERCLOCK_POWER_2
   m_EditorClassIdentifier: Assembly-CSharp::Core.Models.Economy.PrestigeConfigSO
-  _id: P_OVERCLOCK_AWAKE
-  _displayNameKey: PRESTIGE_P_OVERCLOCK_AWAKE_NAME
-  _displayDescriptionKey: PRESTIGE_P_OVERCLOCK_AWAKE_DESC
-  _bonusType: 13
-  _maxLevel: 1
-  _baseCost: 5000
-  _costMultiplier: 1
+  _id: P_OVERCLOCK_POWER_2
+  _displayNameKey: PRESTIGE_P_OVERCLOCK_POWER_2_NAME
+  _displayDescriptionKey: PRESTIGE_P_OVERCLOCK_POWER_2_DESC
+  _bonusType: 2
+  _maxLevel: 5
+  _baseCost: 250
+  _costMultiplier: 2
   _bonusPerLevel: 1
-  _uiPosition: {x: 6, y: 5}
-  _prerequisite: {fileID: 11400000, guid: c8a6a7bd19efe8e4a9c16d3634bbe182, type: 2}
+  _uiPosition: {x: 4, y: 1}
+  _prerequisite: {fileID: 11400000, guid: 15fe4e7c0d27a864ea57756871756d3a, type: 2}
   _targetUpgradeId: 

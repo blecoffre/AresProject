@@ -19,6 +19,12 @@ namespace Core.Economy.Editor
     public class PrestigeItemData
     {
         public string id;
+
+        // Conservés uniquement pour DÉTECTER un fichier resté à l'ancien format : les clés sont
+        // dérivées de l'id, et un libellé écrit ici serait ignoré en silence.
+        public string nameKey;
+        public string descKey;
+
         public string bonusType;
         public int maxLevel;
         public double baseCost;
@@ -172,6 +178,17 @@ namespace Core.Economy.Editor
 
             so.FindProperty("_displayDescriptionKey").stringValue =
                 isSpecific ? string.Empty : LocalizationKeys.PrestigeDescription(data.id);
+
+            // Même garde que dans UpgradeCatalogGenerator : un libellé laissé dans le JSON serait
+            // ignoré EN SILENCE, et l'auteur croirait l'avoir renseigné.
+            if (!isSpecific && (!string.IsNullOrEmpty(data.nameKey) || !string.IsNullOrEmpty(data.descKey)))
+            {
+                Debug.LogWarning(
+                    $"[PrestigeGenerator] '{data.id}' porte encore un champ nameKey/descKey. " +
+                    "Il est IGNORÉ : la clé est dérivée de l'id. Déplace ce texte dans " +
+                    $"Localization/fr.json sous '{LocalizationKeys.PrestigeName(data.id)}', " +
+                    "puis retire le champ du JSON.");
+            }
 
             so.FindProperty("_bonusType").enumValueIndex = (int)type;
             so.FindProperty("_maxLevel").intValue = data.maxLevel;
