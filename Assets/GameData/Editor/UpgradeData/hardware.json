@@ -10,7 +10,13 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 0.08
+      "traceGeneratedPerSecond": 0.08,
+      "milestones": [
+        { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "YieldMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "YieldMultiplier", "factor": 10.0 }
+      ]
     },
     {
       "id": "HW_02",
@@ -22,7 +28,13 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 0.2
+      "traceGeneratedPerSecond": 0.2,
+      "milestones": [
+        { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "YieldMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "YieldMultiplier", "factor": 10.0 }
+      ]
     },
     {
       "id": "HW_03",
@@ -34,7 +46,13 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 0.5
+      "traceGeneratedPerSecond": 0.5,
+      "milestones": [
+        { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "YieldMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "YieldMultiplier", "factor": 10.0 }
+      ]
     },
     {
       "id": "HW_04",
@@ -46,7 +64,13 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 1.2
+      "traceGeneratedPerSecond": 1.2,
+      "milestones": [
+        { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "YieldMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "YieldMultiplier", "factor": 10.0 }
+      ]
     },
     {
       "id": "HW_05",
@@ -58,7 +82,13 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 3.0
+      "traceGeneratedPerSecond": 3.0,
+      "milestones": [
+        { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "YieldMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "YieldMultiplier", "factor": 10.0 }
+      ]
     },
     {
       "id": "HW_06",
@@ -70,7 +100,13 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 8.0
+      "traceGeneratedPerSecond": 8.0,
+      "milestones": [
+        { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "YieldMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "YieldMultiplier", "factor": 10.0 }
+      ]
     },
     {
       "id": "HW_07",
@@ -82,7 +118,13 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 20.0
+      "traceGeneratedPerSecond": 20.0,
+      "milestones": [
+        { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "YieldMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "YieldMultiplier", "factor": 10.0 }
+      ]
     },
     {
       "id": "HW_08",
@@ -94,7 +136,13 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 60.0
+      "traceGeneratedPerSecond": 60.0,
+      "milestones": [
+        { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "YieldMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "YieldMultiplier", "factor": 10.0 }
+      ]
     },
     {
       "id": "HW_09",
@@ -106,7 +154,13 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 150.0
+      "traceGeneratedPerSecond": 150.0,
+      "milestones": [
+        { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "YieldMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "YieldMultiplier", "factor": 10.0 }
+      ]
     },
     {
       "id": "HW_10",
@@ -118,7 +172,13 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 400.0
+      "traceGeneratedPerSecond": 400.0,
+      "milestones": [
+        { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "YieldMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "YieldMultiplier", "factor": 10.0 }
+      ]
     },
     {
       "id": "HW_11",
@@ -130,7 +190,13 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 1200.0
+      "traceGeneratedPerSecond": 1200.0,
+      "milestones": [
+        { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "YieldMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "YieldMultiplier", "factor": 10.0 }
+      ]
     },
     {
       "id": "HW_12",
@@ -142,7 +208,13 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 4000.0
+      "traceGeneratedPerSecond": 4000.0,
+      "milestones": [
+        { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "YieldMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "YieldMultiplier", "factor": 10.0 }
+      ]
     },
     {
       "id": "HW_13",
@@ -154,7 +226,13 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 15000.0
+      "traceGeneratedPerSecond": 15000.0,
+      "milestones": [
+        { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "YieldMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "YieldMultiplier", "factor": 10.0 }
+      ]
     },
     {
       "id": "HW_14",
@@ -166,7 +244,13 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 50000.0
+      "traceGeneratedPerSecond": 50000.0,
+      "milestones": [
+        { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "YieldMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "YieldMultiplier", "factor": 10.0 }
+      ]
     },
     {
       "id": "HW_15",
@@ -178,7 +262,13 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 200000.0
+      "traceGeneratedPerSecond": 200000.0,
+      "milestones": [
+        { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "YieldMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "YieldMultiplier", "factor": 10.0 }
+      ]
     }
   ]
 }

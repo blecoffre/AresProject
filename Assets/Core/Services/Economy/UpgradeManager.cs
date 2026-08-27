@@ -19,6 +19,12 @@ namespace Core.Services.Economy
             UpgradeType.Proxy
         };
 
+        /// <summary>
+        /// Accélération des cycles par niveau de Proxy possédé. 0,01 = +1 % par niveau.
+        /// TODO (BalancingConfigSO) : cette constante doit rejoindre les autres réglages.
+        /// </summary>
+        private const double ProxySynergyPerLevel = 0.01d;
+
         private readonly UpgradeCatalogSO _catalog;
         private readonly UserCurrencies _userCurrencies;
         private readonly PrestigeManager _prestigeManager;
@@ -62,6 +68,20 @@ namespace Core.Services.Economy
         /// Valeur POSITIVE, à soustraire du débit brut — c'est le second rôle des TFlops.
         /// </summary>
         public ReactiveProperty<float> ProxyDissipationPerSecond { get; } = new(0f);
+
+        /// <summary>
+        /// Accélération des cycles apportée par le parc de Proxies : 1 + niveaux cumulés × 1 %.
+        ///
+        /// Donne une raison d'acheter des Proxies en permanence, et pas seulement quand la Trace
+        /// menace : un niveau acheté n'est jamais perdu. Multiplicateur DÉDIÉ et non branché sur
+        /// les TFlops — y passer créerait une boucle, la dissipation dépendant elle-même des
+        /// TFlops par son log10.
+        ///
+        /// ⚠️ Linéaire et sans plafond, contrairement au reste du jeu qui est asymptotique.
+        /// C'est le plancher MinCycleDuration qui finira par borner l'effet, donc un plafond subi
+        /// plutôt que choisi. À surveiller à l'équilibrage.
+        /// </summary>
+        public ReactiveProperty<double> ProxySynergyMultiplier { get; } = new(1d);
 
         public UpgradeManager(
             UpgradeCatalogSO catalog,
@@ -250,6 +270,17 @@ namespace Core.Services.Economy
             double totalTFlops = (hardwareTFlops + _prestigeManager.StartingComputerPower.CurrentValue)
                                * _prestigeManager.GlobalComputeMultiplier.CurrentValue;
 
+            // Synergie : chaque niveau de Proxy possédé accélère TOUS les Scripts. C'est ce qui
+            // rend un achat de Proxy jamais perdu, même quand la Trace est basse.
+            int totalProxyLevels = 0;
+            var proxyList = _upgradesByType[UpgradeType.Proxy];
+            for (int i = 0; i < proxyList.Count; i++)
+            {
+                totalProxyLevels += proxyList[i].CurrentLevel.CurrentValue;
+            }
+
+            double synergy = 1d + totalProxyLevels * ProxySynergyPerLevel;
+
             // Poussée dans les modèles : c'est ce qui invalide leur cache de durée. Seuls les
             // Scripts ont un cycle, mais on pousse à tous — SetTFlops s'auto-garde sur l'égalité,
             // et un Hardware n'a pas de durée à recalculer de toute façon.
@@ -257,6 +288,7 @@ namespace Core.Services.Economy
             for (int i = 0; i < scriptList.Count; i++)
             {
                 scriptList[i].SetTFlops(totalTFlops);
+                scriptList[i].SetProxySynergy(synergy);
             }
 
             // Passe 2 — les agrégats qui dépendent des durées fraîchement recalculées.
@@ -296,6 +328,7 @@ namespace Core.Services.Economy
 
             TotalMoneyYieldPerSecond.Value = moneyPerSecond;
             TotalTFlops.Value = totalTFlops;
+            ProxySynergyMultiplier.Value = synergy;
             HardwareTracePerSecond.Value = hardwareTrace;
             ProxyDissipationPerSecond.Value = (float)(proxyBase * dissipationFactor);
         }
@@ -316,6 +349,7 @@ namespace Core.Services.Economy
             TotalTFlops.Dispose();
             HardwareTracePerSecond.Dispose();
             ProxyDissipationPerSecond.Dispose();
+            ProxySynergyMultiplier.Dispose();
         }
     }
 }

@@ -41,7 +41,9 @@
 }
 ```
 
-- `effect` vaut `YieldMultiplier` ou `DurationMultiplier`.
+- `effect` vaut `YieldMultiplier`, `DurationMultiplier` ou **`TraceMultiplier`**.
+- **`TraceMultiplier` change de sens selon le type**, comme le champ qu'il amplifie : c'est un BONUS pour un Proxy, dont la magnitude est une dissipation, mais un MALUS pour un Script ou un Hardware, dont elle est une génération. Le générateur avertit quand un facteur > 1 est déclaré hors Proxy. Sans ce troisième effet, les paliers ne pouvaient rien faire aux Proxies : leur rendement de production vaut zéro et ils n'ont pas de cycle.
+- Le générateur **avertit aussi** pour les paliers inertes : un `DurationMultiplier` hors Script, un `YieldMultiplier` sur un rendement de base nul.
 - `factor` > 1 pour un versement, < 1 pour une durée.
 - Les paliers sont **multiplicatifs et cumulatifs** : trois paliers ×2 donnent ×8. C'est ce qui garde un palier lointain spectaculaire malgré la croissance linéaire du niveau.
 - Les paliers sont triés par niveau à la génération.

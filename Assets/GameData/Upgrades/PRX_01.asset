@@ -25,4 +25,13 @@ MonoBehaviour:
   _minCycleDuration: 0.1
   _durationReductionPerLevel: 0
   _automationLevel: 10
-  _milestones: []
+  _milestones:
+  - Level: 10
+    Effect: 2
+    Factor: 2
+  - Level: 25
+    Effect: 2
+    Factor: 3
+  - Level: 50
+    Effect: 2
+    Factor: 5

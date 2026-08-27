@@ -38,6 +38,7 @@ Compilation sans erreur ni warning.
       Or `game-design.md` tranche depuis le 2026-08-26 qu'un clic doit **démarrer tous les Scripts
       possédés à l'arrêt ET avancer ceux qui tournent**. Aujourd'hui il ne fait que la seconde
       moitié. Environ dix lignes dans `OverclockSystem` et `ScriptCycleRunner`.
+- 📖 **Ghost Cache et Overdrive à implémenter.** Troisième volet de la proposition du GD : l'excédent de dissipation, aujourd'hui jeté par `SimulationTicker` quand le débit est négatif, doit remplir une jauge secrète ; pleine, elle permet de déclencher un « Zéro-Day Exploit » qui emballe l'économie ~30 s pendant que la Trace remonte en flèche. Demande un service dédié, un champ de sauvegarde de plus (donc `SaveData` v4), une jauge et un bouton. **Bloqué sur des chiffres** que le GD n'a pas encore donnés : capacité de la jauge, durée de l'Overdrive, multiplicateur d'économie, ampleur de la montée de Trace.
 - 📖 **Le Bouton d'Urgence n'a aucune UI.** `EmergencyProtocolSystem.TryTriggerEmergency()` n'a
       toujours aucun appelant. Le système est vivant — coût de départ 500, compteur d'usages
       persisté — mais la seconde moitié du Risk/Reward du GDD reste injouable, et
@@ -63,11 +64,7 @@ Compilation sans erreur ni warning.
 - 📖 **2 clés mortes** dans `fr.json` : `UPGRADE_NAME_BOTNET` et `UPGRADE_NAME_BREACH_CORE`,
       vestiges d'avant la migration des noms. `CONSOLE_LOGS` n'est référencée ni par le code ni par
       un `LocalizedText` de la scène.
-- 🔬 **Le système de paliers ne pilote toujours aucune donnée.** Vérifié : sur 45 upgrades,
-      **0 possède `milestones`, 0 possède `automationLevel`**. Les générateurs tournent donc en
-      rendement strictement linéaire avec un seuil d'automatisation à 10 par défaut, et la mécanique
-      décrite dans `cycles.md` reste non testable. C'est le point où l'écriture de contenu débloque
-      le plus de gameplay d'un coup.
+- 🔬 **124 paliers écrits, mais 14 Proxies encore vides.** Le GD a rempli les données pendant l'audit : 60 paliers Hardware, 60 Scripts, et `automationLevel` sur les 15 Scripts — exactement les types où ces champs comptent. Restent `PRX_02` à `PRX_15` sans aucun palier ; ils attendaient le `TraceMultiplier`, livré le 27/08, et peuvent maintenant être écrits sur le modèle de `PRX_01`.
 - 📖 **L'équilibrage des 105 nœuds spécifiques est du remplissage.** Leur nombre et leur pertinence
       sont corrects depuis le lot 3a, mais les valeurs restent auto-générées : `maxLevel: 5`,
       `costMult: 1.4` et `bonus: 0.1` identiques pour tous, `baseCost = 50 × order`.
@@ -172,6 +169,8 @@ Trois bugs de la même famille ont déjà coûté du temps. Le motif :
   `ITickable` sans focus, appeler `Tick()` à la main.
 
 ## Corrigé à ce jour
+
+**Lot « Proxies utiles »** (2026-08-27, vérifié en Play Mode via MCP) — les Proxies n'étaient atteints par aucun palier : rendement de base nul, pas de cycle. Deux ajouts, sur proposition du game designer. **`TraceMultiplier`**, troisième effet de palier, amplifie la magnitude de Trace — donc la dissipation pour un Proxy. Le sens dépend du type, comme le champ qu'il amplifie : le générateur avertit désormais pour tout palier inerte ou inversé (`DurationMultiplier` hors Script, `YieldMultiplier` sur rendement nul, `TraceMultiplier` > 1 hors Proxy). **Synergie** : chaque niveau de Proxy possédé accélère tous les Scripts de 1 %, via un multiplicateur dédié appliqué à la durée — pas branché sur les TFlops, ce qui aurait créé une boucle avec le `log10` de la dissipation. `GetTraceMagnitudePerSecond()` passe en cache : elle est appelée à chaque frame par `ScriptCycleRunner`, un parcours de paliers y serait payé soixante fois par seconde. Vérifié sur `PRX_01` : magnitude 13,5 au niveau 9 puis **30 au niveau 10** (×2), **225 au 25** (×3) et **2 250 au 50** (×5) ; 50 niveaux de Proxy donnent ×1,5 de vitesse et ramènent le cycle de `SCR_01` de 1,5 s à 1 s.
 
 **Protocole Terre Brûlée — bouton câblé et testé de bout en bout** (2026-08-26) — l'affichage et l'interactivité sont désormais deux notions distinctes : `IsUnlocked` porte la condition de jeu et pilote le libellé et la jauge, `IsClickable` y ajoute la triche d'éditeur et ne pilote que le bouton. Sans cette séparation, l'éditeur affichait en permanence « [PRÊT] Gain : +0 Cycles CPU » — un libellé absurde — et la jauge de progression, masquée une fois débloquée, n'aurait jamais été observable pendant le développement. Vérifié en Play Mode sur le bouton réel : les trois états du GDD (`0 %`, `45 %`, `[PRÊT] +1 → Prochain à 4K`, `[PRÊT] +2 → Prochain à 9K`), le blocage des clics et le vidage du libellé pendant la séquence, les six lignes de purge rendues dans la console du jeu dans l'ordre, l'écran de fin qui n'apparaît qu'après, 2 cycles crédités, la run wipée et la sauvegarde écrite.
 

@@ -33,6 +33,7 @@ namespace Core.Models.Economy
         public ReadOnlyReactiveProperty<int> CurrentLevel => _currentLevel;
 
         private double _cachedYield;
+        private float _cachedTraceMagnitude;
         private double _cachedCost;
         private float _cachedCycleDuration;
 
@@ -49,6 +50,13 @@ namespace Core.Models.Economy
         /// OnBonusesRecalculated, comme les TFlops — jamais lus dans une boucle chaude.
         /// </summary>
         private SpecificUpgradeBonuses _bonuses = SpecificUpgradeBonuses.None;
+
+        /// <summary>
+        /// Accélération apportée par le parc de Proxies possédé. Poussée par l'UpgradeManager
+        /// comme les TFlops, et pour la même raison : elle ne dépend pas de CE générateur.
+        /// Vaut 1 quand aucun Proxy n'est possédé.
+        /// </summary>
+        private double _proxySynergy = 1d;
 
         /// <summary>
         /// Niveaux retirés au seuil d'automatisation par les nœuds de prestige ciblés.
@@ -91,6 +99,19 @@ namespace Core.Models.Economy
             if (safe == _tflops) return;
 
             _tflops = safe;
+            RecalculateCache();
+        }
+
+        /// <summary>
+        /// Met à jour l'accélération apportée par les Proxies. Même garde d'égalité que
+        /// SetTFlops : la valeur est poussée à tous les modèles à chaque achat.
+        /// </summary>
+        public void SetProxySynergy(double multiplier)
+        {
+            double safe = multiplier < 1d ? 1d : multiplier;
+            if (safe == _proxySynergy) return;
+
+            _proxySynergy = safe;
             RecalculateCache();
         }
 
@@ -147,21 +168,7 @@ namespace Core.Models.Economy
         /// troisième cas ; l'interprétation du signe appartient à l'UpgradeManager, qui est le
         /// seul à connaître le type.
         /// </summary>
-        public float GetTraceMagnitudePerSecond()
-        {
-            float magnitude = (float)(Config.BaseTraceGeneratedPerSecond * _currentLevel.CurrentValue);
-
-            // Pour un Proxy, le « boost de rendement » du prestige augmente la DISSIPATION —
-            // son rendement de production valant zéro, c'est le seul sens que ce bonus puisse
-            // prendre. Surtout ne pas l'appliquer à un Script ou à un Hardware : il augmenterait
-            // la trace GÉNÉRÉE, soit l'exact inverse d'un bonus.
-            if (Config.Type == UpgradeType.Proxy)
-            {
-                magnitude *= 1f + _bonuses.YieldBoost;
-            }
-
-            return magnitude;
-        }
+        public float GetTraceMagnitudePerSecond() => _cachedTraceMagnitude;
 
         /// <summary>Rendement théorique par seconde si le cycle tourne en continu. Sert à l'affichage.</summary>
         public double GetYieldPerSecond()
@@ -187,6 +194,16 @@ namespace Core.Models.Economy
             double yield = Config.BaseProductionYield * (1d + _bonuses.YieldBoost) * level;
             float duration = Config.BaseCycleDuration * (1f - Math.Min(MaxReduction, _bonuses.TimeReduction));
 
+            // La magnitude de Trace suit la même logique : base × niveau, puis les paliers.
+            // Pour un Proxy — et pour lui seul — le « boost de rendement » du prestige amplifie
+            // cette magnitude, qui est chez lui une DISSIPATION. L'appliquer à un Script ou à un
+            // Hardware augmenterait leur trace générée, soit l'exact inverse d'un bonus.
+            float traceMagnitude = (float)(Config.BaseTraceGeneratedPerSecond * level);
+            if (Config.Type == UpgradeType.Proxy)
+            {
+                traceMagnitude *= 1f + _bonuses.YieldBoost;
+            }
+
             // Paliers : effets multiplicatifs, cumulatifs, et définitifs une fois atteints.
             var milestones = Config.Milestones;
             for (int i = 0; i < milestones.Count; i++)
@@ -194,13 +211,20 @@ namespace Core.Models.Economy
                 UpgradeMilestone milestone = milestones[i];
                 if (level < milestone.Level) continue;
 
-                if (milestone.Effect == MilestoneEffect.YieldMultiplier)
+                switch (milestone.Effect)
                 {
-                    yield *= milestone.Factor;
-                }
-                else
-                {
-                    duration *= milestone.Factor;
+                    case MilestoneEffect.YieldMultiplier:
+                        yield *= milestone.Factor;
+                        break;
+
+                    case MilestoneEffect.DurationMultiplier:
+                        duration *= milestone.Factor;
+                        break;
+
+                    case MilestoneEffect.TraceMultiplier:
+                        // Bonus pour un Proxy (dissipation), malus assumé ailleurs (génération).
+                        traceMagnitude *= milestone.Factor;
+                        break;
                 }
             }
 
@@ -210,7 +234,13 @@ namespace Core.Models.Economy
             // Calcul en double : à 1,5e9 TFlops, un float perdrait la précision du diviseur.
             double compressed = duration / (1d + _tflops * TFlopsTimeCompression);
 
+            // Puis la synergie des Proxies, qui accélère les cycles au même titre que les TFlops.
+            // Multiplicateur DÉDIÉ et non branché sur les TFlops : y passer créerait une boucle
+            // de rétroaction, la dissipation dépendant elle-même des TFlops par son log10.
+            compressed /= _proxySynergy;
+
             _cachedYield = yield;
+            _cachedTraceMagnitude = traceMagnitude;
             _cachedCycleDuration = Math.Max(Config.MinCycleDuration, (float)compressed);
             _cachedCost = AdjustedBaseCost * Math.Pow(Config.CostMultiplier, level);
         }

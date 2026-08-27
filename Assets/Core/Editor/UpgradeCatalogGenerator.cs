@@ -215,13 +215,52 @@ namespace Core.Economy.Editor
                 {
                     Debug.LogError(
                         $"[UpgradeGenerator] Effet de palier '{milestone.effect}' inconnu pour {data.id} " +
-                        $"(niveau {milestone.level}). Attendu : YieldMultiplier ou DurationMultiplier.");
+                        $"(niveau {milestone.level}). Attendu : YieldMultiplier, DurationMultiplier " +
+                        "ou TraceMultiplier.");
                     parsedEffect = MilestoneEffect.YieldMultiplier;
                 }
+
+                WarnIfMilestoneIsInert(data, milestone, parsedEffect);
 
                 element.FindPropertyRelative("Level").intValue = milestone.level;
                 element.FindPropertyRelative("Effect").enumValueIndex = (int)parsedEffect;
                 element.FindPropertyRelative("Factor").floatValue = milestone.factor <= 0f ? 1f : milestone.factor;
+            }
+        }
+
+        /// <summary>
+        /// Signale les paliers qui ne feront rien, ou qui feront l'inverse de ce qu'on croit.
+        ///
+        /// Ces cas ne sont pas des erreurs — le moteur les accepte — mais ils sont invisibles en
+        /// jeu, et un palier acheté sans effet est le pire ressenti possible dans un incrémental.
+        /// </summary>
+        private static void WarnIfMilestoneIsInert(UpgradeItemData data, MilestoneJsonData milestone, MilestoneEffect effect)
+        {
+            bool isProxy = string.Equals(data.type, "Proxy", StringComparison.OrdinalIgnoreCase);
+            bool isScript = string.Equals(data.type, "Script", StringComparison.OrdinalIgnoreCase);
+
+            switch (effect)
+            {
+                case MilestoneEffect.DurationMultiplier when !isScript:
+                    Debug.LogWarning(
+                        $"[UpgradeGenerator] '{data.id}' (niveau {milestone.level}) : un DurationMultiplier " +
+                        $"sur un {data.type} n'a AUCUN effet — seuls les Scripts ont un cycle.");
+                    break;
+
+                case MilestoneEffect.YieldMultiplier when data.baseProductionYield <= 0d:
+                    Debug.LogWarning(
+                        $"[UpgradeGenerator] '{data.id}' (niveau {milestone.level}) : un YieldMultiplier " +
+                        "n'a AUCUN effet ici, le rendement de base valant zéro. Pour un Proxy, " +
+                        "utiliser TraceMultiplier pour amplifier la dissipation.");
+                    break;
+
+                case MilestoneEffect.TraceMultiplier when !isProxy && milestone.factor > 1f:
+                    Debug.LogWarning(
+                        $"[UpgradeGenerator] '{data.id}' (niveau {milestone.level}) : un TraceMultiplier " +
+                        $"de {milestone.factor} sur un {data.type} AUGMENTE la trace générée — c'est un " +
+                        "malus, pas un bonus. Volontaire pour un générateur « lucratif mais bruyant », " +
+                        "à corriger sinon.");
+                    break;
             }
         }
 

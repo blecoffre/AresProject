@@ -68,6 +68,10 @@ La réduction de prestige s'applique **avant** la soustraction des Proxies.
 
 **Attention au nom du champ.** `traceGeneratedPerSecond` porte une **génération** pour les Scripts et les Hardware, mais une **dissipation** pour les Proxies (dont le `baseProductionYield` vaut 0). Le nom ment pour ce troisième type : c'est la valeur qui alimente `ProxyBase` dans la formule de dissipation ci-dessus, et elle doit être **soustraite**, jamais ajoutée.
 
+**Synergie des Proxies (tranché le 2026-08-27)** : chaque niveau de Proxy possédé accélère TOUS les Scripts de 1 %, cumulé sur l'ensemble du parc — `1 + niveaux × 0,01`. Un achat de Proxy n'est donc jamais perdu, même quand la Trace est basse. Multiplicateur **dédié**, appliqué à la durée de cycle : le brancher sur les TFlops créerait une boucle, la dissipation dépendant elle-même des TFlops par son `log10`. ⚠️ Linéaire et sans plafond, contrairement au reste du jeu — c'est `minCycleDuration` qui bornera l'effet, donc un plafond subi plutôt que choisi.
+
+**La règle d'or tient, confirmée le 2026-08-27.** Un excédent de dissipation ne fait PAS redescendre la jauge : il sera capté par le Ghost Cache (à implémenter). Si la jauge se vidait, le joueur aurait toujours toute la marge devant lui et déclencher l'Overdrive ne coûterait rien. En la laissant où elle est, le Ghost Cache se remplit à la hauteur où le joueur s'est arrêté : à 30 % il a de la marge, à 80 % c'est un pari. C'est là que naît le choix « j'exfiltre ou je charge encore ».
+
 La jauge elle-même n'est réduite que par le **Bouton d'Urgence** (coût exponentiel, ×3 par clic) et par le wipe. Règle d'or : *« le FBI n'oublie jamais, sauf si tu formates tout. »* Il faut un mur qui pousse inévitablement au wipe — sinon le joueur trouve une planque parfaite (`ΔTrace = 0`) et le danger disparaît.
 
 ## Exfiltration volontaire — « Protocole Terre Brûlée »
