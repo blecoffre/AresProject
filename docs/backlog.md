@@ -18,14 +18,6 @@ Compilation sans erreur ni warning.
 
 ---
 
-## À faire par Bertrand dans Unity
-
-- [ ] 🔬 **Poser le bouton du Data Wiper dans la scène.**
-      `EmergencyView` attend un `Button`, un `TextMeshProUGUI` et une `Image` en **Filled**,
-      puis le glisser dans le champ `_emergencyView` du `GameSceneLifetimeScope`. Même structure
-      que la `GhostCacheView`. Trois couleurs réglables : indisponible, prêt, contrecoup en cours.
-      Sans lui, un warning au démarrage : le système tourne mais rien ne le déclenche.
-
 ## Majeurs restants
 
 - 📖 **Le nœud de prestige « réveil » de l'Overclock n'existe pas dans les données.**
@@ -146,10 +138,8 @@ Compilation sans erreur ni warning.
 - 📖 **Pluriel non géré** : `UI_EXFIL_READY` dit « +1 **Cycles** CPU ». Une vraie pluralisation
       demanderait un mécanisme dans `ILocalizationService` ; reformuler la clé suffirait pour
       l'instant.
-- 📖 **Aucun remote Git.** Le dépôt n'existe que sur `H:\`. Accessoirement : pas de Git LFS
-      (une trentaine de binaires aujourd'hui, donc sans urgence — mais la mise en place se fait
-      *avant* que l'art arrive), et `.gitattributes` sans `merge=unityyamlmerge` sur `*.unity` et
-      `*.prefab`, indispensable dès qu'on travaillera sur des branches.
+- ✅ **Remote Git en place** (2026-08-27) : `origin` pointe sur GitHub, `main` poussé.
+      Reste à évaluer Git LFS le jour où le projet portera de vrais assets binaires.
 
 ## Pièges à retenir
 
@@ -168,6 +158,8 @@ Trois bugs de la même famille ont déjà coûté du temps. Le motif :
   `ITickable` sans focus, appeler `Tick()` à la main.
 
 ## Corrigé à ce jour
+
+**Les quatre boutons sont câblés et vérifiés** (2026-08-27, Play Mode via MCP) — le Data Wiper est le `PanicButton` de `Canvas/ConsoleLogs`, aux côtés du Ghost Cache, de l'Overclock et du Protocole Terre Brûlée (`PrestigeButton`). Les trois vues autonomes ont leur `Button`, leur libellé et leur `Image` en Filled, et les neuf champs du `GameSceneLifetimeScope` sont renseignés. États initiaux corrects sur une partie neuve, zéro warning au démarrage : Ghost Cache et Data Wiper affichent leur état verrouillé en nommant le nœud de prestige manquant, l'exfiltration sa jauge à 0 %.
 
 **Lot « BalancingConfigSO »** (2026-08-27, vérifié en Play Mode via MCP) — les vingt réglages d'équilibrage étaient des `const` dans huit fichiers : le GD ne pouvait rien régler sans recompiler, et une session d'équilibrage coûtait une recompilation par essai. Tout vit désormais dans `Assets/GameData/Balancing/BalancingConfig.asset`, injecté par `RegisterInstance` depuis le `RootLifetimeScope`. **Modifiable en Play Mode** : les systèmes lisent les propriétés à l'usage plutôt que de les recopier au démarrage. `UpgradeModel` reçoit la config par constructeur — c'est un POCO créé à la main, il ne passe pas par le conteneur. Les statiques que lisaient les presenters (`GhostCacheSystem.CapacitySeconds`, `EmergencyProtocolSystem.TraceReduction`…) deviennent des propriétés d'instance, ce qui garde le SO inconnu de l'UI. **Défaut trouvé au test et corrigé** : `RequiredTFlops` était une chaîne R3 dérivée du compteur d'usages, donc régler le palier dans l'inspecteur restait sans effet jusqu'au prochain déclenchement — exactement ce que le lot devait rendre possible ; c'est maintenant une propriété calculée, et la vue écoute le compteur d'usages. **Second défaut** : créer l'asset et l'assigner à la scène dans le même appel d'éditeur écrivait `fileID: 0` — la référence n'existait pas encore à la sérialisation ; il faut recharger l'asset depuis son chemin avant de l'assigner. Vérifié à chaud en Play Mode : compression 0,05 → 0,5 fait tomber le cycle de `SCR_01` de 1 s à 0,214 s ; le multiplicateur de Trace de l'Exploit passe de ×10 à ×3 ; le palier du Data Wiper de 50 à 5 TFlops rend `HasEnoughPower` vrai immédiatement ; le seuil d'exfiltration suit `MoneyPerCpuCycle`. Il ne reste dans le code que le drapeau de triche `BypassUnlockCondition`, qui est une configuration de build et non un réglage, et deux garde-fous anti-division (`MinSafeDuration`, plancher à 1,01 du multiplicateur de coût).
 
