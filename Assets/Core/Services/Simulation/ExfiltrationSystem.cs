@@ -94,13 +94,32 @@ namespace Core.Services.Simulation
         }
 
         /// <summary>
-        /// Déclenche la sortie volontaire. Retourne false si la run est déjà finie ou si la
-        /// condition n'est pas remplie — la vue grise le bouton, mais elle n'est pas la garde.
+        /// Premier temps : fige le résultat de la run — gain crédité, run effacée, partie
+        /// désarmée — mais n'affiche pas encore l'écran de fin.
+        ///
+        /// Ce découpage existe pour la séquence console du protocole, qui dure ~2 s. La jouer
+        /// avant de figer le résultat laisserait la Trace monter pendant ce temps : un joueur
+        /// exfiltrant à 98 % pourrait se faire saisir au milieu de sa propre exfiltration.
+        ///
+        /// Retourne false si la run est finie ou la condition non remplie — la vue grise le
+        /// bouton, mais elle n'est pas la garde.
         /// </summary>
-        public bool TryExfiltrate()
+        public bool TryBeginExfiltration(out double awardedPrestige)
         {
+            awardedPrestige = 0d;
             if (!_isUnlocked.CurrentValue) return false;
-            return _sessionManager.TryEndRunVoluntarily();
+
+            return _sessionManager.TryResolveVoluntaryExit(out awardedPrestige);
+        }
+
+        /// <summary>
+        /// Second temps, une fois la séquence terminée : déclenche l'écran de fin.
+        /// À appeler impérativement après un <see cref="TryBeginExfiltration"/> réussi, sinon le
+        /// joueur reste bloqué sur une partie désarmée sans écran de prestige.
+        /// </summary>
+        public void CompleteExfiltration(double awardedPrestige)
+        {
+            _sessionManager.AnnounceRunEnded(awardedPrestige);
         }
 
         public void Dispose()

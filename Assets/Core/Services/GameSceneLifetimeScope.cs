@@ -20,6 +20,10 @@ namespace Core.Boot
         [SerializeField] private GameOverView _gameOverView;
         [SerializeField] private PrestigePanelView _prestigeView;
 
+        [Tooltip("Bouton du Protocole Terre Brûlée. Vue autonome : elle peut être posée " +
+                 "n'importe où dans l'écran sans toucher au code.")]
+        [SerializeField] private ExfiltrationView _exfiltrationView;
+
         protected override void Configure(IContainerBuilder builder)
         {
             // Services locaux à la scène.
@@ -34,6 +38,23 @@ namespace Core.Boot
             builder.RegisterComponent(_upgradePanelView);
             builder.RegisterComponent(_gameOverView);
             builder.RegisterComponent(_prestigeView);
+
+            // Seule vue enregistrée sous condition : elle est neuve et pas encore posée dans la
+            // scène. RegisterComponent(null) ferait échouer la construction du conteneur, donc
+            // planter le démarrage — pour un bouton qui n'existe pas encore. On préfère un
+            // message qui dit quoi faire.
+            if (_exfiltrationView != null)
+            {
+                builder.RegisterComponent(_exfiltrationView);
+                builder.Register<ExfiltrationPresenter>(Lifetime.Scoped).AsImplementedInterfaces().AsSelf();
+            }
+            else
+            {
+                Debug.LogWarning(
+                    "[SCENE] Aucune ExfiltrationView assignée sur le GameSceneLifetimeScope : " +
+                    "le Protocole Terre Brûlée est indisponible. Pose le bouton dans la scène et " +
+                    "glisse-le dans le champ pour l'activer.");
+            }
 
             // Presenters (MVP)
             builder.Register<ConsolePresenter>(Lifetime.Scoped).AsImplementedInterfaces().AsSelf();

@@ -299,6 +299,38 @@
     {
       "Key": "PRESTIGE_SPECIFIC_TIME_DESC",
       "Value": "Réduit la durée de cycle de {0}."
+    },
+    {
+      "Key": "UI_EXFIL_LOCKED",
+      "Value": "[VERROUILLÉ] Compilation du 1er Cycle CPU : {0} %"
+    },
+    {
+      "Key": "UI_EXFIL_READY",
+      "Value": "[PRÊT] WIPE SYSTÈME (Gain : +{0} Cycles CPU) → Prochain à {1} Datas"
+    },
+    {
+      "Key": "LOG_PURGE_1",
+      "Value": "> Lancement de PURGE.exe..."
+    },
+    {
+      "Key": "LOG_PURGE_2",
+      "Value": "> Effacement des disques en cours... 100%"
+    },
+    {
+      "Key": "LOG_PURGE_3",
+      "Value": "> Brouillage de l'adresse MAC... 100%"
+    },
+    {
+      "Key": "LOG_PURGE_4",
+      "Value": "> La clé USB est en sécurité."
+    },
+    {
+      "Key": "LOG_PURGE_5",
+      "Value": "> Compilation des erreurs... Noyau IA amélioré."
+    },
+    {
+      "Key": "LOG_PURGE_6",
+      "Value": "> Redémarrage du système..."
     }
   ]
 }

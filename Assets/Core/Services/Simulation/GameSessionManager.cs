@@ -66,32 +66,63 @@ namespace Core.Services.Simulation
                 .AddTo(ref _disposables);
         }
 
-        /// <summary>Saisie Fédérale : la Trace a atteint 100 %, aucun bonus.</summary>
+        /// <summary>Saisie Fédérale : la Trace a atteint 100 %, aucun bonus, écran de fin immédiat.</summary>
         private void HandleGameOver()
         {
+            // Une run déjà résolue ne peut pas se terminer une seconde fois. Le ThreatManager
+            // émet son lockdown dès que la jauge atteint 1, sans savoir si la partie est encore
+            // en cours : pendant les ~2 s de la séquence d'exfiltration, une saisie viendrait
+            // sinon écraser l'Effacement Propre que le joueur venait d'obtenir — et afficherait
+            // l'écran de fin par-dessus la séquence.
+            if (!IsGameActive.CurrentValue) return;
+
             Debug.Log("[GameSessionManager] A.M.I. CORRUPTION DÉTECTÉE. Fin de session en cours...");
             _userCurrencies.RecordDetection();
 
-            EndRun(1d);
+            AnnounceRunEnded(ResolveRunEnd(1d));
         }
 
         /// <summary>
         /// Effacement Propre : le joueur sort de lui-même avant les 100 %, et touche le bonus
-        /// « Clean Exit ». Pas de détection enregistrée — il n'a jamais été pris.
+        /// « Clean Exit ». Aucune détection enregistrée — il n'a jamais été pris.
         ///
-        /// Retourne false si la run est déjà terminée : le presenter peut appeler pendant que
-        /// l'écran de fin s'affiche.
+        /// <b>Résout la run sans annoncer sa fin.</b> C'est volontaire et c'est le cœur du
+        /// découpage : la séquence console du Protocole Terre Brûlée dure ~2 s, et si on la
+        /// jouait avant de figer le résultat, la Trace continuerait de monter pendant ce
+        /// temps — un joueur exfiltrant à 98 % pourrait se faire saisir pendant sa propre
+        /// exfiltration et perdre les +20 % qu'il était justement venu chercher.
+        ///
+        /// L'appelant DOIT appeler <see cref="AnnounceRunEnded"/> une fois sa séquence finie,
+        /// sinon l'écran de fin ne s'affichera jamais.
+        ///
+        /// Retourne false si la run est déjà terminée.
         /// </summary>
-        public bool TryEndRunVoluntarily()
+        public bool TryResolveVoluntaryExit(out double awardedPrestige)
         {
+            awardedPrestige = 0d;
             if (!IsGameActive.CurrentValue) return false;
 
             Debug.Log("[GameSessionManager] Exfiltration volontaire. Effacement propre.");
-            EndRun(CleanExitMultiplier);
+            awardedPrestige = ResolveRunEnd(CleanExitMultiplier);
             return true;
         }
 
-        private void EndRun(double prestigeMultiplier)
+        /// <summary>
+        /// Déclenche l'écran de fin. Sans effet si aucune run n'a été résolue : cette garde rend
+        /// un appel isolé inoffensif, la méthode étant publique pour le besoin du découpage.
+        /// </summary>
+        public void AnnounceRunEnded(double awardedPrestige)
+        {
+            if (IsGameActive.CurrentValue) return;
+
+            OnSessionEnded.OnNext(awardedPrestige);
+        }
+
+        /// <summary>
+        /// Fige le résultat de la run : gain calculé et crédité, run effacée, partie désarmée.
+        /// Ne notifie personne — voir <see cref="AnnounceRunEnded"/>.
+        /// </summary>
+        private double ResolveRunEnd(double prestigeMultiplier)
         {
             IsGameActive.Value = false;
 
@@ -111,8 +142,7 @@ namespace Core.Services.Simulation
             // rendait tous les générateurs au niveau max, avec zéro Trace. Une run gratuite.
             WipeRun();
 
-            // On notifie l'UI et on envoie le montant gagné.
-            OnSessionEnded.OnNext(pendingPrestige);
+            return pendingPrestige;
         }
 
         /// <summary>
