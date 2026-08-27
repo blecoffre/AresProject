@@ -71,10 +71,17 @@ namespace Core.Services.Simulation
 
             float brute = generated * _prestigeManager.TraceReductionMultiplier.CurrentValue;
 
-            // Pendant le Zéro-Day Exploit, TOUS les Proxies s'éteignent : le joueur produit
-            // cinquante fois plus, mais il est à découvert et la Trace brute remplit la jauge à
-            // pleine vitesse. C'est la contrepartie entière de la mécanique.
-            float dissipation = _ghostCache.IsOverdriveActive.CurrentValue
+            // Pendant le Zéro-Day Exploit, la contrepartie est DOUBLE : tous les Proxies
+            // s'éteignent, et la génération brute est elle-même multipliée. Le joueur produit
+            // cinquante fois plus, mais il est à découvert et la Trace le rattrape d'autant.
+            //
+            // Le facteur s'applique APRÈS la réduction de prestige, ce qui est sans effet
+            // arithmétique — la multiplication commute — mais dit la bonne chose : la réduction
+            // passive protège toujours proportionnellement, y compris pendant l'Exploit.
+            bool isOverdrive = _ghostCache.IsOverdriveActive.CurrentValue;
+            if (isOverdrive) brute *= GhostCacheSystem.OverdriveTraceMultiplier;
+
+            float dissipation = isOverdrive
                 ? 0f
                 : _upgradeManager.ProxyDissipationPerSecond.CurrentValue;
 

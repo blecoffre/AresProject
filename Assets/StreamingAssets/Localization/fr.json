@@ -338,7 +338,7 @@
     },
     {
       "Key": "UI_GHOSTCACHE_READY",
-      "Value": "[ARMÉ] ZÉRO-DAY EXPLOIT — x50 pendant {0} s, proxies hors ligne"
+      "Value": "[ARMÉ] ZÉRO-DAY EXPLOIT — rendement x{0} pendant {1} s / proxies hors ligne, trace x{2}"
     },
     {
       "Key": "UI_GHOSTCACHE_ACTIVE",

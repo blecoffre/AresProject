@@ -54,6 +54,18 @@ namespace Core.Services.Simulation
         /// </summary>
         public const double OverdriveYieldMultiplier = 50d;
 
+        /// <summary>
+        /// Multiplicateur appliqué à la génération BRUTE de Trace pendant l'Exploit, en plus de
+        /// l'extinction des Proxies (tranché par le GD le 2026-08-27).
+        ///
+        /// ⚠️ C'est le réglage le plus sensible de la mécanique : la dissipation valant zéro, le
+        /// temps de survie depuis une jauge vide vaut `100 / (génération × ce facteur)`. À 10, il
+        /// faut générer moins de 0,33 Trace/s pour tenir les 30 secondes — soit moins qu'un seul
+        /// Script de niveau 1. Voir la note d'équilibrage du backlog.
+        /// TODO (BalancingConfigSO) : cette constante doit rejoindre les autres réglages.
+        /// </summary>
+        public const float OverdriveTraceMultiplier = 10f;
+
         private readonly UpgradeManager _upgradeManager;
 
         private readonly ReactiveProperty<float> _chargeSeconds = new(0f);

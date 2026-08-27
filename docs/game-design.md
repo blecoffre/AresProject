@@ -81,11 +81,14 @@ Valeurs tranchées par le GD le 2026-08-27. L'excédent de dissipation, jusque-l
 | **Capacité de la jauge** | **300 secondes d'excédent** | Exprimée en temps et non en magnitude, sinon un joueur de fin de partie la remplirait instantanément |
 | **Durée de l'Exploit** | **30 secondes** | Assez long pour regarder la Trace monter et le regretter |
 | **Multiplicateur** | **×50 sur le RENDEMENT** | Pas sur la vitesse : `minCycleDuration` bornerait l'effet et le gain deviendrait imprévisible d'un Script à l'autre |
-| **Contrepartie** | **Dissipation → 0** | Tous les Proxies s'éteignent, la Trace brute remplit la jauge à pleine vitesse |
+| **Contrepartie 1** | **Dissipation → 0** | Tous les Proxies s'éteignent |
+| **Contrepartie 2** | **×10 sur la génération brute de Trace** | Ajouté le 2026-08-27. La jauge se remplit dix fois plus vite en plus de n'être plus dissipée |
 
 **La charge se remplit en TEMPS, pas en magnitude.** Une seconde passée en excédent vaut une seconde de charge, que l'excédent soit de 1 ou de 100 000. Le prix à payer est un maintien de posture défensive, pas un empilement de Proxies. ⚠️ Conséquence à surveiller : rien ne récompense un excédent massif, seulement sa durée.
 
 **Le ×50 ne touche QUE les Scripts.** Chez un Hardware, le « rendement » EST sa contribution en TFlops : le laisser passer multiplierait par 50 la capacité de calcul, donc la compression des cycles *et* la dissipation des Proxies. Un buff économique deviendrait une invulnérabilité.
+
+⚠️ **Conséquence mesurée du ×10 : les 30 secondes ne sont jamais atteintes.** La dissipation valant zéro, le temps de survie depuis une jauge vide vaut `100 / (génération × 10)`. Tenir les 30 s exige donc une génération ≤ **0,33 Trace/s**, alors qu'un seul `SCR_01` de niveau 1 en produit déjà 0,5. Vérifié en Play Mode avec `SCR_01` niveau 12 et `HW_01` niveau 4 (6,32 Trace/s) : jauge remplie à 0,632/s, saisie à **1,58 s**. L'Exploit est donc, en l'état, un bouton « encaisse et exfiltre » de une à deux secondes, pas une fenêtre de 30 s. À arbitrer — voir `backlog.md`.
 
 **Cas limites, tranchés par le GD :**
 

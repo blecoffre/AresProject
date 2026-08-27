@@ -55,18 +55,20 @@ Compilation sans erreur ni warning.
       conséquence depuis que le wipe précède toute capture, mais un drapeau « écriture en attente »
       serait plus sûr qu'un abandon.
 
-- 🔬 **Les 30 s du Zéro-Day Exploit sont létales dès le début de partie — à arbitrer par le GD.**
-      Pendant l'Exploit la dissipation vaut zéro, donc la jauge se remplit à `génération / 100` par
-      seconde et le temps de survie depuis une jauge VIDE vaut `100 / génération`. Survivre aux 30 s
-      complètes exige donc une génération ≤ **3,33 Trace/s**, tous générateurs confondus.
-      Mesuré en Play Mode : `SCR_01` niveau 12 (6 Trace/s) plus `HW_01` niveau 4 (0,32) donnent
-      6,32 Trace/s, soit une saisie à **15,8 s** — et le joueur est bien mort avant la fin de
-      l'Exploit, jauge partie de 0 %. Passé le tout début de partie, l'Exploit n'est donc jamais
-      survécu jusqu'au bout : il devient « déclenche, encaisse, exfiltre avant de tomber ».
-      C'est peut-être exactement la boucle voulue — elle se marie bien avec le bonus Clean Exit —
-      mais les 30 s ont été choisies en supposant qu'on pouvait les tenir. Trois sorties possibles :
-      raccourcir l'Exploit, laisser une dissipation résiduelle au lieu de zéro, ou assumer et le
-      documenter comme un bouton de sortie.
+- 🔬 **Les 30 s du Zéro-Day Exploit ne sont JAMAIS atteintes — à arbitrer par le GD.**
+      Pendant l'Exploit la dissipation vaut zéro et la génération brute est multipliée par 10, donc
+      la jauge se remplit à `génération × 10 / 100` par seconde et le temps de survie depuis une
+      jauge VIDE vaut `100 / (génération × 10)`. Tenir les 30 secondes exige une génération
+      ≤ **0,33 Trace/s** — or un seul `SCR_01` de niveau 1 en produit déjà **0,5**. Aucune
+      configuration du jeu, pas même la plus pauvre, ne survit à l'Exploit entier.
+      Mesuré en Play Mode (`SCR_01` niv. 12 + `HW_01` niv. 4 = 6,32 Trace/s, `timeScale` à 0,05
+      pour échantillonner) : jauge à **0,632/s**, saisie à **1,58 s** — la théorie au chiffre près.
+      Sans le ×10 c'était 15,8 s, déjà sous les 30.
+      Le nœud `P_EXPLOIT_TRACE_REDUC` ne suffit pas à rattraper : à ×6 (exemple du GD, rang max)
+      le seuil ne monte qu'à 0,55 Trace/s.
+      Quatre sorties : baisser le ×10, laisser une dissipation résiduelle, raccourcir l'Exploit
+      pour que sa durée affichée ne mente pas, ou assumer et le documenter comme un bouton
+      « encaisse et exfiltre » de une à deux secondes.
 
 ## Données et contenu
 

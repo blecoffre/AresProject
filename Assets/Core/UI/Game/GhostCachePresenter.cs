@@ -92,8 +92,14 @@ namespace Core.UI.Game
 
             if (_ghostCache.IsReady)
             {
+                // Les trois nombres viennent des constantes, jamais du texte : sinon un
+                // rééquilibrage du multiplicateur laisserait le bouton mentir au joueur.
                 _view.ApplyState(
-                    _loc.GetText("UI_GHOSTCACHE_READY", Mathf.RoundToInt(GhostCacheSystem.OverdriveDurationSeconds)),
+                    _loc.GetText(
+                        "UI_GHOSTCACHE_READY",
+                        Mathf.RoundToInt((float)GhostCacheSystem.OverdriveYieldMultiplier),
+                        Mathf.RoundToInt(GhostCacheSystem.OverdriveDurationSeconds),
+                        Mathf.RoundToInt(GhostCacheSystem.OverdriveTraceMultiplier)),
                     interactable: true,
                     fillAmount: 1f,
                     fillColor: _view.ReadyColor);
