@@ -12,21 +12,10 @@
       "minCycleDuration": 0.0,
       "traceGeneratedPerSecond": 1.5,
       "milestones": [
-        {
-          "level": 10,
-          "effect": "TraceMultiplier",
-          "factor": 2.0
-        },
-        {
-          "level": 25,
-          "effect": "TraceMultiplier",
-          "factor": 3.0
-        },
-        {
-          "level": 50,
-          "effect": "TraceMultiplier",
-          "factor": 5.0
-        }
+        { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "TraceMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "TraceMultiplier", "factor": 10.0 }
       ]
     },
     {
@@ -39,7 +28,13 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 5.0
+      "traceGeneratedPerSecond": 5.0,
+      "milestones": [
+        { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "TraceMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "TraceMultiplier", "factor": 10.0 }
+      ]
     },
     {
       "id": "PRX_03",
@@ -51,7 +46,13 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 18.0
+      "traceGeneratedPerSecond": 18.0,
+      "milestones": [
+        { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "TraceMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "TraceMultiplier", "factor": 10.0 }
+      ]
     },
     {
       "id": "PRX_04",
@@ -63,7 +64,13 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 60.0
+      "traceGeneratedPerSecond": 60.0,
+      "milestones": [
+        { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "TraceMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "TraceMultiplier", "factor": 10.0 }
+      ]
     },
     {
       "id": "PRX_05",
@@ -75,7 +82,13 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 200.0
+      "traceGeneratedPerSecond": 200.0,
+      "milestones": [
+        { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "TraceMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "TraceMultiplier", "factor": 10.0 }
+      ]
     },
     {
       "id": "PRX_06",
@@ -87,7 +100,13 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 800.0
+      "traceGeneratedPerSecond": 800.0,
+      "milestones": [
+        { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "TraceMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "TraceMultiplier", "factor": 10.0 }
+      ]
     },
     {
       "id": "PRX_07",
@@ -99,7 +118,13 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 2500.0
+      "traceGeneratedPerSecond": 2500.0,
+      "milestones": [
+        { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "TraceMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "TraceMultiplier", "factor": 10.0 }
+      ]
     },
     {
       "id": "PRX_08",
@@ -111,7 +136,13 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 8500.0
+      "traceGeneratedPerSecond": 8500.0,
+      "milestones": [
+        { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "TraceMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "TraceMultiplier", "factor": 10.0 }
+      ]
     },
     {
       "id": "PRX_09",
@@ -123,7 +154,13 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 25000.0
+      "traceGeneratedPerSecond": 25000.0,
+      "milestones": [
+        { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "TraceMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "TraceMultiplier", "factor": 10.0 }
+      ]
     },
     {
       "id": "PRX_10",
@@ -135,7 +172,13 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 80000.0
+      "traceGeneratedPerSecond": 80000.0,
+      "milestones": [
+        { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "TraceMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "TraceMultiplier", "factor": 10.0 }
+      ]
     },
     {
       "id": "PRX_11",
@@ -147,7 +190,13 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 250000.0
+      "traceGeneratedPerSecond": 250000.0,
+      "milestones": [
+        { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "TraceMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "TraceMultiplier", "factor": 10.0 }
+      ]
     },
     {
       "id": "PRX_12",
@@ -159,7 +208,13 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 800000.0
+      "traceGeneratedPerSecond": 800000.0,
+      "milestones": [
+        { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "TraceMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "TraceMultiplier", "factor": 10.0 }
+      ]
     },
     {
       "id": "PRX_13",
@@ -171,7 +226,13 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 2500000.0
+      "traceGeneratedPerSecond": 2500000.0,
+      "milestones": [
+        { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "TraceMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "TraceMultiplier", "factor": 10.0 }
+      ]
     },
     {
       "id": "PRX_14",
@@ -183,7 +244,13 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 8000000.0
+      "traceGeneratedPerSecond": 8000000.0,
+      "milestones": [
+        { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "TraceMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "TraceMultiplier", "factor": 10.0 }
+      ]
     },
     {
       "id": "PRX_15",
@@ -195,7 +262,13 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 25000000.0
+      "traceGeneratedPerSecond": 25000000.0,
+      "milestones": [
+        { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
+        { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },
+        { "level": 50, "effect": "TraceMultiplier", "factor": 5.0 },
+        { "level": 100, "effect": "TraceMultiplier", "factor": 10.0 }
+      ]
     }
   ]
 }

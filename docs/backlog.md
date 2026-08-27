@@ -25,17 +25,14 @@ Compilation sans erreur ni warning.
       « Auto Inject Game Objects »** du `GameSceneLifetimeScope` — contrairement à ses trois voisins
       `MONEY`, `TRACE` et `CYCLES` — donc il affiche en permanence le texte du prefab, `CURRENCY:`.
       Deux corrections : la clé, et l'ajout à la liste.
-- [ ] 🔬 **`LocalizedText` parasite sur le bouton d'exfiltration.**
-      `Canvas/ConsoleLogs/PrestigeButton/Text (TMP)` porte un `LocalizedText` de clé `OVERCLOCK`,
-      vestige de la duplication du bouton Overclock. Il est inoffensif aujourd'hui parce qu'il n'est
-      pas injecté, mais s'il l'était il écraserait le libellé écrit par `ExfiltrationPresenter`.
-      À supprimer du GameObject.
-- [ ] 🔬 **Poser le bouton du Ghost Cache dans la scène.**
-      `GhostCacheView` attend un `Button`, un `TextMeshProUGUI` de libellé et une `Image` en mode
-      **Filled** pour la jauge, puis le glisser-déposer dans le champ `_ghostCacheView` du
-      `GameSceneLifetimeScope`. Tant qu'il n'est pas posé, un warning explicite le rappelle au
-      démarrage : la charge s'accumule en arrière-plan mais rien ne permet de la dépenser.
-      Les trois couleurs de jauge (charge / armé / exploit) sont réglables dans l'inspecteur.
+- [ ] 🔬 **`LocalizedText` parasites de clé `OVERCLOCK` sur deux boutons.**
+      `Canvas/ConsoleLogs/PrestigeButton/Text (TMP)` **et** `Canvas/ConsoleLogs/GhostCache/Text (TMP)`
+      portent un `LocalizedText` de clé `OVERCLOCK`, vestige de la duplication du bouton Overclock.
+      Vérifié le 2026-08-27 : ni l'un ni l'autre n'est dans la liste « Auto Inject Game Objects »
+      (elle ne contient que `TRACE`, `MONEY`, `CYCLES` et le vrai `OverclockButton`), donc ils sont
+      inoffensifs aujourd'hui et le libellé écrit par les presenters passe bien. Mais les ajouter à
+      la liste — ou un balayage de l'auto-injecteur — écraserait les deux libellés par « OVERCLOCK ».
+      À supprimer des deux GameObjects.
 
 ## Majeurs restants
 
@@ -57,6 +54,19 @@ Compilation sans erreur ni warning.
       prestige rapprochés suivis d'un Game Over ont fait perdre l'écriture de fin de run. Sans
       conséquence depuis que le wipe précède toute capture, mais un drapeau « écriture en attente »
       serait plus sûr qu'un abandon.
+
+- 🔬 **Les 30 s du Zéro-Day Exploit sont létales dès le début de partie — à arbitrer par le GD.**
+      Pendant l'Exploit la dissipation vaut zéro, donc la jauge se remplit à `génération / 100` par
+      seconde et le temps de survie depuis une jauge VIDE vaut `100 / génération`. Survivre aux 30 s
+      complètes exige donc une génération ≤ **3,33 Trace/s**, tous générateurs confondus.
+      Mesuré en Play Mode : `SCR_01` niveau 12 (6 Trace/s) plus `HW_01` niveau 4 (0,32) donnent
+      6,32 Trace/s, soit une saisie à **15,8 s** — et le joueur est bien mort avant la fin de
+      l'Exploit, jauge partie de 0 %. Passé le tout début de partie, l'Exploit n'est donc jamais
+      survécu jusqu'au bout : il devient « déclenche, encaisse, exfiltre avant de tomber ».
+      C'est peut-être exactement la boucle voulue — elle se marie bien avec le bonus Clean Exit —
+      mais les 30 s ont été choisies en supposant qu'on pouvait les tenir. Trois sorties possibles :
+      raccourcir l'Exploit, laisser une dissipation résiduelle au lieu de zéro, ou assumer et le
+      documenter comme un bouton de sortie.
 
 ## Données et contenu
 
