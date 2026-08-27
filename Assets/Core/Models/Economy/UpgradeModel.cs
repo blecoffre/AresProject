@@ -59,6 +59,17 @@ namespace Core.Models.Economy
         private double _proxySynergy = 1d;
 
         /// <summary>
+        /// Multiplicateur temporaire de rendement, poussé par l'UpgradeManager. Sert le Zéro-Day
+        /// Exploit (×50 pendant 30 s) et vaut 1 le reste du temps.
+        ///
+        /// Il n'agit que sur les Scripts, et cette restriction n'est pas cosmétique : chez un
+        /// Hardware, GetCurrentYield() EST sa contribution en TFlops. Le laisser passer
+        /// multiplierait par 50 la capacité de calcul du joueur, donc la compression des cycles
+        /// ET la dissipation des Proxies — un buff économique deviendrait une invulnérabilité.
+        /// </summary>
+        private double _globalYieldMultiplier = 1d;
+
+        /// <summary>
         /// Niveaux retirés au seuil d'automatisation par les nœuds de prestige ciblés.
         /// Alimenté par le PrestigeManager (thème Prestige) ; reste à 0 pour l'instant.
         /// </summary>
@@ -112,6 +123,20 @@ namespace Core.Models.Economy
             if (safe == _proxySynergy) return;
 
             _proxySynergy = safe;
+            RecalculateCache();
+        }
+
+        /// <summary>
+        /// Met à jour le multiplicateur temporaire de rendement. Même garde d'égalité que
+        /// SetTFlops : la valeur est poussée à tous les Scripts à chaque recalcul des totaux,
+        /// alors qu'elle ne bouge qu'aux deux extrémités d'un Overdrive.
+        /// </summary>
+        public void SetGlobalYieldMultiplier(double multiplier)
+        {
+            double safe = multiplier < 1d ? 1d : multiplier;
+            if (safe == _globalYieldMultiplier) return;
+
+            _globalYieldMultiplier = safe;
             RecalculateCache();
         }
 
@@ -226,6 +251,14 @@ namespace Core.Models.Economy
                         traceMagnitude *= milestone.Factor;
                         break;
                 }
+            }
+
+            // Zéro-Day Exploit, tout à la fin de la chaîne de rendement et pour les seuls
+            // Scripts : chez un Hardware ce « rendement » est sa capacité en TFlops, et la
+            // multiplier par 50 rendrait le joueur quasi indétectable au lieu de le mettre à nu.
+            if (Config.Type == UpgradeType.Script)
+            {
+                yield *= _globalYieldMultiplier;
             }
 
             // Compression par les TFlops, APRÈS les paliers et AVANT le plancher : le tooltip du

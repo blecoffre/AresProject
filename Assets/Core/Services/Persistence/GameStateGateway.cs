@@ -2,6 +2,7 @@ using Core.Models;
 using Core.Models.Economy;
 using Core.Services.Economy;
 using Core.Services.Security;
+using Core.Services.Simulation;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -29,6 +30,7 @@ namespace Core.Services.Persistence
         private readonly PrestigeManager _prestigeManager;
         private readonly ThreatManager _threatManager;
         private readonly EmergencyProtocolSystem _emergencyProtocol;
+        private readonly GhostCacheSystem _ghostCache;
 
         // Instance et tampons réutilisés d'une capture à l'autre : un autosave ne doit rien allouer
         // en dehors de la chaîne JSON elle-même.
@@ -47,13 +49,15 @@ namespace Core.Services.Persistence
             UpgradeManager upgradeManager,
             PrestigeManager prestigeManager,
             ThreatManager threatManager,
-            EmergencyProtocolSystem emergencyProtocol)
+            EmergencyProtocolSystem emergencyProtocol,
+            GhostCacheSystem ghostCache)
         {
             _currencies = currencies;
             _upgradeManager = upgradeManager;
             _prestigeManager = prestigeManager;
             _threatManager = threatManager;
             _emergencyProtocol = emergencyProtocol;
+            _ghostCache = ghostCache;
         }
 
         /// <summary>
@@ -83,6 +87,7 @@ namespace Core.Services.Persistence
             // 4. État de menace de la run
             _threatManager.RestoreThreat(Mathf.Min(data.NormalizedThreat, MaxRestorableThreat));
             _emergencyProtocol.RestoreUses(data.EmergencyUsesInRun);
+            _ghostCache.RestoreCharge(data.GhostCacheSeconds);
 
             HasRestored = true;
         }
@@ -106,6 +111,7 @@ namespace Core.Services.Persistence
 
             _buffer.NormalizedThreat = _threatManager.NormalizedThreat.CurrentValue;
             _buffer.EmergencyUsesInRun = _emergencyProtocol.UsesInCurrentRun;
+            _buffer.GhostCacheSeconds = _ghostCache.ChargeSeconds.CurrentValue;
 
             _upgradeManager.CaptureLevelsInto(_buffer.Upgrades);
             _prestigeManager.CaptureLevelsInto(_buffer.PrestigeUpgrades);

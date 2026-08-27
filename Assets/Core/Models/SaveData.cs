@@ -34,7 +34,7 @@ namespace Core.Models
         /// correspondant dans Migrate(). Sans ça, le premier changement post-lancement casse
         /// silencieusement les sauvegardes des joueurs.
         /// </summary>
-        public const int CurrentVersion = 3;
+        public const int CurrentVersion = 4;
 
         public int Version;
 
@@ -67,6 +67,16 @@ namespace Core.Models
 
         public float NormalizedThreat;
         public int EmergencyUsesInRun;
+
+        /// <summary>
+        /// Charge du Ghost Cache, en secondes d'excédent de dissipation accumulées.
+        ///
+        /// Sauvegardée alors que le reste des effets temporaires ne l'est pas : elle représente
+        /// du temps de jeu investi, et le joueur qui a maintenu sa posture défensive pendant
+        /// quatre minutes n'a pas à recommencer parce qu'il a fermé la fenêtre. Un Overdrive EN
+        /// COURS, lui, n'est pas sauvegardé — voir GhostCacheSystem.RestoreCharge.
+        /// </summary>
+        public float GhostCacheSeconds;
         public List<UpgradeSaveEntry> Upgrades;
 
         /// <summary>
@@ -90,6 +100,7 @@ namespace Core.Models
             RunMoney = 0d,
             NormalizedThreat = 0f,
             EmergencyUsesInRun = 0,
+            GhostCacheSeconds = 0f,
             Upgrades = new List<UpgradeSaveEntry>(),
 
             SavedAtUnixSeconds = 0L
@@ -107,6 +118,10 @@ namespace Core.Models
             if (NormalizedThreat < 0f) NormalizedThreat = 0f;
             if (NormalizedThreat > 1f) NormalizedThreat = 1f;
             if (EmergencyUsesInRun < 0) EmergencyUsesInRun = 0;
+
+            // Borne basse seulement : le plafond appartient au GhostCacheSystem, seul détenteur
+            // de la capacité. Le dupliquer ici créerait deux constantes à maintenir.
+            if (GhostCacheSeconds < 0f) GhostCacheSeconds = 0f;
 
             if (Money < 0d) Money = 0d;
             if (RunMoney < 0d) RunMoney = 0d;
@@ -151,6 +166,14 @@ namespace Core.Models
                     goto case 3;
 
                 case 3:
+                    // v3 -> v4 : le Ghost Cache apparaît. Une sauvegarde antérieure n'a par
+                    // définition accumulé aucun excédent — la mécanique n'existait pas — donc
+                    // rien à reporter, on part de zéro.
+                    data.GhostCacheSeconds = 0f;
+                    data.Version = 4;
+                    goto case 4;
+
+                case 4:
                     // Format courant : rien à faire.
                     break;
 

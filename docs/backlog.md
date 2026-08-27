@@ -30,6 +30,12 @@ Compilation sans erreur ni warning.
       vestige de la duplication du bouton Overclock. Il est inoffensif aujourd'hui parce qu'il n'est
       pas injecté, mais s'il l'était il écraserait le libellé écrit par `ExfiltrationPresenter`.
       À supprimer du GameObject.
+- [ ] 🔬 **Poser le bouton du Ghost Cache dans la scène.**
+      `GhostCacheView` attend un `Button`, un `TextMeshProUGUI` de libellé et une `Image` en mode
+      **Filled** pour la jauge, puis le glisser-déposer dans le champ `_ghostCacheView` du
+      `GameSceneLifetimeScope`. Tant qu'il n'est pas posé, un warning explicite le rappelle au
+      démarrage : la charge s'accumule en arrière-plan mais rien ne permet de la dépenser.
+      Les trois couleurs de jauge (charge / armé / exploit) sont réglables dans l'inspecteur.
 
 ## Majeurs restants
 
@@ -38,7 +44,6 @@ Compilation sans erreur ni warning.
       Or `game-design.md` tranche depuis le 2026-08-26 qu'un clic doit **démarrer tous les Scripts
       possédés à l'arrêt ET avancer ceux qui tournent**. Aujourd'hui il ne fait que la seconde
       moitié. Environ dix lignes dans `OverclockSystem` et `ScriptCycleRunner`.
-- 📖 **Ghost Cache et Overdrive à implémenter.** Troisième volet de la proposition du GD : l'excédent de dissipation, aujourd'hui jeté par `SimulationTicker` quand le débit est négatif, doit remplir une jauge secrète ; pleine, elle permet de déclencher un « Zéro-Day Exploit » qui emballe l'économie ~30 s pendant que la Trace remonte en flèche. Demande un service dédié, un champ de sauvegarde de plus (donc `SaveData` v4), une jauge et un bouton. **Bloqué sur des chiffres** que le GD n'a pas encore donnés : capacité de la jauge, durée de l'Overdrive, multiplicateur d'économie, ampleur de la montée de Trace.
 - 📖 **Le Bouton d'Urgence n'a aucune UI.** `EmergencyProtocolSystem.TryTriggerEmergency()` n'a
       toujours aucun appelant. Le système est vivant — coût de départ 500, compteur d'usages
       persisté — mais la seconde moitié du Risk/Reward du GDD reste injouable, et
@@ -169,6 +174,8 @@ Trois bugs de la même famille ont déjà coûté du temps. Le motif :
   `ITickable` sans focus, appeler `Tick()` à la main.
 
 ## Corrigé à ce jour
+
+**Lot « Ghost Cache et Zéro-Day Exploit »** (2026-08-27, vérifié en Play Mode via MCP) — troisième volet de la proposition du GD, débloqué par ses quatre chiffres : capacité **300 s d'excédent**, durée **30 s**, **×50 sur le rendement**, **dissipation → 0**. L'excédent de dissipation, jusque-là jeté par `SimulationTicker`, alimente une charge unique. **La charge se remplit en TEMPS, pas en magnitude** — une seconde d'excédent vaut une seconde, qu'il soit de 1 ou de 100 000 — sans quoi un joueur de fin de partie remplirait la jauge instantanément. Le test d'accumulation est `debit < 0` et non `<= 0` : une partie sans aucun générateur donne un débit nul, et charger l'Exploit en ne faisant rien n'aurait aucun sens. **Le ×50 ne touche que les Scripts**, et cette restriction est le point délicat du lot : chez un Hardware, `GetCurrentYield()` EST sa contribution en TFlops — le laisser passer aurait multiplié par 50 la capacité de calcul, donc la compression des cycles ET la dissipation des Proxies, transformant un buff économique en invulnérabilité. Garde posée des deux côtés : le modèle refuse le multiplicateur hors Script, et le manager ne le pousse qu'aux Scripts. Le multiplicateur passe par les caches des modèles plutôt que par le versement, pour que le chiffre affiché dans le header et le montant crédité racontent la même chose. `SaveData` v4 (`GhostCacheSeconds`) : la charge survit à la fermeture du jeu mais pas au wipe. Un Overdrive **en cours** n'est pas sauvegardé. Vérifié en Play Mode : charge à 22 s avec la jauge de Trace toujours à 0 (l'excédent est capté sans que la règle d'or bouge) ; déclenchement → `SCR_01` passe de 5 à 250, durée inchangée, **HW_01 et les TFlops restés à 6** ; Trace qui monte à 0,0024/s pendant l'Exploit, soit exactement la trace Hardware sans aucune dissipation ; second déclenchement refusé ; à l'échéance le rendement revient à 5 et la jauge **reste à 0,072** au lieu de redescendre ; migration v2 → v4 en chaîne et aller-retour JSON corrects ; wipe → charge à 0.
 
 **Lot « Proxies utiles »** (2026-08-27, vérifié en Play Mode via MCP) — les Proxies n'étaient atteints par aucun palier : rendement de base nul, pas de cycle. Deux ajouts, sur proposition du game designer. **`TraceMultiplier`**, troisième effet de palier, amplifie la magnitude de Trace — donc la dissipation pour un Proxy. Le sens dépend du type, comme le champ qu'il amplifie : le générateur avertit désormais pour tout palier inerte ou inversé (`DurationMultiplier` hors Script, `YieldMultiplier` sur rendement nul, `TraceMultiplier` > 1 hors Proxy). **Synergie** : chaque niveau de Proxy possédé accélère tous les Scripts de 1 %, via un multiplicateur dédié appliqué à la durée — pas branché sur les TFlops, ce qui aurait créé une boucle avec le `log10` de la dissipation. `GetTraceMagnitudePerSecond()` passe en cache : elle est appelée à chaque frame par `ScriptCycleRunner`, un parcours de paliers y serait payé soixante fois par seconde. Vérifié sur `PRX_01` : magnitude 13,5 au niveau 9 puis **30 au niveau 10** (×2), **225 au 25** (×3) et **2 250 au 50** (×5) ; 50 niveaux de Proxy donnent ×1,5 de vitesse et ramènent le cycle de `SCR_01` de 1,5 s à 1 s.
 

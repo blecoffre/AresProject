@@ -83,6 +83,14 @@ namespace Core.Services.Economy
         /// </summary>
         public ReactiveProperty<double> ProxySynergyMultiplier { get; } = new(1d);
 
+        /// <summary>
+        /// Multiplicateur temporaire appliqué au rendement des Scripts. Vaut 1 hors Overdrive.
+        ///
+        /// Champ simple et non ReactiveProperty : le seul lecteur est la boucle de poussée
+        /// ci-dessous, et TotalMoneyYieldPerSecond porte déjà l'information vers l'UI.
+        /// </summary>
+        private double _globalYieldMultiplier = 1d;
+
         public UpgradeManager(
             UpgradeCatalogSO catalog,
             UserCurrencies userCurrencies,
@@ -250,6 +258,24 @@ namespace Core.Services.Economy
         public IReadOnlyDictionary<string, UpgradeModel> GetAllActiveUpgrades() => _activeUpgrades;
 
         /// <summary>
+        /// Applique un multiplicateur temporaire au rendement de TOUS les Scripts. Réservé au
+        /// Zéro-Day Exploit, qui l'élève à 50 pendant 30 s puis le ramène à 1.
+        ///
+        /// Passe par les caches des modèles plutôt que par une multiplication au moment du
+        /// versement : c'est ce qui garantit que le chiffre affiché dans le header et le montant
+        /// réellement crédité racontent la même chose. Le coût est de 15 recalculs de cache aux
+        /// deux extrémités de l'Overdrive — négligeable devant une frame.
+        /// </summary>
+        public void SetGlobalYieldMultiplier(double multiplier)
+        {
+            double safe = multiplier < 1d ? 1d : multiplier;
+            if (safe == _globalYieldMultiplier) return;
+
+            _globalYieldMultiplier = safe;
+            RecalculateTotals();
+        }
+
+        /// <summary>
         /// Deux passes, et l'ordre n'est pas négociable : le débit théorique d'un Script se
         /// calcule à partir de sa durée de cycle, laquelle dépend des TFlops. Tout sommer en une
         /// seule passe utiliserait les durées de l'achat PRÉCÉDENT.
@@ -289,6 +315,12 @@ namespace Core.Services.Economy
             {
                 scriptList[i].SetTFlops(totalTFlops);
                 scriptList[i].SetProxySynergy(synergy);
+
+                // Poussé aux seuls Scripts, comme le reste de cette boucle. Le modèle refuse de
+                // toute façon d'appliquer le multiplicateur à un autre type — ceinture et
+                // bretelles, parce qu'un ×50 égaré sur le Hardware ne se verrait pas tout de
+                // suite et fausserait toute l'économie de la run.
+                scriptList[i].SetGlobalYieldMultiplier(_globalYieldMultiplier);
             }
 
             // Passe 2 — les agrégats qui dépendent des durées fraîchement recalculées.

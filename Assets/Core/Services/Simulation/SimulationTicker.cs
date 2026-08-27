@@ -32,24 +32,34 @@ namespace Core.Services.Simulation
         private readonly PrestigeManager _prestigeManager;
         private readonly ThreatManager _threatManager;
         private readonly GameSessionManager _sessionManager;
+        private readonly GhostCacheSystem _ghostCache;
 
         public SimulationTicker(
             UpgradeManager upgradeManager,
             ScriptCycleRunner cycleRunner,
             PrestigeManager prestigeManager,
             ThreatManager threatManager,
-            GameSessionManager sessionManager)
+            GameSessionManager sessionManager,
+            GhostCacheSystem ghostCache)
         {
             _upgradeManager = upgradeManager;
             _cycleRunner = cycleRunner;
             _prestigeManager = prestigeManager;
             _threatManager = threatManager;
             _sessionManager = sessionManager;
+            _ghostCache = ghostCache;
         }
 
         public void Tick()
         {
             if (!_sessionManager.IsGameActive.Value) return;
+
+            float deltaTime = Time.deltaTime;
+
+            // L'Exploit s'écoule AVANT le calcul du débit, dans la même frame : sinon la frame
+            // où il expire éteindrait encore les Proxies, et celle où il démarre les laisserait
+            // dissiper une dernière fois.
+            _ghostCache.TickOverdrive(deltaTime);
 
             // TraceBrute = (Σ ScriptsActifs + Σ HardwarePossédés) × (1 − RéductionPrestige)
             //
@@ -61,15 +71,33 @@ namespace Core.Services.Simulation
 
             float brute = generated * _prestigeManager.TraceReductionMultiplier.CurrentValue;
 
+            // Pendant le Zéro-Day Exploit, TOUS les Proxies s'éteignent : le joueur produit
+            // cinquante fois plus, mais il est à découvert et la Trace brute remplit la jauge à
+            // pleine vitesse. C'est la contrepartie entière de la mécanique.
+            float dissipation = _ghostCache.IsOverdriveActive.CurrentValue
+                ? 0f
+                : _upgradeManager.ProxyDissipationPerSecond.CurrentValue;
+
             // DebitTrace = max(0, TraceBrute − Σ DissipationProxies)
             //
             // Les Proxies agissent sur le DÉBIT, jamais sur la jauge : un excédent de
             // dissipation ne fait pas redescendre la Trace déjà accumulée. Seuls le Bouton
             // d'Urgence et le wipe le peuvent — « le FBI n'oublie jamais, sauf si tu formates ».
-            float debit = brute - _upgradeManager.ProxyDissipationPerSecond.CurrentValue;
-            if (debit <= 0f) return;
+            float debit = brute - dissipation;
 
-            _threatManager.AddThreat((debit / TraceToGaugeDivisor) * Time.deltaTime);
+            if (debit < 0f)
+            {
+                // Excédent strict : la dissipation dépasse la génération. C'est cette part-là,
+                // autrefois jetée, que le Ghost Cache capte. Le test est « < 0 » et non « <= 0 »
+                // à dessein : une partie sans aucun générateur ni Proxie donne un débit nul,
+                // et charger l'Exploit en ne faisant rigoureusement rien n'aurait aucun sens.
+                _ghostCache.Accumulate(deltaTime);
+                return;
+            }
+
+            if (debit == 0f) return;
+
+            _threatManager.AddThreat((debit / TraceToGaugeDivisor) * deltaTime);
         }
     }
 }

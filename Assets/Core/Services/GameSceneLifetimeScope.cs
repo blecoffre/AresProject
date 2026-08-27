@@ -24,6 +24,10 @@ namespace Core.Boot
                  "n'importe où dans l'écran sans toucher au code.")]
         [SerializeField] private ExfiltrationView _exfiltrationView;
 
+        [Tooltip("Bouton du Ghost Cache / Zéro-Day Exploit. Vue autonome, comme celle du " +
+                 "Protocole Terre Brûlée : elle peut être posée n'importe où dans l'écran.")]
+        [SerializeField] private GhostCacheView _ghostCacheView;
+
         protected override void Configure(IContainerBuilder builder)
         {
             // Services locaux à la scène.
@@ -54,6 +58,21 @@ namespace Core.Boot
                     "[SCENE] Aucune ExfiltrationView assignée sur le GameSceneLifetimeScope : " +
                     "le Protocole Terre Brûlée est indisponible. Pose le bouton dans la scène et " +
                     "glisse-le dans le champ pour l'activer.");
+            }
+
+            // Même traitement conditionnel que ci-dessus, et pour la même raison : la vue est
+            // neuve et pas encore posée dans la scène.
+            if (_ghostCacheView != null)
+            {
+                builder.RegisterComponent(_ghostCacheView);
+                builder.Register<GhostCachePresenter>(Lifetime.Scoped).AsImplementedInterfaces().AsSelf();
+            }
+            else
+            {
+                Debug.LogWarning(
+                    "[SCENE] Aucune GhostCacheView assignée sur le GameSceneLifetimeScope : le " +
+                    "Zéro-Day Exploit est injouable. Le Ghost Cache continue d'accumuler sa " +
+                    "charge en arrière-plan, mais rien ne permet de la dépenser.");
             }
 
             // Presenters (MVP)

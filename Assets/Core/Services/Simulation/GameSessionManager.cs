@@ -38,19 +38,21 @@ namespace Core.Services.Simulation
         private readonly UpgradeManager _upgradeManager;
         private readonly PrestigeManager _prestigeManager;
         private readonly EmergencyProtocolSystem _emergencyProtocolSystem;
+        private readonly GhostCacheSystem _ghostCacheSystem;
 
         public Subject<double> OnSessionEnded { get; }
         public ReactiveProperty<bool> IsGameActive { get; }
 
         private DisposableBag _disposables;
 
-        public GameSessionManager(UserCurrencies userCurrencies, ThreatManager threatManager, UpgradeManager upgradeManager, PrestigeManager prestigeManager, EmergencyProtocolSystem emergencyProtocolSystem)
+        public GameSessionManager(UserCurrencies userCurrencies, ThreatManager threatManager, UpgradeManager upgradeManager, PrestigeManager prestigeManager, EmergencyProtocolSystem emergencyProtocolSystem, GhostCacheSystem ghostCacheSystem)
         {
             _userCurrencies = userCurrencies;
             _threatManager = threatManager;
             _upgradeManager = upgradeManager;
             _prestigeManager = prestigeManager;
             _emergencyProtocolSystem = emergencyProtocolSystem;
+            _ghostCacheSystem = ghostCacheSystem;
 
             OnSessionEnded = new Subject<double>();
             IsGameActive = new ReactiveProperty<bool>(true);
@@ -155,6 +157,13 @@ namespace Core.Services.Simulation
             _userCurrencies.Money.Reset(BaseStartingMoney + _prestigeManager.StartingMoney.CurrentValue);
             _userCurrencies.ResetRunCounters();
             _emergencyProtocolSystem.ResetSystem();
+
+            // Le Ghost Cache est de l'état de RUN : le formatage l'efface, même chargé à bloc.
+            // Le laisser survivre offrirait au joueur un Zéro-Day Exploit gratuit au démarrage
+            // de chaque run, exactement au moment où sa Trace est à zéro et où l'Exploit ne lui
+            // coûterait donc rien — la mécanique perdrait tout son pari.
+            _ghostCacheSystem.ResetForNewRun();
+
             _threatManager.ReduceThreat(1f);
             _upgradeManager.InitializeFromSave(EmptyLevels);
         }

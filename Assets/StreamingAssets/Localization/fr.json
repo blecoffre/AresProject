@@ -331,6 +331,26 @@
     {
       "Key": "LOG_PURGE_6",
       "Value": "> Redémarrage du système..."
+    },
+    {
+      "Key": "UI_GHOSTCACHE_CHARGING",
+      "Value": "[GHOST CACHE] Mise en cache du surplus : {0} %"
+    },
+    {
+      "Key": "UI_GHOSTCACHE_READY",
+      "Value": "[ARMÉ] ZÉRO-DAY EXPLOIT — x50 pendant {0} s, proxies hors ligne"
+    },
+    {
+      "Key": "UI_GHOSTCACHE_ACTIVE",
+      "Value": "[EXPLOIT] À DÉCOUVERT — {0} s"
+    },
+    {
+      "Key": "LOG_OVERDRIVE_START",
+      "Value": "> zeroday.sh --unleash : proxies hors ligne, rendement x50. Tiens bon."
+    },
+    {
+      "Key": "LOG_OVERDRIVE_END",
+      "Value": "> Exploit épuisé. Proxies de nouveau en ligne."
     }
   ]
 }

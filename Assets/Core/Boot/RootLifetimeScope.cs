@@ -65,6 +65,10 @@ namespace Core.Infrastructure
             // l'affichage, donc au scope racine comme le reste.
             builder.Register<ExfiltrationSystem>(Lifetime.Singleton);
 
+            // Le Ghost Cache accumule de l'état de run et survit au rechargement de la
+            // GameScene : scope racine, comme le reste de la simulation.
+            builder.Register<GhostCacheSystem>(Lifetime.Singleton);
+
             // 7. Points d'entrée
             builder.RegisterEntryPoint<GameBootstrapper>();
             builder.RegisterEntryPoint<SaveScheduler>();
