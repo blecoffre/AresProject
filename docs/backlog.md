@@ -20,20 +20,6 @@ Compilation sans erreur ni warning.
 
 ## À faire par Bertrand dans Unity
 
-- [ ] 🔬 **Faute de frappe `COMPTUER_POWER`** sur `Canvas/Header/Currencies/ComputerPower/CurrencyName`.
-      La clé définie est `COMPUTER_POWER`. Ce `LocalizedText` n'est en plus **pas dans la liste
-      « Auto Inject Game Objects »** du `GameSceneLifetimeScope` — contrairement à ses trois voisins
-      `MONEY`, `TRACE` et `CYCLES` — donc il affiche en permanence le texte du prefab, `CURRENCY:`.
-      Deux corrections : la clé, et l'ajout à la liste.
-- [ ] 🔬 **`LocalizedText` parasites de clé `OVERCLOCK` sur deux boutons.**
-      `Canvas/ConsoleLogs/PrestigeButton/Text (TMP)` **et** `Canvas/ConsoleLogs/GhostCache/Text (TMP)`
-      portent un `LocalizedText` de clé `OVERCLOCK`, vestige de la duplication du bouton Overclock.
-      Vérifié le 2026-08-27 : ni l'un ni l'autre n'est dans la liste « Auto Inject Game Objects »
-      (elle ne contient que `TRACE`, `MONEY`, `CYCLES` et le vrai `OverclockButton`), donc ils sont
-      inoffensifs aujourd'hui et le libellé écrit par les presenters passe bien. Mais les ajouter à
-      la liste — ou un balayage de l'auto-injecteur — écraserait les deux libellés par « OVERCLOCK ».
-      À supprimer des deux GameObjects.
-
 - [ ] 🔬 **Poser le bouton du Data Wiper dans la scène.**
       `EmergencyView` attend un `Button`, un `TextMeshProUGUI` et une `Image` en **Filled**,
       puis le glisser dans le champ `_emergencyView` du `GameSceneLifetimeScope`. Même structure
@@ -56,33 +42,32 @@ Compilation sans erreur ni warning.
       prestige rapprochés suivis d'un Game Over ont fait perdre l'écriture de fin de run. Sans
       conséquence depuis que le wipe précède toute capture, mais un drapeau « écriture en attente »
       serait plus sûr qu'un abandon.
-- 🔬 **Les 30 s du Zéro-Day Exploit ne sont JAMAIS atteintes — à arbitrer par le GD.**
-      Pendant l'Exploit la dissipation vaut zéro et la génération brute est multipliée par 10, donc
-      la jauge se remplit à `génération × 10 / 100` par seconde et le temps de survie depuis une
-      jauge VIDE vaut `100 / (génération × 10)`. Tenir les 30 secondes exige une génération
-      ≤ **0,33 Trace/s** — or un seul `SCR_01` de niveau 1 en produit déjà **0,5**. Aucune
-      configuration du jeu, pas même la plus pauvre, ne survit à l'Exploit entier.
-      Mesuré en Play Mode (`SCR_01` niv. 12 + `HW_01` niv. 4 = 6,32 Trace/s, `timeScale` à 0,05
-      pour échantillonner) : jauge à **0,632/s**, saisie à **1,58 s** — la théorie au chiffre près.
-      Sans le ×10 c'était 15,8 s, déjà sous les 30.
-      Le nœud `P_EXPLOIT_TRACE_REDUC` ne suffit pas à rattraper : à ×6 (exemple du GD, rang max)
-      le seuil ne monte qu'à 0,55 Trace/s.
-      Quatre sorties : baisser le ×10, laisser une dissipation résiduelle, raccourcir l'Exploit
-      pour que sa durée affichée ne mente pas, ou assumer et le documenter comme un bouton
-      « encaisse et exfiltre » de une à deux secondes.
+- ⚠️ 🔬 **Les 30 s du Zéro-Day Exploit ne sont jamais atteintes — assumé, à observer en jeu.**
+      Bertrand a tranché le 2026-08-27 : on garde le ×10 et on regarde ce que ça donne à la
+      manette avant de décider si c'est la défense qui est trop faible ou le multiplicateur trop
+      gros. Le chiffre à avoir en tête : la dissipation valant zéro pendant l'Exploit, la survie
+      depuis une jauge vide vaut `100 / (génération × 10)`. Tenir 30 s exige ≤ **0,33 Trace/s**,
+      alors qu'un `SCR_01` de niveau 1 en produit 0,5. Mesuré : 6,32 Trace/s → saisie à **1,58 s**.
+      Le nœud `P_EXPLOIT_TRACE_REDUC` à fond ne monte le seuil qu'à 0,44 Trace/s.
+      ⚠️ En attendant, **le libellé du bouton annonce 30 s** — il ment au joueur. Si le ×10 reste,
+      c'est la durée affichée qu'il faudra revoir, pas seulement l'équilibrage.
 
 ## Données et contenu
 
-- 🔬 **59 clés de localisation manquantes**, toutes dérivées des données : **52 descriptions**
-      `UPG_<id>_DESC` et **7 paires** `PRESTIGE_<id>_NAME` / `_DESC` pour les nœuds réels.
-      Vérifié à l'écran : 18 clés distinctes s'affichent entre crochets en jeu.
-      Aucune clé de code ne manque, et aucune clé définie n'est orpheline côté données.
-- 🔬 **6 libellés encore en anglais** dans `fr.json` : `MONEY` → « Money », `COMPUTER_POWER`,
-      `TRACE`, `CYCLES`, `CONSOLE_LOGS`, `OVERCLOCK`. Ce sont des valeurs de remplissage.
+- 🔬 **59 clés de localisation manquantes** (recompté le 2026-08-27 contre les JSON de données) :
+      **45 `UPG_*_DESC`** — aucun générateur n'a de description, les 45 noms sont là — et **7 paires**
+      `PRESTIGE_*_NAME` / `_DESC` pour `P_ROOT`, `P_REFAC`, `P_DATAM`, `P_CLICK`, `P_POWER_START`,
+      `P_STEALTH`, `P_EMERG`. Les trois nœuds de l'Exploit, eux, ont leurs six clés.
+      Toutes se dérivent mécaniquement des ids : générables par outil.
+- 🔬 **Libellés du header à revoir** : `MONEY` = « Money » et `COMPUTER_POWER` = « Computer Power »
+      sont clairement des placeholders. `TRACE`, `CYCLES` et `OVERCLOCK` passent en français tels
+      quels et relèvent du choix de ton, pas de la traduction.
 - 📖 **2 clés mortes** dans `fr.json` : `UPGRADE_NAME_BOTNET` et `UPGRADE_NAME_BREACH_CORE`,
       vestiges d'avant la migration des noms. `CONSOLE_LOGS` n'est référencée ni par le code ni par
       un `LocalizedText` de la scène.
-- 🔬 **124 paliers écrits, mais 14 Proxies encore vides.** Le GD a rempli les données pendant l'audit : 60 paliers Hardware, 60 Scripts, et `automationLevel` sur les 15 Scripts — exactement les types où ces champs comptent. Restent `PRX_02` à `PRX_15` sans aucun palier ; ils attendaient le `TraceMultiplier`, livré le 27/08, et peuvent maintenant être écrits sur le modèle de `PRX_01`.
+- ✅ **180 paliers, 45/45 générateurs couverts** (2026-08-27). Le GD a complété les 15 Proxies :
+      quatre `TraceMultiplier` chacun aux niveaux 10 / 25 / 50 / 100, cumul ×300 uniforme.
+      Catalogue régénéré, zéro avertissement du générateur.
 - 📖 **L'équilibrage des 105 nœuds spécifiques est du remplissage.** Leur nombre et leur pertinence
       sont corrects depuis le lot 3a, mais les valeurs restent auto-générées : `maxLevel: 5`,
       `costMult: 1.4` et `bonus: 0.1` identiques pour tous, `baseCost = 50 × order`.
@@ -159,12 +144,13 @@ Compilation sans erreur ni warning.
 - 📖 **Pluriel non géré** : `UI_EXFIL_READY` dit « +1 **Cycles** CPU ». Une vraie pluralisation
       demanderait un mécanisme dans `ILocalizationService` ; reformuler la clé suffirait pour
       l'instant.
-- 📖 **Équilibrage éparpillé en constantes** : `÷100` dans `SimulationTicker`, `500 / ×3 / −20 %`
-      dans `EmergencyProtocolSystem`, `√(RunMoney/1000)` dans `UserCurrencies`, `0,05` et le
-      plafond `0,95` dans `UpgradeModel`, `1,2` et `10` dans `GameSessionManager`, `1000` dans
-      `ExfiltrationSystem`, `(600,300)` dans `PrestigePanelView`. → un `BalancingConfigSO`
-      enregistré au Root. La liste s'allonge à chaque lot : c'est devenu le principal frein à
-      l'équilibrage.
+- 📖 **Équilibrage éparpillé en constantes**, et la liste s'est allongée : `÷100` dans
+      `SimulationTicker` ; `0,05` de compression TFlops et `0,95` de plafond dans `UpgradeModel` ;
+      `0,01` de synergie Proxy dans `UpgradeManager` ; `10` d'argent de départ et `1,2` de Clean Exit
+      dans `GameSessionManager` ; `1000` par cycle CPU dans `ExfiltrationSystem` ; `300 / 30 / ×50 /
+      ×10` dans `GhostCacheSystem` ; `50 / ×3 / 20 % / 30 % / 10 % / 90 % / 60 s / 300 s` dans
+      `EmergencyProtocolSystem`. **C'est devenu le principal frein à l'équilibrage** : le GD ne peut
+      rien régler sans recompiler. Un `BalancingConfigSO` unique rendrait la main à l'inspecteur.
 - 📖 **Aucun remote Git.** Le dépôt n'existe que sur `H:\`. Accessoirement : pas de Git LFS
       (une trentaine de binaires aujourd'hui, donc sans urgence — mais la mise en place se fait
       *avant* que l'art arrive), et `.gitattributes` sans `merge=unityyamlmerge` sur `*.unity` et
