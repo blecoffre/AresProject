@@ -114,10 +114,30 @@ namespace Core.Services.Economy
             }
         }
 
+        /// <summary>
+        /// Nœud accessible : son prérequis est possédé, ou il n'en a pas. Exposé pour que la vue
+        /// reflète la règle au lieu de la redéfinir de son côté.
+        /// </summary>
+        public bool IsUnlocked(PrestigeConfigSO config)
+        {
+            if (config == null) return false;
+            if (config.Prerequisite == null) return true;
+
+            return GetLevel(config.Prerequisite.Id) > 0;
+        }
+
         public bool TryPurchasePrestige(string id)
         {
             var config = _catalog.GetById(id);
             if (config == null) return false;
+
+            // La profondeur de l'arbre est une RÈGLE, elle vit donc ici et pas seulement dans la
+            // vue. Jusqu'au 2026-08-27, seul PrestigeItemPresenter la faisait respecter : un appel
+            // direct achetait n'importe quel nœud sans ses parents — vérifié en Play Mode sur
+            // P_OVERCLOCK_AWAKE, acheté sans un seul de ses quatre ascendants. Un bouton « tout
+            // acheter », un raccourci de test oublié ou un refactor du panneau auraient suffi à
+            // rendre toute la méta-progression facultative, sans rien casser de visible.
+            if (!IsUnlocked(config)) return false;
 
             int currentLevel = GetLevel(id);
             if (currentLevel >= config.MaxLevel) return false;

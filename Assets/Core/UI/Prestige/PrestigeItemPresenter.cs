@@ -130,16 +130,10 @@ namespace Core.UI.Prestige
 
         private void RefreshView()
         {
-            // 1. Vérification du prérequis (Le Brouillard de Guerre)
-            bool isLocked = false;
-            if (_config.Prerequisite != null)
-            {
-                // Si le niveau du parent est 0, ce nœud est bloqué (caché sous un "?")
-                if (_prestigeManager.GetLevel(_config.Prerequisite.Id) == 0)
-                {
-                    isLocked = true;
-                }
-            }
+            // 1. Brouillard de guerre. La règle appartient au PrestigeManager, qui la fait aussi
+            //    respecter à l'achat : la vue ne fait que la refléter, elle ne la redéfinit plus.
+            //    Un nœud dont le parent est au niveau 0 reste caché sous un « ? ».
+            bool isLocked = !_prestigeManager.IsUnlocked(_config);
 
             _view.SetLockState(isLocked);
 

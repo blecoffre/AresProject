@@ -86,14 +86,6 @@ Compilation sans erreur ni warning.
       perceptible en éditeur.
 
 ## Hygiène
-- 🔬 **`TryPurchasePrestige` ne vérifie pas le prérequis d'un nœud.** Il ne contrôle que le
-      niveau maximum et le coût : appelé directement, il achète n'importe quel nœud de l'arbre sans
-      ses parents. Constaté en testant `P_OVERCLOCK_AWAKE`, acheté sans `P_POWER_START`.
-      Sans conséquence aujourd'hui — `PrestigeItemPresenter.RefreshView` masque et bloque tout nœud
-      dont le parent est au niveau 0 — mais la garde vit dans la VUE, pas dans le modèle, et c'est
-      elle qui porte tout le « positionnement tardif » voulu par le GD.
-
-
 - 📖 **Aucun `.asmdef`**, aucun test. Tout `Assets/Core` recompile avec le reste, et rien n'empêche
       une dépendance de `Models` vers `UI`. Proposition inchangée : `Ares.Core.Domain`,
       `Ares.Core.Presentation`, `Ares.Core.Editor` — prérequis aux tests EditMode.
@@ -158,6 +150,8 @@ Trois bugs de la même famille ont déjà coûté du temps. Le motif :
   `ITickable` sans focus, appeler `Tick()` à la main.
 
 ## Corrigé à ce jour
+
+**La profondeur de l'arbre de prestige est appliquée par le modèle** (2026-08-27, vérifié en Play Mode via MCP) — `TryPurchasePrestige` ne contrôlait que le niveau maximum et le coût : un appel direct achetait n'importe quel nœud sans ses parents, ce qui rendait toute la méta-progression facultative pour qui contournait le panneau. La règle vivait uniquement dans `PrestigeItemPresenter`, l'endroit le plus volatil du projet. Nouvelle méthode `PrestigeManager.IsUnlocked(config)`, appelée par l'achat **et** par la vue : celle-ci reflète désormais la règle au lieu de la redéfinir. Vérifié : le saut direct sur `P_OVERCLOCK_AWAKE` est refusé et **ne dépense rien** ; la chaêne complète s'achète normalement dans l'ordre, chaque maillon débloquant le suivant à l'achat ; `P_ROOT`, sans prérequis, reste accessible ; un nœud d'une autre branche (`P_EXPLOIT_MULT`) reste fermé ; le plafond de niveau tient toujours ; une config nulle rend `false` sans exception.
 
 **Chaîne « Surtension » en amont de l'Injecteur** (2026-08-27, vérifié en Play Mode via MCP) — Bertrand a écrit `P_OVERCLOCK_POWER_1/2/3` et rétabli le prérequis de `P_OVERCLOCK_AWAKE`. Deux corrections de données : leur `bonusType` était `OverclockPowerMultiplier`, absent de l'enum — le générateur **rejette** un type inconnu, les trois nœuds n'auraient pas été créés et l'Injecteur se serait retrouvé sans parent, donc accessible d'emblée ; ils sont mappés sur `ClickPowerMultiplier`, qui EST déjà ce levier (bonus 0,5 / 1 / 2 par rang, une continuation de `P_CLICK`). Le `PrestigeTreeGenerator` **avertit désormais** quand un JSON porte encore un `nameKey`/`descKey`, comme le fait celui des upgrades depuis le 25/08 ; il a immédiatement signalé sept nœuds, dont les champs ont été retirés après vérification que la clé dérivée existait bien en base. Six clés de localisation ajoutées (Surtension I à III). Arbre régénéré : **119 nœuds, zéro avertissement**. Vérifié : la chaîne remonte à `P_ROOT`, et à fond le clic passe de 0,5 s à **11,75 s** (×23,5) — ⚠️ magnitude à surveiller à l'équilibrage, un clic avancerait alors une douzaine de cycles de `SCR_01` d'un coup.
 
