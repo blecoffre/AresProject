@@ -86,6 +86,13 @@ Compilation sans erreur ni warning.
       perceptible en éditeur.
 
 ## Hygiène
+- 🔬 **Le coût affiché est INFÉRIEUR au coût réel.** `CurrencyFormatter.Format` fait un
+      `Math.Floor` sous 1 000 : `SCR_01` au niveau 1 coûte 10,7 et s'affiche « Coût: 10 ». Un
+      joueur avec exactement 10 Datas lit le prix, ne comprend pas pourquoi le bouton reste gris,
+      et conclut que le jeu est cassé. Le plancher est correct pour un SOLDE (ne jamais annoncer
+      plus d'argent qu'on en a) mais faux pour un PRIX : il faudrait un `FormatCost` qui arrondit
+      à la hausse. Constaté pendant le diagnostic du 2026-08-27.
+
 - 📖 **Aucun `.asmdef`**, aucun test. Tout `Assets/Core` recompile avec le reste, et rien n'empêche
       une dépendance de `Models` vers `UI`. Proposition inchangée : `Ares.Core.Domain`,
       `Ares.Core.Presentation`, `Ares.Core.Editor` — prérequis aux tests EditMode.
@@ -150,6 +157,8 @@ Trois bugs de la même famille ont déjà coûté du temps. Le motif :
   `ITickable` sans focus, appeler `Tick()` à la main.
 
 ## Corrigé à ce jour
+
+**Le panneau affichait les valeurs du niveau PRÉCÉDENT** (2026-08-27, constaté en jeu par Bertrand, corrigé et vérifié en Play Mode) — après le tout premier achat, `SCR_01` annonçait « Génère **0** Datas toutes les 1,5 s » alors que le modèle portait bien un rendement de 1. `UpgradeModel.LevelUp()` faisait `_currentLevel.Value++` PUIS `RecalculateCache()` : la notification R3 réveillait la vue immédiatement, et `BindLevel` lisait les caches avant leur mise à jour. Le rendement, le coût ET la durée étaient donc affichés avec un cran de retard — invisible au-delà du premier niveau, où l'écart devient un simple décalage, mais fatal au niveau 1 où la valeur précédente vaut zéro. Le niveau devient un champ `int` ordinaire, source de vérité de tous les calculs ; le `ReactiveProperty` ne sert plus qu'à notifier, et il est écrit EN DERNIER, une fois les caches cohérents — même principe que `RecalculateBonuses`. Vérifié : « Niv. 0 / Génère 0 Datas » avant achat, « Niv. 1 / Génère 1 Datas » après, et un cycle lancé à la main crédite bien 1 Data à chaque livraison.
 
 **La profondeur de l'arbre de prestige est appliquée par le modèle** (2026-08-27, vérifié en Play Mode via MCP) — `TryPurchasePrestige` ne contrôlait que le niveau maximum et le coût : un appel direct achetait n'importe quel nœud sans ses parents, ce qui rendait toute la méta-progression facultative pour qui contournait le panneau. La règle vivait uniquement dans `PrestigeItemPresenter`, l'endroit le plus volatil du projet. Nouvelle méthode `PrestigeManager.IsUnlocked(config)`, appelée par l'achat **et** par la vue : celle-ci reflète désormais la règle au lieu de la redéfinir. Vérifié : le saut direct sur `P_OVERCLOCK_AWAKE` est refusé et **ne dépense rien** ; la chaêne complète s'achète normalement dans l'ordre, chaque maillon débloquant le suivant à l'achat ; `P_ROOT`, sans prérequis, reste accessible ; un nœud d'une autre branche (`P_EXPLOIT_MULT`) reste fermé ; le plafond de niveau tient toujours ; une config nulle rend `false` sans exception.
 

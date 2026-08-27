@@ -20,6 +20,18 @@ namespace Core.Models.Economy
 
         public UpgradeConfigSO Config { get; }
 
+        /// <summary>
+        /// Niveau courant, et <b>source de vérité de tous les calculs</b>. Le ReactiveProperty
+        /// ci-dessous ne sert qu'à notifier.
+        ///
+        /// La distinction n'est pas cosmétique : `_currentLevel.Value++` réveille ses abonnés
+        /// IMMÉDIATEMENT, avant que RecalculateCache() n'ait tourné. Tant que les calculs lisaient
+        /// le ReactiveProperty, la vue était donc rafraîchie avec les caches du niveau PRÉCÉDENT :
+        /// après le tout premier achat, le panneau affichait « Génère 0 Datas », la valeur du
+        /// niveau 0. Constaté en jeu le 2026-08-27.
+        /// </summary>
+        private int _level;
+
         private readonly ReactiveProperty<int> _currentLevel;
         public ReadOnlyReactiveProperty<int> CurrentLevel => _currentLevel;
 
@@ -70,12 +82,13 @@ namespace Core.Models.Economy
         {
             Config = config;
             _balancing = balancing;
-            _currentLevel = new ReactiveProperty<int>(savedLevel < 0 ? 0 : savedLevel);
+            _level = savedLevel < 0 ? 0 : savedLevel;
+            _currentLevel = new ReactiveProperty<int>(_level);
 
             RecalculateCache();
         }
 
-        public bool IsOwned => _currentLevel.CurrentValue > 0;
+        public bool IsOwned => _level > 0;
 
         /// <summary>
         /// Niveau à partir duquel le générateur relance ses cycles seul.
@@ -84,7 +97,7 @@ namespace Core.Models.Economy
         /// </summary>
         public int AutomationThreshold => Math.Max(1, Config.AutomationLevel - _automationThresholdReduction);
 
-        public bool IsAutomated => _currentLevel.CurrentValue >= AutomationThreshold;
+        public bool IsAutomated => _level >= AutomationThreshold;
 
         public void SetAutomationThresholdReduction(int levels)
         {
@@ -164,7 +177,7 @@ namespace Core.Models.Economy
             // On empêche le multiplicateur de descendre sous 1.01, sinon la courbe de coût s'aplatit
             // et l'économie n'a plus de frein.
             double finalMultiplier = Math.Max(1.01d, Config.CostMultiplier - costMultiplierReduction);
-            return AdjustedBaseCost * Math.Pow(finalMultiplier, _currentLevel.CurrentValue);
+            return AdjustedBaseCost * Math.Pow(finalMultiplier, _level);
         }
 
         /// <summary>Coût de base après réduction ciblée. Bornée pour qu'un générateur ne soit jamais gratuit.</summary>
@@ -196,13 +209,19 @@ namespace Core.Models.Economy
 
         public void LevelUp()
         {
-            _currentLevel.Value++;
+            _level++;
+
+            // Recalcul AVANT notification, et l'ordre est tout l'enjeu : la vue se rafraîchit sur
+            // ce signal et lit les caches dans la foulée. Notifier d'abord lui donnait les valeurs
+            // du niveau précédent — rendement, coût et durée affichés avec un cran de retard.
             RecalculateCache();
+
+            _currentLevel.Value = _level;
         }
 
         private void RecalculateCache()
         {
-            int level = _currentLevel.CurrentValue;
+            int level = _level;
 
             // Les bonus ciblés s'appliquent aux valeurs de BASE — c'est le sens littéral des
             // trois types de nœuds (« réduit le coût de base », « augmente le rendement de
