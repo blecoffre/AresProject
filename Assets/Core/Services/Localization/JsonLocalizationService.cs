@@ -71,7 +71,7 @@ namespace Core.Services.Localization
             return $"[{key}]"; // Fallback visuel si la clé manque
         }
 
-        // TODO (thème Perf) : ces trois surcharges promettent "Zero Boxing" mais string.Format
+        // TODO (thème Perf) : ces quatre surcharges promettent "Zero Boxing" mais string.Format
         // boxe chaque type valeur. À remplacer par ZString.Format<T0>.
         public string GetText<T0>(string key, T0 arg0)
         {
@@ -86,6 +86,11 @@ namespace Core.Services.Localization
         public string GetText<T0, T1, T2>(string key, T0 arg0, T1 arg1, T2 arg2)
         {
             return string.Format(GetText(key), arg0, arg1, arg2);
+        }
+
+        public string GetText<T0, T1, T2, T3>(string key, T0 arg0, T1 arg1, T2 arg2, T3 arg3)
+        {
+            return string.Format(GetText(key), arg0, arg1, arg2, arg3);
         }
 
         // --- Structures internes pour la sérialisation JSON de Unity ---

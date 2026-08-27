@@ -21,6 +21,45 @@
       "posX": -2.0,
       "posY": 2.0,
       "prerequisiteId": "P_REFAC"
+    },
+    {
+      "id": "P_EXPLOIT_CHARGES",
+      "nameKey": "UI_PRESTIGE_EXPLOIT_CHARGES_NAME",
+      "descKey": "UI_PRESTIGE_EXPLOIT_CHARGES_DESC",
+      "bonusType": "UnlockExploitCharges",
+      "maxLevel": 5,
+      "baseCost": 100.0,
+      "costMult": 2.5,
+      "bonus": 1.0,
+      "posX": 2.0,
+      "posY": 4.0,
+      "prerequisiteId": "P_EMERG"
+    },
+    {
+      "id": "P_EXPLOIT_MULT",
+      "nameKey": "UI_PRESTIGE_EXPLOIT_MULT_NAME",
+      "descKey": "UI_PRESTIGE_EXPLOIT_MULT_DESC",
+      "bonusType": "ExploitYieldBoost",
+      "maxLevel": 10,
+      "baseCost": 250.0,
+      "costMult": 2.0,
+      "bonus": 0.1,
+      "posX": 4.0,
+      "posY": 4.0,
+      "prerequisiteId": "P_EXPLOIT_CHARGES"
+    },
+    {
+      "id": "P_EXPLOIT_TRACE_REDUC",
+      "nameKey": "UI_PRESTIGE_EXPLOIT_TRACE_NAME",
+      "descKey": "UI_PRESTIGE_EXPLOIT_TRACE_DESC",
+      "bonusType": "ExploitTracePenaltyReduction",
+      "maxLevel": 5,
+      "baseCost": 400.0,
+      "costMult": 2.2,
+      "bonus": 0.5,
+      "posX": 3.0,
+      "posY": 5.0,
+      "prerequisiteId": "P_EXPLOIT_CHARGES"
     }
   ]
 }

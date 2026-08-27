@@ -21,5 +21,10 @@
         /// Retourne le texte formaté avec 3 arguments (Zero Boxing).
         /// </summary>
         string GetText<T0, T1, T2>(string key, T0 arg0, T1 arg1, T2 arg2);
+
+        /// <summary>
+        /// Retourne le texte formaté avec 4 arguments (Zero Boxing).
+        /// </summary>
+        string GetText<T0, T1, T2, T3>(string key, T0 arg0, T1 arg1, T2 arg2, T3 arg3);
     }
 }

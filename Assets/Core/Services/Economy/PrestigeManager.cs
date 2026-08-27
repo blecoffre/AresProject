@@ -43,6 +43,26 @@ namespace Core.Services.Economy
         public ReactiveProperty<double> StartingComputerPower { get; } = new(0d);
         public ReactiveProperty<bool> IsEmergencyUnlocked { get; } = new(false);
 
+        /// <summary>
+        /// Nombre de charges de Ghost Cache que le joueur peut stocker. <b>Vaut 0 par défaut</b> :
+        /// le Zéro-Day Exploit est verrouillé tant que le nœud `P_EXPLOIT_CHARGES` n'a pas été
+        /// acheté au moins une fois. Le Ghost Cache continue de capter l'excédent, mais la
+        /// capacité étant nulle, rien ne s'accumule.
+        /// </summary>
+        public ReactiveProperty<int> ExploitMaxCharges { get; } = new(0);
+
+        /// <summary>
+        /// Majoration du multiplicateur de rendement de l'Exploit, en fraction. 1 = doublement du
+        /// ×50 de base, donc ×100. Additif et non exponentiel, comme tous les bonus du projet.
+        /// </summary>
+        public ReactiveProperty<double> ExploitYieldBoost { get; } = new(0d);
+
+        /// <summary>
+        /// Points retirés au malus de Trace de l'Exploit. Le multiplicateur effectif vaut
+        /// `×10 − cette valeur`, borné à ×1 : le joueur ne peut jamais rendre l'Exploit indolore.
+        /// </summary>
+        public ReactiveProperty<float> ExploitTracePenaltyReduction { get; } = new(0f);
+
         public PrestigeManager(PrestigeCatalogSO catalog, UserCurrencies currencies)
         {
             _catalog = catalog;
@@ -146,6 +166,9 @@ namespace Core.Services.Economy
             double startingFunds = 0d;
             double startingPower = 0d;
             bool emergencyUnlocked = false;
+            int exploitCharges = 0;
+            double exploitYieldBoost = 0d;
+            float exploitTraceRelief = 0f;
 
             foreach (var kvp in _prestigeLevels)
             {
@@ -187,6 +210,20 @@ namespace Core.Services.Economy
                         if (currentLevel > 0) emergencyUnlocked = true;
                         break;
 
+                    // Arrondi et non troncature : un BonusPerLevel de 1 stocké en float peut
+                    // valoir 0,99999994, et (int)(0,99999994 × 5) rendrait 4 charges au lieu de 5.
+                    case PrestigeBonusType.UnlockExploitCharges:
+                        exploitCharges += UnityEngine.Mathf.RoundToInt(totalBonus);
+                        break;
+
+                    case PrestigeBonusType.ExploitYieldBoost:
+                        exploitYieldBoost += totalBonus;
+                        break;
+
+                    case PrestigeBonusType.ExploitTracePenaltyReduction:
+                        exploitTraceRelief += totalBonus;
+                        break;
+
                     case PrestigeBonusType.SpecificUpgradeCostReduction:
                         AccumulateSpecific(config.TargetUpgradeId, totalBonus, SpecificKind.Cost);
                         break;
@@ -209,6 +246,9 @@ namespace Core.Services.Economy
             StartingMoney.Value = startingFunds;
             StartingComputerPower.Value = startingPower;
             IsEmergencyUnlocked.Value = emergencyUnlocked;
+            ExploitMaxCharges.Value = exploitCharges < 0 ? 0 : exploitCharges;
+            ExploitYieldBoost.Value = exploitYieldBoost < 0d ? 0d : exploitYieldBoost;
+            ExploitTracePenaltyReduction.Value = exploitTraceRelief < 0f ? 0f : exploitTraceRelief;
 
             // Émis EN DERNIER, une fois la table et les scalaires cohérents. C'est ce signal qui
             // pousse les bonus ciblés dans les UpgradeModel : sans lui, ils seraient ignorés au
@@ -274,6 +314,9 @@ namespace Core.Services.Economy
             StartingMoney.Dispose();
             StartingComputerPower.Dispose();
             IsEmergencyUnlocked.Dispose();
+            ExploitMaxCharges.Dispose();
+            ExploitYieldBoost.Dispose();
+            ExploitTracePenaltyReduction.Dispose();
         }
     }
 }

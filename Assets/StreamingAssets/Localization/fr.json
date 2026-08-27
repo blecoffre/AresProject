@@ -338,7 +338,7 @@
     },
     {
       "Key": "UI_GHOSTCACHE_READY",
-      "Value": "[ARMÉ] ZÉRO-DAY EXPLOIT — rendement x{0} pendant {1} s / proxies hors ligne, trace x{2}"
+      "Value": "[ARMÉ ×{0}] ZÉRO-DAY EXPLOIT — rendement x{1:0.#} pendant {2:0.#} s / proxies hors ligne, trace x{3:0.#}"
     },
     {
       "Key": "UI_GHOSTCACHE_ACTIVE",
@@ -351,6 +351,34 @@
     {
       "Key": "LOG_OVERDRIVE_END",
       "Value": "> Exploit épuisé. Proxies de nouveau en ligne."
+    },
+    {
+      "Key": "UI_GHOSTCACHE_LOCKED",
+      "Value": "[VERROUILLÉ] Ghost Cache — requiert le nœud Capacité du Ghost Cache"
+    },
+    {
+      "Key": "PRESTIGE_P_EXPLOIT_CHARGES_NAME",
+      "Value": "Capacité du Ghost Cache"
+    },
+    {
+      "Key": "PRESTIGE_P_EXPLOIT_CHARGES_DESC",
+      "Value": "Débloque le Zéro-Day Exploit et permet de stocker une charge de Ghost Cache supplémentaire par rang."
+    },
+    {
+      "Key": "PRESTIGE_P_EXPLOIT_MULT_NAME",
+      "Value": "Optimisation de l'Exploit"
+    },
+    {
+      "Key": "PRESTIGE_P_EXPLOIT_MULT_DESC",
+      "Value": "Majore le rendement du Zéro-Day Exploit de 10 % par rang, au-dessus du x50 de base."
+    },
+    {
+      "Key": "PRESTIGE_P_EXPLOIT_TRACE_REDUC_NAME",
+      "Value": "Isolation Réseau"
+    },
+    {
+      "Key": "PRESTIGE_P_EXPLOIT_TRACE_REDUC_DESC",
+      "Value": "Allège le malus de Trace subi pendant l'Exploit, sans jamais pouvoir le supprimer."
     }
   ]
 }

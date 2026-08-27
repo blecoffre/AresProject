@@ -10,9 +10,14 @@ namespace Core.Services.Simulation
     ///
     /// Jusqu'ici, l'excédent de dissipation des Proxies était purement jeté : au-delà du point
     /// où la Trace cessait de monter, chaque Proxie supplémentaire ne servait plus à rien. Ce
-    /// système le capte et le transforme en une charge unique, échangeable contre 30 secondes de
-    /// production démesurée — pendant lesquelles tous les Proxies s'éteignent et le joueur se
-    /// retrouve à découvert.
+    /// système le capte et le transforme en charges, chacune échangeable contre 30 secondes de
+    /// production démesurée — pendant lesquelles tous les Proxies s'éteignent et la Trace brute
+    /// est elle-même multipliée. Le joueur est à découvert, deux fois.
+    ///
+    /// <b>Le nombre de charges vient du prestige</b>, via le nœud `P_EXPLOIT_CHARGES` : zéro au
+    /// départ, donc l'Exploit est verrouillé tant qu'il n'a pas été acheté, et rien ne
+    /// s'accumule. Deux autres nœuds ajustent l'effet : `P_EXPLOIT_MULT` (rendement) et
+    /// `P_EXPLOIT_TRACE_REDUC` (malus de Trace).
     ///
     /// <b>La charge se remplit en TEMPS, pas en magnitude.</b> Une seconde passée en excédent
     /// vaut une seconde de charge, que l'excédent soit de 1 ou de 100 000. C'est ce qui rend la
@@ -33,8 +38,9 @@ namespace Core.Services.Simulation
     public class GhostCacheSystem : IDisposable
     {
         /// <summary>
-        /// Secondes d'excédent de dissipation à accumuler pour une charge. Cinq minutes de
-        /// « sur-défense » pure (tranché par le GD le 2026-08-27).
+        /// Secondes d'excédent de dissipation à accumuler pour UNE charge. Cinq minutes de
+        /// « sur-défense » pure (tranché par le GD le 2026-08-27). Le nombre de charges
+        /// stockables vient du nœud de prestige `P_EXPLOIT_CHARGES`.
         /// TODO (BalancingConfigSO) : cette constante doit rejoindre les autres réglages.
         /// </summary>
         public const float CapacitySeconds = 300f;
@@ -67,12 +73,16 @@ namespace Core.Services.Simulation
         public const float OverdriveTraceMultiplier = 10f;
 
         private readonly UpgradeManager _upgradeManager;
+        private readonly PrestigeManager _prestigeManager;
 
         private readonly ReactiveProperty<float> _chargeSeconds = new(0f);
         private readonly ReactiveProperty<bool> _isOverdriveActive = new(false);
         private readonly ReactiveProperty<float> _overdriveRemaining = new(0f);
 
-        /// <summary>Charge accumulée, en secondes d'excédent. Bornée par <see cref="CapacitySeconds"/>.</summary>
+        /// <summary>
+        /// Charge accumulée, en secondes d'excédent, toutes charges confondues. Bornée par
+        /// <see cref="TotalCapacitySeconds"/>, qui dépend du prestige.
+        /// </summary>
         public ReadOnlyReactiveProperty<float> ChargeSeconds => _chargeSeconds;
 
         /// <summary>Le Zéro-Day Exploit tourne-t-il en ce moment.</summary>
@@ -81,34 +91,81 @@ namespace Core.Services.Simulation
         /// <summary>Secondes restantes d'Exploit. Vaut 0 hors Overdrive.</summary>
         public ReadOnlyReactiveProperty<float> OverdriveRemaining => _overdriveRemaining;
 
-        /// <summary>Charge disponible et Exploit à l'arrêt : le bouton est actionnable.</summary>
-        public bool IsReady => _chargeSeconds.CurrentValue >= CapacitySeconds
-                               && !_isOverdriveActive.CurrentValue;
+        /// <summary>
+        /// Le Zéro-Day Exploit est-il débloqué. Faux tant que le nœud `P_EXPLOIT_CHARGES` n'a pas
+        /// été acheté : la capacité vaut alors zéro et rien ne s'accumule.
+        /// </summary>
+        public bool IsUnlocked => _prestigeManager.ExploitMaxCharges.CurrentValue > 0;
 
-        /// <summary>Avancement de la charge, de 0 à 1. Pour la jauge de la vue.</summary>
-        public float NormalizedCharge => _chargeSeconds.CurrentValue / CapacitySeconds;
+        /// <summary>Charges complètes stockables, depuis le prestige. Vaut 0 tant que verrouillé.</summary>
+        public int MaxCharges => _prestigeManager.ExploitMaxCharges.CurrentValue;
 
-        public GhostCacheSystem(UpgradeManager upgradeManager)
+        /// <summary>Charges complètes disponibles à cet instant.</summary>
+        public int AvailableCharges => (int)(_chargeSeconds.CurrentValue / CapacitySeconds);
+
+        /// <summary>Plafond d'accumulation, en secondes : une charge pleine par rang acheté.</summary>
+        public float TotalCapacitySeconds => MaxCharges * CapacitySeconds;
+
+        /// <summary>Au moins une charge pleine, et Exploit à l'arrêt : le bouton est actionnable.</summary>
+        public bool IsReady => AvailableCharges >= 1 && !_isOverdriveActive.CurrentValue;
+
+        /// <summary>
+        /// Avancement de la charge EN COURS, de 0 à 1 — pas de la réserve entière. La vue montre
+        /// ainsi « deux charges prêtes, la troisième à 40 % » plutôt qu'une barre qui rampe :
+        /// c'est la COULEUR qui dit « armé », la barre reste libre de montrer la suite.
+        /// Vaut 1 quand toutes les charges sont pleines, et 0 tant que l'Exploit est verrouillé.
+        /// </summary>
+        public float NormalizedCharge
+        {
+            get
+            {
+                if (!IsUnlocked) return 0f;
+                if (AvailableCharges >= MaxCharges) return 1f;
+
+                return (_chargeSeconds.CurrentValue % CapacitySeconds) / CapacitySeconds;
+            }
+        }
+
+        /// <summary>
+        /// Multiplicateur de rendement effectif, nœud `P_EXPLOIT_MULT` compris.
+        /// ×50 de base, ×100 au rang 10.
+        /// </summary>
+        public double EffectiveYieldMultiplier =>
+            OverdriveYieldMultiplier * (1d + _prestigeManager.ExploitYieldBoost.CurrentValue);
+
+        /// <summary>
+        /// Malus de Trace effectif, nœud `P_EXPLOIT_TRACE_REDUC` compris. Borné à ×1 : le joueur
+        /// peut alléger le malus, jamais le supprimer ni le retourner en bonus.
+        /// </summary>
+        public float EffectiveTraceMultiplier => Mathf.Max(
+            1f,
+            OverdriveTraceMultiplier - _prestigeManager.ExploitTracePenaltyReduction.CurrentValue);
+
+        public GhostCacheSystem(UpgradeManager upgradeManager, PrestigeManager prestigeManager)
         {
             _upgradeManager = upgradeManager;
+            _prestigeManager = prestigeManager;
         }
 
         /// <summary>
         /// Capte une frame d'excédent. Appelé par le SimulationTicker, et par lui seul : c'est
         /// lui qui tient le calcul du débit et sait donc si la dissipation dépasse la génération.
         ///
-        /// Sans effet une fois la jauge pleine : le GD a tranché un plafond d'UNE charge, pour
-        /// forcer le joueur à consommer la mécanique plutôt qu'à la thésauriser.
+        /// Sans effet une fois la réserve pleine — le plafond étant borné par le prestige, on ne
+        /// thésaurise jamais à l'infini — ni tant que l'Exploit est verrouillé.
         /// </summary>
         public void Accumulate(float deltaTime)
         {
             if (deltaTime <= 0f) return;
             if (_isOverdriveActive.CurrentValue) return;
 
-            float current = _chargeSeconds.CurrentValue;
-            if (current >= CapacitySeconds) return;
+            float capacity = TotalCapacitySeconds;
+            if (capacity <= 0f) return; // Exploit encore verrouillé : rien à stocker.
 
-            _chargeSeconds.Value = Mathf.Min(CapacitySeconds, current + deltaTime);
+            float current = _chargeSeconds.CurrentValue;
+            if (current >= capacity) return;
+
+            _chargeSeconds.Value = Mathf.Min(capacity, current + deltaTime);
         }
 
         /// <summary>
@@ -143,11 +200,13 @@ namespace Core.Services.Simulation
         {
             if (!IsReady) return false;
 
-            _chargeSeconds.Value = 0f;
+            // UNE charge consommée, pas la réserve : un joueur qui en a stocké trois doit pouvoir
+            // enchaîner trois Exploits. Le reste de la barre est conservé tel quel.
+            _chargeSeconds.Value = Mathf.Max(0f, _chargeSeconds.CurrentValue - CapacitySeconds);
             _overdriveRemaining.Value = OverdriveDurationSeconds;
             _isOverdriveActive.Value = true;
 
-            _upgradeManager.SetGlobalYieldMultiplier(OverdriveYieldMultiplier);
+            _upgradeManager.SetGlobalYieldMultiplier(EffectiveYieldMultiplier);
 
             Debug.Log("[GhostCache] ZÉRO-DAY EXPLOIT. Proxies hors ligne pour "
                       + OverdriveDurationSeconds + " s.");
@@ -173,7 +232,9 @@ namespace Core.Services.Simulation
         /// </summary>
         public void RestoreCharge(float seconds)
         {
-            _chargeSeconds.Value = Mathf.Clamp(seconds, 0f, CapacitySeconds);
+            // Borné sur la capacité COURANTE : le GameStateGateway restaure le prestige (étape 3)
+            // avant le Ghost Cache (étape 4), donc le nombre de charges est déjà connu ici.
+            _chargeSeconds.Value = Mathf.Clamp(seconds, 0f, TotalCapacitySeconds);
             EndOverdrive();
         }
 

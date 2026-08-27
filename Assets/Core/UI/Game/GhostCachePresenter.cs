@@ -1,4 +1,5 @@
 using Core.Models.Console;
+using Core.Services.Economy;
 using Core.Services.Localization;
 using Core.Services.Simulation;
 using R3;
@@ -19,6 +20,7 @@ namespace Core.UI.Game
     {
         private readonly GhostCacheView _view;
         private readonly GhostCacheSystem _ghostCache;
+        private readonly PrestigeManager _prestige;
         private readonly ConsolePresenter _console;
         private readonly ILocalizationService _loc;
 
@@ -27,11 +29,13 @@ namespace Core.UI.Game
         public GhostCachePresenter(
             GhostCacheView view,
             GhostCacheSystem ghostCache,
+            PrestigeManager prestige,
             ConsolePresenter console,
             ILocalizationService loc)
         {
             _view = view;
             _ghostCache = ghostCache;
+            _prestige = prestige;
             _console = console;
             _loc = loc;
         }
@@ -46,6 +50,15 @@ namespace Core.UI.Game
             _ghostCache.ChargeSeconds
                 .Select(seconds => Mathf.RoundToInt(seconds / GhostCacheSystem.CapacitySeconds * 100f))
                 .DistinctUntilChanged()
+                .Subscribe(_ => Refresh())
+                .AddTo(ref _disposables);
+
+            // Les TROIS nœuds de l'Exploit changent ce qu'affiche le bouton : le déblocage et la
+            // capacité, le multiplicateur de rendement, le malus de Trace. On écoute donc le
+            // signal de recalcul global plutôt que chaque propriété — s'abonner à la seule
+            // capacité laissait le bouton annoncer ×50 alors que le joueur venait d'acheter
+            // les dix rangs qui le portent à ×100.
+            _prestige.OnBonusesRecalculated
                 .Subscribe(_ => Refresh())
                 .AddTo(ref _disposables);
 
@@ -90,18 +103,39 @@ namespace Core.UI.Game
                 return;
             }
 
+            // Verrouillé tant que `P_EXPLOIT_CHARGES` n'a pas été acheté. État à part entière et
+            // non un bouton grisé muet : le joueur doit savoir OÙ aller le débloquer, sinon il
+            // regarde une barre inerte sans comprendre.
+            if (!_ghostCache.IsUnlocked)
+            {
+                _view.ApplyState(
+                    _loc.GetText("UI_GHOSTCACHE_LOCKED"),
+                    interactable: false,
+                    fillAmount: 0f,
+                    fillColor: _view.ChargingColor);
+
+                return;
+            }
+
             if (_ghostCache.IsReady)
             {
-                // Les trois nombres viennent des constantes, jamais du texte : sinon un
-                // rééquilibrage du multiplicateur laisserait le bouton mentir au joueur.
+                // Les quatre nombres viennent des constantes et du prestige, jamais du texte :
+                // sinon un rééquilibrage laisserait le bouton mentir au joueur.
                 _view.ApplyState(
                     _loc.GetText(
                         "UI_GHOSTCACHE_READY",
-                        Mathf.RoundToInt((float)GhostCacheSystem.OverdriveYieldMultiplier),
-                        Mathf.RoundToInt(GhostCacheSystem.OverdriveDurationSeconds),
-                        Mathf.RoundToInt(GhostCacheSystem.OverdriveTraceMultiplier)),
+                        _ghostCache.AvailableCharges,
+                        // Valeurs BRUTES : le gabarit les met en forme avec « 0.# », ce qui rend
+                        // « 100 » et « 7,5 ». Les arrondir ici affichait « x8 » pour un malus
+                        // réel de 7,5 — le bouton mentait d'un demi-point.
+                        _ghostCache.EffectiveYieldMultiplier,
+                        GhostCacheSystem.OverdriveDurationSeconds,
+                        _ghostCache.EffectiveTraceMultiplier),
                     interactable: true,
-                    fillAmount: 1f,
+                    // Avancement de la charge SUIVANTE, pas 1 : c'est la couleur qui dit
+                    // « armé », la barre reste libre de montrer ce qui se recharge derrière.
+                    // Elle atteint 1 d'elle-même quand toutes les charges sont pleines.
+                    fillAmount: _ghostCache.NormalizedCharge,
                     fillColor: _view.ReadyColor);
 
                 return;

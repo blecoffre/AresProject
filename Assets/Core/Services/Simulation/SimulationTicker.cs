@@ -79,7 +79,7 @@ namespace Core.Services.Simulation
             // arithmétique — la multiplication commute — mais dit la bonne chose : la réduction
             // passive protège toujours proportionnellement, y compris pendant l'Exploit.
             bool isOverdrive = _ghostCache.IsOverdriveActive.CurrentValue;
-            if (isOverdrive) brute *= GhostCacheSystem.OverdriveTraceMultiplier;
+            if (isOverdrive) brute *= _ghostCache.EffectiveTraceMultiplier;
 
             float dissipation = isOverdrive
                 ? 0f

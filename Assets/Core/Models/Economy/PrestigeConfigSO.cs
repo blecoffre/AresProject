@@ -13,7 +13,13 @@ namespace Core.Models.Economy
         UnlockEmergencyButton,    // Déblocage du système d'urgence
         SpecificUpgradeCostReduction, // Réduit le coût de base
         SpecificUpgradeYieldBoost,    // Augmente le rendement de base
-        SpecificUpgradeTimeReduction  // Réduit le temps de cycle
+        SpecificUpgradeTimeReduction, // Réduit le temps de cycle
+
+        // Zéro-Day Exploit. Appendés en fin d'enum à dessein : l'index est sérialisé dans les
+        // .asset générés, une insertion au milieu redéfinirait silencieusement tous les nœuds.
+        UnlockExploitCharges,         // Nombre de charges de Ghost Cache stockables (0 = verrouillé)
+        ExploitYieldBoost,            // Majore le multiplicateur de rendement de l'Exploit
+        ExploitTracePenaltyReduction  // Allège le malus de Trace subi pendant l'Exploit
     }
 
     [CreateAssetMenu(fileName = "NewPrestigeConfig", menuName = "Core/Economy/Prestige Config")]

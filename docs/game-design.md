@@ -90,6 +90,24 @@ Valeurs tranchées par le GD le 2026-08-27. L'excédent de dissipation, jusque-l
 
 ⚠️ **Conséquence mesurée du ×10 : les 30 secondes ne sont jamais atteintes.** La dissipation valant zéro, le temps de survie depuis une jauge vide vaut `100 / (génération × 10)`. Tenir les 30 s exige donc une génération ≤ **0,33 Trace/s**, alors qu'un seul `SCR_01` de niveau 1 en produit déjà 0,5. Vérifié en Play Mode avec `SCR_01` niveau 12 et `HW_01` niveau 4 (6,32 Trace/s) : jauge remplie à 0,632/s, saisie à **1,58 s**. L'Exploit est donc, en l'état, un bouton « encaisse et exfiltre » de une à deux secondes, pas une fenêtre de 30 s. À arbitrer — voir `backlog.md`.
 
+### Les trois nœuds de prestige de l'Exploit
+
+Ajoutés le 2026-08-27, branche Économie, tous trois derrière `P_EMERG`.
+
+| Nœud | Rangs | Par rang | Au maximum |
+|---|---|---|---|
+| `P_EXPLOIT_CHARGES` | 5 | +1 charge stockable | 5 charges, soit 1 500 s de réserve |
+| `P_EXPLOIT_MULT` | 10 | +10 % de rendement | ×100 au lieu de ×50 |
+| `P_EXPLOIT_TRACE_REDUC` | 5 | −0,5 sur le malus de Trace | ×7,5 au lieu de ×10 |
+
+**Le Zéro-Day Exploit est VERROUILLÉ au départ.** `P_EXPLOIT_CHARGES` vaut 0 tant qu'il n'est pas
+acheté, donc la capacité du Ghost Cache est nulle et **rien ne s'accumule** — pas de réserve
+fantôme qui attendrait un déblocage. Le bouton porte un quatrième état, verrouillé, qui nomme le
+nœud à acheter plutôt que de rester gris et muet.
+
+Le malus de Trace est borné à ×1 : le joueur peut l'alléger, jamais le supprimer ni le retourner
+en bonus.
+
 **Cas limites, tranchés par le GD :**
 
 - **Mort pendant l'Exploit** → la charge est perdue. C'est la punition pour avoir mal calculé son pari.
