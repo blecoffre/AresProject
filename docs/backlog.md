@@ -1,63 +1,175 @@
-# Backlog — reste de l'audit du 2026-08-25
+# Backlog — audit du 2026-08-27
 
-_Complété le 2026-08-25 par une seconde passe de vérification : les entrées annotées « Précision » ou « Confirmé » et les six constats nouveaux (localisation, paliers sans données, placeholders de prestige, ordre du reset de fin de run, assets orphelins, remote Git) en sont issus._
+Audit complet refait à cette date. Le précédent (2026-08-25) contenait au moins une entrée fausse
+propagée sans vérification, alors qu'elle décrivait un **comportement** et non du code.
 
-Rapport d'audit complet et priorisé : https://claude.ai/code/artifact/fa8276c0-1c93-4757-aabb-89716bad7dcf
+**Méthode retenue, à conserver pour les prochains audits.** Chaque entrée porte sa nature :
+
+- 🔬 **vérifié en Play Mode** — le comportement a été observé, pas déduit
+- 📖 **lecture de code** — constat statique, vrai par construction (appelant absent, champ non lu…)
+- ⚖️ **estimation** — plausible mais non mesuré ; ne pas planifier un lot dessus sans mesurer d'abord
+
+Un « X n'a aucun appelant » est un constat de lecture. « La fonctionnalité est cassée » est un
+constat de comportement, et demande le Play Mode. Ne pas confondre les deux : c'est exactement
+l'erreur qui avait produit l'entrée fausse sur la révélation progressive.
+
+État de la base : 59 fichiers runtime, 6 fichiers d'éditeur, ~6 600 lignes dans `Assets/Core`.
+Compilation sans erreur ni warning.
+
+---
 
 ## À faire par Bertrand dans Unity
 
-_Rien en attente côté Unity._
+- [ ] 🔬 **Faute de frappe `COMPTUER_POWER`** sur `Canvas/Header/Currencies/ComputerPower/CurrencyName`.
+      La clé définie est `COMPUTER_POWER`. Ce `LocalizedText` n'est en plus **pas dans la liste
+      « Auto Inject Game Objects »** du `GameSceneLifetimeScope` — contrairement à ses trois voisins
+      `MONEY`, `TRACE` et `CYCLES` — donc il affiche en permanence le texte du prefab, `CURRENCY:`.
+      Deux corrections : la clé, et l'ajout à la liste.
+- [ ] 🔬 **`LocalizedText` parasite sur le bouton d'exfiltration.**
+      `Canvas/ConsoleLogs/PrestigeButton/Text (TMP)` porte un `LocalizedText` de clé `OVERCLOCK`,
+      vestige de la duplication du bouton Overclock. Il est inoffensif aujourd'hui parce qu'il n'est
+      pas injecté, mais s'il l'était il écraserait le libellé écrit par `ExfiltrationPresenter`.
+      À supprimer du GameObject.
 
 ## Majeurs restants
 
-- **Le nœud de prestige d'automatisation n'existe pas encore** dans les données. Prévu ciblé (`TargetUpgradeId`), achetable par rangs, abaissant `AutomationLevel`. Hook prêt : `UpgradeModel.SetAutomationThresholdReduction()`.
-- **Le Bouton d'Urgence n'a aucune UI.** `EmergencyProtocolSystem.TryTriggerEmergency()` n'a aucun appelant — la mécanique de Risk/Reward du GDD n'est pas jouable. (Sa portée `Scoped` erronée est corrigée.)
-- **Le `SaveScheduler` abandonne silencieusement une écriture** si une autre est en vol (`_isWriting`). Le commentaire justifie l'abandon par « la prochaine capturera un état plus récent », ce qui ne tient que s'il y a une prochaine : constaté au test, trois achats de prestige rapprochés suivis d'un Game Over ont fait perdre l'écriture de fin de run. Sans conséquence ici — le wipe précède désormais toute capture, donc l'écriture suivante est correcte — mais un drapeau « écriture en attente » serait plus sûr qu'un abandon.
-- **Le système de paliers ne pilote aucune donnée.** `UpgradeMilestone`, le cache de `UpgradeModel` et le tri à la génération sont livrés et propres, mais **aucun des trois JSON ne contient un seul `milestones` ni un seul `automationLevel`**. Les 45 générateurs tournent en rendement linéaire avec un seuil d'automatisation à 10 par défaut : la mécanique décrite dans `cycles.md` n'est pas testable en l'état. → écrire les paliers des 15 Scripts en priorité.
-- **L'équilibrage des 105 nœuds spécifiques est du remplissage.** Leur nombre et leur pertinence sont corrects depuis le lot 3a, mais les valeurs restent auto-générées : `maxLevel: 5`, `costMult: 1.4` et `bonus: 0.1` identiques pour tous, `baseCost = 50 × order`. À équilibrer pour de bon une fois les effets branchés.
+- 🔬 **L'Overclock « réveil » n'est pas implémenté.** Vérifié : SCR_01 acheté niveau 1, donc possédé
+      et non automatisé ; un `TriggerManualOverclock()` suivi d'un `Tick()` laisse `IsRunning` à faux.
+      Or `game-design.md` tranche depuis le 2026-08-26 qu'un clic doit **démarrer tous les Scripts
+      possédés à l'arrêt ET avancer ceux qui tournent**. Aujourd'hui il ne fait que la seconde
+      moitié. Environ dix lignes dans `OverclockSystem` et `ScriptCycleRunner`.
+- 📖 **Le Bouton d'Urgence n'a aucune UI.** `EmergencyProtocolSystem.TryTriggerEmergency()` n'a
+      toujours aucun appelant. Le système est vivant — coût de départ 500, compteur d'usages
+      persisté — mais la seconde moitié du Risk/Reward du GDD reste injouable, et
+      `IsEmergencyUnlocked` est le dernier bonus de prestige sans consommateur.
+- 📖 **Le nœud de prestige d'automatisation n'existe pas dans les données.** Prévu ciblé
+      (`TargetUpgradeId`), achetable par rangs, abaissant `AutomationLevel`. Le hook est prêt côté
+      code : `UpgradeModel.SetAutomationThresholdReduction()`, qui n'a aucun appelant.
+- 📖 **Le `SaveScheduler` abandonne silencieusement une écriture** si une autre est en vol
+      (`_isWriting`). Le commentaire la justifie par « la prochaine capturera un état plus récent »,
+      ce qui ne tient que s'il y en a une prochaine. Constaté pendant un test : trois achats de
+      prestige rapprochés suivis d'un Game Over ont fait perdre l'écriture de fin de run. Sans
+      conséquence depuis que le wipe précède toute capture, mais un drapeau « écriture en attente »
+      serait plus sûr qu'un abandon.
 
-## Cycle de vie restant
+## Données et contenu
 
-- `GameOverPresenter.HandleRestart` : `_ = _sceneLoader.LoadGameSceneAsync(CancellationToken.None)` — manque `.Forget()`, et `CancellationToken.None` rompt la chaîne d'annulation.
-- `GameOverPresenter._cts` : créé, disposé, jamais utilisé.
-- `PrestigePanelView._resolver` et `UpgradePanelView._resolver` : `IObjectResolver` injectés et jamais lus — alors qu'ils régleraient justement le Service Locator d'`AutoInjectOnInstantiate`.
+- 🔬 **59 clés de localisation manquantes**, toutes dérivées des données : **52 descriptions**
+      `UPG_<id>_DESC` et **7 paires** `PRESTIGE_<id>_NAME` / `_DESC` pour les nœuds réels.
+      Vérifié à l'écran : 18 clés distinctes s'affichent entre crochets en jeu.
+      Aucune clé de code ne manque, et aucune clé définie n'est orpheline côté données.
+- 🔬 **6 libellés encore en anglais** dans `fr.json` : `MONEY` → « Money », `COMPUTER_POWER`,
+      `TRACE`, `CYCLES`, `CONSOLE_LOGS`, `OVERCLOCK`. Ce sont des valeurs de remplissage.
+- 📖 **2 clés mortes** dans `fr.json` : `UPGRADE_NAME_BOTNET` et `UPGRADE_NAME_BREACH_CORE`,
+      vestiges d'avant la migration des noms. `CONSOLE_LOGS` n'est référencée ni par le code ni par
+      un `LocalizedText` de la scène.
+- 🔬 **Le système de paliers ne pilote toujours aucune donnée.** Vérifié : sur 45 upgrades,
+      **0 possède `milestones`, 0 possède `automationLevel`**. Les générateurs tournent donc en
+      rendement strictement linéaire avec un seuil d'automatisation à 10 par défaut, et la mécanique
+      décrite dans `cycles.md` reste non testable. C'est le point où l'écriture de contenu débloque
+      le plus de gameplay d'un coup.
+- 📖 **L'équilibrage des 105 nœuds spécifiques est du remplissage.** Leur nombre et leur pertinence
+      sont corrects depuis le lot 3a, mais les valeurs restent auto-générées : `maxLevel: 5`,
+      `costMult: 1.4` et `bonus: 0.1` identiques pour tous, `baseCost = 50 × order`.
 
-## Performance restante
+## Cycle de vie
 
-- **`PrestigeItemPresenter`** s'abonne à `CpuCycles` pour chaque nœud et `RefreshView()` refait un `Math.Pow` et alloue 3-4 chaînes **par nœud**. Avec ≈ 170 nœuds, c'est ≈ 680 allocations par variation de CPU Cycles. Appliquer le même traitement qu'à `GeneratorPresenter` (cache + `DistinctUntilChanged`).
-- **`ILocalizationService.GetText<T0>`** promet « Zero Boxing » mais l'implémentation fait `string.Format(string, object)`, qui boxe chaque type valeur. → `ZString.Format<T0>` (écosystème Cysharp, déjà présent avec UniTask).
-- **`HeaderView`** : `$": {formattedValue}"` par-dessus `CurrencyFormatter.Format` qui alloue déjà. `UpdateTraceDisplay` montre la bonne pratique avec `SetText("{0:F1}%", …)` — à généraliser.
-- **`LogObjectPool`** : `_activeItems[0]` + `RemoveAt(0)` et un `Contains` linéaire. Un tampon circulaire rendrait le recyclage O(1).
-- Le rendu de l'arbre de prestige à ≈ 170 nœuds demandera du pooling ou de la virtualisation.
+- 📖 `GameOverPresenter.HandleRestart` : `_ = _sceneLoader.LoadGameSceneAsync(CancellationToken.None)`
+      — il manque le `.Forget()`, et `CancellationToken.None` rompt la chaîne d'annulation.
+- 📖 `GameOverPresenter._cts` : créé, disposé, jamais utilisé.
+- 📖 `PrestigePanelView._resolver` et `UpgradePanelView._resolver` : `IObjectResolver` injectés et
+      jamais lus, alors qu'ils régleraient justement le Service Locator d'`AutoInjectOnInstantiate`.
 
-## Hygiène restante
+## Performance
 
-- **Aucun `.asmdef`.** Proposition : `Ares.Core.Domain` (Models + Services, sans référence UI), `Ares.Core.Presentation` (UI + Boot), `Ares.Core.Editor`. Prérequis aux tests EditMode.
-- **Aucun test.** `UpgradeModel`, `PrestigeManager`, `ThreatManager`, `CurrencyFormatter`, `UserCurrencies` ne touchent presque pas Unity — c'est le meilleur retour sur investissement du projet, surtout pour des formules qu'on va modifier cent fois pendant l'équilibrage.
-- **Namespaces ≠ dossiers** et dossier fantôme `UI/Uppgrades` (voir `architecture.md`).
-- **`SteamCloudSaveService` appelle `SteamManager.Initialized`** en statique → encapsuler derrière un `ISteamRuntime` injecté.
-- **`AutoInjectOnInstantiate`** fait un `LifetimeScope.Find` dans `Awake()` : Service Locator déguisé. `_resolver.Instantiate(prefab, parent)` injecte l'arbre entier et rend ce composant inutile.
-- **Français en dur** : reste `ConsoleView.FormatMessage` (tags `[OK]` / `[INFO]` et couleurs). ~~`PrestigeItemPresenter`~~ et ~~`PrestigeItemView` (`"MAX"`)~~ sont faits.
-- **Code mort autour de la visibilité des générateurs.** `GeneratorPresenter.SetVisibility()` n'a aucun appelant, et le `viewInstance.SetVisible(true)` d'`UpgradePanelPresenter` porte sur un prefab dont la racine est déjà active — donc sans effet. ⚠️ **Ne pas confondre avec la révélation progressive, qui FONCTIONNE** : vérifié en Play Mode le 2026-08-26, 3 générateurs instanciés au démarrage sur 45 au catalogue, et le suivant apparaît à chaque premier achat. Elle passe par l'instanciation à la demande (`GetInitiallyVisibleUpgrades` + `OnUpgradeRevealed`), pas par l'activation.
-- **`Currency.Add()`** est public et sans garde sur les valeurs négatives — les gardes sont dans `UserCurrencies`, mais `Currency` est exposé.
-- **`HeaderPresenter`** s'abonne dans son constructeur ET dans `Start()`. Même écart dans **`PrestigeItemPresenter`**, qui s'abonne entièrement dans son constructeur — il est construit par `new` et non par le conteneur, donc rien ne casse aujourd'hui, mais c'est la même règle d'`architecture.md`.
-- **Faux libellé sur les onglets Hardware et Proxy** : `GeneratorPresenter.BuildStatsText()` affiche « Génère X **Datas** » pour tous les types, alors qu'un Hardware fournit des TFlops et qu'un Proxy ne produit rien. À traiter avec le lot 2b (TFlops), dont dépend le vocabulaire.
-- **Séparateur décimal dépendant de la machine** : `GetCurrentCycleDuration().ToString("0.##")` utilise `CurrentCulture` — « 1,5 s » en français, « 1.5 s » ailleurs — alors que `CurrencyFormatter` force `InvariantCulture`. Trancher une politique unique et l'appliquer partout.
-- **3 warnings `CS0618`** à la compilation : `LocalizationAnalyzerWindow.cs:120` et `LocalizationAutoInjectorEditor.cs:38,46` utilisent `FindObjectOfType` / `FindObjectsOfType`, dépréciés en Unity 6 au profit de `FindFirstObjectByType` / `FindObjectsByType(FindObjectSortMode.None)`. Code éditeur uniquement, aucun impact runtime.
-- **Aucun remote Git.** Le dépôt n'existe que sur `H:\` — un commit local ne protège pas d'une panne disque. Accessoirement : pas de Git LFS (34 binaires / ≈ 5 Mo aujourd'hui, donc sans urgence, mais la mise en place se fait *avant* que l'art arrive), et `.gitattributes` sans `merge=unityyamlmerge` sur `*.unity` / `*.prefab` — indispensable dès qu'on travaillera sur des branches.
-- **Équilibrage éparpillé en constantes** : `÷100` dans `SimulationTicker`, `500 / ×3 / −20 %` dans `EmergencyProtocolSystem`, `√(total/1000)` dans `UserCurrencies`, `(600,300)` dans `PrestigePanelPresenter`. → un `BalancingConfigSO` enregistré au Root.
+- ⚖️ **`PrestigeItemPresenter`** s'abonne à `CpuCycles` pour chacun des 112 nœuds, et `RefreshView()`
+      refait un `Math.Pow` et alloue plusieurs chaînes par nœud. L'ordre de grandeur — quelques
+      centaines d'allocations par variation de CPU Cycles — **n'a jamais été mesuré**, seulement
+      déduit du code. À profiler avant d'en faire un lot. Le remède, si c'est confirmé, est celui
+      déjà appliqué à `GeneratorPresenter` : cache et `DistinctUntilChanged`.
+- 📖 **`ILocalizationService.GetText<T0>`** promet « Zero Boxing » mais fait un
+      `string.Format(string, object)`, qui boxe chaque type valeur. → `ZString.Format<T0>`,
+      déjà disponible avec UniTask.
+- 📖 **`HeaderView`** : `$": {formattedValue}"` par-dessus un `CurrencyFormatter.Format` qui alloue
+      déjà. `UpdateTraceDisplay` montre la bonne pratique avec `SetText("{0:F1}%", …)`.
+- 📖 **`LogObjectPool`** : `_activeItems[0]` + `RemoveAt(0)` et un `Contains` linéaire. Un tampon
+      circulaire rendrait le recyclage O(1).
+- ⚖️ Le rendu de l'arbre de prestige à 112 nœuds demandera peut-être du pooling ou de la
+      virtualisation. Jamais mesuré non plus — l'arbre s'affiche aujourd'hui sans ralentissement
+      perceptible en éditeur.
 
-## À rédiger par Bertrand — contenu, pas code
+## Hygiène
 
-Ces clés sont **volontairement absentes** de `fr.json` : elles s'afficheront entre crochets et
-seront signalées par le `LocalizationAnalyzerWindow` tant qu'elles ne sont pas écrites.
+- 📖 **Aucun `.asmdef`**, aucun test. Tout `Assets/Core` recompile avec le reste, et rien n'empêche
+      une dépendance de `Models` vers `UI`. Proposition inchangée : `Ares.Core.Domain`,
+      `Ares.Core.Presentation`, `Ares.Core.Editor` — prérequis aux tests EditMode.
+      `UpgradeModel`, `PrestigeManager`, `ThreatManager`, `CurrencyFormatter` et `UserCurrencies`
+      ne touchent presque pas Unity : c'est le meilleur retour sur investissement du projet,
+      surtout pour des formules qu'on modifie sans arrêt.
+- 📖 **Code mort confirmé, sans appelant** : `GeneratorPresenter.SetVisibility()`,
+      `UpgradeManager.GetAllActiveUpgrades()`, `LogObjectPool.ReturnToPool()`. Et le
+      `viewInstance.SetVisible(true)` d'`UpgradePanelPresenter` porte sur un prefab dont la racine
+      est déjà active, donc sans effet.
+      ⚠️ **Ne pas confondre avec la révélation progressive, qui FONCTIONNE** — 🔬 vérifié :
+      45 upgrades au catalogue mais 3 `GeneratorView` instanciés au démarrage, et le suivant
+      apparaît à chaque premier achat. Elle passe par l'instanciation à la demande
+      (`GetInitiallyVisibleUpgrades` + `OnUpgradeRevealed`), pas par l'activation.
+- 🔬 **`AutoInjectOnInstantiate` ne s'exécute pas sur un objet inactif.** Les générateurs
+      instanciés dans les onglets masqués ne sont pas injectés et affichent le texte brut du
+      prefab (« Button » au lieu de « Acheter »). Vérifié : ça **se rattrape à l'ouverture de
+      l'onglet**, donc invisible en pratique — mais c'est la même famille de piège que celui qui
+      avait cassé l'arbre de prestige. Le composant fait par ailleurs un `LifetimeScope.Find` dans
+      `Awake()`, soit un Service Locator déguisé ; `_resolver.Instantiate(prefab, parent)` injecte
+      l'arbre entier et rendrait ce composant inutile.
+- 📖 **`SteamCloudSaveService` et `SaveServiceComposite` compilent mais ne sont pas enregistrés**
+      (TODO commenté dans `RootLifetimeScope`). `SteamCloudSaveService` appelle
+      `SteamManager.Initialized` en statique → à encapsuler derrière un `ISteamRuntime` injecté.
+- 📖 **Français en dur** : reste `ConsoleView.FormatMessage`, avec ses tags `[OK]`,
+      `[SYSTEM_WARN]`, `[INFO]` et leurs couleurs codées en dur.
+- 📖 **3 warnings `CS0618`** dormants : `LocalizationAnalyzerWindow.cs:120` et
+      `LocalizationAutoInjectorEditor.cs:38,46` utilisent `FindObjectOfType` / `FindObjectsOfType`,
+      dépréciés en Unity 6. Ils ne remontent plus faute de recompilation de ces fichiers, mais le
+      code est inchangé. Code éditeur uniquement.
+- 📖 **`Currency.Add()`** est public et sans garde sur les valeurs négatives — les gardes sont dans
+      `UserCurrencies`, mais `Currency` est exposé.
+- 📖 **`HeaderPresenter`** s'abonne dans son constructeur ET dans `Start()`. Même écart dans
+      `PrestigeItemPresenter`, qui s'abonne entièrement dans son constructeur.
+- 📖 **Namespaces ≠ dossiers** et dossier fantôme vide `Assets/Core/UI/Uppgrades` toujours présent.
+- 📖 **Séparateur décimal dépendant de la machine** : `GetCurrentCycleDuration().ToString("0.##")`
+      utilise `CurrentCulture` — « 1,5 s » ici, « 1.5 s » ailleurs — alors que `CurrencyFormatter`
+      force `InvariantCulture`. Trancher une politique unique.
+- 📖 **Faux libellé sur les onglets Hardware et Proxy** : `BuildStatsText()` affiche
+      « Génère X **Datas** » pour tous les types, alors qu'un Hardware fournit des TFlops et qu'un
+      Proxy dissipe de la Trace.
+- 📖 **Pluriel non géré** : `UI_EXFIL_READY` dit « +1 **Cycles** CPU ». Une vraie pluralisation
+      demanderait un mécanisme dans `ILocalizationService` ; reformuler la clé suffirait pour
+      l'instant.
+- 📖 **Équilibrage éparpillé en constantes** : `÷100` dans `SimulationTicker`, `500 / ×3 / −20 %`
+      dans `EmergencyProtocolSystem`, `√(RunMoney/1000)` dans `UserCurrencies`, `0,05` et le
+      plafond `0,95` dans `UpgradeModel`, `1,2` et `10` dans `GameSessionManager`, `1000` dans
+      `ExfiltrationSystem`, `(600,300)` dans `PrestigePanelView`. → un `BalancingConfigSO`
+      enregistré au Root. La liste s'allonge à chaque lot : c'est devenu le principal frein à
+      l'équilibrage.
+- 📖 **Aucun remote Git.** Le dépôt n'existe que sur `H:\`. Accessoirement : pas de Git LFS
+      (une trentaine de binaires aujourd'hui, donc sans urgence — mais la mise en place se fait
+      *avant* que l'art arrive), et `.gitattributes` sans `merge=unityyamlmerge` sur `*.unity` et
+      `*.prefab`, indispensable dès qu'on travaillera sur des branches.
 
-- [ ] **45 descriptions d'upgrades** — `UPG_<id>_DESC` (ex. `UPG_SCR_01_DESC`). Les 45 noms sont déjà migrés.
-- [ ] **7 noms + 7 descriptions de nœuds de prestige** — `PRESTIGE_<id>_NAME` / `_DESC` pour
-      `P_ROOT`, `P_REFAC`, `P_DATAM`, `P_CLICK`, `P_POWER_START`, `P_STEALTH`, `P_EMERG`.
-      Aucun texte français n'a jamais existé pour ces nœuds : il n'y avait rien à migrer.
-- [ ] **Valeurs de remplissage en anglais** dans `fr.json` : `MONEY` → « Money »,
-      `COMPUTER_POWER` → « Computer Power », `CYCLES`, `CONSOLE_LOGS`, `OVERCLOCK`.
+## Pièges à retenir
+
+Trois bugs de la même famille ont déjà coûté du temps. Le motif :
+
+- **Unity n'appelle pas `Awake()` sur un objet inactif dans la hiérarchie.** Tout composant dont une
+  méthode est appelée pendant la construction d'un panneau masqué doit résoudre ses références en
+  **lazy**, jamais dans `Awake`. C'est ce qui avait cassé l'arbre de prestige, et c'est ce qui rend
+  les onglets masqués non injectés.
+- **Lancer le Play Mode depuis la GameScene est cassé par construction** : sans `RootScene`,
+  `SceneLoader` ne tourne pas, donc pas d'`EnqueueParent`, donc le scope de scène n'a pas de parent
+  et aucun service n'est résoluble. Le message d'erreur ne le dit pas. Une garde explicite dans
+  `GameSceneLifetimeScope` éviterait le diagnostic à chaque fois.
+- **Le player loop de l'éditeur est figé tant que la fenêtre Unity n'a pas le focus**
+  (`Time.frameCount` ne bouge pas), et `runInBackground` n'y change rien. Pour vérifier un
+  `ITickable` sans focus, appeler `Tick()` à la main.
 
 ## Corrigé à ce jour
 
