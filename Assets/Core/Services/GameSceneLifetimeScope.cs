@@ -28,6 +28,9 @@ namespace Core.Boot
                  "Protocole Terre Brûlée : elle peut être posée n'importe où dans l'écran.")]
         [SerializeField] private GhostCacheView _ghostCacheView;
 
+        [Tooltip("Bouton d'Urgence / Data Wiper. Vue autonome, comme les deux précédentes.")]
+        [SerializeField] private EmergencyView _emergencyView;
+
         protected override void Configure(IContainerBuilder builder)
         {
             // Services locaux à la scène.
@@ -73,6 +76,20 @@ namespace Core.Boot
                     "[SCENE] Aucune GhostCacheView assignée sur le GameSceneLifetimeScope : le " +
                     "Zéro-Day Exploit est injouable. Le Ghost Cache continue d'accumuler sa " +
                     "charge en arrière-plan, mais rien ne permet de la dépenser.");
+            }
+
+            // Même traitement conditionnel que les deux vues ci-dessus.
+            if (_emergencyView != null)
+            {
+                builder.RegisterComponent(_emergencyView);
+                builder.Register<EmergencyPresenter>(Lifetime.Scoped).AsImplementedInterfaces().AsSelf();
+            }
+            else
+            {
+                Debug.LogWarning(
+                    "[SCENE] Aucune EmergencyView assignée sur le GameSceneLifetimeScope : le " +
+                    "Data Wiper est injouable. Le système tourne, mais rien ne permet de le " +
+                    "déclencher.");
             }
 
             // Presenters (MVP)

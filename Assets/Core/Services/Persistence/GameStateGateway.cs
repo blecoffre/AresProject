@@ -86,7 +86,10 @@ namespace Core.Services.Persistence
 
             // 4. État de menace de la run
             _threatManager.RestoreThreat(Mathf.Min(data.NormalizedThreat, MaxRestorableThreat));
-            _emergencyProtocol.RestoreUses(data.EmergencyUsesInRun);
+            _emergencyProtocol.Restore(
+                data.EmergencyUsesInRun,
+                data.EmergencyBlockRemainingSeconds,
+                data.EmergencyCooldownRemainingSeconds);
             _ghostCache.RestoreCharge(data.GhostCacheSeconds);
 
             HasRestored = true;
@@ -111,6 +114,8 @@ namespace Core.Services.Persistence
 
             _buffer.NormalizedThreat = _threatManager.NormalizedThreat.CurrentValue;
             _buffer.EmergencyUsesInRun = _emergencyProtocol.UsesInCurrentRun;
+            _buffer.EmergencyBlockRemainingSeconds = _emergencyProtocol.BlockRemaining.CurrentValue;
+            _buffer.EmergencyCooldownRemainingSeconds = _emergencyProtocol.CooldownRemaining.CurrentValue;
             _buffer.GhostCacheSeconds = _ghostCache.ChargeSeconds.CurrentValue;
 
             _upgradeManager.CaptureLevelsInto(_buffer.Upgrades);

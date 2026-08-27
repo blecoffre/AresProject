@@ -91,6 +91,13 @@ namespace Core.Services.Economy
         /// </summary>
         private double _globalYieldMultiplier = 1d;
 
+        /// <summary>
+        /// Fraction du parc immobilisée par le Bouton d'Urgence, de 0 à 0,9. Le « Data Wiper »
+        /// envoie un ver dans les serveurs fédéraux : la puissance qu'il mobilise n'est plus
+        /// disponible pour le joueur pendant une minute.
+        /// </summary>
+        private float _tflopsBlockedFraction;
+
         public UpgradeManager(
             UpgradeCatalogSO catalog,
             UserCurrencies userCurrencies,
@@ -266,6 +273,23 @@ namespace Core.Services.Economy
         /// réellement crédité racontent la même chose. Le coût est de 15 recalculs de cache aux
         /// deux extrémités de l'Overdrive — négligeable devant une frame.
         /// </summary>
+        /// <summary>
+        /// Immobilise une fraction du parc de TFlops. Réservé au Bouton d'Urgence, qui la porte à
+        /// 0,3 et plus pendant une minute avant de la rendre à zéro.
+        ///
+        /// La tranche s'applique à la capacité EFFECTIVE, donc à tout ce qu'elle alimente : la
+        /// compression des cycles ET la dissipation des Proxies. C'est exactement le contrecoup
+        /// voulu — purger la Trace affaiblit la défense juste après.
+        /// </summary>
+        public void SetTFlopsBlockedFraction(float fraction)
+        {
+            float safe = UnityEngine.Mathf.Clamp01(fraction);
+            if (safe == _tflopsBlockedFraction) return;
+
+            _tflopsBlockedFraction = safe;
+            RecalculateTotals();
+        }
+
         public void SetGlobalYieldMultiplier(double multiplier)
         {
             double safe = multiplier < 1d ? 1d : multiplier;
@@ -295,6 +319,10 @@ namespace Core.Services.Economy
             // départ compris : c'est une amélioration du matériel, pas de son seul parc acheté.
             double totalTFlops = (hardwareTFlops + _prestigeManager.StartingComputerPower.CurrentValue)
                                * _prestigeManager.GlobalComputeMultiplier.CurrentValue;
+
+            // Immobilisation du Bouton d'Urgence, appliquée en DERNIER : c'est une amputation de
+            // la capacité finale, pas un facteur à composer avec le multiplicateur de prestige.
+            totalTFlops *= 1d - _tflopsBlockedFraction;
 
             // Synergie : chaque niveau de Proxy possédé accélère TOUS les Scripts. C'est ce qui
             // rend un achat de Proxy jamais perdu, même quand la Trace est basse.

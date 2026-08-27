@@ -379,6 +379,26 @@
     {
       "Key": "PRESTIGE_P_EXPLOIT_TRACE_REDUC_DESC",
       "Value": "Allège le malus de Trace subi pendant l'Exploit, sans jamais pouvoir le supprimer."
+    },
+    {
+      "Key": "UI_EMERGENCY_LOCKED",
+      "Value": "[VERROUILLÉ] Data Wiper — requiert le nœud Protocole d'Urgence"
+    },
+    {
+      "Key": "UI_EMERGENCY_INSUFFICIENT",
+      "Value": "[PUISSANCE INSUFFISANTE] Data Wiper : {0} / {1} TFlops"
+    },
+    {
+      "Key": "UI_EMERGENCY_COOLDOWN",
+      "Value": "[RECOMPILATION] Data Wiper disponible dans {0} s"
+    },
+    {
+      "Key": "UI_EMERGENCY_READY",
+      "Value": "[PRÊT] DATA WIPER — Trace −{0} pts / {1} % des TFlops hors ligne {2} s"
+    },
+    {
+      "Key": "LOG_EMERGENCY_WIPE",
+      "Value": "> wiper.sh --inject : ver déployé sur les serveurs fédéraux. Dossier partiellement effacé."
     }
   ]
 }

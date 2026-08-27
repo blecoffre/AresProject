@@ -34,6 +34,12 @@ Compilation sans erreur ni warning.
       la liste — ou un balayage de l'auto-injecteur — écraserait les deux libellés par « OVERCLOCK ».
       À supprimer des deux GameObjects.
 
+- [ ] 🔬 **Poser le bouton du Data Wiper dans la scène.**
+      `EmergencyView` attend un `Button`, un `TextMeshProUGUI` et une `Image` en **Filled**,
+      puis le glisser dans le champ `_emergencyView` du `GameSceneLifetimeScope`. Même structure
+      que la `GhostCacheView`. Trois couleurs réglables : indisponible, prêt, contrecoup en cours.
+      Sans lui, un warning au démarrage : le système tourne mais rien ne le déclenche.
+
 ## Majeurs restants
 
 - 🔬 **L'Overclock « réveil » n'est pas implémenté.** Vérifié : SCR_01 acheté niveau 1, donc possédé
@@ -41,10 +47,6 @@ Compilation sans erreur ni warning.
       Or `game-design.md` tranche depuis le 2026-08-26 qu'un clic doit **démarrer tous les Scripts
       possédés à l'arrêt ET avancer ceux qui tournent**. Aujourd'hui il ne fait que la seconde
       moitié. Environ dix lignes dans `OverclockSystem` et `ScriptCycleRunner`.
-- 📖 **Le Bouton d'Urgence n'a aucune UI.** `EmergencyProtocolSystem.TryTriggerEmergency()` n'a
-      toujours aucun appelant. Le système est vivant — coût de départ 500, compteur d'usages
-      persisté — mais la seconde moitié du Risk/Reward du GDD reste injouable, et
-      `IsEmergencyUnlocked` est le dernier bonus de prestige sans consommateur.
 - 📖 **Le nœud de prestige d'automatisation n'existe pas dans les données.** Prévu ciblé
       (`TargetUpgradeId`), achetable par rangs, abaissant `AutomationLevel`. Le hook est prêt côté
       code : `UpgradeModel.SetAutomationThresholdReduction()`, qui n'a aucun appelant.
@@ -54,7 +56,6 @@ Compilation sans erreur ni warning.
       prestige rapprochés suivis d'un Game Over ont fait perdre l'écriture de fin de run. Sans
       conséquence depuis que le wipe précède toute capture, mais un drapeau « écriture en attente »
       serait plus sûr qu'un abandon.
-
 - 🔬 **Les 30 s du Zéro-Day Exploit ne sont JAMAIS atteintes — à arbitrer par le GD.**
       Pendant l'Exploit la dissipation vaut zéro et la génération brute est multipliée par 10, donc
       la jauge se remplit à `génération × 10 / 100` par seconde et le temps de survie depuis une
@@ -186,6 +187,8 @@ Trois bugs de la même famille ont déjà coûté du temps. Le motif :
   `ITickable` sans focus, appeler `Tick()` à la main.
 
 ## Corrigé à ce jour
+
+**Lot « Data Wiper » — refonte du Bouton d'Urgence** (2026-08-27, vérifié en Play Mode via MCP) — le bouton ne coûte plus d'argent : il **exige** un palier de TFlops, qui grimpe ×3 par usage. Rien n'est dépensé — les TFlops sont une capacité dérivée du parc Hardware, il n'y a rien à en soustraire, et c'est ce point qui avait bloqué la première formulation du GD. Le coût réel est un **contrecoup** : 30 % des TFlops immobilisées 60 s, +10 points par usage, plafonné à 90 %. Comme les TFlops alimentent la dissipation des Proxies, purger la Trace affaiblit la défense juste après. Délai de 5 min entre activations. Effet : −20 points ABSOLUS de jauge. `EmergencyProtocolSystem` devient `ITickable` et perd sa dépendance à `UserCurrencies`. `SaveData` v5 : le contrecoup et le délai sont sauvegardés, contrairement à l'Overdrive — là-bas sauvegarder aurait mis un bonus en pause, ici ne pas sauvegarder ferait échapper à une pénalité. ⚠️ **Palier de base (50 TFlops) et escalade (×3) sont PROVISOIRES** : le GD a chiffré la progression, pas le palier lui-même ; le ×3 reprend l'ancien coût en argent. Le plafond de 90 % est également une décision de code, absente de la spécification. Vérifié : verrouillé sans `P_EMERG` ; refus à 48/50 TFlops ; déclenchement à 52 → Trace 0,63 → 0,43, TFlops 52 → 36,4, dissipation 163,5 → 154,4, cycle `SCR_01` 0,347 → 0,443 s ; second appel refusé ; palier 50 → 150, tranche suivante 40 % ; à l'échéance les TFlops reviennent à 52 ; `Restore(2 usages, 30 s)` réapplique bien 40 % et non 50 % ; migration v2 → v5 préserve `EmergencyUsesInRun` ; wipe remet tout à zéro sauf le déblocage de prestige.
 
 **Lot « Nœuds de prestige de l'Exploit »** (2026-08-27, vérifié en Play Mode via MCP) — les trois nœuds écrits par le GD dans `01_Economy.json` sont branchés : `P_EXPLOIT_CHARGES` (5 rangs, +1 charge), `P_EXPLOIT_MULT` (10 rangs, +10 % de rendement) et `P_EXPLOIT_TRACE_REDUC` (5 rangs, −0,5 de malus). Trois valeurs **appendues en fin** de `PrestigeBonusType` : l'index est sérialisé dans les `.asset`, une insertion au milieu aurait redéfini tous les nœuds existants. Le Ghost Cache passe en **multi-charges** — capacité = rangs × 300 s, une seule charge consommée par déclenchement — et l'Exploit devient **verrouillé tant que `P_EXPLOIT_CHARGES` vaut 0**, avec un quatrième état de bouton qui nomme le nœud manquant plutôt que de rester gris. Rien ne s'accumule pendant le verrouillage. Surcharge `GetText` à 4 arguments ajoutée. **Deux défauts trouvés au test et corrigés** : le presenter ne s'abonnait qu'à `ExploitMaxCharges`, si bien qu'acheter les dix rangs de rendement laissait le bouton annoncer ×50 — remplaçé par un abonnement à `OnBonusesRecalculated`, qui couvre les trois nœuds ; et la jauge était forcée à 1 en état armé, masquant l'avancement de la charge suivante — c'est la couleur qui dit « armé », la barre montre désormais la suite. **Un troisième défaut d'affichage** : `RoundToInt(7,5)` faisait annoncer « trace x8 » pour un malus réel de 7,5 ; les valeurs passent brutes et le gabarit les met en forme. Vérifié : verrouillé → `Accumulate(500)` laisse la charge à 0 ; 3 rangs → 900 s de capacité et bouton débloqué immédiatement ; 420 s → 1 charge et jauge à 0,40 ; rangs max → « rendement x100 / trace x7,5 » ; déclenchement → `SCR_01` de 24 à 2 400 et réserve de 420 à 120 s ; wipe → charge à 0 mais capacité toujours à 3.
 

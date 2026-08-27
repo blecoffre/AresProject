@@ -34,7 +34,7 @@ namespace Core.Models
         /// correspondant dans Migrate(). Sans ça, le premier changement post-lancement casse
         /// silencieusement les sauvegardes des joueurs.
         /// </summary>
-        public const int CurrentVersion = 4;
+        public const int CurrentVersion = 5;
 
         public int Version;
 
@@ -77,6 +77,17 @@ namespace Core.Models
         /// COURS, lui, n'est pas sauvegardé — voir GhostCacheSystem.RestoreCharge.
         /// </summary>
         public float GhostCacheSeconds;
+
+        /// <summary>
+        /// Secondes restantes d'immobilisation des TFlops par le Bouton d'Urgence, et délai
+        /// restant avant sa prochaine activation.
+        ///
+        /// Sauvegardés alors que l'Overdrive du Ghost Cache ne l'est pas, et l'asymétrie est
+        /// volontaire : là-bas, sauvegarder aurait permis de mettre en PAUSE un bonus ; ici, ne
+        /// pas sauvegarder permettrait d'ÉCHAPPER à une pénalité en fermant la fenêtre.
+        /// </summary>
+        public float EmergencyBlockRemainingSeconds;
+        public float EmergencyCooldownRemainingSeconds;
         public List<UpgradeSaveEntry> Upgrades;
 
         /// <summary>
@@ -101,6 +112,8 @@ namespace Core.Models
             NormalizedThreat = 0f,
             EmergencyUsesInRun = 0,
             GhostCacheSeconds = 0f,
+            EmergencyBlockRemainingSeconds = 0f,
+            EmergencyCooldownRemainingSeconds = 0f,
             Upgrades = new List<UpgradeSaveEntry>(),
 
             SavedAtUnixSeconds = 0L
@@ -122,6 +135,10 @@ namespace Core.Models
             // Borne basse seulement : le plafond appartient au GhostCacheSystem, seul détenteur
             // de la capacité. Le dupliquer ici créerait deux constantes à maintenir.
             if (GhostCacheSeconds < 0f) GhostCacheSeconds = 0f;
+
+            // Bornes hautes laissées à l'EmergencyProtocolSystem, seul détenteur des durées.
+            if (EmergencyBlockRemainingSeconds < 0f) EmergencyBlockRemainingSeconds = 0f;
+            if (EmergencyCooldownRemainingSeconds < 0f) EmergencyCooldownRemainingSeconds = 0f;
 
             if (Money < 0d) Money = 0d;
             if (RunMoney < 0d) RunMoney = 0d;
@@ -174,6 +191,15 @@ namespace Core.Models
                     goto case 4;
 
                 case 4:
+                    // v4 -> v5 : le Bouton d'Urgence passe au « Data Wiper » et gagne deux
+                    // compteurs. Une sauvegarde antérieure n'a ni contrecoup ni délai en cours ;
+                    // son EmergencyUsesInRun, lui, reste valide et n'est pas touché.
+                    data.EmergencyBlockRemainingSeconds = 0f;
+                    data.EmergencyCooldownRemainingSeconds = 0f;
+                    data.Version = 5;
+                    goto case 5;
+
+                case 5:
                     // Format courant : rien à faire.
                     break;
 

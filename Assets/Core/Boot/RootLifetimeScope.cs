@@ -58,7 +58,9 @@ namespace Core.Infrastructure
             builder.Register<UpgradeManager>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
             builder.Register<PrestigeManager>(Lifetime.Singleton);
             builder.Register<ThreatManager>(Lifetime.Singleton);
-            builder.Register<EmergencyProtocolSystem>(Lifetime.Singleton);
+            // ITickable depuis la refonte « Data Wiper » : il fait s'écouler l'immobilisation
+            // des TFlops et le délai entre deux activations.
+            builder.Register<EmergencyProtocolSystem>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
             builder.Register<GameSessionManager>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
 
             // La sortie volontaire termine une run : elle appartient à la partie, pas à

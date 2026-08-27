@@ -118,7 +118,37 @@ en bonus.
 
 *Précision technique : un Exploit EN COURS n'est pas sauvegardé — la charge ayant déjà été consommée, fermer la fenêtre pendant les 30 s revient à les perdre. Sauvegarder un effet temporaire permettrait de le mettre en pause par fermeture du jeu, dans un jeu qui n'a justement aucune progression hors-ligne.*
 
-La jauge elle-même n'est réduite que par le **Bouton d'Urgence** (coût exponentiel, ×3 par clic) et par le wipe. Règle d'or : *« le FBI n'oublie jamais, sauf si tu formates tout. »* Il faut un mur qui pousse inévitablement au wipe — sinon le joueur trouve une planque parfaite (`ΔTrace = 0`) et le danger disparaît.
+La jauge elle-même n'est réduite que par le **Bouton d'Urgence** (voir plus bas) et par le wipe. Règle d'or : *« le FBI n'oublie jamais, sauf si tu formates tout. »* Il faut un mur qui pousse inévitablement au wipe — sinon le joueur trouve une planque parfaite (`ΔTrace = 0`) et le danger disparaît.
+
+## Bouton d'Urgence — le « Data Wiper »
+
+Refondu le 2026-08-27. L'ancienne version achetait l'effacement avec de l'argent, comme un
+pot-de-vin. La nouvelle ne coûte **rien** : elle **exige** de la puissance de calcul. Effacer ses
+traces, c'est envoyer un ver dans les serveurs fédéraux — il faut de la force brute, pas des
+billets.
+
+| Paramètre | Valeur |
+|---|---|
+| **Prérequis** | Posséder un palier de TFlops. Rien n'est dépensé |
+| **Escalade du palier** | ×3 par usage sur la run ⚠️ *valeurs provisoires : 50 TFlops de base, ×3 — non chiffrées par le GD* |
+| **Effet** | −**20 points ABSOLUS** de jauge : à 63 % on tombe à 43 % |
+| **Contrecoup** | **30 % des TFlops immobilisées pendant 60 s**, +10 points par usage (30, 40, 50…), plafonné à 90 % |
+| **Délai** | **5 minutes** entre deux activations |
+| **Déblocage** | Nœud de prestige `P_EMERG` |
+
+**Le contrecoup est le cœur de la mécanique.** Les TFlops alimentent aussi la dissipation des
+Proxies : purger la Trace **affaiblit la défense juste après**, et la jauge remonte plus vite.
+Mesuré : 52 TFlops → 36,4, dissipation de 163,5 → 154,4, cycle de `SCR_01` de 0,347 s → 0,443 s.
+La tranche s'alourdissant de dix points par usage, le bouton devient de plus en plus dangereux
+à mesure que la run avance — bénéfique en principe, risqué en fin de run.
+
+Le plafond à 90 % n'est pas dans la spécification du GD : sans lui, le septième usage d'une run
+immobiliserait 100 % du parc, donc plus aucune dissipation ni compression de cycle. Le bouton
+deviendrait un suicide pur, ce qui n'est pas un choix mais un piège.
+
+Le contrecoup ET le délai sont **sauvegardés** (`SaveData` v5), contrairement à l'Overdrive du
+Ghost Cache. L'asymétrie est volontaire : là-bas, sauvegarder aurait permis de mettre en PAUSE un
+bonus ; ici, ne pas sauvegarder permettrait d'ÉCHAPPER à une pénalité en fermant la fenêtre.
 
 ## Exfiltration volontaire — « Protocole Terre Brûlée »
 
