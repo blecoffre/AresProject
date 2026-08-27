@@ -6,7 +6,7 @@ Rapport d'audit complet et priorisé : https://claude.ai/code/artifact/fa8276c0-
 
 ## À faire par Bertrand dans Unity
 
-- [ ] **Poser le bouton du Protocole Terre Brûlée** dans la scène et glisser son `ExfiltrationView` dans le champ du `GameSceneLifetimeScope`. Tant que ce n'est pas fait, un warning explicite le signale au lancement et le reste du jeu fonctionne normalement. La vue attend un `Button`, un `TextMeshProUGUI` de libellé, une `Image` en mode *Filled* pour la jauge, et — facultatif — un panneau plein écran qui bloque les clics pendant la séquence.
+_Rien en attente côté Unity._
 
 ## Majeurs restants
 
@@ -60,6 +60,8 @@ seront signalées par le `LocalizationAnalyzerWindow` tant qu'elles ne sont pas 
       `COMPUTER_POWER` → « Computer Power », `CYCLES`, `CONSOLE_LOGS`, `OVERCLOCK`.
 
 ## Corrigé à ce jour
+
+**Protocole Terre Brûlée — bouton câblé et testé de bout en bout** (2026-08-26) — l'affichage et l'interactivité sont désormais deux notions distinctes : `IsUnlocked` porte la condition de jeu et pilote le libellé et la jauge, `IsClickable` y ajoute la triche d'éditeur et ne pilote que le bouton. Sans cette séparation, l'éditeur affichait en permanence « [PRÊT] Gain : +0 Cycles CPU » — un libellé absurde — et la jauge de progression, masquée une fois débloquée, n'aurait jamais été observable pendant le développement. Vérifié en Play Mode sur le bouton réel : les trois états du GDD (`0 %`, `45 %`, `[PRÊT] +1 → Prochain à 4K`, `[PRÊT] +2 → Prochain à 9K`), le blocage des clics et le vidage du libellé pendant la séquence, les six lignes de purge rendues dans la console du jeu dans l'ordre, l'écran de fin qui n'apparaît qu'après, 2 cycles crédités, la run wipée et la sauvegarde écrite.
 
 **Lot « 4b — Protocole Terre Brûlée, l'UI »** (2026-08-26, vérifié en Play Mode via MCP) — `ExfiltrationView` autonome (pas un champ de plus sur le Header, pour pouvoir déplacer le bouton sans toucher au code) et `ExfiltrationPresenter` qui porte les trois états et la séquence de purge. **La fin de run est découpée en deux temps** : `TryResolveVoluntaryExit` fige le résultat — gain crédité, run effacée, partie désarmée — puis `AnnounceRunEnded` déclenche l'écran de fin une fois la console déroulée. Jouer la séquence avant de figer aurait laissé la Trace monter pendant ~2 s : un joueur exfiltrant à 98 % pouvait se faire saisir au milieu de sa propre sortie et perdre ses +20 %. **Défaut trouvé au test et corrigé** : `HandleGameOver` pouvait s'exécuter sur une run déjà résolue, le `ThreatManager` émettant son lockdown sans savoir que la partie était finie — une saisie forcée pendant la séquence écrasait l'Effacement Propre et affichait l'écran par-dessus. Garde `if (!IsGameActive) return` ajoutée. Rafraîchissement du libellé filtré sur l'ENTIER de pourcent, sinon une chaîne serait allouée à chaque versement de cycle. La vue est enregistrée sous condition : sans elle, un warning explicite au lieu d'un boot cassé. Vérifié : temps 1 fige 18 cycles et laisse l'écran caché ; une saisie forcée pendant la séquence ne produit ni écran ni détection ; temps 2 affiche l'écran ; le gain est conservé.
 

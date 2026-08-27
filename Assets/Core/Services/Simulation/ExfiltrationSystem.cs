@@ -28,9 +28,13 @@ namespace Core.Services.Simulation
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         /// <summary>
-        /// En éditeur et en build de test, le bouton est TOUJOURS cliquable, y compris à zéro
-        /// cycle : c'est ce qui permet d'enchaîner des runs vides pour tester l'équilibrage sans
-        /// attendre d'avoir farmé. Jamais actif dans un build de production.
+        /// En éditeur et en build de test, le bouton reste CLIQUABLE même à zéro cycle, pour
+        /// enchaîner des runs vides sans avoir à farmer. Jamais actif en production.
+        ///
+        /// Ne touche que l'interactivité, jamais l'état AFFICHÉ : sans cette séparation, l'éditeur
+        /// montrerait en permanence « [PRÊT] Gain : +0 Cycles CPU » — un libellé absurde — et la
+        /// jauge de progression, invisible une fois débloqué, ne serait jamais observable pendant
+        /// le développement.
         /// </summary>
         private const bool BypassUnlockCondition = true;
 #else
@@ -42,6 +46,7 @@ namespace Core.Services.Simulation
 
         private readonly ReadOnlyReactiveProperty<double> _pendingCycles;
         private readonly ReadOnlyReactiveProperty<bool> _isUnlocked;
+        private readonly ReadOnlyReactiveProperty<bool> _isClickable;
         private readonly ReadOnlyReactiveProperty<float> _progressToFirstCycle;
 
         /// <summary>
@@ -54,8 +59,17 @@ namespace Core.Services.Simulation
         /// </summary>
         public ReadOnlyReactiveProperty<double> PendingCycles => _pendingCycles;
 
-        /// <summary>Le bouton est-il utilisable. Toujours vrai en éditeur et en build de test.</summary>
+        /// <summary>
+        /// La condition de jeu est-elle remplie : au moins 1 CPU Cycle à gagner. Pilote ce que la
+        /// vue AFFICHE — libellé et jauge — et dit toujours la vérité, y compris en éditeur.
+        /// </summary>
         public ReadOnlyReactiveProperty<bool> IsUnlocked => _isUnlocked;
+
+        /// <summary>
+        /// Le bouton est-il actionnable. Identique à <see cref="IsUnlocked"/> en production, mais
+        /// toujours vrai en éditeur et en build de test. Pilote la seule interactivité.
+        /// </summary>
+        public ReadOnlyReactiveProperty<bool> IsClickable => _isClickable;
 
         /// <summary>
         /// Avancement vers le premier CPU Cycle, de 0 à 1. Sert la jauge du bouton verrouillé et
@@ -74,7 +88,12 @@ namespace Core.Services.Simulation
                 .ToReadOnlyReactiveProperty();
 
             _isUnlocked = _pendingCycles
-                .Select(cycles => BypassUnlockCondition || cycles >= 1d)
+                .Select(cycles => cycles >= 1d)
+                .DistinctUntilChanged()
+                .ToReadOnlyReactiveProperty();
+
+            _isClickable = _isUnlocked
+                .Select(unlocked => BypassUnlockCondition || unlocked)
                 .DistinctUntilChanged()
                 .ToReadOnlyReactiveProperty();
 
@@ -107,7 +126,7 @@ namespace Core.Services.Simulation
         public bool TryBeginExfiltration(out double awardedPrestige)
         {
             awardedPrestige = 0d;
-            if (!_isUnlocked.CurrentValue) return false;
+            if (!_isClickable.CurrentValue) return false;
 
             return _sessionManager.TryResolveVoluntaryExit(out awardedPrestige);
         }
@@ -126,6 +145,7 @@ namespace Core.Services.Simulation
         {
             _pendingCycles.Dispose();
             _isUnlocked.Dispose();
+            _isClickable.Dispose();
             _progressToFirstCycle.Dispose();
         }
     }

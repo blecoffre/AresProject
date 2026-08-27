@@ -68,6 +68,10 @@ namespace Core.UI.Game
                 .Subscribe(_ => Refresh())
                 .AddTo(ref _disposables);
 
+            _exfiltration.IsClickable
+                .Subscribe(_ => Refresh())
+                .AddTo(ref _disposables);
+
             _exfiltration.PendingCycles
                 .Subscribe(_ => Refresh())
                 .AddTo(ref _disposables);
@@ -87,7 +91,10 @@ namespace Core.UI.Game
             // afficherait « 0 % » au moment même où la console raconte l'effacement.
             if (_isPurging) return;
 
+            // L'AFFICHAGE suit la condition de jeu, l'INTERACTIVITÉ suit la triche de test.
+            // En éditeur, on voit donc l'état verrouillé et sa jauge tout en pouvant cliquer.
             bool unlocked = _exfiltration.IsUnlocked.CurrentValue;
+            bool clickable = _exfiltration.IsClickable.CurrentValue;
 
             if (!unlocked)
             {
@@ -96,7 +103,7 @@ namespace Core.UI.Game
 
                 _view.ApplyState(
                     _loc.GetText("UI_EXFIL_LOCKED", percent),
-                    interactable: false,
+                    interactable: clickable,
                     showProgress: true,
                     progress: progress);
 
@@ -110,7 +117,7 @@ namespace Core.UI.Game
                     "UI_EXFIL_READY",
                     CurrencyFormatter.Format(cycles),
                     CurrencyFormatter.Format(_exfiltration.GetNextCycleThreshold())),
-                interactable: true,
+                interactable: clickable,
                 showProgress: false,
                 progress: 1f);
         }
