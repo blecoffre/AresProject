@@ -1,3 +1,4 @@
+using Core.Models.Economy;
 using Core.Services.Economy;
 using Core.Services.Security;
 using UnityEngine;
@@ -20,19 +21,13 @@ namespace Core.Services.Simulation
     /// </summary>
     public class SimulationTicker : ITickable
     {
-        /// <summary>
-        /// Convertit une Trace par seconde en fraction de jauge par seconde. La jauge est
-        /// normalisée entre 0 et 1 : 100 de Trace par seconde la remplissent en une seconde.
-        /// TODO (BalancingConfigSO) : cette constante doit rejoindre les autres réglages.
-        /// </summary>
-        private const float TraceToGaugeDivisor = 100f;
-
         private readonly UpgradeManager _upgradeManager;
         private readonly ScriptCycleRunner _cycleRunner;
         private readonly PrestigeManager _prestigeManager;
         private readonly ThreatManager _threatManager;
         private readonly GameSessionManager _sessionManager;
         private readonly GhostCacheSystem _ghostCache;
+        private readonly BalancingConfigSO _balancing;
 
         public SimulationTicker(
             UpgradeManager upgradeManager,
@@ -40,7 +35,8 @@ namespace Core.Services.Simulation
             PrestigeManager prestigeManager,
             ThreatManager threatManager,
             GameSessionManager sessionManager,
-            GhostCacheSystem ghostCache)
+            GhostCacheSystem ghostCache,
+            BalancingConfigSO balancing)
         {
             _upgradeManager = upgradeManager;
             _cycleRunner = cycleRunner;
@@ -48,6 +44,7 @@ namespace Core.Services.Simulation
             _threatManager = threatManager;
             _sessionManager = sessionManager;
             _ghostCache = ghostCache;
+            _balancing = balancing;
         }
 
         public void Tick()
@@ -104,7 +101,7 @@ namespace Core.Services.Simulation
 
             if (debit == 0f) return;
 
-            _threatManager.AddThreat((debit / TraceToGaugeDivisor) * deltaTime);
+            _threatManager.AddThreat((debit / _balancing.TraceToGaugeDivisor) * deltaTime);
         }
     }
 }

@@ -13,22 +13,6 @@ namespace Core.Services.Simulation
     /// </summary>
     public class GameSessionManager : IStartable, IDisposable
     {
-        /// <summary>
-        /// Argent de départ d'une run neuve, AVANT le bonus de prestige — qui s'y ajoute au lieu
-        /// de le remplacer. Sans ce plancher, un joueur sans nœud StartingMoney repartait à zéro
-        /// et ne pouvait même pas acheter son premier Script.
-        /// TODO (BalancingConfigSO) : cette constante doit rejoindre les autres réglages.
-        /// </summary>
-        private const double BaseStartingMoney = 10d;
-
-        /// <summary>
-        /// Bonus « Clean Exit » : +20 % de CPU Cycles quand le joueur sort de lui-même au lieu
-        /// de se faire saisir. C'est ce qui doit le pousser à flirter avec 95 % de Trace plutôt
-        /// qu'à wiper dès qu'il le peut.
-        /// TODO (BalancingConfigSO) : cette constante doit rejoindre les autres réglages.
-        /// </summary>
-        private const double CleanExitMultiplier = 1.2d;
-
         /// <summary>Tampon réutilisé : un wipe ne doit pas allouer un dictionnaire à chaque fois.</summary>
         private static readonly System.Collections.Generic.Dictionary<string, int> EmptyLevels =
             new System.Collections.Generic.Dictionary<string, int>();
@@ -39,13 +23,14 @@ namespace Core.Services.Simulation
         private readonly PrestigeManager _prestigeManager;
         private readonly EmergencyProtocolSystem _emergencyProtocolSystem;
         private readonly GhostCacheSystem _ghostCacheSystem;
+        private readonly BalancingConfigSO _balancing;
 
         public Subject<double> OnSessionEnded { get; }
         public ReactiveProperty<bool> IsGameActive { get; }
 
         private DisposableBag _disposables;
 
-        public GameSessionManager(UserCurrencies userCurrencies, ThreatManager threatManager, UpgradeManager upgradeManager, PrestigeManager prestigeManager, EmergencyProtocolSystem emergencyProtocolSystem, GhostCacheSystem ghostCacheSystem)
+        public GameSessionManager(UserCurrencies userCurrencies, ThreatManager threatManager, UpgradeManager upgradeManager, PrestigeManager prestigeManager, EmergencyProtocolSystem emergencyProtocolSystem, GhostCacheSystem ghostCacheSystem, BalancingConfigSO balancing)
         {
             _userCurrencies = userCurrencies;
             _threatManager = threatManager;
@@ -53,6 +38,7 @@ namespace Core.Services.Simulation
             _prestigeManager = prestigeManager;
             _emergencyProtocolSystem = emergencyProtocolSystem;
             _ghostCacheSystem = ghostCacheSystem;
+            _balancing = balancing;
 
             OnSessionEnded = new Subject<double>();
             IsGameActive = new ReactiveProperty<bool>(true);
@@ -105,7 +91,7 @@ namespace Core.Services.Simulation
             if (!IsGameActive.CurrentValue) return false;
 
             Debug.Log("[GameSessionManager] Exfiltration volontaire. Effacement propre.");
-            awardedPrestige = ResolveRunEnd(CleanExitMultiplier);
+            awardedPrestige = ResolveRunEnd(_balancing.CleanExitMultiplier);
             return true;
         }
 
@@ -154,7 +140,7 @@ namespace Core.Services.Simulation
         /// </summary>
         private void WipeRun()
         {
-            _userCurrencies.Money.Reset(BaseStartingMoney + _prestigeManager.StartingMoney.CurrentValue);
+            _userCurrencies.Money.Reset(_balancing.BaseStartingMoney + _prestigeManager.StartingMoney.CurrentValue);
             _userCurrencies.ResetRunCounters();
             _emergencyProtocolSystem.ResetSystem();
 

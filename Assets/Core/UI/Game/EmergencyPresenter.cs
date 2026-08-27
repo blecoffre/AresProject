@@ -65,7 +65,9 @@ namespace Core.UI.Game
                 .Subscribe(_ => Refresh())
                 .AddTo(ref _disposables);
 
-            _emergency.RequiredTFlops
+            // On écoute le COMPTEUR d'usages et non le palier : celui-ci est désormais calculé
+            // à la volée depuis le BalancingConfigSO, pour suivre un réglage à chaud.
+            _emergency.Uses
                 .Subscribe(_ => Refresh())
                 .AddTo(ref _disposables);
 
@@ -108,7 +110,7 @@ namespace Core.UI.Game
                 _view.ApplyState(
                     _loc.GetText("UI_EMERGENCY_COOLDOWN", Mathf.CeilToInt(remaining)),
                     interactable: false,
-                    fillAmount: 1f - remaining / EmergencyProtocolSystem.TotalCooldownSeconds,
+                    fillAmount: 1f - remaining / _emergency.TotalCooldownSeconds,
                     fillColor: blockRemaining > 0f ? _view.BlockedColor : _view.UnavailableColor);
 
                 return;
@@ -120,10 +122,10 @@ namespace Core.UI.Game
                     _loc.GetText(
                         "UI_EMERGENCY_INSUFFICIENT",
                         CurrencyFormatter.Format(_upgradeManager.TotalTFlops.CurrentValue),
-                        CurrencyFormatter.Format(_emergency.RequiredTFlops.CurrentValue)),
+                        CurrencyFormatter.Format(_emergency.RequiredTFlops)),
                     interactable: false,
                     fillAmount: (float)(_upgradeManager.TotalTFlops.CurrentValue
-                                        / _emergency.RequiredTFlops.CurrentValue),
+                                        / _emergency.RequiredTFlops),
                     fillColor: _view.UnavailableColor);
 
                 return;
@@ -134,9 +136,9 @@ namespace Core.UI.Game
             _view.ApplyState(
                 _loc.GetText(
                     "UI_EMERGENCY_READY",
-                    Mathf.RoundToInt(EmergencyProtocolSystem.TraceReduction * 100f),
+                    Mathf.RoundToInt(_emergency.TraceReduction * 100f),
                     Mathf.RoundToInt(_emergency.NextBlockedFraction * 100f),
-                    Mathf.RoundToInt(EmergencyProtocolSystem.BlockDuration)),
+                    Mathf.RoundToInt(_emergency.BlockDuration)),
                 interactable: true,
                 fillAmount: 1f,
                 fillColor: _view.ReadyColor);

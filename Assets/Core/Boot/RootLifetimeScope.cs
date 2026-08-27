@@ -21,11 +21,16 @@ namespace Core.Infrastructure
         [SerializeField] private UpgradeCatalogSO _upgradeCatalog;
         [SerializeField] private PrestigeCatalogSO _prestigeCatalog;
 
+        [Tooltip("Source unique des réglages d'équilibrage. Modifiable en Play Mode : les " +
+                 "systèmes lisent les valeurs à l'usage, pas au démarrage.")]
+        [SerializeField] private BalancingConfigSO _balancingConfig;
+
         protected override void Configure(IContainerBuilder builder)
         {
             // 1. Données statiques (catalogues glissés dans l'inspecteur)
             builder.RegisterInstance(_upgradeCatalog);
             builder.RegisterInstance(_prestigeCatalog);
+            builder.RegisterInstance(_balancingConfig);
 
             // 2. Localisation — AsSelf pour que le bootstrapper puisse appeler LoadLanguageAsync
             builder.Register<JsonLocalizationService>(Lifetime.Singleton).As<ILocalizationService>().AsSelf();

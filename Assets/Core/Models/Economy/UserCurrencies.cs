@@ -38,8 +38,12 @@ namespace Core.Models.Economy
         private readonly ReactiveProperty<int> _totalNumberOfDetections;
         public ReadOnlyReactiveProperty<int> TotalNumberOfDetections => _totalNumberOfDetections;
 
-        public UserCurrencies()
+        private readonly BalancingConfigSO _balancing;
+
+        public UserCurrencies(BalancingConfigSO balancing)
         {
+            _balancing = balancing;
+
             Money = new Currency();
             CpuCycles = new Currency();
 
@@ -79,7 +83,7 @@ namespace Core.Models.Economy
         /// </summary>
         public double CalculatePendingCpuCycles()
         {
-            return Math.Floor(Math.Sqrt(_runMoneyGenerated.Value / 1000d));
+            return Math.Floor(Math.Sqrt(_runMoneyGenerated.Value / _balancing.MoneyPerCpuCycle));
         }
 
         /// <summary>

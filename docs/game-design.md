@@ -49,7 +49,16 @@ Le niveau augmente **toujours** le versement (`BaseProductionYield × niveau`). 
 
 **Action de l'Overclock (Clic manuel) :** Le clic global (Overclock) agit comme un **réveil**. S'il y a des Scripts inactifs (car sous le seuil d'automatisation), le clic de l'Overclock les démarre en priorité. Si les cycles sont déjà en cours, il avance le temps de tous les cycles de `0,5 s × ClickPowerMultiplier`.
 
-**Précision tranchée le 2026-08-26 — un clic fait les DEUX, jamais l'un ou l'autre.** Un même clic démarre d'un coup **tous** les Scripts possédés à l'arrêt, *et* avance de `0,5 s × ClickPowerMultiplier` ceux qui tournaient déjà. Aucun clic n'est donc perdu, et sa valeur reste constante à tous les stades de la partie. Ne pas implémenter de priorité exclusive (« tant qu'il reste un inactif, on ne fait que réveiller ») : en début de partie, chaque clic ne servirait qu'à relancer et jamais à accélérer.
+**Revirement du 2026-08-27 — le « réveil » devient un nœud de prestige avancé.** Un clic ne
+démarre PAS les Scripts à l'arrêt par défaut : il se contente d'avancer ceux qui tournent. Galérer
+au lancement manuel fait partie de l'expérience, et pendant une bonne partie du jeu. Le réveil
+automatique se débloque par un nœud de prestige tardif, pour fluidifier les runs de haut niveau
+où relancer quinze Scripts à la main devient une corvée plutôt qu'un choix.
+
+*Le paragraphe ci-dessous décrivait le comportement de base envisagé le 26/08. Il décrit
+désormais l'effet du nœud, une fois celui-ci acheté :*
+
+**Un clic fait alors les DEUX, jamais l'un ou l'autre.** Un même clic démarre d'un coup **tous** les Scripts possédés à l'arrêt, *et* avance de `0,5 s × ClickPowerMultiplier` ceux qui tournaient déjà. Aucun clic n'est donc perdu, et sa valeur reste constante à tous les stades de la partie. Ne pas implémenter de priorité exclusive (« tant qu'il reste un inactif, on ne fait que réveiller ») : en début de partie, chaque clic ne servirait qu'à relancer et jamais à accélérer.
 
 Les cycles sont **gelés** en fin de run et remis à zéro au redémarrage. La progression partielle n'est pas sauvegardée.
 
@@ -183,6 +192,20 @@ Pas de palier d'upgrade ni de seuil de TFlops : verrouiller derrière un achat p
 > Compilation des erreurs... Noyau IA amélioré.
 > Redémarrage du système...
 ```
+
+## Tous les réglages vivent dans `BalancingConfig.asset`
+
+Depuis le 2026-08-27, l'équilibrage ne demande plus de toucher au C#. Un ScriptableObject unique,
+`Assets/GameData/Balancing/BalancingConfig.asset`, porte **toutes** les valeurs : diviseur de
+Trace, compression par TFlop, synergie des Proxies, argent de départ, bonus Clean Exit, Datas par
+CPU Cycle, secondes d'Overclock, les quatre réglages du Ghost Cache et les huit du Data Wiper.
+
+Il est modifiable **en Play Mode** : les systèmes lisent les propriétés à l'usage plutôt que de
+les recopier au démarrage, donc un changement dans l'inspecteur prend effet immédiatement. C'est
+le seul asset du projet qu'on édite à la main sans qu'un générateur ne l'écrase.
+
+Chaque champ porte un tooltip qui dit ce qu'il fait et dans quel sens il pousse. Les `[Range]` ne
+sont pas décoratifs : ils empêchent de saisir une valeur qui casserait une formule.
 
 ## Lore
 

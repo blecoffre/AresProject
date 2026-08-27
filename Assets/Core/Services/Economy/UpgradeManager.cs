@@ -19,15 +19,10 @@ namespace Core.Services.Economy
             UpgradeType.Proxy
         };
 
-        /// <summary>
-        /// Accélération des cycles par niveau de Proxy possédé. 0,01 = +1 % par niveau.
-        /// TODO (BalancingConfigSO) : cette constante doit rejoindre les autres réglages.
-        /// </summary>
-        private const double ProxySynergyPerLevel = 0.01d;
-
         private readonly UpgradeCatalogSO _catalog;
         private readonly UserCurrencies _userCurrencies;
         private readonly PrestigeManager _prestigeManager;
+        private readonly BalancingConfigSO _balancing;
 
         private DisposableBag _disposables;
 
@@ -101,11 +96,13 @@ namespace Core.Services.Economy
         public UpgradeManager(
             UpgradeCatalogSO catalog,
             UserCurrencies userCurrencies,
-            PrestigeManager prestigeManager)
+            PrestigeManager prestigeManager,
+            BalancingConfigSO balancing)
         {
             _catalog = catalog;
             _userCurrencies = userCurrencies;
             _prestigeManager = prestigeManager;
+            _balancing = balancing;
 
             _activeUpgrades = new Dictionary<string, UpgradeModel>();
 
@@ -170,7 +167,7 @@ namespace Core.Services.Economy
                     ? savedLevel
                     : 0;
 
-                var model = new UpgradeModel(config, level);
+                var model = new UpgradeModel(config, _balancing, level);
                 _activeUpgrades.Add(config.Id, model);
                 _upgradesByType[config.Type].Add(model);
             }
@@ -333,7 +330,7 @@ namespace Core.Services.Economy
                 totalProxyLevels += proxyList[i].CurrentLevel.CurrentValue;
             }
 
-            double synergy = 1d + totalProxyLevels * ProxySynergyPerLevel;
+            double synergy = 1d + totalProxyLevels * _balancing.ProxySynergyPerLevel;
 
             // Poussée dans les modèles : c'est ce qui invalide leur cache de durée. Seuls les
             // Scripts ont un cycle, mais on pousse à tous — SetTFlops s'auto-garde sur l'égalité,

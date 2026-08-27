@@ -1,3 +1,4 @@
+using Core.Models.Economy;
 using Core.Services.Economy;
 using R3;
 using System;
@@ -24,56 +25,29 @@ namespace Core.Services.Security
     /// </summary>
     public class EmergencyProtocolSystem : ITickable, IDisposable
     {
-        /// <summary>
-        /// TFlops à posséder pour le premier usage de la run. Ordre de grandeur : `HW_01` au
-        /// niveau 10, palier ×2 compris, en fournit 40.
-        /// ⚠️ Valeur PROVISOIRE — le GD n'a pas chiffré le palier, seulement sa progression.
-        /// TODO (BalancingConfigSO) : cette constante doit rejoindre les autres réglages.
-        /// </summary>
-        private const double BaseRequiredTFlops = 50d;
-
-        /// <summary>
-        /// Facteur d'escalade du palier requis à chaque usage. Repris du ×3 de l'ancien coût en
-        /// argent, faute de chiffre du GD. ⚠️ Valeur PROVISOIRE.
-        /// TODO (BalancingConfigSO) : cette constante doit rejoindre les autres réglages.
-        /// </summary>
-        private const double RequirementMultiplier = 3d;
-
-        /// <summary>
-        /// Points de jauge effacés, en ABSOLU et non en proportion : à 63 % on tombe à 43 %.
-        /// TODO (BalancingConfigSO) : cette constante doit rejoindre les autres réglages.
-        /// </summary>
-        private const float TraceReductionAmount = 0.20f;
-
-        /// <summary>Tranche de TFlops immobilisée au premier usage de la run.</summary>
-        private const float BaseBlockedFraction = 0.30f;
-
-        /// <summary>Points de tranche ajoutés à chaque usage : 30 %, puis 40 %, puis 50 %…</summary>
-        private const float BlockedFractionIncreasePerUse = 0.10f;
-
-        /// <summary>
-        /// Plafond de la tranche. Sans lui, le septième usage d'une run immobiliserait 100 % du
-        /// parc : plus une seule TFlop, donc plus aucune dissipation ni compression de cycle. Le
-        /// bouton deviendrait un suicide pur, ce qui n'est pas un choix mais un piège.
-        /// </summary>
-        private const float MaxBlockedFraction = 0.90f;
-
-        /// <summary>Durée d'immobilisation des TFlops, en secondes.</summary>
-        private const float BlockDurationSeconds = 60f;
-
-        /// <summary>Délai entre deux activations, en secondes.</summary>
-        private const float CooldownSeconds = 300f;
-
         private readonly ThreatManager _threatManager;
         private readonly UpgradeManager _upgradeManager;
         private readonly PrestigeManager _prestigeManager;
+        private readonly BalancingConfigSO _balancing;
 
         private readonly ReactiveProperty<int> _timesUsedInCurrentRun = new(0);
         private readonly ReactiveProperty<float> _blockRemaining = new(0f);
         private readonly ReactiveProperty<float> _cooldownRemaining = new(0f);
 
-        /// <summary>Palier de TFlops à atteindre pour l'activation suivante.</summary>
-        public ReadOnlyReactiveProperty<double> RequiredTFlops { get; }
+        /// <summary>
+        /// Palier de TFlops à atteindre pour l'activation suivante.
+        ///
+        /// Propriété CALCULÉE et non ReactiveProperty, volontairement : une chaîne R3 dérivée du
+        /// compteur d'usages ne se réévalue qu'à chaque usage, donc régler le palier dans
+        /// l'inspecteur en Play Mode restait sans effet jusqu'au prochain déclenchement — ce qui
+        /// vide de son sens l'équilibrage à chaud. Les abonnés écoutent
+        /// <see cref="UsesInCurrentRun"/>, qui est la seule chose qui bouge en jeu.
+        /// </summary>
+        public double RequiredTFlops => _balancing.EmergencyBaseRequiredTFlops
+            * Math.Pow(_balancing.EmergencyRequirementMultiplier, _timesUsedInCurrentRun.CurrentValue);
+
+        /// <summary>Nombre d'usages, observable. C'est lui qui pilote le rafraîchissement de la vue.</summary>
+        public ReadOnlyReactiveProperty<int> Uses => _timesUsedInCurrentRun;
 
         /// <summary>Secondes restantes d'immobilisation des TFlops. Vaut 0 hors contrecoup.</summary>
         public ReadOnlyReactiveProperty<float> BlockRemaining => _blockRemaining;
@@ -92,35 +66,34 @@ namespace Core.Services.Security
 
         /// <summary>Tranche de TFlops que la PROCHAINE activation immobilisera.</summary>
         public float NextBlockedFraction => Mathf.Min(
-            MaxBlockedFraction,
-            BaseBlockedFraction + BlockedFractionIncreasePerUse * _timesUsedInCurrentRun.CurrentValue);
+            _balancing.EmergencyMaxBlockedFraction,
+            _balancing.EmergencyBaseBlockedFraction
+                + _balancing.EmergencyBlockedIncreasePerUse * _timesUsedInCurrentRun.CurrentValue);
 
         /// <summary>Le parc atteint-il le palier requis. Lu sur la capacité EFFECTIVE, immobilisation comprise.</summary>
-        public bool HasEnoughPower => _upgradeManager.TotalTFlops.CurrentValue >= RequiredTFlops.CurrentValue;
+        public bool HasEnoughPower => _upgradeManager.TotalTFlops.CurrentValue >= RequiredTFlops;
 
         public bool IsOnCooldown => _cooldownRemaining.CurrentValue > 0f;
 
         /// <summary>Durée totale du délai, pour que la vue puisse en tirer une progression.</summary>
-        public static float TotalCooldownSeconds => CooldownSeconds;
+        public float TotalCooldownSeconds => _balancing.EmergencyCooldownSeconds;
 
         /// <summary>Points de jauge effacés par une activation, pour l'affichage.</summary>
-        public static float TraceReduction => TraceReductionAmount;
+        public float TraceReduction => _balancing.EmergencyTraceReduction;
 
         /// <summary>Durée d'immobilisation, pour l'affichage.</summary>
-        public static float BlockDuration => BlockDurationSeconds;
+        public float BlockDuration => _balancing.EmergencyBlockDurationSeconds;
 
         public EmergencyProtocolSystem(
             ThreatManager threatManager,
             UpgradeManager upgradeManager,
-            PrestigeManager prestigeManager)
+            PrestigeManager prestigeManager,
+            BalancingConfigSO balancing)
         {
             _threatManager = threatManager;
             _upgradeManager = upgradeManager;
             _prestigeManager = prestigeManager;
-
-            RequiredTFlops = _timesUsedInCurrentRun
-                .Select(uses => BaseRequiredTFlops * Math.Pow(RequirementMultiplier, uses))
-                .ToReadOnlyReactiveProperty(BaseRequiredTFlops);
+            _balancing = balancing;
         }
 
         public void Tick()
@@ -164,18 +137,18 @@ namespace Core.Services.Security
             if (IsOnCooldown) return false;
             if (!HasEnoughPower) return false;
 
-            _threatManager.ReduceThreat(TraceReductionAmount);
+            _threatManager.ReduceThreat(_balancing.EmergencyTraceReduction);
 
             // La tranche est calculée AVANT l'incrément : le premier usage d'une run en
             // immobilise 30 %, pas 40 %.
             _upgradeManager.SetTFlopsBlockedFraction(NextBlockedFraction);
 
-            _blockRemaining.Value = BlockDurationSeconds;
-            _cooldownRemaining.Value = CooldownSeconds;
+            _blockRemaining.Value = _balancing.EmergencyBlockDurationSeconds;
+            _cooldownRemaining.Value = _balancing.EmergencyCooldownSeconds;
             _timesUsedInCurrentRun.Value++;
 
-            Debug.Log("[EMERGENCY] Data Wiper lancé. Trace −" + (TraceReductionAmount * 100f)
-                      + " pts, TFlops immobilisées pendant " + BlockDurationSeconds + " s.");
+            Debug.Log("[EMERGENCY] Data Wiper lancé. Trace −" + (_balancing.EmergencyTraceReduction * 100f)
+                      + " pts, TFlops immobilisées pendant " + _balancing.EmergencyBlockDurationSeconds + " s.");
             return true;
         }
 
@@ -188,9 +161,9 @@ namespace Core.Services.Security
         public void Restore(int uses, float blockRemaining, float cooldownRemaining)
         {
             _timesUsedInCurrentRun.Value = uses < 0 ? 0 : uses;
-            _cooldownRemaining.Value = Mathf.Clamp(cooldownRemaining, 0f, CooldownSeconds);
+            _cooldownRemaining.Value = Mathf.Clamp(cooldownRemaining, 0f, _balancing.EmergencyCooldownSeconds);
 
-            float block = Mathf.Clamp(blockRemaining, 0f, BlockDurationSeconds);
+            float block = Mathf.Clamp(blockRemaining, 0f, _balancing.EmergencyBlockDurationSeconds);
             _blockRemaining.Value = block;
 
             // La tranche à réappliquer est celle de l'usage PRÉCÉDENT, d'où le −1 : le compteur
@@ -198,8 +171,9 @@ namespace Core.Services.Security
             if (block > 0f && uses > 0)
             {
                 _upgradeManager.SetTFlopsBlockedFraction(Mathf.Min(
-                    MaxBlockedFraction,
-                    BaseBlockedFraction + BlockedFractionIncreasePerUse * (uses - 1)));
+                    _balancing.EmergencyMaxBlockedFraction,
+                    _balancing.EmergencyBaseBlockedFraction
+                        + _balancing.EmergencyBlockedIncreasePerUse * (uses - 1)));
             }
             else
             {
@@ -218,7 +192,6 @@ namespace Core.Services.Security
 
         public void Dispose()
         {
-            RequiredTFlops.Dispose();
             _timesUsedInCurrentRun.Dispose();
             _blockRemaining.Dispose();
             _cooldownRemaining.Dispose();

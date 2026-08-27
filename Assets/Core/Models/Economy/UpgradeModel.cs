@@ -13,19 +13,10 @@ namespace Core.Models.Economy
     public class UpgradeModel : IDisposable
     {
         /// <summary>
-        /// Coefficient de compression du temps par TFlop : TempsReel = TempsBase / (1 + TFlops × k).
-        /// Décroissance asymptotique — la durée tend vers zéro sans jamais l'atteindre, et le
-        /// plancher MinCycleDuration reprend la main avant.
-        /// TODO (BalancingConfigSO) : cette constante doit rejoindre les autres réglages.
+        /// Réglages d'équilibrage. Passés par constructeur et non injectés : ce modèle est un POCO
+        /// créé à la main par l'UpgradeManager, il ne passe pas par le conteneur.
         /// </summary>
-        private const double TFlopsTimeCompression = 0.05d;
-
-        /// <summary>
-        /// Plafond des réductions ciblées. Avec maxLevel 5 et 0,1 par rang on plafonne à 0,5, donc
-        /// cette borne ne sert à rien aujourd'hui — elle existe pour qu'augmenter maxLevel plus
-        /// tard ne rende jamais un générateur gratuit ni son cycle instantané.
-        /// </summary>
-        private const float MaxReduction = 0.95f;
+        private readonly BalancingConfigSO _balancing;
 
         public UpgradeConfigSO Config { get; }
 
@@ -75,9 +66,10 @@ namespace Core.Models.Economy
         /// </summary>
         private int _automationThresholdReduction;
 
-        public UpgradeModel(UpgradeConfigSO config, int savedLevel = 0)
+        public UpgradeModel(UpgradeConfigSO config, BalancingConfigSO balancing, int savedLevel = 0)
         {
             Config = config;
+            _balancing = balancing;
             _currentLevel = new ReactiveProperty<int>(savedLevel < 0 ? 0 : savedLevel);
 
             RecalculateCache();
@@ -177,7 +169,7 @@ namespace Core.Models.Economy
 
         /// <summary>Coût de base après réduction ciblée. Bornée pour qu'un générateur ne soit jamais gratuit.</summary>
         private double AdjustedBaseCost =>
-            Config.BaseCost * (1d - Math.Min(MaxReduction, _bonuses.CostReduction));
+            Config.BaseCost * (1d - Math.Min(_balancing.MaxTargetedReduction, _bonuses.CostReduction));
 
         /// <summary>Montant versé à la fin d'un cycle, paliers inclus.</summary>
         public double GetCurrentYield() => _cachedYield;
@@ -217,7 +209,7 @@ namespace Core.Models.Economy
             // base », « réduit le temps de cycle »). Les paliers puis les TFlops s'appliquent
             // ensuite par-dessus, et le plancher tranche en dernier.
             double yield = Config.BaseProductionYield * (1d + _bonuses.YieldBoost) * level;
-            float duration = Config.BaseCycleDuration * (1f - Math.Min(MaxReduction, _bonuses.TimeReduction));
+            float duration = Config.BaseCycleDuration * (1f - Math.Min(_balancing.MaxTargetedReduction, _bonuses.TimeReduction));
 
             // La magnitude de Trace suit la même logique : base × niveau, puis les paliers.
             // Pour un Proxy — et pour lui seul — le « boost de rendement » du prestige amplifie
@@ -265,7 +257,7 @@ namespace Core.Models.Economy
             // champ dit « plancher absolu, aucun palier ni bonus ne peut descendre sous cette
             // durée ». Les TFlops sont un bonus comme un autre, ils ne le franchissent pas.
             // Calcul en double : à 1,5e9 TFlops, un float perdrait la précision du diviseur.
-            double compressed = duration / (1d + _tflops * TFlopsTimeCompression);
+            double compressed = duration / (1d + _tflops * _balancing.TFlopsTimeCompression);
 
             // Puis la synergie des Proxies, qui accélère les cycles au même titre que les TFlops.
             // Multiplicateur DÉDIÉ et non branché sur les TFlops : y passer créerait une boucle

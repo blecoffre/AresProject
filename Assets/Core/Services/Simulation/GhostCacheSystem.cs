@@ -1,3 +1,4 @@
+using Core.Models.Economy;
 using Core.Services.Economy;
 using R3;
 using System;
@@ -37,43 +38,18 @@ namespace Core.Services.Simulation
     /// </summary>
     public class GhostCacheSystem : IDisposable
     {
-        /// <summary>
-        /// Secondes d'excédent de dissipation à accumuler pour UNE charge. Cinq minutes de
-        /// « sur-défense » pure (tranché par le GD le 2026-08-27). Le nombre de charges
-        /// stockables vient du nœud de prestige `P_EXPLOIT_CHARGES`.
-        /// TODO (BalancingConfigSO) : cette constante doit rejoindre les autres réglages.
-        /// </summary>
-        public const float CapacitySeconds = 300f;
-
-        /// <summary>
-        /// Durée du Zéro-Day Exploit. Assez long pour que le joueur ait le temps de regarder la
-        /// jauge de Trace monter et de le regretter.
-        /// TODO (BalancingConfigSO) : cette constante doit rejoindre les autres réglages.
-        /// </summary>
-        public const float OverdriveDurationSeconds = 30f;
-
-        /// <summary>
-        /// Multiplicateur de rendement pendant l'Exploit. Porte sur le RENDEMENT et non sur la
-        /// vitesse : le plancher MinCycleDuration bornerait une accélération, ce qui rendrait le
-        /// gain imprévisible d'un Script à l'autre.
-        /// TODO (BalancingConfigSO) : cette constante doit rejoindre les autres réglages.
-        /// </summary>
-        public const double OverdriveYieldMultiplier = 50d;
-
-        /// <summary>
-        /// Multiplicateur appliqué à la génération BRUTE de Trace pendant l'Exploit, en plus de
-        /// l'extinction des Proxies (tranché par le GD le 2026-08-27).
-        ///
-        /// ⚠️ C'est le réglage le plus sensible de la mécanique : la dissipation valant zéro, le
-        /// temps de survie depuis une jauge vide vaut `100 / (génération × ce facteur)`. À 10, il
-        /// faut générer moins de 0,33 Trace/s pour tenir les 30 secondes — soit moins qu'un seul
-        /// Script de niveau 1. Voir la note d'équilibrage du backlog.
-        /// TODO (BalancingConfigSO) : cette constante doit rejoindre les autres réglages.
-        /// </summary>
-        public const float OverdriveTraceMultiplier = 10f;
-
         private readonly UpgradeManager _upgradeManager;
         private readonly PrestigeManager _prestigeManager;
+        private readonly BalancingConfigSO _balancing;
+
+        /// <summary>
+        /// Secondes d'excédent de dissipation à accumuler pour UNE charge. Le nombre de charges
+        /// stockables vient du nœud de prestige `P_EXPLOIT_CHARGES`.
+        /// </summary>
+        public float CapacitySeconds => _balancing.GhostCacheCapacitySeconds;
+
+        /// <summary>Durée du Zéro-Day Exploit, en secondes.</summary>
+        public float OverdriveDurationSeconds => _balancing.OverdriveDurationSeconds;
 
         private readonly ReactiveProperty<float> _chargeSeconds = new(0f);
         private readonly ReactiveProperty<bool> _isOverdriveActive = new(false);
@@ -131,7 +107,7 @@ namespace Core.Services.Simulation
         /// ×50 de base, ×100 au rang 10.
         /// </summary>
         public double EffectiveYieldMultiplier =>
-            OverdriveYieldMultiplier * (1d + _prestigeManager.ExploitYieldBoost.CurrentValue);
+            _balancing.OverdriveYieldMultiplier * (1d + _prestigeManager.ExploitYieldBoost.CurrentValue);
 
         /// <summary>
         /// Malus de Trace effectif, nœud `P_EXPLOIT_TRACE_REDUC` compris. Borné à ×1 : le joueur
@@ -139,12 +115,16 @@ namespace Core.Services.Simulation
         /// </summary>
         public float EffectiveTraceMultiplier => Mathf.Max(
             1f,
-            OverdriveTraceMultiplier - _prestigeManager.ExploitTracePenaltyReduction.CurrentValue);
+            _balancing.OverdriveTraceMultiplier - _prestigeManager.ExploitTracePenaltyReduction.CurrentValue);
 
-        public GhostCacheSystem(UpgradeManager upgradeManager, PrestigeManager prestigeManager)
+        public GhostCacheSystem(
+            UpgradeManager upgradeManager,
+            PrestigeManager prestigeManager,
+            BalancingConfigSO balancing)
         {
             _upgradeManager = upgradeManager;
             _prestigeManager = prestigeManager;
+            _balancing = balancing;
         }
 
         /// <summary>

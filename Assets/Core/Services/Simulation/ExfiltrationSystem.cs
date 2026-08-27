@@ -19,13 +19,6 @@ namespace Core.Services.Simulation
     /// </summary>
     public class ExfiltrationSystem : IDisposable
     {
-        /// <summary>
-        /// Datas à générer sur la run pour valoir un premier CPU Cycle.
-        /// Découle de la formule de prestige : Cycles = floor(sqrt(RunMoney / 1000)).
-        /// TODO (BalancingConfigSO) : cette constante doit rejoindre les autres réglages.
-        /// </summary>
-        public const double MoneyPerFirstCycle = 1000d;
-
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         /// <summary>
         /// En éditeur et en build de test, le bouton reste CLIQUABLE même à zéro cycle, pour
@@ -43,6 +36,7 @@ namespace Core.Services.Simulation
 
         private readonly UserCurrencies _currencies;
         private readonly GameSessionManager _sessionManager;
+        private readonly BalancingConfigSO _balancing;
 
         private readonly ReadOnlyReactiveProperty<double> _pendingCycles;
         private readonly ReadOnlyReactiveProperty<bool> _isUnlocked;
@@ -77,10 +71,14 @@ namespace Core.Services.Simulation
         /// </summary>
         public ReadOnlyReactiveProperty<float> ProgressToFirstCycle => _progressToFirstCycle;
 
-        public ExfiltrationSystem(UserCurrencies currencies, GameSessionManager sessionManager)
+        public ExfiltrationSystem(
+            UserCurrencies currencies,
+            GameSessionManager sessionManager,
+            BalancingConfigSO balancing)
         {
             _currencies = currencies;
             _sessionManager = sessionManager;
+            _balancing = balancing;
 
             _pendingCycles = _currencies.RunMoneyGenerated
                 .Select(_ => _currencies.CalculatePendingCpuCycles())
@@ -98,7 +96,7 @@ namespace Core.Services.Simulation
                 .ToReadOnlyReactiveProperty();
 
             _progressToFirstCycle = _currencies.RunMoneyGenerated
-                .Select(money => (float)Math.Min(1d, money / MoneyPerFirstCycle))
+                .Select(money => (float)Math.Min(1d, money / balancing.MoneyPerCpuCycle))
                 .ToReadOnlyReactiveProperty();
         }
 
@@ -109,7 +107,7 @@ namespace Core.Services.Simulation
         public double GetNextCycleThreshold()
         {
             double next = _pendingCycles.CurrentValue + 1d;
-            return next * next * MoneyPerFirstCycle;
+            return next * next * _balancing.MoneyPerCpuCycle;
         }
 
         /// <summary>

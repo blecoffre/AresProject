@@ -28,11 +28,13 @@ Compilation sans erreur ni warning.
 
 ## Majeurs restants
 
-- 🔬 **L'Overclock « réveil » n'est pas implémenté.** Vérifié : SCR_01 acheté niveau 1, donc possédé
-      et non automatisé ; un `TriggerManualOverclock()` suivi d'un `Tick()` laisse `IsRunning` à faux.
-      Or `game-design.md` tranche depuis le 2026-08-26 qu'un clic doit **démarrer tous les Scripts
-      possédés à l'arrêt ET avancer ceux qui tournent**. Aujourd'hui il ne fait que la seconde
-      moitié. Environ dix lignes dans `OverclockSystem` et `ScriptCycleRunner`.
+- 📖 **Le nœud de prestige « réveil » de l'Overclock n'existe pas dans les données.**
+      Décision du 2026-08-27 : le clic ne démarre PAS les Scripts à l'arrêt par défaut — galérer
+      au lancement manuel fait partie de l'expérience, et pendant une bonne partie du jeu. Le
+      comportement décrit le 26/08 (« un clic démarre tout ET avance tout ») devient l'effet d'un
+      nœud de prestige **tardif**, pour fluidifier les runs de haut niveau. À écrire côté données
+      (nouveau `bonusType`, un rang, position avancée dans l'arbre) puis à brancher dans
+      `OverclockSystem` : environ dix lignes, plus un drapeau dans le `PrestigeManager`.
 - 📖 **Le nœud de prestige d'automatisation n'existe pas dans les données.** Prévu ciblé
       (`TargetUpgradeId`), achetable par rangs, abaissant `AutomationLevel`. Le hook est prêt côté
       code : `UpgradeModel.SetAutomationThresholdReduction()`, qui n'a aucun appelant.
@@ -144,13 +146,6 @@ Compilation sans erreur ni warning.
 - 📖 **Pluriel non géré** : `UI_EXFIL_READY` dit « +1 **Cycles** CPU ». Une vraie pluralisation
       demanderait un mécanisme dans `ILocalizationService` ; reformuler la clé suffirait pour
       l'instant.
-- 📖 **Équilibrage éparpillé en constantes**, et la liste s'est allongée : `÷100` dans
-      `SimulationTicker` ; `0,05` de compression TFlops et `0,95` de plafond dans `UpgradeModel` ;
-      `0,01` de synergie Proxy dans `UpgradeManager` ; `10` d'argent de départ et `1,2` de Clean Exit
-      dans `GameSessionManager` ; `1000` par cycle CPU dans `ExfiltrationSystem` ; `300 / 30 / ×50 /
-      ×10` dans `GhostCacheSystem` ; `50 / ×3 / 20 % / 30 % / 10 % / 90 % / 60 s / 300 s` dans
-      `EmergencyProtocolSystem`. **C'est devenu le principal frein à l'équilibrage** : le GD ne peut
-      rien régler sans recompiler. Un `BalancingConfigSO` unique rendrait la main à l'inspecteur.
 - 📖 **Aucun remote Git.** Le dépôt n'existe que sur `H:\`. Accessoirement : pas de Git LFS
       (une trentaine de binaires aujourd'hui, donc sans urgence — mais la mise en place se fait
       *avant* que l'art arrive), et `.gitattributes` sans `merge=unityyamlmerge` sur `*.unity` et
@@ -173,6 +168,8 @@ Trois bugs de la même famille ont déjà coûté du temps. Le motif :
   `ITickable` sans focus, appeler `Tick()` à la main.
 
 ## Corrigé à ce jour
+
+**Lot « BalancingConfigSO »** (2026-08-27, vérifié en Play Mode via MCP) — les vingt réglages d'équilibrage étaient des `const` dans huit fichiers : le GD ne pouvait rien régler sans recompiler, et une session d'équilibrage coûtait une recompilation par essai. Tout vit désormais dans `Assets/GameData/Balancing/BalancingConfig.asset`, injecté par `RegisterInstance` depuis le `RootLifetimeScope`. **Modifiable en Play Mode** : les systèmes lisent les propriétés à l'usage plutôt que de les recopier au démarrage. `UpgradeModel` reçoit la config par constructeur — c'est un POCO créé à la main, il ne passe pas par le conteneur. Les statiques que lisaient les presenters (`GhostCacheSystem.CapacitySeconds`, `EmergencyProtocolSystem.TraceReduction`…) deviennent des propriétés d'instance, ce qui garde le SO inconnu de l'UI. **Défaut trouvé au test et corrigé** : `RequiredTFlops` était une chaîne R3 dérivée du compteur d'usages, donc régler le palier dans l'inspecteur restait sans effet jusqu'au prochain déclenchement — exactement ce que le lot devait rendre possible ; c'est maintenant une propriété calculée, et la vue écoute le compteur d'usages. **Second défaut** : créer l'asset et l'assigner à la scène dans le même appel d'éditeur écrivait `fileID: 0` — la référence n'existait pas encore à la sérialisation ; il faut recharger l'asset depuis son chemin avant de l'assigner. Vérifié à chaud en Play Mode : compression 0,05 → 0,5 fait tomber le cycle de `SCR_01` de 1 s à 0,214 s ; le multiplicateur de Trace de l'Exploit passe de ×10 à ×3 ; le palier du Data Wiper de 50 à 5 TFlops rend `HasEnoughPower` vrai immédiatement ; le seuil d'exfiltration suit `MoneyPerCpuCycle`. Il ne reste dans le code que le drapeau de triche `BypassUnlockCondition`, qui est une configuration de build et non un réglage, et deux garde-fous anti-division (`MinSafeDuration`, plancher à 1,01 du multiplicateur de coût).
 
 **Lot « Data Wiper » — refonte du Bouton d'Urgence** (2026-08-27, vérifié en Play Mode via MCP) — le bouton ne coûte plus d'argent : il **exige** un palier de TFlops, qui grimpe ×3 par usage. Rien n'est dépensé — les TFlops sont une capacité dérivée du parc Hardware, il n'y a rien à en soustraire, et c'est ce point qui avait bloqué la première formulation du GD. Le coût réel est un **contrecoup** : 30 % des TFlops immobilisées 60 s, +10 points par usage, plafonné à 90 %. Comme les TFlops alimentent la dissipation des Proxies, purger la Trace affaiblit la défense juste après. Délai de 5 min entre activations. Effet : −20 points ABSOLUS de jauge. `EmergencyProtocolSystem` devient `ITickable` et perd sa dépendance à `UserCurrencies`. `SaveData` v5 : le contrecoup et le délai sont sauvegardés, contrairement à l'Overdrive — là-bas sauvegarder aurait mis un bonus en pause, ici ne pas sauvegarder ferait échapper à une pénalité. ⚠️ **Palier de base (50 TFlops) et escalade (×3) sont PROVISOIRES** : le GD a chiffré la progression, pas le palier lui-même ; le ×3 reprend l'ancien coût en argent. Le plafond de 90 % est également une décision de code, absente de la spécification. Vérifié : verrouillé sans `P_EMERG` ; refus à 48/50 TFlops ; déclenchement à 52 → Trace 0,63 → 0,43, TFlops 52 → 36,4, dissipation 163,5 → 154,4, cycle `SCR_01` 0,347 → 0,443 s ; second appel refusé ; palier 50 → 150, tranche suivante 40 % ; à l'échéance les TFlops reviennent à 52 ; `Restore(2 usages, 30 s)` réapplique bien 40 % et non 50 % ; migration v2 → v5 préserve `EmergencyUsesInRun` ; wipe remet tout à zéro sauf le déblocage de prestige.
 

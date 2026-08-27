@@ -1,3 +1,5 @@
+using Core.Models.Economy;
+
 namespace Core.Services.Economy
 {
     /// <summary>
@@ -6,20 +8,22 @@ namespace Core.Services.Economy
     /// </summary>
     public class OverclockSystem
     {
-        /// <summary>Secondes de progression offertes par clic, avant bonus de prestige.</summary>
-        private const float BaseWarpSeconds = 0.5f;
-
         private readonly ScriptCycleRunner _cycleRunner;
         private readonly PrestigeManager _prestigeManager;
+        private readonly BalancingConfigSO _balancing;
 
-        public OverclockSystem(ScriptCycleRunner cycleRunner, PrestigeManager prestigeManager)
+        public OverclockSystem(
+            ScriptCycleRunner cycleRunner,
+            PrestigeManager prestigeManager,
+            BalancingConfigSO balancing)
         {
             _cycleRunner = cycleRunner;
             _prestigeManager = prestigeManager;
+            _balancing = balancing;
         }
 
         /// <summary>Secondes qu'un clic ferait gagner en l'état. Exposé pour que l'UI dise la vérité.</summary>
-        public float CurrentWarpSeconds => BaseWarpSeconds * _prestigeManager.ClickPowerMultiplier.CurrentValue;
+        public float CurrentWarpSeconds => _balancing.OverclockWarpSeconds * _prestigeManager.ClickPowerMultiplier.CurrentValue;
 
         /// <summary>Déclenche l'overclock et retourne le nombre de secondes réellement accordé.</summary>
         public float TriggerManualOverclock()

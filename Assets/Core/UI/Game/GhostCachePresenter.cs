@@ -48,7 +48,7 @@ namespace Core.UI.Game
             // ces filtres, le libellé serait reconstruit — donc une chaîne allouée — à chaque
             // frame pendant les cinq minutes de charge puis les trente secondes d'Exploit.
             _ghostCache.ChargeSeconds
-                .Select(seconds => Mathf.RoundToInt(seconds / GhostCacheSystem.CapacitySeconds * 100f))
+                .Select(seconds => Mathf.RoundToInt(seconds / _ghostCache.CapacitySeconds * 100f))
                 .DistinctUntilChanged()
                 .Subscribe(_ => Refresh())
                 .AddTo(ref _disposables);
@@ -97,7 +97,7 @@ namespace Core.UI.Game
                 _view.ApplyState(
                     _loc.GetText("UI_GHOSTCACHE_ACTIVE", Mathf.CeilToInt(remaining)),
                     interactable: false,
-                    fillAmount: remaining / GhostCacheSystem.OverdriveDurationSeconds,
+                    fillAmount: remaining / _ghostCache.OverdriveDurationSeconds,
                     fillColor: _view.OverdriveColor);
 
                 return;
@@ -129,7 +129,7 @@ namespace Core.UI.Game
                         // « 100 » et « 7,5 ». Les arrondir ici affichait « x8 » pour un malus
                         // réel de 7,5 — le bouton mentait d'un demi-point.
                         _ghostCache.EffectiveYieldMultiplier,
-                        GhostCacheSystem.OverdriveDurationSeconds,
+                        _ghostCache.OverdriveDurationSeconds,
                         _ghostCache.EffectiveTraceMultiplier),
                     interactable: true,
                     // Avancement de la charge SUIVANTE, pas 1 : c'est la couleur qui dit
