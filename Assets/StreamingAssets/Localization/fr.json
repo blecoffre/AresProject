@@ -397,6 +397,18 @@
       "Value": "[PRÊT] DATA WIPER — Trace −{0} pts / {1} % des TFlops hors ligne {2} s"
     },
     {
+      "Key": "PRESTIGE_P_OVERCLOCK_AWAKE_NAME",
+      "Value": "Injecteur Automatique"
+    },
+    {
+      "Key": "PRESTIGE_P_OVERCLOCK_AWAKE_DESC",
+      "Value": "L'Overclock relance désormais tous les scripts à l'arrêt, en plus d'accélérer ceux qui tournent."
+    },
+    {
+      "Key": "LOG_MANUAL_OVERCLOCK_WAKE",
+      "Value": "> Overclock : +{0} s sur les cycles actifs, {1} script(s) relancé(s)."
+    },
+    {
       "Key": "LOG_EMERGENCY_WIPE",
       "Value": "> wiper.sh --inject : ver déployé sur les serveurs fédéraux. Dossier partiellement effacé."
     }

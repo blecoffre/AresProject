@@ -20,13 +20,6 @@ Compilation sans erreur ni warning.
 
 ## Majeurs restants
 
-- 📖 **Le nœud de prestige « réveil » de l'Overclock n'existe pas dans les données.**
-      Décision du 2026-08-27 : le clic ne démarre PAS les Scripts à l'arrêt par défaut — galérer
-      au lancement manuel fait partie de l'expérience, et pendant une bonne partie du jeu. Le
-      comportement décrit le 26/08 (« un clic démarre tout ET avance tout ») devient l'effet d'un
-      nœud de prestige **tardif**, pour fluidifier les runs de haut niveau. À écrire côté données
-      (nouveau `bonusType`, un rang, position avancée dans l'arbre) puis à brancher dans
-      `OverclockSystem` : environ dix lignes, plus un drapeau dans le `PrestigeManager`.
 - 📖 **Le nœud de prestige d'automatisation n'existe pas dans les données.** Prévu ciblé
       (`TargetUpgradeId`), achetable par rangs, abaissant `AutomationLevel`. Le hook est prêt côté
       code : `UpgradeModel.SetAutomationThresholdReduction()`, qui n'a aucun appelant.
@@ -93,6 +86,13 @@ Compilation sans erreur ni warning.
       perceptible en éditeur.
 
 ## Hygiène
+- 🔬 **`TryPurchasePrestige` ne vérifie pas le prérequis d'un nœud.** Il ne contrôle que le
+      niveau maximum et le coût : appelé directement, il achète n'importe quel nœud de l'arbre sans
+      ses parents. Constaté en testant `P_OVERCLOCK_AWAKE`, acheté sans `P_POWER_START`.
+      Sans conséquence aujourd'hui — `PrestigeItemPresenter.RefreshView` masque et bloque tout nœud
+      dont le parent est au niveau 0 — mais la garde vit dans la VUE, pas dans le modèle, et c'est
+      elle qui porte tout le « positionnement tardif » voulu par le GD.
+
 
 - 📖 **Aucun `.asmdef`**, aucun test. Tout `Assets/Core` recompile avec le reste, et rien n'empêche
       une dépendance de `Models` vers `UI`. Proposition inchangée : `Ares.Core.Domain`,
@@ -158,6 +158,8 @@ Trois bugs de la même famille ont déjà coûté du temps. Le motif :
   `ITickable` sans focus, appeler `Tick()` à la main.
 
 ## Corrigé à ce jour
+
+**Lot « Injecteur Automatique » — le réveil de l'Overclock** (2026-08-27, vérifié en Play Mode via MCP) — `OverclockWakesScripts` rejoint `PrestigeBonusType`, appendé en fin d'enum comme les trois précédents. `ScriptCycleRunner.StartAllIdle()` démarre les Scripts possédés à l'arrêt et retourne leur nombre ; il ignore les automatisés, qui repartent seuls au Tick suivant et dont le décompte donnerait un retour trompeur. `TriggerManualOverclock` retourne désormais un `OverclockResult` — struct readonly, un clic ne doit rien allouer — portant les secondes ET les réveils, et le presenter choisit entre deux messages de console selon qu'il y a eu réveil ou non. **L'ordre est avance-puis-réveille** : l'inverse offrirait une demi-seconde d'avance aux Scripts qui viennent de démarrer, alors que le GDD parle de « ceux qui tournaient déjà ». **Donnée corrigée** : le nœud écrit par le GD déclarait le prérequis `P_OVERCLOCK_POWER_3`, qui n'existe dans aucun fichier — le générateur aurait laissé le nœud sans parent, donc accessible d'emblée, ce qui annulait le « positionnement tardif » ; rattaché à `P_POWER_START`, le nœud existant le plus profond de la branche Automatisation. Arbre régénéré : 116 nœuds, aucun prérequis cassé. Vérifié : sans le nœud, un clic donne +0,5 s et **0 réveil**, les trois Scripts restent à l'arrêt ; avec, le même clic en réveille **3** ; un second clic en réveille 0, tout tournant déjà.
 
 **Les quatre boutons sont câblés et vérifiés** (2026-08-27, Play Mode via MCP) — le Data Wiper est le `PanicButton` de `Canvas/ConsoleLogs`, aux côtés du Ghost Cache, de l'Overclock et du Protocole Terre Brûlée (`PrestigeButton`). Les trois vues autonomes ont leur `Button`, leur libellé et leur `Image` en Filled, et les neuf champs du `GameSceneLifetimeScope` sont renseignés. États initiaux corrects sur une partie neuve, zéro warning au démarrage : Ghost Cache et Data Wiper affichent leur état verrouillé en nommant le nœud de prestige manquant, l'exfiltration sa jauge à 0 %.
 

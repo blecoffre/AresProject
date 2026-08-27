@@ -141,6 +141,36 @@ namespace Core.Services.Economy
             }
         }
 
+        /// <summary>
+        /// Démarre d'un coup tous les Scripts POSSÉDÉS dont le cycle est à l'arrêt, et retourne
+        /// combien l'ont été. C'est le « réveil » de l'Overclock, réservé au nœud de prestige
+        /// tardif qui le débloque.
+        ///
+        /// Les Scripts automatisés n'y figurent jamais : ils repartent seuls au Tick suivant, et
+        /// les compter donnerait un retour trompeur au joueur (« 12 réveillés » alors que rien
+        /// n'aurait changé). Boucle indexée, aucune allocation.
+        /// </summary>
+        public int StartAllIdle()
+        {
+            if (!_sessionManager.IsGameActive.CurrentValue) return 0;
+
+            int started = 0;
+
+            for (int i = 0; i < _slotCount; i++)
+            {
+                if (_slots[i].IsRunning) continue;
+                if (!_slots[i].Model.IsOwned) continue;
+                if (_slots[i].Model.IsAutomated) continue;
+
+                _slots[i].IsRunning = true;
+                _slots[i].Elapsed = 0f;
+                _slots[i].Running.Value = true;
+                started++;
+            }
+
+            return started;
+        }
+
         public void Tick()
         {
             // Les cycles se figent pendant l'écran de fin de run, et repartent de zéro ensuite

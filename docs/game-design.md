@@ -55,10 +55,18 @@ au lancement manuel fait partie de l'expérience, et pendant une bonne partie du
 automatique se débloque par un nœud de prestige tardif, pour fluidifier les runs de haut niveau
 où relancer quinze Scripts à la main devient une corvée plutôt qu'un choix.
 
+Le nœud est `P_OVERCLOCK_AWAKE` — « Injecteur Automatique », un seul rang, **5 000 CPU Cycles**,
+branche Automatisation derrière `P_POWER_START`.
+
 *Le paragraphe ci-dessous décrivait le comportement de base envisagé le 26/08. Il décrit
 désormais l'effet du nœud, une fois celui-ci acheté :*
 
-**Un clic fait alors les DEUX, jamais l'un ou l'autre.** Un même clic démarre d'un coup **tous** les Scripts possédés à l'arrêt, *et* avance de `0,5 s × ClickPowerMultiplier` ceux qui tournaient déjà. Aucun clic n'est donc perdu, et sa valeur reste constante à tous les stades de la partie. Ne pas implémenter de priorité exclusive (« tant qu'il reste un inactif, on ne fait que réveiller ») : en début de partie, chaque clic ne servirait qu'à relancer et jamais à accélérer.
+**Un clic fait alors les DEUX, jamais l'un ou l'autre.**
+
+*L'ordre compte à l'implémentation : on avance D'ABORD les cycles en cours, on réveille ENSUITE.
+Réveiller en premier offrirait au passage une demi-seconde d'avance aux Scripts qui viennent tout
+juste de démarrer, alors que le GDD dit « ceux qui tournaient déjà ». Les Scripts automatisés ne
+sont jamais comptés comme réveillés : ils repartent seuls au Tick suivant.* Un même clic démarre d'un coup **tous** les Scripts possédés à l'arrêt, *et* avance de `0,5 s × ClickPowerMultiplier` ceux qui tournaient déjà. Aucun clic n'est donc perdu, et sa valeur reste constante à tous les stades de la partie. Ne pas implémenter de priorité exclusive (« tant qu'il reste un inactif, on ne fait que réveiller ») : en début de partie, chaque clic ne servirait qu'à relancer et jamais à accélérer.
 
 Les cycles sont **gelés** en fin de run et remis à zéro au redémarrage. La progression partielle n'est pas sauvegardée.
 

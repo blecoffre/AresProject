@@ -21,6 +21,19 @@
       "posX": 2.0,
       "posY": 2.0,
       "prerequisiteId": "P_CLICK"
+    },
+    {
+      "id": "P_OVERCLOCK_AWAKE",
+      "nameKey": "UI_PRESTIGE_OVERCLOCK_AWAKE_NAME",
+      "descKey": "UI_PRESTIGE_OVERCLOCK_AWAKE_DESC",
+      "bonusType": "OverclockWakesScripts",
+      "maxLevel": 1,
+      "baseCost": 5000.0,
+      "costMult": 1.0,
+      "bonus": 1.0,
+      "posX": 6.0,
+      "posY": 5.0,
+      "prerequisiteId": "P_POWER_START"
     }
   ]
 }

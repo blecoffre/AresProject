@@ -19,7 +19,11 @@ namespace Core.Models.Economy
         // .asset générés, une insertion au milieu redéfinirait silencieusement tous les nœuds.
         UnlockExploitCharges,         // Nombre de charges de Ghost Cache stockables (0 = verrouillé)
         ExploitYieldBoost,            // Majore le multiplicateur de rendement de l'Exploit
-        ExploitTracePenaltyReduction  // Allège le malus de Trace subi pendant l'Exploit
+        ExploitTracePenaltyReduction, // Allège le malus de Trace subi pendant l'Exploit
+
+        // Le clic d'Overclock réveille les Scripts à l'arrêt. Nœud tardif : galérer au lancement
+        // manuel fait partie de l'expérience pendant une bonne partie de la partie.
+        OverclockWakesScripts
     }
 
     [CreateAssetMenu(fileName = "NewPrestigeConfig", menuName = "Core/Economy/Prestige Config")]

@@ -63,6 +63,13 @@ namespace Core.Services.Economy
         /// </summary>
         public ReactiveProperty<float> ExploitTracePenaltyReduction { get; } = new(0f);
 
+        /// <summary>
+        /// Le clic d'Overclock démarre-t-il aussi les Scripts à l'arrêt. Faux par défaut : le
+        /// lancement manuel est une contrainte assumée du début et du milieu de partie, et ce
+        /// nœud tardif ne sert qu'à fluidifier les runs de haut niveau.
+        /// </summary>
+        public ReactiveProperty<bool> OverclockWakesScripts { get; } = new(false);
+
         public PrestigeManager(PrestigeCatalogSO catalog, UserCurrencies currencies)
         {
             _catalog = catalog;
@@ -169,6 +176,7 @@ namespace Core.Services.Economy
             int exploitCharges = 0;
             double exploitYieldBoost = 0d;
             float exploitTraceRelief = 0f;
+            bool overclockWakes = false;
 
             foreach (var kvp in _prestigeLevels)
             {
@@ -224,6 +232,10 @@ namespace Core.Services.Economy
                         exploitTraceRelief += totalBonus;
                         break;
 
+                    case PrestigeBonusType.OverclockWakesScripts:
+                        if (currentLevel > 0) overclockWakes = true;
+                        break;
+
                     case PrestigeBonusType.SpecificUpgradeCostReduction:
                         AccumulateSpecific(config.TargetUpgradeId, totalBonus, SpecificKind.Cost);
                         break;
@@ -249,6 +261,7 @@ namespace Core.Services.Economy
             ExploitMaxCharges.Value = exploitCharges < 0 ? 0 : exploitCharges;
             ExploitYieldBoost.Value = exploitYieldBoost < 0d ? 0d : exploitYieldBoost;
             ExploitTracePenaltyReduction.Value = exploitTraceRelief < 0f ? 0f : exploitTraceRelief;
+            OverclockWakesScripts.Value = overclockWakes;
 
             // Émis EN DERNIER, une fois la table et les scalaires cohérents. C'est ce signal qui
             // pousse les bonus ciblés dans les UpgradeModel : sans lui, ils seraient ignorés au
@@ -317,6 +330,7 @@ namespace Core.Services.Economy
             ExploitMaxCharges.Dispose();
             ExploitYieldBoost.Dispose();
             ExploitTracePenaltyReduction.Dispose();
+            OverclockWakesScripts.Dispose();
         }
     }
 }
