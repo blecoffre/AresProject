@@ -13,6 +13,14 @@ namespace Core.UI.Upgrades
         [SerializeField] private Button _hardwareTabButton;
         [SerializeField] private Button _proxyTabButton;
 
+        [Header("État visuel des onglets")]
+        [Tooltip("Facultatif : l'état actif de chaque onglet, dans le même ordre que les boutons " +
+                 "ci-dessus. Sans eux, seuls les conteneurs basculent — c'était le cas jusqu'au " +
+                 "2026-08-28, et l'ActiveBackground de la scène n'était jamais allumé.")]
+        [SerializeField] private TabButtonView _scriptTabVisual;
+        [SerializeField] private TabButtonView _hardwareTabVisual;
+        [SerializeField] private TabButtonView _proxyTabVisual;
+
         [Header("Content Prefab")]
         [SerializeField] private GeneratorView _generatorPrefab;
         
@@ -69,6 +77,12 @@ namespace Core.UI.Upgrades
             if (_scriptContainer != null) _scriptContainer.gameObject.SetActive(type == UpgradeType.Script);
             if (_hardwareContainer != null) _hardwareContainer.gameObject.SetActive(type == UpgradeType.Hardware);
             if (_proxyContainer != null) _proxyContainer.gameObject.SetActive(type == UpgradeType.Proxy);
+
+            // Les trois onglets sont notifiés, pas seulement le nouveau : c'est ce qui éteint
+            // celui qu'on quitte. Chaque vue se garde elle-même contre une écriture inutile.
+            if (_scriptTabVisual != null) _scriptTabVisual.SetActiveState(type == UpgradeType.Script);
+            if (_hardwareTabVisual != null) _hardwareTabVisual.SetActiveState(type == UpgradeType.Hardware);
+            if (_proxyTabVisual != null) _proxyTabVisual.SetActiveState(type == UpgradeType.Proxy);
         }
     }
 }

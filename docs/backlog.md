@@ -86,6 +86,21 @@ Compilation sans erreur ni warning.
       perceptible en éditeur.
 
 ## Hygiène
+- 🔬 **Trois jauges ont disparu pendant le rework UI.** `GhostCacheView._fill`,
+      `EmergencyView._fill` et `ExfiltrationView._progressFill` valent **NULL** dans la scène.
+      Les vues se gardent (`if (_fill == null) return`), donc rien ne plante — mais l'information
+      est perdue : plus de barre de charge du Ghost Cache, plus de décompte visuel du Data Wiper,
+      plus de progression vers le premier CPU Cycle. Les libellés portent encore le pourcentage,
+      c'est donc dégradant et non bloquant. Constaté le 2026-08-28.
+- 🔬 **`GameOverPanel` est encore en LiberationSans**, la police par défaut d'Unity, alors que
+      tout le reste est en ShareTechMono. L'outil de halos le saute exprès : coller un matériau
+      ShareTechMono à un texte dont l'atlas est LiberationSans afficherait des glyphes faux.
+      Changer la police d'abord, relancer l'outil ensuite.
+- 🔬 **Les couleurs de la console ne suivent pas la maquette.** `ConsoleView.FormatMessage`
+      écrit `#00FF00` (vert pur) là où la maquette veut `#4AF626`, et surtout **`#FF00FF` magenta**
+      pour les lignes narratives, là où la maquette veut de l'orange. Les balises `[OK]`,
+      `[SYSTEM_WARN]` et `[INFO]` restent par ailleurs en dur — déjà noté plus bas.
+
 - 🔬 **Le coût affiché est INFÉRIEUR au coût réel.** `CurrencyFormatter.Format` fait un
       `Math.Floor` sous 1 000 : `SCR_01` au niveau 1 coûte 10,7 et s'affiche « Coût: 10 ». Un
       joueur avec exactement 10 Datas lit le prix, ne comprend pas pourquoi le bouton reste gris,
@@ -157,6 +172,8 @@ Trois bugs de la même famille ont déjà coûté du temps. Le motif :
   `ITickable` sans focus, appeler `Tick()` à la main.
 
 ## Corrigé à ce jour
+
+**Lot « Halos et états visuels »** (2026-08-28, vérifié en Play Mode via MCP) — première passe du rework UI, calquée sur la maquette `core_ui.html`. **`GlowMaterialAssigner`**, outil d'éditeur à deux entrées (rapport à blanc, puis application) : il apparie chaque texte au matériau de halo de SA couleur, règle dérivée de la teinte et non d'une liste de chemins. Possible parce que les trois matériaux ont un `_FaceColor` **blanc** — seul leur `_GlowColor` diffère, donc la couleur vient toujours du composant et un matériau mal apparié donnerait un texte rouge à halo vert. Il couvre les prefabs et les objets inactifs, saute les polices étrangères et les couleurs éteintes (les bordures à `#1A4D1A` ne brillent pas dans la maquette). Résultat : **14 textes de scène + 2 du prefab**, zéro mésappariement. **`TabButtonView`** : l'`ActiveBackground` et la `HighlightBar` existaient dans la scène mais **rien ne les allumait** — `ShowTab` ne basculait que les conteneurs. L'état actif suit maintenant la maquette : fond sombre, barre lumineuse, libellé vif à halo ; les onglets au repos passent en `#1A4D1A` sans halo. **`UiHoverGlow`** : ni Color Tint (qui ne sait que multiplier la couleur du targetGraphic, donc ne peut pas changer un matériau) ni Animation (un Animator et quatre clips par bouton, et une animation réécrit ses propriétés chaque frame, donc se battrait avec les presenters). Un composant qui ne touche QUE le matériau du contour et un fond à 10 % d'opacité — deux choses dont aucun presenter ne s'occupe. Le ColorTint est conservé pour le seul état grisé, son survol neutralisé. Un `Update` gardé par le survol éteint un bouton qui se grise SOUS le curseur, cas réel du Data Wiper qui part en recharge au clic. Vérifié : clic sur Hardware → l'onglet Scripts s'éteint et Hardware s'allume ; survol → halo et fond apparaissent sur Overclock (vert) et Terre Brûlée (rouge), **rien** sur Data Wiper et Ghost Cache qui sont grisés ; sortie → retour au repos ; grisage sous le curseur → extinction immédiate.
 
 **Le panneau affichait les valeurs du niveau PRÉCÉDENT** (2026-08-27, constaté en jeu par Bertrand, corrigé et vérifié en Play Mode) — après le tout premier achat, `SCR_01` annonçait « Génère **0** Datas toutes les 1,5 s » alors que le modèle portait bien un rendement de 1. `UpgradeModel.LevelUp()` faisait `_currentLevel.Value++` PUIS `RecalculateCache()` : la notification R3 réveillait la vue immédiatement, et `BindLevel` lisait les caches avant leur mise à jour. Le rendement, le coût ET la durée étaient donc affichés avec un cran de retard — invisible au-delà du premier niveau, où l'écart devient un simple décalage, mais fatal au niveau 1 où la valeur précédente vaut zéro. Le niveau devient un champ `int` ordinaire, source de vérité de tous les calculs ; le `ReactiveProperty` ne sert plus qu'à notifier, et il est écrit EN DERNIER, une fois les caches cohérents — même principe que `RecalculateBonuses`. Vérifié : « Niv. 0 / Génère 0 Datas » avant achat, « Niv. 1 / Génère 1 Datas » après, et un cycle lancé à la main crédite bien 1 Data à chaque livraison.
 
