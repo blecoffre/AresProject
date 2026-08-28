@@ -585,7 +585,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Core.UI.Theme.UiHoverGlow
   _border: {fileID: 164157810}
   _background: {fileID: 1106852109}
-  _borderGlowMaterial: {fileID: 2100000, guid: 74f283252f6ce43419cfbb40a94805f9, type: 2}
+  _borderGlowMaterial: {fileID: 0}
 --- !u!1 &191813247
 GameObject:
   m_ObjectHideFlags: 0
@@ -1028,7 +1028,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Core.UI.Theme.UiHoverGlow
   _border: {fileID: 210988631}
   _background: {fileID: 1889948961}
-  _borderGlowMaterial: {fileID: 2100000, guid: 74f283252f6ce43419cfbb40a94805f9, type: 2}
+  _borderGlowMaterial: {fileID: 0}
 --- !u!1 &224737662
 GameObject:
   m_ObjectHideFlags: 0
@@ -1358,7 +1358,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 10.885, y: -40}
+  m_AnchoredPosition: {x: 10.88501, y: -40}
   m_SizeDelta: {x: 21.77, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &334695245
@@ -2018,7 +2018,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 9.72, y: -40}
+  m_AnchoredPosition: {x: 9.720001, y: -40}
   m_SizeDelta: {x: 19.44, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &459190376
@@ -3823,7 +3823,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Core.UI.Theme.UiHoverGlow
   _border: {fileID: 782827658}
   _background: {fileID: 92754437}
-  _borderGlowMaterial: {fileID: 2100000, guid: 5a13787aa9d0d8d42b11cfee2b85f581, type: 2}
+  _borderGlowMaterial: {fileID: 0}
 --- !u!1 &786887983
 GameObject:
   m_ObjectHideFlags: 0
@@ -3920,7 +3920,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 10.47, y: -40}
+  m_AnchoredPosition: {x: 10.470001, y: -40}
   m_SizeDelta: {x: 20.94, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &830985345
@@ -4335,7 +4335,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Core.UI.Theme.UiHoverGlow
   _border: {fileID: 883542527}
   _background: {fileID: 842557295}
-  _borderGlowMaterial: {fileID: 2100000, guid: 7dfa7739f55a1dd499fb2339e402ebd1, type: 2}
+  _borderGlowMaterial: {fileID: 0}
 --- !u!1 &953997506
 GameObject:
   m_ObjectHideFlags: 0
@@ -5613,7 +5613,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 164.72, y: -40}
+  m_AnchoredPosition: {x: 164.72003, y: -40}
   m_SizeDelta: {x: 289.44, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1542323881
@@ -5690,7 +5690,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 94.270004, y: -40}
+  m_AnchoredPosition: {x: 94.27002, y: -40}
   m_SizeDelta: {x: 125, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1604345630
@@ -6639,7 +6639,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 417.41, y: -40}
+  m_AnchoredPosition: {x: 417.40997, y: -40}
   m_SizeDelta: {x: 155.94, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1837888116

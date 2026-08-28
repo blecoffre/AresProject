@@ -86,6 +86,13 @@ Compilation sans erreur ni warning.
       perceptible en éditeur.
 
 ## Hygiène
+- 🔬 **Le shadergraph `UI_HDR_Glow` n'échantillonne aucune texture.** Son graphe se réduit à
+      `VertexColor × _Color` sur une cible Unlit : appliqué à une Image, il **ignore le sprite** et
+      remplit tout le rectangle d'un aplat. Sans effet visible sur un `Plain Square` (barre pleine,
+      jauge), mais il détruit un sprite de contour — c'est pourquoi le halo de survol des boutons
+      a dû être retiré le 2026-08-28. Pour rendre le matériau utilisable partout, il faut
+      multiplier la sortie par l'alpha de `_MainTex`.
+
 - 🔬 **Trois jauges ont disparu pendant le rework UI.** `GhostCacheView._fill`,
       `EmergencyView._fill` et `ExfiltrationView._progressFill` valent **NULL** dans la scène.
       Les vues se gardent (`if (_fill == null) return`), donc rien ne plante — mais l'information
@@ -172,6 +179,8 @@ Trois bugs de la même famille ont déjà coûté du temps. Le motif :
   `ITickable` sans focus, appeler `Tick()` à la main.
 
 ## Corrigé à ce jour
+
+**Les halos ne se voyaient pas — deux causes distinctes** (2026-08-28, signalé par Bertrand) — les matériaux étaient bien assignés, mais réglés pour ne rien produire. **Texte** : `_GlowOuter` valait **0,05**, le halo ne débordait pratiquement pas du glyphe ; porté à 0,3. (Le mot-clé `GLOW_ON` était déjà actif — ma première lecture du YAML disait le contraire, à tort.) **Images** : le Bloom de la GameScene a un **seuil à 1**, or les trois `Mat_UIGlow_*` sortaient des couleurs ≤ 1, donc aucune ne franchissait le seuil ; leurs `_Color` sont passées en HDR à 2, ce qui fait enfin briller la jauge de Trace et les barres d'onglet. **Bouton Acheter** : le survol manquait purement et simplement, il n'avait pas été traité — ajouté sur le `BuyButton` de l'ActionPrefab, donc sur tous les clones. **Halo de contour retiré** des cinq survols : le shadergraph ne lisant pas la texture, il transformait le cadre en aplat plein. Le survol se limite désormais au fond à 10 %, qui est correct.
 
 **Lot « Halos et états visuels »** (2026-08-28, vérifié en Play Mode via MCP) — première passe du rework UI, calquée sur la maquette `core_ui.html`. **`GlowMaterialAssigner`**, outil d'éditeur à deux entrées (rapport à blanc, puis application) : il apparie chaque texte au matériau de halo de SA couleur, règle dérivée de la teinte et non d'une liste de chemins. Possible parce que les trois matériaux ont un `_FaceColor` **blanc** — seul leur `_GlowColor` diffère, donc la couleur vient toujours du composant et un matériau mal apparié donnerait un texte rouge à halo vert. Il couvre les prefabs et les objets inactifs, saute les polices étrangères et les couleurs éteintes (les bordures à `#1A4D1A` ne brillent pas dans la maquette). Résultat : **14 textes de scène + 2 du prefab**, zéro mésappariement. **`TabButtonView`** : l'`ActiveBackground` et la `HighlightBar` existaient dans la scène mais **rien ne les allumait** — `ShowTab` ne basculait que les conteneurs. L'état actif suit maintenant la maquette : fond sombre, barre lumineuse, libellé vif à halo ; les onglets au repos passent en `#1A4D1A` sans halo. **`UiHoverGlow`** : ni Color Tint (qui ne sait que multiplier la couleur du targetGraphic, donc ne peut pas changer un matériau) ni Animation (un Animator et quatre clips par bouton, et une animation réécrit ses propriétés chaque frame, donc se battrait avec les presenters). Un composant qui ne touche QUE le matériau du contour et un fond à 10 % d'opacité — deux choses dont aucun presenter ne s'occupe. Le ColorTint est conservé pour le seul état grisé, son survol neutralisé. Un `Update` gardé par le survol éteint un bouton qui se grise SOUS le curseur, cas réel du Data Wiper qui part en recharge au clic. Vérifié : clic sur Hardware → l'onglet Scripts s'éteint et Hardware s'allume ; survol → halo et fond apparaissent sur Overclock (vert) et Terre Brûlée (rouge), **rien** sur Data Wiper et Ghost Cache qui sont grisés ; sortie → retour au repos ; grisage sous le curseur → extinction immédiate.
 
