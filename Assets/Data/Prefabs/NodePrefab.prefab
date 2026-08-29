@@ -29,8 +29,8 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 7842399232351253756}
   - {fileID: 3014687963649241758}
+  - {fileID: 7842399232351253756}
   - {fileID: 5898927869150721692}
   - {fileID: 481062279604448283}
   - {fileID: 7000405628185348248}
@@ -66,7 +66,8 @@ MonoBehaviour:
   _inProgressColor: {r: 0.29, g: 0.965, b: 0.149, a: 1}
   _maxedColor: {r: 0.29, g: 0.965, b: 0.149, a: 1}
   _maxedTextColor: {r: 0.012, g: 0.027, b: 0.012, a: 1}
-  _subtleFillAlpha: 0.06
+  _nodeBackgroundColor: {r: 0.012, g: 0.027, b: 0.012, a: 1}
+  _subtleTintAmount: 0.12
   _selectionAlpha: 0.18
   _pulseSpeed: 3
   _pulseMinAlpha: 0.35

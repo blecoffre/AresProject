@@ -26,8 +26,9 @@ namespace Core.UI.Prestige
         [Tooltip("Le cadre du nœud (Image creuse, Fill Center décoché). Il porte la couleur d'état.")]
         [SerializeField] private Image _borderImage;
 
-        [Tooltip("Le fond plein. Discret la plupart du temps, OPAQUE au niveau max : c'est lui " +
-                 "qui produit les couleurs inversées du nœud entièrement compilé.")]
+        [Tooltip("Le fond plein. TOUJOURS opaque : c'est lui qui masque les liens de l'arbre " +
+                 "passant derrière le nœud. Il porte une teinte plus ou moins marquée selon " +
+                 "l'état, jusqu'aux couleurs inversées du nœud entièrement compilé.")]
         [SerializeField] private Image _fillImage;
 
         [Tooltip("Le voile de sélection — l'Image du bouton, transparente au repos.")]
@@ -50,8 +51,13 @@ namespace Core.UI.Prestige
         [SerializeField] private Color _maxedTextColor = Color.black;
 
         [Header("Réglages")]
-        [Tooltip("Opacité du fond pour les états qui gardent un fond teinté (en cours, trop cher).")]
-        [SerializeField, Range(0f, 1f)] private float _subtleFillAlpha = 0.06f;
+        [Tooltip("La couleur d'aplat du nœud au repos. À accorder au fond de l'arbre — c'est " +
+                 "elle qui occulte les liens qui passeraient derrière.")]
+        [SerializeField] private Color _nodeBackgroundColor = new Color(0.012f, 0.027f, 0.012f, 1f);
+
+        [Tooltip("Dose de teinte d'état mêlée au fond pour les états qui en gardent une trace " +
+                 "(en cours, trop cher). 0 = fond nu, 1 = couleur d'état pure.")]
+        [SerializeField, Range(0f, 1f)] private float _subtleTintAmount = 0.12f;
 
         [Tooltip("Opacité du voile de sélection, par-dessus la couleur d'état du nœud.")]
         [SerializeField, Range(0f, 1f)] private float _selectionAlpha = 0.18f;
@@ -67,7 +73,6 @@ namespace Core.UI.Prestige
         /// <summary>Couleur de l'état courant. Sert de base à la pulsation et au voile de sélection.</summary>
         private Color _stateColor;
 
-        private float _stateFillAlpha;
         private bool _isSelected;
 
         /// <summary>
@@ -140,10 +145,13 @@ namespace Core.UI.Prestige
             if (_statusText != null) _statusText.text = statusText;
 
             _stateColor = ResolveStateColor(state);
-            _stateFillAlpha = ResolveFillAlpha(state);
 
-            Color fill = _stateColor;
-            fill.a = _stateFillAlpha;
+            // Le fond reste OPAQUE quelle que soit l'intensité de la teinte : c'est lui qui
+            // occulte les liens de l'arbre passant derrière le nœud. La teinte est donc mélangée
+            // à la main par-dessus la couleur de fond, au lieu d'être laissée à l'alpha — un
+            // aplat translucide laisserait forcément voir ce qu'il y a derrière.
+            Color fill = Color.Lerp(_nodeBackgroundColor, _stateColor, ResolveTintAmount(state));
+            fill.a = 1f;
             _fillImage.color = fill;
 
             Color textColor = state == PrestigeNodeState.Maxed ? _maxedTextColor : _stateColor;
@@ -190,10 +198,11 @@ namespace Core.UI.Prestige
         }
 
         /// <summary>
-        /// Verrouillé et débloquable gardent un fond VIDE : le premier doit s'effacer du regard,
-        /// le second tire déjà l'œil par sa pulsation et n'a pas besoin d'en rajouter.
+        /// Verrouillé et débloquable gardent un fond NU : le premier doit s'effacer du regard, le
+        /// second tire déjà l'œil par sa pulsation et n'a pas besoin d'en rajouter. Nu ne veut
+        /// pas dire transparent — le fond est là, simplement sans teinte.
         /// </summary>
-        private float ResolveFillAlpha(PrestigeNodeState state)
+        private float ResolveTintAmount(PrestigeNodeState state)
         {
             switch (state)
             {
@@ -205,7 +214,7 @@ namespace Core.UI.Prestige
                     return 1f;
 
                 default:
-                    return _subtleFillAlpha;
+                    return _subtleTintAmount;
             }
         }
 
