@@ -22,6 +22,23 @@ namespace Core.Services.Economy
         private readonly Dictionary<string, SpecificUpgradeBonuses> _specificBonuses = new();
 
         /// <summary>
+        /// La fenêtre de compilation. Fermée pendant toute une run, ouverte entre deux.
+        ///
+        /// C'est une règle de GAME DESIGN, pas d'ergonomie : les CPU Cycles se gagnent en
+        /// terminant une run, et pouvoir les dépenser au milieu d'une autre transformerait
+        /// l'arbre en boutique d'appoint qu'on rouvre dès qu'on est en difficulté. Pendant une
+        /// run, l'arbre reste consultable — c'est même son intérêt, pour planifier — mais
+        /// strictement en lecture.
+        ///
+        /// Vaut `true` par défaut : sans GameSessionManager pour la piloter (un test, une scène
+        /// isolée), le prestige reste utilisable plutôt que muet.
+        /// </summary>
+        private readonly ReactiveProperty<bool> _arePurchasesAllowed = new(true);
+
+        /// <summary>La fenêtre de compilation est-elle ouverte. Piloté par le GameSessionManager.</summary>
+        public ReadOnlyReactiveProperty<bool> ArePurchasesAllowed => _arePurchasesAllowed;
+
+        /// <summary>
         /// Émis après CHAQUE recalcul — achat de nœud comme chargement de sauvegarde.
         /// À préférer à OnPrestigePurchased pour quiconque doit refléter les bonus : ce dernier
         /// n'est pas émis par InitializeFromSave, donc s'y abonner raterait le chargement.
@@ -126,8 +143,23 @@ namespace Core.Services.Economy
             return GetLevel(config.Prerequisite.Id) > 0;
         }
 
+        /// <summary>
+        /// Ouvre ou ferme la fenêtre de compilation. Un seul appelant légitime : le
+        /// GameSessionManager, qui est le seul à savoir si une run est en cours.
+        /// </summary>
+        public void SetPurchaseWindowOpen(bool isOpen)
+        {
+            _arePurchasesAllowed.Value = isOpen;
+        }
+
         public bool TryPurchasePrestige(string id)
         {
+            // Première garde, avant même de chercher le nœud : on n'achète pas pendant une run.
+            // Elle vit ICI et pas dans la vue — un bouton grisé n'est pas une règle, c'est une
+            // politesse, et le 2026-08-27 on a déjà vu ce qu'un raccourci direct pouvait faire
+            // avec la profondeur de l'arbre.
+            if (!_arePurchasesAllowed.CurrentValue) return false;
+
             var config = _catalog.GetById(id);
             if (config == null) return false;
 
@@ -338,6 +370,7 @@ namespace Core.Services.Economy
 
             _onPrestigePurchased.Dispose();
             _onBonusesRecalculated.Dispose();
+            _arePurchasesAllowed.Dispose();
             _specificBonuses.Clear();
 
             GlobalComputeMultiplier.Dispose();

@@ -58,7 +58,6 @@ namespace Core.UI.Game
                 .AddTo(_disposables);
 
             _view.OnRestartClicked += HandleRestart;
-            _view.OnPrestigeClicked += HandlePrestige;
         }
 
         private void Show(RunSummary summary)
@@ -73,6 +72,11 @@ namespace Core.UI.Game
                 narrative,
                 BuildBilan(summary, isCleanExit),
                 isCleanExit ? _view.CleanExitColor : _view.SeizedColor);
+
+            // L'écran appartient au panneau de prestige, qui l'ouvre avec l'arbre : la fin d'une
+            // run est le seul moment où l'on peut dépenser, il serait absurde d'obliger le joueur
+            // à un clic de plus pour y accéder.
+            _prestigePanel.ShowRunEnd();
         }
 
         /// <summary>
@@ -129,15 +133,6 @@ namespace Core.UI.Game
             return _bilan.ToString();
         }
 
-        /// <summary>
-        /// Ouvre l'arbre depuis l'écran de fin. C'est le moment naturel pour dépenser ce qu'on
-        /// vient de gagner — et l'écran de fin recouvre le bouton du header.
-        /// </summary>
-        private void HandlePrestige()
-        {
-            _prestigePanel.ToggleFromKeyboard();
-        }
-
         private void HandleRestart()
         {
             _sessionManager.ResetSession();
@@ -147,7 +142,6 @@ namespace Core.UI.Game
         public void Dispose()
         {
             _view.OnRestartClicked -= HandleRestart;
-            _view.OnPrestigeClicked -= HandlePrestige;
 
             _disposables.Dispose();
         }

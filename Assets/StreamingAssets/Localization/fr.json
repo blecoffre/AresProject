@@ -90,183 +90,183 @@
     },
     {
       "Key": "UPG_HW_01_NAME",
-      "Value": "Overclocking du CPU familial"
+      "Value": "Vieux PC Recyclé"
     },
     {
       "Key": "UPG_HW_02_NAME",
-      "Value": "Extension à 48 Go de RAM"
+      "Value": "Kit de RAM Serveur 128 Go"
     },
     {
       "Key": "UPG_HW_03_NAME",
-      "Value": "Refroidissement Noctua massif"
+      "Value": "Refroidissement à Azote Liquide"
     },
     {
       "Key": "UPG_HW_04_NAME",
-      "Value": "Alimentation Corsair RM850x"
+      "Value": "Alimentation Industrielle Redondante"
     },
     {
       "Key": "UPG_HW_05_NAME",
-      "Value": "Cluster de RTX 5080"
+      "Value": "Ferme de GPU Clandestine"
     },
     {
       "Key": "UPG_HW_06_NAME",
-      "Value": "Moniteur Samsung Odyssey Neo G9"
+      "Value": "Baie de Serveurs d'Occasion"
     },
     {
       "Key": "UPG_HW_07_NAME",
-      "Value": "Architecture Asynchrone (UniTask)"
+      "Value": "Datacenter Souterrain"
     },
     {
       "Key": "UPG_HW_08_NAME",
-      "Value": "Injection de Dépendances (VContainer)"
+      "Value": "Botnet de Serveurs d'Entreprises"
     },
     {
       "Key": "UPG_HW_09_NAME",
-      "Value": "Flux de données réactifs (R3 / UniRx)"
+      "Value": "Détournement d'Infrastructures Cloud"
     },
     {
       "Key": "UPG_HW_10_NAME",
-      "Value": "Rendu par ShaderGraph"
+      "Value": "Réseau de Calcul Distribué"
     },
     {
       "Key": "UPG_HW_11_NAME",
-      "Value": "Détournement de serveurs Cloud (AWS)"
+      "Value": "Infiltration des Serveurs AWS/Azure"
     },
     {
       "Key": "UPG_HW_12_NAME",
-      "Value": "Botnet d'infrastructures"
+      "Value": "Détournement de Grille Électrique"
     },
     {
       "Key": "UPG_HW_13_NAME",
-      "Value": "Réquisition de supercalculateurs"
+      "Value": "Supercalculateur Universitaire Hacké"
     },
     {
       "Key": "UPG_HW_14_NAME",
-      "Value": "Ordinateur quantique volé"
+      "Value": "Prototype d'Ordinateur Quantique"
     },
     {
       "Key": "UPG_HW_15_NAME",
-      "Value": "Singularité IA"
+      "Value": "Architecture IA Non Alignée"
     },
     {
       "Key": "UPG_PRX_01_NAME",
-      "Value": "Navigation Privée"
+      "Value": "VPN Public Décentralisé"
     },
     {
       "Key": "UPG_PRX_02_NAME",
-      "Value": "Spoofing d'adresse MAC"
+      "Value": "Spoofing d'Adresse MAC"
     },
     {
       "Key": "UPG_PRX_03_NAME",
-      "Value": "VPN Gratuit"
+      "Value": "Chaîne de Proxies Anonymes"
     },
     {
       "Key": "UPG_PRX_04_NAME",
-      "Value": "Routage Oignon (Tor)"
+      "Value": "Routage Oignon Profond"
     },
     {
       "Key": "UPG_PRX_05_NAME",
-      "Value": "Générateur de faux logs"
+      "Value": "Injection de Faux Paquets"
     },
     {
       "Key": "UPG_PRX_06_NAME",
-      "Value": "Brouilleur d'IP Dynamique"
+      "Value": "Rotation IP Dynamique"
     },
     {
       "Key": "UPG_PRX_07_NAME",
-      "Value": "Serveurs rebonds en Antarctique"
+      "Value": "Bouncing sur Serveurs Fantômes"
     },
     {
       "Key": "UPG_PRX_08_NAME",
-      "Value": "Faux-fuyant numérique"
+      "Value": "Lavage de Trafic Chiffré"
     },
     {
       "Key": "UPG_PRX_09_NAME",
-      "Value": "Protocole de l'Arche de Noé"
+      "Value": "Altération des Logs FAI"
     },
     {
       "Key": "UPG_PRX_10_NAME",
-      "Value": "Corruption des algorithmes d'Interpol"
+      "Value": "Infiltration des Routeurs BGP"
     },
     {
       "Key": "UPG_PRX_11_NAME",
-      "Value": "Falsification de casiers judiciaires"
+      "Value": "Usurpation d'Accréditations NSA"
     },
     {
       "Key": "UPG_PRX_12_NAME",
-      "Value": "Brouillage satellite"
+      "Value": "Bouclage sur Satellites Militaires"
     },
     {
       "Key": "UPG_PRX_13_NAME",
-      "Value": "Coupure des fibres sous-marines"
+      "Value": "Interception de Câbles Sous-Marins"
     },
     {
       "Key": "UPG_PRX_14_NAME",
-      "Value": "Impulsion Électromagnétique (EMP)"
+      "Value": "Algorithme de Chiffrement Quantique"
     },
     {
       "Key": "UPG_PRX_15_NAME",
-      "Value": "Effacement Temporel"
+      "Value": "Purge des Bases de Données Fédérales"
     },
     {
       "Key": "UPG_SCR_01_NAME",
-      "Value": "Phishing familial"
+      "Value": "Campagne de Phishing Basique"
     },
     {
       "Key": "UPG_SCR_02_NAME",
-      "Value": "Revente de comptes VOD"
+      "Value": "Usurpation d'Identités Locales"
     },
     {
       "Key": "UPG_SCR_03_NAME",
-      "Value": "Fermes à clics"
+      "Value": "Adware Automatisé"
     },
     {
       "Key": "UPG_SCR_04_NAME",
-      "Value": "Minage sur grille-pain"
+      "Value": "Botnet de Minage IoT"
     },
     {
       "Key": "UPG_SCR_05_NAME",
-      "Value": "Détournement de micro-transactions"
+      "Value": "Clonage de Cartes Bancaires (Dumps)"
     },
     {
       "Key": "UPG_SCR_06_NAME",
-      "Value": "Ransomware de machines à café"
+      "Value": "Ransomware PME ciblées"
     },
     {
       "Key": "UPG_SCR_07_NAME",
-      "Value": "Arnaque au faux support"
+      "Value": "Siphonnage de Portefeuilles Crypto"
     },
     {
       "Key": "UPG_SCR_08_NAME",
-      "Value": "Hack de distributeurs"
+      "Value": "Infiltration de Terminaux de Paiement"
     },
     {
       "Key": "UPG_SCR_09_NAME",
-      "Value": "Générateur de fausses cryptos"
+      "Value": "Blanchiment via Smart Contracts"
     },
     {
       "Key": "UPG_SCR_10_NAME",
-      "Value": "Création de banque offshore fantôme"
+      "Value": "Détournement de Fonds Offshore"
     },
     {
       "Key": "UPG_SCR_11_NAME",
-      "Value": "Manipulation de la bourse locale"
+      "Value": "Délit d'Initié Algorithmique"
     },
     {
       "Key": "UPG_SCR_12_NAME",
-      "Value": "Syphon de fonds de pension"
+      "Value": "Siphonnage de Fonds de Pension"
     },
     {
       "Key": "UPG_SCR_13_NAME",
-      "Value": "Rançonnage du Fortune 500"
+      "Value": "Extorsion du Fortune 500"
     },
     {
       "Key": "UPG_SCR_14_NAME",
-      "Value": "Privatisation de la Réserve Fédérale"
+      "Value": "Manipulation des Taux Directeurs"
     },
     {
       "Key": "UPG_SCR_15_NAME",
-      "Value": "Contrôle du système SWIFT"
+      "Value": "Prise de Contrôle du Réseau SWIFT"
     },
     {
       "Key": "PRESTIGE_SPECIFIC_COST_NAME",
@@ -446,7 +446,7 @@
     },
     {
       "Key": "PRESTIGE_P_REFAC_NAME",
-      "Value": "Refactorisation"
+      "Value": "Code Polymorphe"
     },
     {
       "Key": "PRESTIGE_P_REFAC_DESC",
@@ -454,7 +454,7 @@
     },
     {
       "Key": "PRESTIGE_P_DATAM_NAME",
-      "Value": "Forage de Données"
+      "Value": "Architecture Distribuée"
     },
     {
       "Key": "PRESTIGE_P_DATAM_DESC",
@@ -466,7 +466,7 @@
     },
     {
       "Key": "PRESTIGE_P_CLICK_DESC",
-      "Value": "Chaque overclock manuel fait gagner davantage de temps aux cycles en cours."
+      "Value": "Déverrouille l'accès manuel au processeur. Permet d'injecter des cycles supplémentaires d'un simple clic."
     },
     {
       "Key": "PRESTIGE_P_POWER_START_NAME",
@@ -531,6 +531,122 @@
     {
       "Key": "UI_RUN_END_STAT_DURATION_SHORT",
       "Value": "  Temps de survie ........... {0} s"
+    },
+    {
+      "Key": "UI_PRESTIGE_LOCKED",
+      "Value": "VERROUILLÉ"
+    },
+    {
+      "Key": "UI_PRESTIGE_SCREEN_TITLE",
+      "Value": ">> SYSTEM_ROOT_ACCESS // ARBRE DE COMPILATION"
+    },
+    {
+      "Key": "UI_PRESTIGE_SCREEN_CYCLES",
+      "Value": "[ {0} CYCLES DISPONIBLES ]"
+    },
+    {
+      "Key": "UI_PRESTIGE_DETAILS_LEVEL",
+      "Value": "> Niveau actuel : {0} / {1}"
+    },
+    {
+      "Key": "UI_PRESTIGE_DETAILS_PREREQ_NONE",
+      "Value": "> ACCÈS RACINE — aucun prérequis"
+    },
+    {
+      "Key": "UI_PRESTIGE_DETAILS_PREREQ_OK",
+      "Value": "> PRÉREQUIS ATTEINT : {0}"
+    },
+    {
+      "Key": "UI_PRESTIGE_DETAILS_PREREQ_MISSING",
+      "Value": "> PRÉREQUIS MANQUANT : {0}"
+    },
+    {
+      "Key": "UI_PRESTIGE_DETAILS_COST",
+      "Value": "> CYCLES REQUIS : {0}"
+    },
+    {
+      "Key": "UI_PRESTIGE_DETAILS_MAXED",
+      "Value": "> NŒUD ENTIÈREMENT COMPILÉ"
+    },
+    {
+      "Key": "UI_PRESTIGE_DETAILS_NOTICE_RUN",
+      "Value": "> INTRUSION EN COURS — compilation impossible avant la fin de la run"
+    },
+    {
+      "Key": "UI_PRESTIGE_DETAILS_BTN_BUY",
+      "Value": "[ COMPILER ]"
+    },
+    {
+      "Key": "UI_PRESTIGE_DETAILS_BTN_MAXED",
+      "Value": "[ COMPILÉ ]"
+    },
+    {
+      "Key": "UI_PRESTIGE_DETAILS_BTN_LOCKED",
+      "Value": "[ BRANCHE VERROUILLÉE ]"
+    },
+    {
+      "Key": "UI_PRESTIGE_DETAILS_BTN_RUN",
+      "Value": "[ HORS RUN UNIQUEMENT ]"
+    },
+    {
+      "Key": "UI_PRESTIGE_DETAILS_BTN_FUNDS",
+      "Value": "[ FONDS INSUFFISANTS ]"
+    },
+    {
+      "Key": "UI_PRESTIGE_EFFECT_COMPUTE",
+      "Value": "> Multiplicateur global de calcul : +{0:0.##} % par niveau"
+    },
+    {
+      "Key": "UI_PRESTIGE_EFFECT_TRACE",
+      "Value": "> Trace générée : -{0:0.##} % par niveau"
+    },
+    {
+      "Key": "UI_PRESTIGE_EFFECT_CLICK",
+      "Value": "> Puissance de l'Overclock : +{0:0.##} % par niveau"
+    },
+    {
+      "Key": "UI_PRESTIGE_EFFECT_COSTINFLATION",
+      "Value": "> Inflation des coûts : -{0:0.##} % par niveau"
+    },
+    {
+      "Key": "UI_PRESTIGE_EFFECT_EXPLOIT_YIELD",
+      "Value": "> Rendement du Zéro-Day : +{0:0.##} % par niveau"
+    },
+    {
+      "Key": "UI_PRESTIGE_EFFECT_SPECIFIC_COST",
+      "Value": "> Coût de {1} : -{0:0.##} % par niveau"
+    },
+    {
+      "Key": "UI_PRESTIGE_EFFECT_SPECIFIC_YIELD",
+      "Value": "> Rendement de {1} : +{0:0.##} % par niveau"
+    },
+    {
+      "Key": "UI_PRESTIGE_EFFECT_SPECIFIC_TIME",
+      "Value": "> Durée de cycle de {1} : -{0:0.##} % par niveau"
+    },
+    {
+      "Key": "UI_PRESTIGE_EFFECT_START_MONEY",
+      "Value": "> Fonds au démarrage d'une run : +{0} Datas par niveau"
+    },
+    {
+      "Key": "UI_PRESTIGE_EFFECT_START_TFLOPS",
+      "Value": "> TFlops au démarrage d'une run : +{0} par niveau"
+    },
+    {
+      "Key": "UI_PRESTIGE_EFFECT_EXPLOIT_CHARGES",
+      "Value": "> Charges de Ghost Cache stockables : +{0} par niveau"
+    },
+    {
+      "Key": "UI_PRESTIGE_EFFECT_EXPLOIT_TRACE",
+      "Value": "> Malus de Trace du Zéro-Day : -{0:0.##} points par niveau"
+    },
+    {
+      "Key": "UI_PRESTIGE_EFFECT_UNLOCK_EMERGENCY",
+      "Value": "> Débloque le Data Wiper"
+    },
+    {
+      "Key": "UI_PRESTIGE_EFFECT_OVERCLOCK_WAKE",
+      "Value": "> L'Overclock relance les Scripts à l'arrêt"
     }
   ]
 }

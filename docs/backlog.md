@@ -37,6 +37,10 @@ Compilation sans erreur ni warning.
       Le nœud `P_EXPLOIT_TRACE_REDUC` à fond ne monte le seuil qu'à 0,44 Trace/s.
       ⚠️ En attendant, **le libellé du bouton annonce 30 s** — il ment au joueur. Si le ×10 reste,
       c'est la durée affichée qu'il faudra revoir, pas seulement l'équilibrage.
+-	Accessilibité, dans le futur, il sera possible via des options de modifier le mode de couleur de l'application selon
+	le type de daltnosime dont souffre le joueur, c'est un point sur lequel beaucoup de daltonien insiste dans ce type de 
+	jeu, la consultation de l'arbre de prestige est souvent difficile pour eux et ce serait un excellent point de proposer
+	une solution a ce problème précis.
 
 ## Données et contenu
 
@@ -84,12 +88,33 @@ Compilation sans erreur ni warning.
       perceptible en éditeur.
 
 ## Hygiène
+- 🔬 **`GameOverPanel/PrestigeButton` est mort.** L'arbre vit maintenant DANS l'écran de fin :
+      le bouton « DÉPENSER — NOYAU IA » qui servait à l'ouvrir n'a plus d'objet. Son handler a été
+      retiré du `GameOverPresenter` et le GameObject désactivé le 2026-08-29 ; il reste supprimable
+      à la main, avec sa clé `UI_RUN_END_PRESTIGE_BUTTON`.
+
+- 🔬 **Le brouillard de guerre a disparu des nœuds verrouillés.** L'ancien `_unknownPanel`
+      masquait le nom d'un nœud dont la branche était fermée ; il n'existe plus dans le prefab
+      remanié, et le nouveau code affiche le nom en gris avec la mention « VERROUILLÉ ».
+      **C'est un choix, pas un oubli** : Bertrand veut consulter l'arbre pour planifier, et on ne
+      planifie pas vers des cases vides. À rediscuter si le GD tient au mystère.
+
+- 🔬 **Le trait des nœuds verrouillés n'est pas pointillé.** La maquette veut un cadre en
+      tirets ; le sprite du cadre est plein, et un pointillé demande un sprite dédié. Le gris
+      `#335533` porte seul l'état pour l'instant.
+
+- 🔬 **L'écran méta recouvre la jauge de Trace.** Consulter l'arbre pendant une run masque la
+      console ET la Trace, qui continue pourtant de monter. Cohérent avec « pas de planque
+      gratuite », mais le joueur pilote à l'aveugle : un rappel de Trace dans le header de l'écran
+      serait honnête. À arbitrer par le GD.
+
 - 🔬 **Le shadergraph `UI_HDR_Glow` n'échantillonne aucune texture.** Son graphe se réduit à
       `VertexColor × _Color` sur une cible Unlit : appliqué à une Image, il **ignore le sprite** et
       remplit tout le rectangle d'un aplat. Sans effet visible sur un `Plain Square` (barre pleine,
       jauge), mais il détruit un sprite de contour — c'est pourquoi le halo de survol des boutons
       a dû être retiré le 2026-08-28. Pour rendre le matériau utilisable partout, il faut
-      multiplier la sortie par l'alpha de `_MainTex`.
+      multiplier la sortie par l'alpha de `_MainTex`. "Note par Bertrand, je l'ai en principe corrigé, à vérifier quand
+	  tu liras ceci".
 
 - 🔬 **Trois jauges ont disparu pendant le rework UI.** `GhostCacheView._fill`,
       `EmergencyView._fill` et `ExfiltrationView._progressFill` valent **NULL** dans la scène.
@@ -100,7 +125,8 @@ Compilation sans erreur ni warning.
 - 🔬 **`GameOverPanel` est encore en LiberationSans**, la police par défaut d'Unity, alors que
       tout le reste est en ShareTechMono. L'outil de halos le saute exprès : coller un matériau
       ShareTechMono à un texte dont l'atlas est LiberationSans afficherait des glyphes faux.
-      Changer la police d'abord, relancer l'outil ensuite.
+      Changer la police d'abord, relancer l'outil ensuite. "Note de Bertrand, à vérifier en lisant ceci si il reste
+	  des textes qui n'utilise pas la bonne font, soit les notifier ici, soit remplacer à chaque fois par la font ShareTechMono-Regular SDF"
 - 🔬 **Les couleurs de la console ne suivent pas la maquette.** `ConsoleView.FormatMessage`
       écrit `#00FF00` (vert pur) là où la maquette veut `#4AF626`, et surtout **`#FF00FF` magenta**
       pour les lignes narratives, là où la maquette veut de l'orange. Les balises `[OK]`,
@@ -111,7 +137,7 @@ Compilation sans erreur ni warning.
       joueur avec exactement 10 Datas lit le prix, ne comprend pas pourquoi le bouton reste gris,
       et conclut que le jeu est cassé. Le plancher est correct pour un SOLDE (ne jamais annoncer
       plus d'argent qu'on en a) mais faux pour un PRIX : il faudrait un `FormatCost` qui arrondit
-      à la hausse. Constaté pendant le diagnostic du 2026-08-27.
+      à la hausse. Constaté pendant le diagnostic du 2026-08-27. "Note par Bertrand, tu peux t'occuper de faire cette opération, arrondir au supérieur est la chose voulu"
 
 - 📖 **Aucun `.asmdef`**, aucun test. Tout `Assets/Core` recompile avec le reste, et rien n'empêche
       une dépendance de `Models` vers `UI`. Proposition inchangée : `Ares.Core.Domain`,
@@ -181,6 +207,12 @@ Trois bugs de la même famille ont déjà coûté du temps. Le motif :
   `ITickable` sans focus, appeler `Tick()` à la main.
 
 ## Corrigé à ce jour
+
+**Lot « Arbre de prestige : fenêtre d'achat, cascade et cinq états »** (2026-08-29, vérifié en Play Mode via MCP) — trois défauts signalés par Bertrand, plus un quatrième trouvé à l'inspection. **(1) L'achat était possible pendant une run.** `TryPurchasePrestige` n'avait aucune garde de session : les CPU Cycles se gagnent en TERMINANT une run, pouvoir les dépenser au milieu d'une autre transformait l'arbre en boutique d'appoint qu'on rouvre dès qu'on est en difficulté. Nouvelle `ArePurchasesAllowed` dans le `PrestigeManager`, pilotée par le `GameSessionManager` — c'est la session qui déclare son état, l'inverse fermerait le cycle de dépendances puisqu'elle dépend déjà du prestige. **(2) Les nœuds débloqués ne se rafraîchissaient pas.** `PrestigeItemPresenter` n'écoutait QUE `CpuCycles.Amount` : un achat n'ouvrait visuellement ses enfants que par effet de bord, parce qu'il coûtait de l'argent. L'écran écoute désormais `OnBonusesRecalculated`, émis après chaque recalcul — achat comme chargement de sauvegarde. **(3) Les cinq codes d'état de la maquette** sont implémentés : maxé en couleurs inversées, en cours en vert, débloquable en ambre pulsant, trop cher en rouge, verrouillé en gris. **(4) Défaut trouvé à l'inspection : `_interactionButton` était NULL sur `NodePrefab`** — le renommage `_buyButton` → `_interactionButton` avait perdu la référence, une NRE par nœud dans `Awake` et plus aucun clic. Le prefab est recablé. Idem pour `_maxedColor`, qui avait SURVÉCU au changement de script avec sa valeur (0,0,0,0) : un nœud maxé se peignait en noir opaque, texte noir compris.
+
+Trois décisions d'architecture au passage. **Le clic sélectionne, il n'achète plus** : le `PrestigeNodeDetails` que Bertrand avait construit est branché (`PrestigeDetailsView` + presenter), et c'est son bouton qui dépense — sur un arbre de 119 nœuds, un clic qui engage immédiatement une monnaie gagnée en une run entière est un piège. Le bouton porte aussi le REFUS (« fonds insuffisants », « branche verrouillée », « hors run uniquement ») : un bouton grisé sans explication laisse chercher. **`GameOverPanel` devient l'écran méta unique**, conséquence de la fusion des deux panneaux dans la scène : l'arbre étant devenu son enfant, il ne pouvait plus s'afficher seul, son parent étant éteint. `PrestigePanelView` possède désormais la racine et deux groupes — « fin de run seulement » et « consultation seulement » — et `GameOverView` n'écrit plus que ses textes ; deux composants qui se disputent les mêmes `SetActive` finissent toujours par se marcher dessus. Échap est inerte sur l'écran de fin, il n'y a rien derrière à quoi revenir. **Tous les abonnements de l'écran vivent dans le panneau** : faire écouter les trois mêmes sources à chacun des 119 nœuds coûtait 357 abonnements pour trois signaux. Le panneau écoute une fois et rediffuse par boucle indexée ; les nœuds et l'inspecteur n'ont plus aucun `IDisposable` réactif. Corollaire assumé : un achat déclenche les trois signaux dans la même frame, donc trois passes de repeinte — les coalescer par numéro de frame serait un piège, le débit de la monnaie précédant l'incrément du niveau, la première passe lit encore l'ancien niveau. La pulsation ambre se coupe pendant une run (c'est un appel à l'action, pas un code couleur) et chaque `PrestigeItemView` se **désactive** quand il n'a pas à pulser — sur 119 nœuds, laisser 119 `Update()` tourner pour que trois clignotent serait payer le pire des deux mondes.
+
+29 clés de localisation ajoutées, dont 14 gabarits d'effet, un par `PrestigeBonusType` — littéraux dans un `switch` et non clé construite depuis le nom de l'enum, pour rester visibles du `LocalizationAnalyzerWindow`. **Défaut trouvé au test** : `↻` (U+21BB) n'existe pas dans l'atlas de la police, remplacé par un carré — le libellé des cycles est repassé en ASCII. Vérifié : achat refusé pendant une run **sans rien dépenser** (25 cycles avant et après) ; les cinq états observés simultanément dans l'arbre ; achat de `P_STEALTH` à la fin d'une run → 25 → 5 cycles, le nœud passe en vert « Niv. 1 / 5 » et **`P_EMERG` bascule dans la même frame** de « VERROUILLÉ » gris à « 100 CPU » rouge ; l'inspecteur se repeint en place (coût 20 → 32, bouton « COMPILER » → « FONDS INSUFFISANTS ») ; le voile de sélection suit le nœud consulté ; Échap inerte en mode fin de run ; zéro erreur console.
 
 **Durée de run au bilan** (2026-08-29, vérifié en Play Mode via MCP) — `GameSessionManager` devient `ITickable` et cumule les secondes de jeu. **Cumulées et non déduites d'un horodatage** : `Time.time` repart de zéro à chaque lancement, une run reprise le lendemain aurait affiché la durée de la seule session en cours. Le chronomètre s'arrête pendant l'écran de fin — contempler son bilan n'est pas du jeu — et repart à zéro au wipe. `SaveData` v6 (`RunElapsedSeconds`) : le temps passé fenêtre close n'est jamais crédité, le compteur n'avance que dans `Tick()`. Deux gabarits d'affichage, les unités dans les clés : « 14 min 07 s » au-delà de la minute, « 42 s » en deçà — un format unique aurait rendu « 0 min 42 s » sur la statistique la plus regardée de l'écran. Vérifié : les deux formats, la remise à zéro au wipe, l'aller-retour JSON, les migrations v2/v4/v5 → v6 qui préservent `EmergencyUsesInRun`, et la restauration qui rend bien 423,5 s au chronomètre.
 

@@ -63,6 +63,15 @@ namespace Core.Services.Simulation
             _threatManager.OnCriticalLockdown
                 .Subscribe(_ => HandleGameOver())
                 .AddTo(ref _disposables);
+
+            // La compilation de prestige n'est ouverte qu'ENTRE deux runs. Le PrestigeManager
+            // porte la règle et la fait respecter ; lui, il ne peut pas la connaître, puisqu'il
+            // ignore tout de la notion de run — et l'injecter dans l'autre sens fermerait le
+            // cycle de dépendances. C'est donc la session qui déclare son état, une fois, et
+            // l'abonnement émet immédiatement : la fenêtre est correcte dès la première frame.
+            IsGameActive
+                .Subscribe(isActive => _prestigeManager.SetPurchaseWindowOpen(!isActive))
+                .AddTo(ref _disposables);
         }
 
         /// <summary>

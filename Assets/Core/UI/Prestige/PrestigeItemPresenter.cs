@@ -1,184 +1,114 @@
-﻿using Core.Models.Economy;
+using Core.Models.Economy;
 using Core.Services.Economy;
 using Core.Services.Localization;
 using Core.Utils;
-using R3;
 using System;
 
 namespace Core.UI.Prestige
 {
-    public class PrestigeItemPresenter : IDisposable
+    /// <summary>
+    /// Un nœud de l'arbre. Traduit l'état du modèle en code couleur et en deux lignes de texte.
+    ///
+    /// <b>N'a aucun abonnement.</b> C'est délibéré : l'arbre compte 116 nœuds, et leur faire
+    /// écouter chacun les trois mêmes sources — la monnaie, l'arbre, la fenêtre d'achat — coûtait
+    /// 348 abonnements pour trois signaux. Le panneau écoute une fois et rediffuse.
+    /// </summary>
+    public class PrestigeItemPresenter
     {
-        private readonly PrestigeConfigSO _config;
         private readonly PrestigeItemView _view;
         private readonly PrestigeManager _prestigeManager;
         private readonly UserCurrencies _currencies;
         private readonly ILocalizationService _loc;
+        private readonly Action<PrestigeItemPresenter> _onSelected;
 
-        private readonly CompositeDisposable _disposables;
+        public PrestigeConfigSO Config { get; }
 
         public PrestigeItemPresenter(
             PrestigeConfigSO config,
             PrestigeItemView view,
             PrestigeManager prestigeManager,
             UserCurrencies currencies,
-            ILocalizationService loc)
+            ILocalizationService loc,
+            Action<PrestigeItemPresenter> onSelected)
         {
-            _config = config;
+            Config = config;
             _view = view;
             _prestigeManager = prestigeManager;
             _currencies = currencies;
             _loc = loc;
+            _onSelected = onSelected;
 
-            _disposables = new CompositeDisposable();
+            // Initialisation statique. Le nom ne change jamais : il est résolu ici, une seule
+            // fois, et jamais depuis Refresh() qui tourne pour chacun des 116 nœuds à chaque
+            // variation de CPU Cycles.
+            _view.InitializeStaticData(PrestigeLabels.ResolveName(config, loc));
 
-            // Initialisation statique. Nom et description ne changent jamais : ils sont résolus
-            // ici, une seule fois, et jamais depuis RefreshView() qui tourne à chaque variation
-            // de CPU Cycles pour chacun des ~170 nœuds.
-            _view.InitializeStaticData(ResolveName(), ResolveDescription());
+            _view.OnNodeClicked += HandleClicked;
 
-            // Abonnement réactif : on écoute les changements de budget (CpuCycles)
-            // Pour être ultra précis, il faudrait exposer un Subject dans le PrestigeManager 
-            // quand un achat est fait, mais écouter la monnaie suffit pour refresh l'UI.
-            _currencies.CpuCycles.Amount
-                .Subscribe(_ => RefreshView())
-                .AddTo(_disposables);
+            Refresh();
+        }
 
-            _view.OnBuyClicked += HandleBuyRequest;
-
-            RefreshView(); // Premier affichage
+        /// <summary>Le nœud est-il celui qu'affiche l'inspecteur.</summary>
+        public void SetSelected(bool isSelected)
+        {
+            _view.SetSelected(isSelected);
         }
 
         /// <summary>
-        /// Les nœuds ciblant une upgrade précise n'ont pas de nom en base : on compose
-        /// « &lt;nom de l'upgrade&gt; (Opti Coût) » depuis un gabarit localisé. Les autres portent
-        /// leur propre clé, dérivée de leur id par le générateur.
+        /// Recalcule l'état et le repeint. Appelé par le panneau à chaque signal — achat,
+        /// chargement de sauvegarde, variation de monnaie, ouverture ou fermeture de la fenêtre
+        /// de compilation.
         /// </summary>
-        private string ResolveName()
+        public void Refresh()
         {
-            string templateKey = GetSpecificNameTemplate(_config.BonusType);
+            int currentLevel = _prestigeManager.GetLevel(Config.Id);
+            bool isUnlocked = _prestigeManager.IsUnlocked(Config);
+            bool isMaxedOut = currentLevel >= Config.MaxLevel;
 
-            return templateKey == null
-                ? _loc.GetText(_config.DisplayNameKey)
-                : _loc.GetText(templateKey, ResolveTargetUpgradeName());
-        }
-
-        private string ResolveDescription()
-        {
-            string templateKey = GetSpecificDescriptionTemplate(_config.BonusType);
-
-            return templateKey == null
-                ? _loc.GetText(_config.DisplayDescriptionKey)
-                : _loc.GetText(templateKey, ResolveTargetUpgradeName());
-        }
-
-        /// <summary>
-        /// Résout le nom de l'upgrade ciblée par sa seule clé, sans passer par le catalogue :
-        /// la clé se dérive de l'id, donc le presenter n'a aucune dépendance à injecter pour ça.
-        /// </summary>
-        private string ResolveTargetUpgradeName()
-        {
-            if (string.IsNullOrEmpty(_config.TargetUpgradeId))
-            {
-                // Nœud marqué « spécifique » mais sans cible : donnée incohérente, on le dit.
-                UnityEngine.Debug.LogError(
-                    $"[PRESTIGE] Le nœud '{_config.Id}' a un bonus ciblé ({_config.BonusType}) " +
-                    "mais aucun targetUpgradeId. Son libellé sera incomplet.");
-
-                return string.Empty;
-            }
-
-            return _loc.GetText(LocalizationKeys.UpgradeName(_config.TargetUpgradeId));
-        }
-
-        /// <summary>Retourne null si le bonus n'est pas ciblé — le nœud a alors sa propre clé.</summary>
-        private static string GetSpecificNameTemplate(PrestigeBonusType bonusType)
-        {
-            switch (bonusType)
-            {
-                case PrestigeBonusType.SpecificUpgradeCostReduction:
-                    return LocalizationKeys.PrestigeSpecificCostName;
-
-                case PrestigeBonusType.SpecificUpgradeYieldBoost:
-                    return LocalizationKeys.PrestigeSpecificYieldName;
-
-                case PrestigeBonusType.SpecificUpgradeTimeReduction:
-                    return LocalizationKeys.PrestigeSpecificTimeName;
-
-                default:
-                    return null;
-            }
-        }
-
-        private static string GetSpecificDescriptionTemplate(PrestigeBonusType bonusType)
-        {
-            switch (bonusType)
-            {
-                case PrestigeBonusType.SpecificUpgradeCostReduction:
-                    return LocalizationKeys.PrestigeSpecificCostDescription;
-
-                case PrestigeBonusType.SpecificUpgradeYieldBoost:
-                    return LocalizationKeys.PrestigeSpecificYieldDescription;
-
-                case PrestigeBonusType.SpecificUpgradeTimeReduction:
-                    return LocalizationKeys.PrestigeSpecificTimeDescription;
-
-                default:
-                    return null;
-            }
-        }
-
-        private void RefreshView()
-        {
-            // 1. Brouillard de guerre. La règle appartient au PrestigeManager, qui la fait aussi
-            //    respecter à l'achat : la vue ne fait que la refléter, elle ne la redéfinit plus.
-            //    Un nœud dont le parent est au niveau 0 reste caché sous un « ? ».
-            bool isLocked = !_prestigeManager.IsUnlocked(_config);
-
-            _view.SetLockState(isLocked);
-
-            // Si c'est bloqué, pas besoin de calculer l'économie
-            if (isLocked) return;
-
-            int currentLevel = _prestigeManager.GetLevel(_config.Id);
-            bool isMaxedOut = currentLevel >= _config.MaxLevel;
-
-            double cost = _config.BaseCost * Math.Pow(_config.CostMultiplier, currentLevel);
+            double cost = Config.BaseCost * Math.Pow(Config.CostMultiplier, currentLevel);
             bool canAfford = _currencies.CpuCycles.Amount.CurrentValue >= cost;
+
+            PrestigeNodeState state = PrestigeNodeStates.Resolve(isUnlocked, isMaxedOut, currentLevel, canAfford);
 
             // Tout ce qui part à l'écran passe par une clé : ni le suffixe de monnaie, ni le
             // gabarit « Niv. x / y », ni la mention de niveau max ne sont écrits en dur.
-            string costText = isMaxedOut
-                ? _loc.GetText("UI_MAX_LEVEL")
-                : _loc.GetText("UI_PRESTIGE_COST", CurrencyFormatter.Format(cost));
+            string costText;
+            if (state == PrestigeNodeState.Locked) costText = _loc.GetText("UI_PRESTIGE_LOCKED");
+            else if (isMaxedOut) costText = _loc.GetText("UI_MAX_LEVEL");
+            else costText = _loc.GetText("UI_PRESTIGE_COST", CurrencyFormatter.Format(cost));
 
-            string levelText = string.Empty;
-            if (_config.MaxLevel > 1)
+            // Un nœud à achat unique n'a pas de « niveau » à annoncer : soit il est acquis, soit
+            // son coût dit déjà tout.
+            string levelText;
+            if (Config.MaxLevel > 1)
             {
-                levelText = isMaxedOut
-                    ? _loc.GetText("UI_MAX_LEVEL")
-                    : _loc.GetText("UI_PRESTIGE_LEVEL", currentLevel, _config.MaxLevel);
+                levelText = _loc.GetText("UI_PRESTIGE_LEVEL", currentLevel, Config.MaxLevel);
             }
-            else if (isMaxedOut)
+            else
             {
-                levelText = _loc.GetText("UI_ACQUIRED");
+                levelText = isMaxedOut ? _loc.GetText("UI_ACQUIRED") : string.Empty;
             }
 
-            _view.UpdateDynamicData(levelText, costText, canAfford, isMaxedOut);
+            // La pulsation est un appel à l'action : elle n'a pas lieu d'être quand la fenêtre
+            // de compilation est fermée, c'est-à-dire pendant toute une run.
+            bool pulse = _prestigeManager.ArePurchasesAllowed.CurrentValue;
+
+            _view.Render(levelText, costText, state, pulse);
         }
 
-        private void HandleBuyRequest()
+        /// <summary>
+        /// Un clic SÉLECTIONNE, il n'achète pas. L'achat vit dans l'inspecteur, derrière un
+        /// bouton qui dit ce qu'il fait : sur un arbre de 116 nœuds, un clic qui dépense
+        /// immédiatement une monnaie gagnée en une run entière est un piège.
+        /// </summary>
+        private void HandleClicked()
         {
-            if (_prestigeManager.TryPurchasePrestige(_config.Id))
-            {
-                RefreshView(); // Force la mise à jour immédiate
-            }
+            _onSelected?.Invoke(this);
         }
 
         public void Dispose()
         {
-            _view.OnBuyClicked -= HandleBuyRequest;
-            _disposables.Dispose();
+            _view.OnNodeClicked -= HandleClicked;
         }
     }
 }
