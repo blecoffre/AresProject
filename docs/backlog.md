@@ -145,28 +145,36 @@ Compilation sans erreur ; 3 warnings, tous en code éditeur (voir plus bas).
       est perdue : plus de barre de charge du Ghost Cache, plus de décompte visuel du Data Wiper,
       plus de progression vers le premier CPU Cycle. Les libellés portent encore le pourcentage,
       c'est donc dégradant et non bloquant. Constaté le 2026-08-28.
-- 🔬 **8 textes en LiberationSans, tous dans `GameOverPanel`** (recensement exhaustif du
-      2026-08-30, demandé par Bertrand). Les 316 autres textes de la scène et **les 9 textes de
-      tous les prefabs du projet** sont en ShareTechMono : le reliquat est circonscrit.
-      `Header/Title`, `Header/Currency`, et les six textes de `PrestigeNodeDetails` — `Name`,
-      `Description`, `Effects`, `Prerequisite`, `Costs`, `InsuficiantFunds`. Le bilan de fin de run
-      et `StartNewRunButton` sont déjà passés en ShareTechMono.
-      Conséquence déjà rencontrée : `↻` (U+21BB) manque à l'atlas de LiberationSans et s'affichait
-      en carré le 2026-08-29 — il a fallu repasser le libellé des cycles en ASCII.
-      **Remplacer d'abord la police, relancer l'outil de halos ensuite** : coller un matériau
-      ShareTechMono à un texte dont l'atlas est LiberationSans afficherait des glyphes faux.
+- ✅ **Polices unifiées** (2026-08-30). Les 8 derniers textes en LiberationSans, tous dans
+      `GameOverPanel`, sont passés en ShareTechMono. **Trois autres portaient déjà la bonne police
+      avec le MAUVAIS matériau** — le narratif, le bilan et le libellé de `StartNewRunButton` —
+      exactement le mésappariement contre lequel cette entrée mettait en garde. Contrôle final :
+      32 / 32 textes de scène conformes police ET matériau, 9 / 9 dans les prefabs. Matériau **nu**
+      partout, sans halo : le halo reste une décision d'emphase, à poser à la main. À noter,
+      `↻` (U+21BB) manque aussi à l'atlas de ShareTechMono — le libellé des cycles reste en ASCII.
 
 - 🔬 **Les couleurs de la console ne suivent pas la maquette.** `ConsoleView.FormatMessage`
       écrit `#00FF00` (vert pur) là où la maquette veut `#4AF626`, et surtout **`#FF00FF` magenta**
       pour les lignes narratives, là où la maquette veut de l'orange. Les balises `[OK]`,
       `[SYSTEM_WARN]` et `[INFO]` restent par ailleurs en dur — déjà noté plus bas.
 
-- 🔬 **Le coût affiché est INFÉRIEUR au coût réel.** `CurrencyFormatter.Format` fait un
-      `Math.Floor` sous 1 000 : `SCR_01` au niveau 1 coûte 10,7 et s'affiche « Coût: 10 ». Un
-      joueur avec exactement 10 Datas lit le prix, ne comprend pas pourquoi le bouton reste gris,
-      et conclut que le jeu est cassé. Le plancher est correct pour un SOLDE (ne jamais annoncer
-      plus d'argent qu'on en a) mais faux pour un PRIX : il faudrait un `FormatCost` qui arrondit
-      à la hausse. Constaté pendant le diagnostic du 2026-08-27. "Note par Bertrand, tu peux t'occuper de faire cette opération, arrondir au supérieur est la chose voulu"
+- 🔬 **Le nom du bouton de relance est « Button ».** `GameOverPanel/StartNewRunButton/Text (TMP)`
+      porte encore le libellé du prefab Unity : aucun `LocalizedText`, aucune clé, rien dans le
+      `GameOverPresenter` qui l'écrive. C'est le bouton que le joueur doit presser à CHAQUE fin de
+      run. Constaté le 2026-08-30. Deux lignes : une clé, un `LocalizedText`, puis relancer
+      l'auto-enregistrement VContainer.
+
+- 🔬 **L'inspecteur de nœud se chevauche : auto-sizing et `ContentSizeFitter` s'annulent.**
+      `Name_Desc_Effects` et `Prerequisite` ont un `ContentSizeFitter` en *PreferredSize* mais un
+      `VerticalLayoutGroup` à `childControlHeight = false` : le groupe ne mesure donc pas ses
+      enfants, il additionne leurs hauteurs figées à 50 px, alors que la description en demande
+      500. Le texte déborde et se dessine par-dessus le suivant.
+      ⚠️ **Basculer `childControlHeight` à true ne suffit PAS — essayé le 2026-08-30, et c'est
+      pire.** Les six textes ont `enableAutoSizing` activé : le fitter demande au texte sa hauteur
+      préférée pendant que le texte grossit pour remplir la hauteur qu'on lui donne, et la boucle
+      part en fonte géante. Les deux mécanismes sont incompatibles par construction. Il faut
+      **désactiver l'auto-sizing** sur ces six textes et leur fixer une taille, avant de rendre la
+      hauteur au layout group. Réglages laissés exactement dans l'état où Bertrand les a mis.
 
 - 📖 **Aucun `.asmdef`**, aucun test. Tout `Assets/Core` recompile avec le reste, et rien n'empêche
       une dépendance de `Models` vers `UI`. Proposition inchangée : `Ares.Core.Domain`,
@@ -248,6 +256,10 @@ Trois bugs de la même famille ont déjà coûté du temps. Le motif :
   `ITickable` sans focus, appeler `Tick()` à la main.
 
 ## Corrigé à ce jour
+
+**Prix arrondis à la hausse, polices unifiées** (2026-08-30, vérifié en Play Mode via MCP) — les deux points que Bertrand avait explicitement autorisés dans ce backlog. **`FormatCost`** : `Format` tronque vers le bas, ce qui est correct pour un solde et faux pour un prix. `SCR_01` au niveau 1 coûte 10,7 et s'affichait « Coût: 10 » ; un joueur avec exactement 10 Datas lisait le prix, voyait le bouton rester gris, et concluait que le jeu était cassé. Le nouveau formateur plafonne à la précision **réellement affichée**, pas à l'unité : « 1,234K » masque déjà 999 unités, et arrondir vers le bas cette décimale-là reproduirait le défaut un cran plus haut. Un arrondi à six décimales précède le plafonnement : les coûts sortent d'un `Math.Pow`, où un prix valant exactement 100 se stocke en 100,000000000000014, et plafonner tel quel afficherait 101 — un mensonge dans l'autre sens. Appliqué aux cinq endroits qui affichent un prix ou un seuil à atteindre ; les soldes et les gains gardent `Format`. Vérifié en jeu sur le cas d'origine : la vue affiche bien « Coût: 11 » pour un coût réel de 10,7. Contrepartie assumée : le garde-bruit avale une différence réelle de 0,5 à l'échelle du milliard, où elle n'a plus de sens.
+
+**Polices** : 8 textes en LiberationSans converties, plus **3 matériaux mésapparis** que personne n'avait vus — police ShareTechMono, matériau LiberationSans, sur le narratif, le bilan et le bouton de relance. 32/32 textes de scène et 9/9 des prefabs sont désormais conformes sur les deux plans. **Effet de bord signalé** : ShareTechMono étant plus large, le débordement de l'inspecteur devient franchement visible — il préexistait (hauteurs figées à 50 px pour un contenu de 500) mais LiberationSans le masquait à moitié. Tentative de correction par `childControlHeight`, **annulée** : elle met l'auto-sizing et le `ContentSizeFitter` en boucle. Les réglages de layout sont rendus à l'état exact où Bertrand les avait laissés ; l'entrée détaillée est en Hygiène.
 
 **Lot « Arbre de prestige : fenêtre d'achat, cascade et cinq états »** (2026-08-29, vérifié en Play Mode via MCP) — trois défauts signalés par Bertrand, plus un quatrième trouvé à l'inspection. **(1) L'achat était possible pendant une run.** `TryPurchasePrestige` n'avait aucune garde de session : les CPU Cycles se gagnent en TERMINANT une run, pouvoir les dépenser au milieu d'une autre transformait l'arbre en boutique d'appoint qu'on rouvre dès qu'on est en difficulté. Nouvelle `ArePurchasesAllowed` dans le `PrestigeManager`, pilotée par le `GameSessionManager` — c'est la session qui déclare son état, l'inverse fermerait le cycle de dépendances puisqu'elle dépend déjà du prestige. **(2) Les nœuds débloqués ne se rafraîchissaient pas.** `PrestigeItemPresenter` n'écoutait QUE `CpuCycles.Amount` : un achat n'ouvrait visuellement ses enfants que par effet de bord, parce qu'il coûtait de l'argent. L'écran écoute désormais `OnBonusesRecalculated`, émis après chaque recalcul — achat comme chargement de sauvegarde. **(3) Les cinq codes d'état de la maquette** sont implémentés : maxé en couleurs inversées, en cours en vert, débloquable en ambre pulsant, trop cher en rouge, verrouillé en gris. **(4) Défaut trouvé à l'inspection : `_interactionButton` était NULL sur `NodePrefab`** — le renommage `_buyButton` → `_interactionButton` avait perdu la référence, une NRE par nœud dans `Awake` et plus aucun clic. Le prefab est recablé. Idem pour `_maxedColor`, qui avait SURVÉCU au changement de script avec sa valeur (0,0,0,0) : un nœud maxé se peignait en noir opaque, texte noir compris.
 
