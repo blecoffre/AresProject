@@ -117,7 +117,7 @@ namespace Core.UI.Game
                 _loc.GetText(
                     "UI_EXFIL_READY",
                     CurrencyFormatter.Format(cycles),
-                    CurrencyFormatter.Format(_exfiltration.GetNextCycleThreshold())),
+                    CurrencyFormatter.FormatCost(_exfiltration.GetNextCycleThreshold())),
                 interactable: clickable,
                 showProgress: false,
                 progress: 1f);

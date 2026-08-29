@@ -64,7 +64,7 @@ namespace Core.UI.Upgrades
                 {
                     _view.UpdateCostAndLevel(
                         _loc.GetText("UI_GENERATOR_LEVEL", level),
-                        _loc.GetText("UI_GENERATOR_COST", CurrencyFormatter.Format(_model.GetCurrentCost())));
+                        _loc.GetText("UI_GENERATOR_COST", CurrencyFormatter.FormatCost(_model.GetCurrentCost())));
 
                     _view.UpdateStats(BuildStatsText());
                     RefreshRunButton();
@@ -146,11 +146,6 @@ namespace Core.UI.Upgrades
             }
 
             return _loc.GetText("UI_GENERATES_DATAS", CurrencyFormatter.Format(_model.GetCurrentYield()));
-        }
-
-        public void SetVisibility(bool isVisible)
-        {
-            _view.SetVisible(isVisible);
         }
 
         private void HandleBuyRequest()

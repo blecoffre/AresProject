@@ -122,7 +122,7 @@ namespace Core.UI.Game
                     _loc.GetText(
                         "UI_EMERGENCY_INSUFFICIENT",
                         CurrencyFormatter.Format(_upgradeManager.TotalTFlops.CurrentValue),
-                        CurrencyFormatter.Format(_emergency.RequiredTFlops)),
+                        CurrencyFormatter.FormatCost(_emergency.RequiredTFlops)),
                     interactable: false,
                     fillAmount: (float)(_upgradeManager.TotalTFlops.CurrentValue
                                         / _emergency.RequiredTFlops),

@@ -118,7 +118,7 @@ namespace Core.UI.Prestige
         {
             return isMaxedOut
                 ? _loc.GetText("UI_PRESTIGE_DETAILS_MAXED")
-                : _loc.GetText("UI_PRESTIGE_DETAILS_COST", CurrencyFormatter.Format(cost));
+                : _loc.GetText("UI_PRESTIGE_DETAILS_COST", CurrencyFormatter.FormatCost(cost));
         }
 
         /// <summary>
