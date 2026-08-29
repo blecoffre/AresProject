@@ -13,8 +13,11 @@ Un « X n'a aucun appelant » est un constat de lecture. « La fonctionnalité e
 constat de comportement, et demande le Play Mode. Ne pas confondre les deux : c'est exactement
 l'erreur qui avait produit l'entrée fausse sur la révélation progressive.
 
-État de la base : 59 fichiers runtime, 6 fichiers d'éditeur, ~6 600 lignes dans `Assets/Core`.
-Compilation sans erreur ni warning.
+**Repassé entrée par entrée le 2026-08-30.** Chaque point ci-dessous a été revérifié à cette
+date ; ceux qui avaient été réglés entre-temps sont descendus dans « Corrigé à ce jour ».
+
+État de la base : 72 fichiers runtime, 6 fichiers d'éditeur, ~9 530 lignes dans `Assets/Core`.
+Compilation sans erreur ; 3 warnings, tous en code éditeur (voir plus bas).
 
 ---
 
@@ -37,23 +40,32 @@ Compilation sans erreur ni warning.
       Le nœud `P_EXPLOIT_TRACE_REDUC` à fond ne monte le seuil qu'à 0,44 Trace/s.
       ⚠️ En attendant, **le libellé du bouton annonce 30 s** — il ment au joueur. Si le ×10 reste,
       c'est la durée affichée qu'il faudra revoir, pas seulement l'équilibrage.
--	Accessilibité, dans le futur, il sera possible via des options de modifier le mode de couleur de l'application selon
-	le type de daltnosime dont souffre le joueur, c'est un point sur lequel beaucoup de daltonien insiste dans ce type de 
-	jeu, la consultation de l'arbre de prestige est souvent difficile pour eux et ce serait un excellent point de proposer
-	une solution a ce problème précis.
+- **Accessibilité — daltonisme.** À terme, une option permettra d'adapter la palette au type de
+      daltonisme du joueur. Beaucoup de daltoniens insistent sur ce point dans ce genre de jeu, où
+      la consultation de l'arbre de prestige leur est souvent difficile.
+      ⚠️ **Le lot du 2026-08-29 a aggravé la dette sur ce point** : les cinq états d'un nœud sont
+      distingués par la COULEUR SEULE — gris, rouge, ambre, vert, vert inversé. Rouge et vert sont
+      précisément la paire que la deutéranopie confond, et c'est ici la différence entre « trop
+      cher » et « déjà entamé ». Le texte de la ligne d'état (« VERROUILLÉ », un prix, un niveau,
+      « MAX ») porte heureusement déjà l'information en toutes lettres : le nœud reste lisible
+      sans la couleur. Il manque un second canal sur la pastille elle-même — trame de fond,
+      épaisseur de cadre ou glyphe — le jour où le sujet sera traité.
 
 ## Données et contenu
 
-- 🔬 **45 clés de localisation manquantes** (recompté le 2026-08-29) : les **`UPG_*_DESC`**,
+- 🔬 **45 clés de localisation manquantes** (recompté le 2026-08-30) : les **`UPG_*_DESC`**,
       aucun générateur n'a de description. Les 45 noms sont là, et les 14 paires `PRESTIGE_*` des
       nœuds nommés ont été écrites le 2026-08-29 — l'arbre étant devenu visible, elles bloquaient.
       Les 105 nœuds spécifiques passent par des gabarits, ils n'ont pas de clé propre.
 - 🔬 **Libellés du header à revoir** : `MONEY` = « Money » et `COMPUTER_POWER` = « Computer Power »
       sont clairement des placeholders. `TRACE`, `CYCLES` et `OVERCLOCK` passent en français tels
       quels et relèvent du choix de ton, pas de la traduction.
-- 📖 **2 clés mortes** dans `fr.json` : `UPGRADE_NAME_BOTNET` et `UPGRADE_NAME_BREACH_CORE`,
-      vestiges d'avant la migration des noms. `CONSOLE_LOGS` n'est référencée ni par le code ni par
-      un `LocalizedText` de la scène.
+- 📖 **5 clés sans aucune référence** dans `fr.json` (recompté le 2026-08-30 en croisant le code,
+      les scènes ET les prefabs ; les clés dérivées d'un id sont exclues du calcul, elles ne sont
+      jamais littérales) : `UPGRADE_NAME_BOTNET` et `UPGRADE_NAME_BREACH_CORE`, vestiges d'avant la
+      migration des noms ; `CONSOLE_LOGS` ; `COMPUTER_POWER`, dont le libellé du header est
+      désormais composé dans la vue au lieu de passer par la clé ; et `UI_ACQUIRED`, devenue
+      inutile le 2026-08-30 — un nœud à achat unique passe directement de « prix » à « MAX ».
 - ✅ **180 paliers, 45/45 générateurs couverts** (2026-08-27). Le GD a complété les 15 Proxies :
       quatre `TraceMultiplier` chacun aux niveaux 10 / 25 / 50 / 100, cumul ×300 uniforme.
       Catalogue régénéré, zéro avertissement du générateur.
@@ -65,17 +77,21 @@ Compilation sans erreur ni warning.
 
 - 📖 `GameOverPresenter.HandleRestart` : `_ = _sceneLoader.LoadGameSceneAsync(CancellationToken.None)`
       — il manque le `.Forget()`, et `CancellationToken.None` rompt la chaîne d'annulation.
-- 📖 `GameOverPresenter._cts` : créé, disposé, jamais utilisé.
-- 📖 `PrestigePanelView._resolver` et `UpgradePanelView._resolver` : `IObjectResolver` injectés et
-      jamais lus, alors qu'ils régleraient justement le Service Locator d'`AutoInjectOnInstantiate`.
+      Toujours vrai au 2026-08-30.
+- 📖 `UpgradePanelView._resolver` : `IObjectResolver` injecté et jamais lu, alors qu'il réglerait
+      justement le Service Locator d'`AutoInjectOnInstantiate`. Celui de `PrestigePanelView` a été
+      retiré le 2026-08-29, et le `_cts` inutilisé du `GameOverPresenter` a disparu avec la
+      réécriture du bilan.
 
 ## Performance
 
-- ⚖️ **`PrestigeItemPresenter`** s'abonne à `CpuCycles` pour chacun des 112 nœuds, et `RefreshView()`
-      refait un `Math.Pow` et alloue plusieurs chaînes par nœud. L'ordre de grandeur — quelques
-      centaines d'allocations par variation de CPU Cycles — **n'a jamais été mesuré**, seulement
-      déduit du code. À profiler avant d'en faire un lot. Le remède, si c'est confirmé, est celui
-      déjà appliqué à `GeneratorPresenter` : cache et `DistinctUntilChanged`.
+- ⚖️ **Repeinte de l'arbre : 119 nœuds × 3 passes par achat.** Les abonnements par nœud ont
+      disparu le 2026-08-29 — le panneau écoute une fois et rediffuse — mais chaque passe refait un
+      `Math.Pow` et alloue une chaîne par nœud, et un achat déclenche trois signaux dans la même
+      frame. Ordre de grandeur déduit : ~350 chaînes par achat. **Jamais mesuré.** Un achat de
+      prestige est rare et l'écran est modal, donc c'est probablement sans importance ; à profiler
+      avant d'en faire un lot. Le remède, si besoin, est celui de `GeneratorPresenter` : cache et
+      `DistinctUntilChanged`.
 - 📖 **`ILocalizationService.GetText<T0>`** promet « Zero Boxing » mais fait un
       `string.Format(string, object)`, qui boxe chaque type valeur. → `ZString.Format<T0>`,
       déjà disponible avec UniTask.
@@ -83,7 +99,7 @@ Compilation sans erreur ni warning.
       déjà. `UpdateTraceDisplay` montre la bonne pratique avec `SetText("{0:F1}%", …)`.
 - 📖 **`LogObjectPool`** : `_activeItems[0]` + `RemoveAt(0)` et un `Contains` linéaire. Un tampon
       circulaire rendrait le recyclage O(1).
-- ⚖️ Le rendu de l'arbre de prestige à 112 nœuds demandera peut-être du pooling ou de la
+- ⚖️ Le rendu de l'arbre de prestige à 119 nœuds demandera peut-être du pooling ou de la
       virtualisation. Jamais mesuré non plus — l'arbre s'affiche aujourd'hui sans ralentissement
       perceptible en éditeur.
 
@@ -108,13 +124,20 @@ Compilation sans erreur ni warning.
       gratuite », mais le joueur pilote à l'aveugle : un rappel de Trace dans le header de l'écran
       serait honnête. À arbitrer par le GD.
 
-- 🔬 **Le shadergraph `UI_HDR_Glow` n'échantillonne aucune texture.** Son graphe se réduit à
-      `VertexColor × _Color` sur une cible Unlit : appliqué à une Image, il **ignore le sprite** et
-      remplit tout le rectangle d'un aplat. Sans effet visible sur un `Plain Square` (barre pleine,
-      jauge), mais il détruit un sprite de contour — c'est pourquoi le halo de survol des boutons
-      a dû être retiré le 2026-08-28. Pour rendre le matériau utilisable partout, il faut
-      multiplier la sortie par l'alpha de `_MainTex`. "Note par Bertrand, je l'ai en principe corrigé, à vérifier quand
-	  tu liras ceci".
+- 🔬 **Le fond de l'écran méta est à 98 % d'opacité**, pas à 100 %. `GameOverPanel/Background`
+      couvre bien tout le canvas (1920×1080, ancres 0-1) et se dessine bien par-dessus la console
+      et le panneau d'interactions : ce n'est PAS un problème de couverture ni d'ordre de rendu,
+      seulement les 2 % restants. Sur des textes saturés et lumineux, ces 2 % suffisent à laisser
+      lire la console et les boutons du jeu derrière l'arbre. Une valeur d'alpha à changer, si
+      cette transparence n'est pas voulue.
+
+- 📖 **`UI_HDR_Glow` échantillonne enfin sa texture — corrigé par Bertrand, reste à en profiter.**
+      Vérifié le 2026-08-30 : le graphe contient désormais un `SampleTexture2DNode`, un `SplitNode`
+      et un `MultiplyNode`, avec une propriété `_MainTex`. Il ne se réduit donc plus à
+      `VertexColor × _Color`, qui remplissait tout le rectangle d'un aplat et détruisait les
+      sprites de contour. **Constat de lecture du graphe, pas de rendu** : la preuve serait de
+      remettre le halo de contour sur un `UiHoverGlow` — retiré le 2026-08-28 à cause de ce défaut
+      — et de regarder. C'est le vrai reste à faire de cette entrée.
 
 - 🔬 **Trois jauges ont disparu pendant le rework UI.** `GhostCacheView._fill`,
       `EmergencyView._fill` et `ExfiltrationView._progressFill` valent **NULL** dans la scène.
@@ -122,11 +145,17 @@ Compilation sans erreur ni warning.
       est perdue : plus de barre de charge du Ghost Cache, plus de décompte visuel du Data Wiper,
       plus de progression vers le premier CPU Cycle. Les libellés portent encore le pourcentage,
       c'est donc dégradant et non bloquant. Constaté le 2026-08-28.
-- 🔬 **`GameOverPanel` est encore en LiberationSans**, la police par défaut d'Unity, alors que
-      tout le reste est en ShareTechMono. L'outil de halos le saute exprès : coller un matériau
+- 🔬 **8 textes en LiberationSans, tous dans `GameOverPanel`** (recensement exhaustif du
+      2026-08-30, demandé par Bertrand). Les 316 autres textes de la scène et **les 9 textes de
+      tous les prefabs du projet** sont en ShareTechMono : le reliquat est circonscrit.
+      `Header/Title`, `Header/Currency`, et les six textes de `PrestigeNodeDetails` — `Name`,
+      `Description`, `Effects`, `Prerequisite`, `Costs`, `InsuficiantFunds`. Le bilan de fin de run
+      et `StartNewRunButton` sont déjà passés en ShareTechMono.
+      Conséquence déjà rencontrée : `↻` (U+21BB) manque à l'atlas de LiberationSans et s'affichait
+      en carré le 2026-08-29 — il a fallu repasser le libellé des cycles en ASCII.
+      **Remplacer d'abord la police, relancer l'outil de halos ensuite** : coller un matériau
       ShareTechMono à un texte dont l'atlas est LiberationSans afficherait des glyphes faux.
-      Changer la police d'abord, relancer l'outil ensuite. "Note de Bertrand, à vérifier en lisant ceci si il reste
-	  des textes qui n'utilise pas la bonne font, soit les notifier ici, soit remplacer à chaque fois par la font ShareTechMono-Regular SDF"
+
 - 🔬 **Les couleurs de la console ne suivent pas la maquette.** `ConsoleView.FormatMessage`
       écrit `#00FF00` (vert pur) là où la maquette veut `#4AF626`, et surtout **`#FF00FF` magenta**
       pour les lignes narratives, là où la maquette veut de l'orange. Les balises `[OK]`,
@@ -145,10 +174,10 @@ Compilation sans erreur ni warning.
       `UpgradeModel`, `PrestigeManager`, `ThreatManager`, `CurrencyFormatter` et `UserCurrencies`
       ne touchent presque pas Unity : c'est le meilleur retour sur investissement du projet,
       surtout pour des formules qu'on modifie sans arrêt.
-- 📖 **Code mort confirmé, sans appelant** : `GeneratorPresenter.SetVisibility()`,
-      `UpgradeManager.GetAllActiveUpgrades()`, `LogObjectPool.ReturnToPool()`. Et le
+- 📖 **Code mort restant : `LogObjectPool.ReturnToPool()`**, sans appelant. Et le
       `viewInstance.SetVisible(true)` d'`UpgradePanelPresenter` porte sur un prefab dont la racine
-      est déjà active, donc sans effet.
+      est déjà active, donc sans effet. `GeneratorPresenter.SetVisibility()` et
+      `UpgradeManager.GetAllActiveUpgrades()` ont disparu depuis — vérifié le 2026-08-30.
       ⚠️ **Ne pas confondre avec la révélation progressive, qui FONCTIONNE** — 🔬 vérifié :
       45 upgrades au catalogue mais 3 `GeneratorView` instanciés au démarrage, et le suivant
       apparaît à chaque premier achat. Elle passe par l'instanciation à la demande
@@ -174,9 +203,21 @@ Compilation sans erreur ni warning.
 - 📖 **`HeaderPresenter`** s'abonne dans son constructeur ET dans `Start()`. Même écart dans
       `PrestigeItemPresenter`, qui s'abonne entièrement dans son constructeur.
 - 📖 **Namespaces ≠ dossiers** et dossier fantôme vide `Assets/Core/UI/Uppgrades` toujours présent.
-- 📖 **Séparateur décimal dépendant de la machine** : `GetCurrentCycleDuration().ToString("0.##")`
-      utilise `CurrentCulture` — « 1,5 s » ici, « 1.5 s » ailleurs — alors que `CurrencyFormatter`
-      force `InvariantCulture`. Trancher une politique unique.
+- 📖 **Séparateur décimal dépendant de la machine — trois endroits**, pas un seul (recompté le
+      2026-08-30) : `GeneratorPresenter.BuildStatsText` (`GetCurrentCycleDuration().ToString("0.##")`)
+      et **`ClickerPresenter` deux fois** (`result.SecondsGained.ToString("0.#")`). Tous utilisent
+      `CurrentCulture` — « 1,5 s » ici, « 1.5 s » ailleurs — alors que `CurrencyFormatter` force
+      `InvariantCulture`. Trancher une politique unique.
+- 📖 **`HeaderView` compose du texte affichable en dur** — la règle absolue du projet y échappe
+      sur cinq lignes : `$": {valeur}"`, `$": {valeur} TFlops"`, `$"+{rendement}/s"` et
+      `SetText(": {0:F1}%", …)`. L'unité « TFlops », le préfixe « : », le « /s » et le « % » sont
+      des libellés, et ils devraient venir de clés. C'est aussi ce qui a rendu `COMPUTER_POWER`
+      morte. Trouvé le 2026-08-30.
+
+- 🔬 **Le nom des nœuds de prestige déborde de la pastille.** « Surcadencement » est tronqué en
+      « Surcadencemen » sur un nœud de 500 px. Vu en capture le 2026-08-30. Auto-sizing ou marge,
+      à trancher en même temps que le positionnement des nœuds que le GD doit revoir.
+
 - 📖 **Faux libellé sur les onglets Hardware et Proxy** : `BuildStatsText()` affiche
       « Génère X **Datas** » pour tous les types, alors qu'un Hardware fournit des TFlops et qu'un
       Proxy dissipe de la Trace.
