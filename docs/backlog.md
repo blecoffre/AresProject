@@ -19,11 +19,6 @@ Compilation sans erreur ni warning.
 ---
 
 ## Majeurs restants
-- 📖 **La durée d'une run n'est pas mesurée.** Le bilan de fin ne peut donc pas l'afficher,
-      alors que c'est la statistique la plus parlante d'un incrémental. Demande un chronomètre
-      dans `GameSessionManager`, remis à zéro au wipe, et un champ de plus dans `RunSummary`.
-
-
 - 📖 **Le nœud de prestige d'automatisation n'existe pas dans les données.** Prévu ciblé
       (`TargetUpgradeId`), achetable par rangs, abaissant `AutomationLevel`. Le hook est prêt côté
       code : `UpgradeModel.SetAutomationThresholdReduction()`, qui n'a aucun appelant.
@@ -186,6 +181,8 @@ Trois bugs de la même famille ont déjà coûté du temps. Le motif :
   `ITickable` sans focus, appeler `Tick()` à la main.
 
 ## Corrigé à ce jour
+
+**Durée de run au bilan** (2026-08-29, vérifié en Play Mode via MCP) — `GameSessionManager` devient `ITickable` et cumule les secondes de jeu. **Cumulées et non déduites d'un horodatage** : `Time.time` repart de zéro à chaque lancement, une run reprise le lendemain aurait affiché la durée de la seule session en cours. Le chronomètre s'arrête pendant l'écran de fin — contempler son bilan n'est pas du jeu — et repart à zéro au wipe. `SaveData` v6 (`RunElapsedSeconds`) : le temps passé fenêtre close n'est jamais crédité, le compteur n'avance que dans `Tick()`. Deux gabarits d'affichage, les unités dans les clés : « 14 min 07 s » au-delà de la minute, « 42 s » en deçà — un format unique aurait rendu « 0 min 42 s » sur la statistique la plus regardée de l'écran. Vérifié : les deux formats, la remise à zéro au wipe, l'aller-retour JSON, les migrations v2/v4/v5 → v6 qui préservent `EmergencyUsesInRun`, et la restauration qui rend bien 423,5 s au chronomètre.
 
 **Bilan de fin de run** (2026-08-29, vérifié en Play Mode via MCP) — `OnSessionEnded` ne transportait qu'un `double`, le gain : l'écran de fin ne pouvait ni distinguer une Saisie Fédérale d'un Effacement Propre, ni rien raconter d'autre. Nouveau `RunSummary` — struct readonly — portant la raison, les cycles gagnés, ceux d'avant bonus, les Datas de la run, la Trace à la sortie et les usages du Data Wiper. **Capturé avant le wipe**, obligatoirement : `ResolveRunEnd` efface la run trois lignes plus bas, lu après il ne contiendrait que des zéros. Les deux fins ont leur narration et leur COULEUR de titre — rouge pour une saisie, vert pour un effacement propre — pour que le joueur sache en un coup d'œil s'il a bien joué. La ligne « Trace à la sortie » n'apparaît que sur une sortie volontaire : après une saisie elle vaut 100 % par définition. Le bonus Clean Exit n'est annoncé que s'il a réellement rapporté quelque chose. Un bouton « DÉPENSER » ouvre l'arbre depuis l'écran de fin, qui recouvre le bouton du header. Vérifié : 45 000 Datas → 6 cycles de base, 7 avec le bonus (+1 affiché), Trace 87 %, Data Wiper ×2 ; puis saisie à 12 000 Datas → 3 cycles, titre rouge, ligne Trace absente, détection enregistrée ; le bouton ouvre bien l'arbre.
 

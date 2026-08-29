@@ -12,7 +12,7 @@ namespace Core.Services.Simulation
     /// <summary>
     /// Supervise le cycle de vie d'une 'Run' et gère la mécanique de Prestige lors d'un Game Over (Lockdown).
     /// </summary>
-    public class GameSessionManager : IStartable, IDisposable
+    public class GameSessionManager : IStartable, ITickable, IDisposable
     {
         /// <summary>Tampon réutilisé : un wipe ne doit pas allouer un dictionnaire à chaque fois.</summary>
         private static readonly System.Collections.Generic.Dictionary<string, int> EmptyLevels =
@@ -25,6 +25,16 @@ namespace Core.Services.Simulation
         private readonly EmergencyProtocolSystem _emergencyProtocolSystem;
         private readonly GhostCacheSystem _ghostCacheSystem;
         private readonly BalancingConfigSO _balancing;
+
+        /// <summary>
+        /// Secondes de jeu écoulées sur la run en cours. Cumulées frame par frame plutôt que
+        /// déduites d'un `Time.time` de départ : ce dernier repart de zéro à chaque lancement du
+        /// jeu, et une run reprise le lendemain afficherait la durée de la seule session en cours.
+        /// </summary>
+        private float _runElapsedSeconds;
+
+        /// <summary>Durée de la run en cours, en secondes. Fait partie de l'état sauvegardé.</summary>
+        public float RunElapsedSeconds => _runElapsedSeconds;
 
         public Subject<RunSummary> OnSessionEnded { get; }
         public ReactiveProperty<bool> IsGameActive { get; }
@@ -53,6 +63,23 @@ namespace Core.Services.Simulation
             _threatManager.OnCriticalLockdown
                 .Subscribe(_ => HandleGameOver())
                 .AddTo(ref _disposables);
+        }
+
+        /// <summary>
+        /// Fait avancer le chronomètre de la run. Une addition de float par frame, et rien
+        /// pendant l'écran de fin : le temps passé à contempler son bilan n'est pas du jeu.
+        /// </summary>
+        public void Tick()
+        {
+            if (!IsGameActive.CurrentValue) return;
+
+            _runElapsedSeconds += UnityEngine.Time.deltaTime;
+        }
+
+        /// <summary>Restaure le chronomètre depuis une sauvegarde.</summary>
+        public void RestoreElapsed(float seconds)
+        {
+            _runElapsedSeconds = seconds < 0f ? 0f : seconds;
         }
 
         /// <summary>Saisie Fédérale : la Trace a atteint 100 %, aucun bonus, écran de fin immédiat.</summary>
@@ -121,6 +148,7 @@ namespace Core.Services.Simulation
             double dataGenerated = _userCurrencies.RunMoneyGenerated.CurrentValue;
             float threatAtEnd = _threatManager.NormalizedThreat.CurrentValue;
             int emergencyUses = _emergencyProtocolSystem.UsesInCurrentRun;
+            float elapsed = _runElapsedSeconds;
 
             double pendingPrestige = _userCurrencies.CalculatePendingCpuCycles() * prestigeMultiplier;
             pendingPrestige = Math.Floor(pendingPrestige);
@@ -138,7 +166,7 @@ namespace Core.Services.Simulation
             // rendait tous les générateurs au niveau max, avec zéro Trace. Une run gratuite.
             WipeRun();
 
-            return new RunSummary(reason, pendingPrestige, baseCycles, dataGenerated, threatAtEnd, emergencyUses);
+            return new RunSummary(reason, pendingPrestige, baseCycles, dataGenerated, threatAtEnd, emergencyUses, elapsed);
         }
 
         /// <summary>
@@ -157,6 +185,7 @@ namespace Core.Services.Simulation
             // de chaque run, exactement au moment où sa Trace est à zéro et où l'Exploit ne lui
             // coûterait donc rien — la mécanique perdrait tout son pari.
             _ghostCacheSystem.ResetForNewRun();
+            _runElapsedSeconds = 0f;
 
             _threatManager.ReduceThreat(1f);
             _upgradeManager.InitializeFromSave(EmptyLevels);

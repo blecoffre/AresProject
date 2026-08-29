@@ -34,7 +34,7 @@ namespace Core.Models
         /// correspondant dans Migrate(). Sans ça, le premier changement post-lancement casse
         /// silencieusement les sauvegardes des joueurs.
         /// </summary>
-        public const int CurrentVersion = 5;
+        public const int CurrentVersion = 6;
 
         public int Version;
 
@@ -88,6 +88,13 @@ namespace Core.Models
         /// </summary>
         public float EmergencyBlockRemainingSeconds;
         public float EmergencyCooldownRemainingSeconds;
+
+        /// <summary>
+        /// Secondes de JEU écoulées sur la run en cours. Sauvegardée pour qu'une run reprise
+        /// après une fermeture affiche sa durée réelle et non celle de la dernière session. Le
+        /// temps passé fenêtre close n'est jamais crédité : elle n'avance que dans Tick().
+        /// </summary>
+        public float RunElapsedSeconds;
         public List<UpgradeSaveEntry> Upgrades;
 
         /// <summary>
@@ -114,6 +121,7 @@ namespace Core.Models
             GhostCacheSeconds = 0f,
             EmergencyBlockRemainingSeconds = 0f,
             EmergencyCooldownRemainingSeconds = 0f,
+            RunElapsedSeconds = 0f,
             Upgrades = new List<UpgradeSaveEntry>(),
 
             SavedAtUnixSeconds = 0L
@@ -139,6 +147,7 @@ namespace Core.Models
             // Bornes hautes laissées à l'EmergencyProtocolSystem, seul détenteur des durées.
             if (EmergencyBlockRemainingSeconds < 0f) EmergencyBlockRemainingSeconds = 0f;
             if (EmergencyCooldownRemainingSeconds < 0f) EmergencyCooldownRemainingSeconds = 0f;
+            if (RunElapsedSeconds < 0f) RunElapsedSeconds = 0f;
 
             if (Money < 0d) Money = 0d;
             if (RunMoney < 0d) RunMoney = 0d;
@@ -200,6 +209,13 @@ namespace Core.Models
                     goto case 5;
 
                 case 5:
+                    // v5 -> v6 : la durée de la run apparaît. Une sauvegarde antérieure n'a pas
+                    // mesuré son temps de jeu ; on repart de zéro plutôt que d'inventer une durée.
+                    data.RunElapsedSeconds = 0f;
+                    data.Version = 6;
+                    goto case 6;
+
+                case 6:
                     // Format courant : rien à faire.
                     break;
 

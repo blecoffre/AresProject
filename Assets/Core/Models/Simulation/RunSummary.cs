@@ -52,13 +52,21 @@ namespace Core.Models.Simulation
         /// <summary>Nombre d'activations du Data Wiper sur la run.</summary>
         public readonly int EmergencyUses;
 
+        /// <summary>
+        /// Secondes de JEU écoulées sur la run. Cumulées et sauvegardées, pas déduites d'un
+        /// horodatage : fermer le jeu ne doit ni remettre le compteur à zéro, ni créditer le
+        /// temps passé fenêtre close — le GDD est formel, il n'y a aucune progression hors-ligne.
+        /// </summary>
+        public readonly float ElapsedSeconds;
+
         public RunSummary(
             RunEndReason reason,
             double cpuCyclesEarned,
             double cpuCyclesBeforeBonus,
             double dataGenerated,
             float threatAtEnd,
-            int emergencyUses)
+            int emergencyUses,
+            float elapsedSeconds)
         {
             Reason = reason;
             CpuCyclesEarned = cpuCyclesEarned;
@@ -66,6 +74,7 @@ namespace Core.Models.Simulation
             DataGenerated = dataGenerated;
             ThreatAtEnd = threatAtEnd;
             EmergencyUses = emergencyUses;
+            ElapsedSeconds = elapsedSeconds;
         }
 
         /// <summary>Le bonus Clean Exit a-t-il réellement rapporté quelque chose à afficher.</summary>

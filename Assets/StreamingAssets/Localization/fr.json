@@ -523,6 +523,14 @@
     {
       "Key": "UI_RUN_END_PRESTIGE_BUTTON",
       "Value": "[ DÉPENSER — NOYAU IA ]"
+    },
+    {
+      "Key": "UI_RUN_END_STAT_DURATION",
+      "Value": "  Temps de survie ........... {0} min {1:00} s"
+    },
+    {
+      "Key": "UI_RUN_END_STAT_DURATION_SHORT",
+      "Value": "  Temps de survie ........... {0} s"
     }
   ]
 }

@@ -96,6 +96,17 @@ namespace Core.UI.Game
                     UnityEngine.Mathf.RoundToInt(summary.ThreatAtEnd * 100f)));
             }
 
+            // Deux gabarits plutôt qu'un : une run de quarante secondes afficherait
+            // « 0 min 40 s » avec un format unique, ce qui se lit mal pour la statistique la
+            // plus regardée de l'écran. Les unités vivent dans les clés, jamais ici.
+            int totalSeconds = UnityEngine.Mathf.FloorToInt(summary.ElapsedSeconds);
+            int minutes = totalSeconds / 60;
+            int seconds = totalSeconds % 60;
+
+            _bilan.AppendLine(minutes > 0
+                ? _loc.GetText("UI_RUN_END_STAT_DURATION", minutes, seconds)
+                : _loc.GetText("UI_RUN_END_STAT_DURATION_SHORT", seconds));
+
             if (summary.EmergencyUses > 0)
             {
                 _bilan.AppendLine(_loc.GetText("UI_RUN_END_STAT_WIPER", summary.EmergencyUses));

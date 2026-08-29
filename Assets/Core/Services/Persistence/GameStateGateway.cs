@@ -31,6 +31,7 @@ namespace Core.Services.Persistence
         private readonly ThreatManager _threatManager;
         private readonly EmergencyProtocolSystem _emergencyProtocol;
         private readonly GhostCacheSystem _ghostCache;
+        private readonly GameSessionManager _sessionManager;
 
         // Instance et tampons réutilisés d'une capture à l'autre : un autosave ne doit rien allouer
         // en dehors de la chaîne JSON elle-même.
@@ -50,7 +51,8 @@ namespace Core.Services.Persistence
             PrestigeManager prestigeManager,
             ThreatManager threatManager,
             EmergencyProtocolSystem emergencyProtocol,
-            GhostCacheSystem ghostCache)
+            GhostCacheSystem ghostCache,
+            GameSessionManager sessionManager)
         {
             _currencies = currencies;
             _upgradeManager = upgradeManager;
@@ -58,6 +60,7 @@ namespace Core.Services.Persistence
             _threatManager = threatManager;
             _emergencyProtocol = emergencyProtocol;
             _ghostCache = ghostCache;
+            _sessionManager = sessionManager;
         }
 
         /// <summary>
@@ -91,6 +94,7 @@ namespace Core.Services.Persistence
                 data.EmergencyBlockRemainingSeconds,
                 data.EmergencyCooldownRemainingSeconds);
             _ghostCache.RestoreCharge(data.GhostCacheSeconds);
+            _sessionManager.RestoreElapsed(data.RunElapsedSeconds);
 
             HasRestored = true;
         }
@@ -117,6 +121,7 @@ namespace Core.Services.Persistence
             _buffer.EmergencyBlockRemainingSeconds = _emergencyProtocol.BlockRemaining.CurrentValue;
             _buffer.EmergencyCooldownRemainingSeconds = _emergencyProtocol.CooldownRemaining.CurrentValue;
             _buffer.GhostCacheSeconds = _ghostCache.ChargeSeconds.CurrentValue;
+            _buffer.RunElapsedSeconds = _sessionManager.RunElapsedSeconds;
 
             _upgradeManager.CaptureLevelsInto(_buffer.Upgrades);
             _prestigeManager.CaptureLevelsInto(_buffer.PrestigeUpgrades);
