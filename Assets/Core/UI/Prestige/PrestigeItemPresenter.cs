@@ -70,39 +70,34 @@ namespace Core.UI.Prestige
 
             PrestigeNodeState state = PrestigeNodeStates.Resolve(isUnlocked, isMaxedOut, currentLevel, canAfford);
 
-            // UNE seule ligne d'information sous le nom, jamais deux.
-            //
-            // `Level` et `LockedOrCost` occupent le même rectangle dans le prefab — ils sont
-            // empilés, pas juxtaposés. Les remplir tous les deux superposait « Niv. 0 / 10 » et
-            // « 15 CPU » au même endroit. Chaque état a donc exactement une chose à dire, et
-            // l'autre emplacement est vidé.
+            // UNE seule ligne d'information sous le nom : le nœud n'a jamais qu'une chose à dire,
+            // et c'est l'état qui décide laquelle.
             //
             // Tout ce qui part à l'écran passe par une clé : ni le suffixe de monnaie, ni le
             // gabarit « Niv. x / y », ni la mention de niveau max ne sont écrits en dur.
-            string levelText = string.Empty;
-            string costText = string.Empty;
+            string statusText;
 
             switch (state)
             {
                 case PrestigeNodeState.Locked:
-                    costText = _loc.GetText("UI_PRESTIGE_LOCKED");
+                    statusText = _loc.GetText("UI_PRESTIGE_LOCKED");
                     break;
 
                 case PrestigeNodeState.Maxed:
-                    costText = _loc.GetText("UI_MAX_LEVEL");
+                    statusText = _loc.GetText("UI_MAX_LEVEL");
                     break;
 
                 // Entamé sans être fini : la progression prime sur le prix du rang suivant, que
                 // l'inspecteur donne de toute façon. Ce cas implique MaxLevel > 1 — un nœud à
                 // achat unique passe directement de « jamais acheté » à « au maximum ».
                 case PrestigeNodeState.InProgress:
-                    levelText = _loc.GetText("UI_PRESTIGE_LEVEL", currentLevel, Config.MaxLevel);
+                    statusText = _loc.GetText("UI_PRESTIGE_LEVEL", currentLevel, Config.MaxLevel);
                     break;
 
                 // Jamais acheté, branche ouverte : le prix est la seule information actionnable,
                 // et « Niv. 0 / 10 » n'en est pas une.
                 default:
-                    costText = _loc.GetText("UI_PRESTIGE_COST", CurrencyFormatter.Format(cost));
+                    statusText = _loc.GetText("UI_PRESTIGE_COST", CurrencyFormatter.Format(cost));
                     break;
             }
 
@@ -110,7 +105,7 @@ namespace Core.UI.Prestige
             // de compilation est fermée, c'est-à-dire pendant toute une run.
             bool pulse = _prestigeManager.ArePurchasesAllowed.CurrentValue;
 
-            _view.Render(levelText, costText, state, pulse);
+            _view.Render(statusText, state, pulse);
         }
 
         /// <summary>

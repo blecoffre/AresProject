@@ -16,10 +16,11 @@ namespace Core.UI.Prestige
 
         [Header("Textes")]
         [SerializeField] private TextMeshProUGUI _nameText;
-        [SerializeField] private TextMeshProUGUI _levelText;
 
-        [Tooltip("Affiche le coût, ou la mention « verrouillé » quand la branche n'est pas ouverte.")]
-        [SerializeField] private TextMeshProUGUI _costText;
+        [Tooltip("L'unique ligne d'information sous le nom : « VERROUILLÉ », un prix, un niveau " +
+                 "ou « MAX ». Un seul emplacement, parce qu'un nœud n'a jamais qu'une seule " +
+                 "chose à dire — le presenter choisit laquelle selon l'état.")]
+        [SerializeField] private TextMeshProUGUI _statusText;
 
         [Header("Habillage")]
         [Tooltip("Le cadre du nœud (Image creuse, Fill Center décoché). Il porte la couleur d'état.")]
@@ -127,17 +128,16 @@ namespace Core.UI.Prestige
         }
 
         /// <summary>
-        /// Peint le nœud. Les deux chaînes arrivent déjà localisées et déjà formatées, cas
-        /// « niveau max » et « verrouillé » compris : aucun texte affichable ne vit ici.
+        /// Peint le nœud. La chaîne arrive déjà localisée et déjà formatée, cas « niveau max » et
+        /// « verrouillé » compris : aucun texte affichable ne vit ici.
         /// </summary>
         /// <param name="pulse">
         /// La pulsation est un appel à l'action, pas un code couleur. Elle est donc coupée
         /// pendant une run, où la couleur ambre ne dit plus que « tu pourras te l'offrir ».
         /// </param>
-        public void Render(string levelText, string costText, PrestigeNodeState state, bool pulse)
+        public void Render(string statusText, PrestigeNodeState state, bool pulse)
         {
-            if (_levelText != null) _levelText.text = levelText;
-            if (_costText != null) _costText.text = costText;
+            if (_statusText != null) _statusText.text = statusText;
 
             _stateColor = ResolveStateColor(state);
             _stateFillAlpha = ResolveFillAlpha(state);
@@ -148,8 +148,7 @@ namespace Core.UI.Prestige
 
             Color textColor = state == PrestigeNodeState.Maxed ? _maxedTextColor : _stateColor;
             if (_nameText != null) _nameText.color = textColor;
-            if (_levelText != null) _levelText.color = textColor;
-            if (_costText != null) _costText.color = textColor;
+            if (_statusText != null) _statusText.color = textColor;
 
             // Repeindre le cadre AVANT d'armer la pulsation : sinon un nœud qui vient de cesser
             // de pulser resterait figé sur l'opacité du dernier creux de sinusoïde.
