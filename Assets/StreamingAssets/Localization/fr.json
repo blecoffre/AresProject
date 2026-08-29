@@ -353,6 +353,14 @@
       "Value": "> Exploit épuisé. Proxies de nouveau en ligne."
     },
     {
+      "Key": "UI_PRESTIGE_TREE_OPEN",
+      "Value": "[ NOYAU IA — ARBRE ]"
+    },
+    {
+      "Key": "UI_PRESTIGE_TREE_CLOSE",
+      "Value": "[ FERMER ]"
+    },
+    {
       "Key": "UI_GHOSTCACHE_LOCKED",
       "Value": "[VERROUILLÉ] Ghost Cache — requiert le nœud Capacité du Ghost Cache"
     },
@@ -435,6 +443,62 @@
     {
       "Key": "LOG_EMERGENCY_WIPE",
       "Value": "> wiper.sh --inject : ver déployé sur les serveurs fédéraux. Dossier partiellement effacé."
+    },
+    {
+      "Key": "PRESTIGE_P_ROOT_NAME",
+      "Value": "Noyau Compromis"
+    },
+    {
+      "Key": "PRESTIGE_P_ROOT_DESC",
+      "Value": "Ce qui reste de la dernière tentative. Le point de départ de tout le reste — et il ne coûte rien."
+    },
+    {
+      "Key": "PRESTIGE_P_REFAC_NAME",
+      "Value": "Refactorisation"
+    },
+    {
+      "Key": "PRESTIGE_P_REFAC_DESC",
+      "Value": "Du code plus propre coûte moins cher à faire grossir. Aplatit la courbe de prix de tous les générateurs."
+    },
+    {
+      "Key": "PRESTIGE_P_DATAM_NAME",
+      "Value": "Forage de Données"
+    },
+    {
+      "Key": "PRESTIGE_P_DATAM_DESC",
+      "Value": "Augmente la capacité de calcul globale. Les TFlops accélèrent les cycles ET renforcent les proxies."
+    },
+    {
+      "Key": "PRESTIGE_P_CLICK_NAME",
+      "Value": "Surcadencement"
+    },
+    {
+      "Key": "PRESTIGE_P_CLICK_DESC",
+      "Value": "Chaque overclock manuel fait gagner davantage de temps aux cycles en cours."
+    },
+    {
+      "Key": "PRESTIGE_P_POWER_START_NAME",
+      "Value": "Botnet Persistant"
+    },
+    {
+      "Key": "PRESTIGE_P_POWER_START_DESC",
+      "Value": "Des machines qui survivent au formatage. Tu redémarres chaque run avec de la puissance de calcul déjà en place."
+    },
+    {
+      "Key": "PRESTIGE_P_STEALTH_NAME",
+      "Value": "Furtivité"
+    },
+    {
+      "Key": "PRESTIGE_P_STEALTH_DESC",
+      "Value": "Réduit toute la Trace générée, avant même que les proxies n'entrent en jeu."
+    },
+    {
+      "Key": "PRESTIGE_P_EMERG_NAME",
+      "Value": "Protocole d'Urgence"
+    },
+    {
+      "Key": "PRESTIGE_P_EMERG_DESC",
+      "Value": "Débloque le Data Wiper : un ver envoyé dans les serveurs fédéraux, qui efface une part de ton dossier."
     }
   ]
 }

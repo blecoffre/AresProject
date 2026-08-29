@@ -41,11 +41,10 @@ Compilation sans erreur ni warning.
 
 ## Données et contenu
 
-- 🔬 **59 clés de localisation manquantes** (recompté le 2026-08-27 contre les JSON de données) :
-      **45 `UPG_*_DESC`** — aucun générateur n'a de description, les 45 noms sont là — et **7 paires**
-      `PRESTIGE_*_NAME` / `_DESC` pour `P_ROOT`, `P_REFAC`, `P_DATAM`, `P_CLICK`, `P_POWER_START`,
-      `P_STEALTH`, `P_EMERG`. Les trois nœuds de l'Exploit, eux, ont leurs six clés.
-      Toutes se dérivent mécaniquement des ids : générables par outil.
+- 🔬 **45 clés de localisation manquantes** (recompté le 2026-08-29) : les **`UPG_*_DESC`**,
+      aucun générateur n'a de description. Les 45 noms sont là, et les 14 paires `PRESTIGE_*` des
+      nœuds nommés ont été écrites le 2026-08-29 — l'arbre étant devenu visible, elles bloquaient.
+      Les 105 nœuds spécifiques passent par des gabarits, ils n'ont pas de clé propre.
 - 🔬 **Libellés du header à revoir** : `MONEY` = « Money » et `COMPUTER_POWER` = « Computer Power »
       sont clairement des placeholders. `TRACE`, `CYCLES` et `OVERCLOCK` passent en français tels
       quels et relèvent du choix de ton, pas de la traduction.
@@ -163,6 +162,10 @@ Compilation sans erreur ni warning.
       Reste à évaluer Git LFS le jour où le projet portera de vrais assets binaires.
 
 ## Pièges à retenir
+- **Le projet est sur le NOUVEL Input System.** `UnityEngine.Input` y lève une
+      `InvalidOperationException` à chaque appel — une par frame si c'est dans un `Tick`.
+      Utiliser `Keyboard.current`, et tester sa nullité : elle vaut null sans clavier connecté.
+
 
 Trois bugs de la même famille ont déjà coûté du temps. Le motif :
 
@@ -179,6 +182,8 @@ Trois bugs de la même famille ont déjà coûté du temps. Le motif :
   `ITickable` sans focus, appeler `Tick()` à la main.
 
 ## Corrigé à ce jour
+
+**L'arbre de prestige est enfin accessible** (2026-08-29, vérifié en Play Mode via MCP) — les 119 nœuds et leurs 118 liens étaient construits au démarrage depuis toujours, mais `Canvas/PrestigeTree` était **inactif** et aucune ligne de code ne l'activait : `PrestigePanelView` n'avait ni `Show` ni `Hide`. Le panneau s'ouvre désormais par un bouton du header, se ferme par un bouton dans le panneau ou par **Échap**. **Consultable pendant une run** — décision de Bertrand : le joueur doit pouvoir planifier ses achats et revoir ce qu'il possède après une absence. **Le jeu ne se met PAS en pause** : la Trace continue de monter pendant la consultation, sans quoi le panneau serait exactement la planque gratuite que `runInBackground = true` existe pour interdire. L'arbre se construit une fois au démarrage, l'ouverture n'est qu'un `SetActive`. **Défaut trouvé au test** : le raccourci utilisait `Input.GetKeyDown`, alors que le projet est passé au nouvel Input System — une `InvalidOperationException` par frame ; basculé sur `Keyboard.current`. Deux fausses alertes écartées au passage : le libellé de fermeture se résout bien, ma lecture tombait dans la frame de l'activation ; et les « New Text » des nœuds sont dans le panneau masqué par le brouillard de guerre, invisibles au joueur. Vérifié : 595 textes dans l'arbre, **une seule** clé non résolue au moment de l'ouverture et résolue la frame suivante ; `timeScale` reste à 1 ; zéro erreur sur 502 frames.
 
 **`GlowMaterialAssigner` retiré** (2026-08-28) — sa prémisse était fausse : le halo est une décision d'EMPHASE, pas une conséquence de la couleur. Deux textes de la même teinte méritent légitimement des traitements différents, ce que la passe manuelle de Bertrand a établi — les devises du header, par exemple, n'en ont pas besoin. L'outil aurait écrasé ce travail à la prochaine exécution : le garder était un piège. Sa passe initiale a servi à poser les matériaux en masse, c'était son seul usage légitime. Récupérable dans l'historique au commit `103cfd4` si un besoin de passe groupée revenait.
 

@@ -51,6 +51,36 @@ namespace Core.UI.Prestige
 
             BuildNodes(configs);
             BuildLinks(configs);
+
+            _view.OnOpenClicked += HandleOpen;
+            _view.OnCloseClicked += HandleClose;
+        }
+
+        /// <summary>
+        /// Bascule l'arbre sur Échap. Appelé par le bootstrapper de scène, seul à avoir un
+        /// Update — un presenter POCO n'en a pas, et lui en donner un pour une touche serait
+        /// disproportionné.
+        /// </summary>
+        public void ToggleFromKeyboard()
+        {
+            if (_view.IsVisible) HandleClose();
+            else HandleOpen();
+        }
+
+        /// <summary>
+        /// <b>Le jeu ne se met PAS en pause.</b> La Trace continue de monter pendant que le
+        /// joueur planifie ses achats, et c'est délibéré : le GDD interdit toute planque gratuite
+        /// — c'est la raison même de `runInBackground = true`. Un panneau qui gèle le jeu serait
+        /// exactement le refuge qu'alt-tab ne doit pas offrir.
+        /// </summary>
+        private void HandleOpen()
+        {
+            _view.SetVisible(true);
+        }
+
+        private void HandleClose()
+        {
+            _view.SetVisible(false);
         }
 
         /// <summary>
@@ -112,6 +142,9 @@ namespace Core.UI.Prestige
 
         public void Dispose()
         {
+            _view.OnOpenClicked -= HandleOpen;
+            _view.OnCloseClicked -= HandleClose;
+
             for (int i = 0; i < _childPresenters.Count; i++)
             {
                 _childPresenters[i].Dispose();
