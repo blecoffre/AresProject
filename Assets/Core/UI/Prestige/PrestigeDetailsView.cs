@@ -54,8 +54,15 @@ namespace Core.UI.Prestige
         {
             _buyButton.onClick.AddListener(RaiseBuy);
 
-            // Rien n'est sélectionné au premier affichage de l'écran.
-            if (_root != null) _root.SetActive(false);
+            // SURTOUT PAS de `_root.SetActive(false)` ici.
+            //
+            // `_root` est le GameObject qui porte ce composant. Il démarre inactif, donc Unity
+            // diffère cet Awake jusqu'à sa première activation — c'est-à-dire jusqu'au premier
+            // RenderIdentity(). Le masquage se serait donc exécuté DANS l'activation qu'il était
+            // censé précéder : le premier nœud cliqué n'affichait rien, et il fallait en cliquer
+            // un second pour que l'inspecteur apparaisse enfin.
+            //
+            // Le masquage initial appartient au presenter, qui appelle Clear() au démarrage.
         }
 
         private void OnDestroy()
