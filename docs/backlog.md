@@ -19,6 +19,10 @@ Compilation sans erreur ni warning.
 ---
 
 ## Majeurs restants
+- 📖 **La durée d'une run n'est pas mesurée.** Le bilan de fin ne peut donc pas l'afficher,
+      alors que c'est la statistique la plus parlante d'un incrémental. Demande un chronomètre
+      dans `GameSessionManager`, remis à zéro au wipe, et un champ de plus dans `RunSummary`.
+
 
 - 📖 **Le nœud de prestige d'automatisation n'existe pas dans les données.** Prévu ciblé
       (`TargetUpgradeId`), achetable par rangs, abaissant `AutomationLevel`. Le hook est prêt côté
@@ -182,6 +186,8 @@ Trois bugs de la même famille ont déjà coûté du temps. Le motif :
   `ITickable` sans focus, appeler `Tick()` à la main.
 
 ## Corrigé à ce jour
+
+**Bilan de fin de run** (2026-08-29, vérifié en Play Mode via MCP) — `OnSessionEnded` ne transportait qu'un `double`, le gain : l'écran de fin ne pouvait ni distinguer une Saisie Fédérale d'un Effacement Propre, ni rien raconter d'autre. Nouveau `RunSummary` — struct readonly — portant la raison, les cycles gagnés, ceux d'avant bonus, les Datas de la run, la Trace à la sortie et les usages du Data Wiper. **Capturé avant le wipe**, obligatoirement : `ResolveRunEnd` efface la run trois lignes plus bas, lu après il ne contiendrait que des zéros. Les deux fins ont leur narration et leur COULEUR de titre — rouge pour une saisie, vert pour un effacement propre — pour que le joueur sache en un coup d'œil s'il a bien joué. La ligne « Trace à la sortie » n'apparaît que sur une sortie volontaire : après une saisie elle vaut 100 % par définition. Le bonus Clean Exit n'est annoncé que s'il a réellement rapporté quelque chose. Un bouton « DÉPENSER » ouvre l'arbre depuis l'écran de fin, qui recouvre le bouton du header. Vérifié : 45 000 Datas → 6 cycles de base, 7 avec le bonus (+1 affiché), Trace 87 %, Data Wiper ×2 ; puis saisie à 12 000 Datas → 3 cycles, titre rouge, ligne Trace absente, détection enregistrée ; le bouton ouvre bien l'arbre.
 
 **L'arbre de prestige est enfin accessible** (2026-08-29, vérifié en Play Mode via MCP) — les 119 nœuds et leurs 118 liens étaient construits au démarrage depuis toujours, mais `Canvas/PrestigeTree` était **inactif** et aucune ligne de code ne l'activait : `PrestigePanelView` n'avait ni `Show` ni `Hide`. Le panneau s'ouvre désormais par un bouton du header, se ferme par un bouton dans le panneau ou par **Échap**. **Consultable pendant une run** — décision de Bertrand : le joueur doit pouvoir planifier ses achats et revoir ce qu'il possède après une absence. **Le jeu ne se met PAS en pause** : la Trace continue de monter pendant la consultation, sans quoi le panneau serait exactement la planque gratuite que `runInBackground = true` existe pour interdire. L'arbre se construit une fois au démarrage, l'ouverture n'est qu'un `SetActive`. **Défaut trouvé au test** : le raccourci utilisait `Input.GetKeyDown`, alors que le projet est passé au nouvel Input System — une `InvalidOperationException` par frame ; basculé sur `Keyboard.current`. Deux fausses alertes écartées au passage : le libellé de fermeture se résout bien, ma lecture tombait dans la frame de l'activation ; et les « New Text » des nœuds sont dans le panneau masqué par le brouillard de guerre, invisibles au joueur. Vérifié : 595 textes dans l'arbre, **une seule** clé non résolue au moment de l'ouverture et résolue la frame suivante ; `timeScale` reste à 1 ; zéro erreur sur 502 frames.
 

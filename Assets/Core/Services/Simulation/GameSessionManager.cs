@@ -1,4 +1,5 @@
 using Core.Models.Economy;
+using Core.Models.Simulation;
 using Core.Services.Economy;
 using Core.Services.Security;
 using R3;
@@ -25,7 +26,7 @@ namespace Core.Services.Simulation
         private readonly GhostCacheSystem _ghostCacheSystem;
         private readonly BalancingConfigSO _balancing;
 
-        public Subject<double> OnSessionEnded { get; }
+        public Subject<RunSummary> OnSessionEnded { get; }
         public ReactiveProperty<bool> IsGameActive { get; }
 
         private DisposableBag _disposables;
@@ -40,7 +41,7 @@ namespace Core.Services.Simulation
             _ghostCacheSystem = ghostCacheSystem;
             _balancing = balancing;
 
-            OnSessionEnded = new Subject<double>();
+            OnSessionEnded = new Subject<RunSummary>();
             IsGameActive = new ReactiveProperty<bool>(true);
 
             _disposables = new DisposableBag();
@@ -67,7 +68,7 @@ namespace Core.Services.Simulation
             Debug.Log("[GameSessionManager] A.M.I. CORRUPTION DÉTECTÉE. Fin de session en cours...");
             _userCurrencies.RecordDetection();
 
-            AnnounceRunEnded(ResolveRunEnd(1d));
+            AnnounceRunEnded(ResolveRunEnd(RunEndReason.Seized, 1d));
         }
 
         /// <summary>
@@ -85,13 +86,13 @@ namespace Core.Services.Simulation
         ///
         /// Retourne false si la run est déjà terminée.
         /// </summary>
-        public bool TryResolveVoluntaryExit(out double awardedPrestige)
+        public bool TryResolveVoluntaryExit(out RunSummary summary)
         {
-            awardedPrestige = 0d;
+            summary = default;
             if (!IsGameActive.CurrentValue) return false;
 
             Debug.Log("[GameSessionManager] Exfiltration volontaire. Effacement propre.");
-            awardedPrestige = ResolveRunEnd(_balancing.CleanExitMultiplier);
+            summary = ResolveRunEnd(RunEndReason.CleanExit, _balancing.CleanExitMultiplier);
             return true;
         }
 
@@ -99,20 +100,27 @@ namespace Core.Services.Simulation
         /// Déclenche l'écran de fin. Sans effet si aucune run n'a été résolue : cette garde rend
         /// un appel isolé inoffensif, la méthode étant publique pour le besoin du découpage.
         /// </summary>
-        public void AnnounceRunEnded(double awardedPrestige)
+        public void AnnounceRunEnded(RunSummary summary)
         {
             if (IsGameActive.CurrentValue) return;
 
-            OnSessionEnded.OnNext(awardedPrestige);
+            OnSessionEnded.OnNext(summary);
         }
 
         /// <summary>
         /// Fige le résultat de la run : gain calculé et crédité, run effacée, partie désarmée.
         /// Ne notifie personne — voir <see cref="AnnounceRunEnded"/>.
         /// </summary>
-        private double ResolveRunEnd(double prestigeMultiplier)
+        private RunSummary ResolveRunEnd(RunEndReason reason, double prestigeMultiplier)
         {
             IsGameActive.Value = false;
+
+            // Tout ce que l'écran de fin racontera est lu MAINTENANT, avant le wipe : trois lignes
+            // plus bas, l'argent de la run, la Trace et le compteur d'urgence seront à zéro.
+            double baseCycles = Math.Floor(_userCurrencies.CalculatePendingCpuCycles());
+            double dataGenerated = _userCurrencies.RunMoneyGenerated.CurrentValue;
+            float threatAtEnd = _threatManager.NormalizedThreat.CurrentValue;
+            int emergencyUses = _emergencyProtocolSystem.UsesInCurrentRun;
 
             double pendingPrestige = _userCurrencies.CalculatePendingCpuCycles() * prestigeMultiplier;
             pendingPrestige = Math.Floor(pendingPrestige);
@@ -130,7 +138,7 @@ namespace Core.Services.Simulation
             // rendait tous les générateurs au niveau max, avec zéro Trace. Une run gratuite.
             WipeRun();
 
-            return pendingPrestige;
+            return new RunSummary(reason, pendingPrestige, baseCycles, dataGenerated, threatAtEnd, emergencyUses);
         }
 
         /// <summary>

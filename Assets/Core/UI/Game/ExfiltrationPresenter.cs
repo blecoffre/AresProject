@@ -1,5 +1,6 @@
 using Core.Models.Console;
 using Core.Services.Localization;
+using Core.Models.Simulation;
 using Core.Services.Simulation;
 using Core.Utils;
 using Cysharp.Threading.Tasks;
@@ -136,7 +137,7 @@ namespace Core.UI.Game
             // 1. On FIGE le résultat avant toute théâtralisation. Si on jouait la séquence
             //    d'abord, la Trace continuerait de monter pendant ~2 s et un joueur exfiltrant
             //    à 98 % pourrait se faire saisir au milieu de sa propre sortie.
-            if (!_exfiltration.TryBeginExfiltration(out double awarded)) return;
+            if (!_exfiltration.TryBeginExfiltration(out RunSummary summary)) return;
 
             _isPurging = true;
             _view.ApplyState(string.Empty, interactable: false, showProgress: false, progress: 1f);
@@ -164,7 +165,7 @@ namespace Core.UI.Game
 
                 // 2. L'écran de fin n'apparaît qu'ICI, une fois la console déroulée.
                 //    Sans cet appel, la partie resterait désarmée sans écran de prestige.
-                _exfiltration.CompleteExfiltration(awarded);
+                _exfiltration.CompleteExfiltration(summary);
 
                 Refresh();
             }

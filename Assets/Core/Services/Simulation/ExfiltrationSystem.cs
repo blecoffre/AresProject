@@ -1,4 +1,5 @@
 using Core.Models.Economy;
+using Core.Models.Simulation;
 using R3;
 using System;
 
@@ -121,12 +122,12 @@ namespace Core.Services.Simulation
         /// Retourne false si la run est finie ou la condition non remplie — la vue grise le
         /// bouton, mais elle n'est pas la garde.
         /// </summary>
-        public bool TryBeginExfiltration(out double awardedPrestige)
+        public bool TryBeginExfiltration(out RunSummary summary)
         {
-            awardedPrestige = 0d;
+            summary = default;
             if (!_isClickable.CurrentValue) return false;
 
-            return _sessionManager.TryResolveVoluntaryExit(out awardedPrestige);
+            return _sessionManager.TryResolveVoluntaryExit(out summary);
         }
 
         /// <summary>
@@ -134,9 +135,9 @@ namespace Core.Services.Simulation
         /// À appeler impérativement après un <see cref="TryBeginExfiltration"/> réussi, sinon le
         /// joueur reste bloqué sur une partie désarmée sans écran de prestige.
         /// </summary>
-        public void CompleteExfiltration(double awardedPrestige)
+        public void CompleteExfiltration(RunSummary summary)
         {
-            _sessionManager.AnnounceRunEnded(awardedPrestige);
+            _sessionManager.AnnounceRunEnded(summary);
         }
 
         public void Dispose()

@@ -73,14 +73,6 @@
       "Value": "Coût: {0}"
     },
     {
-      "Key": "UI_GAME_OVER_NARRATIVE",
-      "Value": "GAME OVER"
-    },
-    {
-      "Key": "UI_GAME_OVER_BILAN",
-      "Value": "BILAN"
-    },
-    {
       "Key": "UI_PRESTIGE_LEVEL",
       "Value": "Niv. {0} / {1}"
     },
@@ -499,6 +491,38 @@
     {
       "Key": "PRESTIGE_P_EMERG_DESC",
       "Value": "Débloque le Data Wiper : un ver envoyé dans les serveurs fédéraux, qui efface une part de ton dossier."
+    },
+    {
+      "Key": "UI_RUN_END_SEIZED_NARRATIVE",
+      "Value": "// SAISIE FÉDÉRALE //\nIls ont remonté la ligne. Le matériel est parti dans un carton scellé."
+    },
+    {
+      "Key": "UI_RUN_END_CLEAN_NARRATIVE",
+      "Value": "// EFFACEMENT PROPRE //\nDisques formatés, MAC brouillée. Ils fouillent un appartement vide."
+    },
+    {
+      "Key": "UI_RUN_END_STAT_DATA",
+      "Value": "  Datas exfiltrées .......... {0}"
+    },
+    {
+      "Key": "UI_RUN_END_STAT_TRACE",
+      "Value": "  Trace à la sortie ......... {0} %"
+    },
+    {
+      "Key": "UI_RUN_END_STAT_WIPER",
+      "Value": "  Data Wiper déployé ........ {0} fois"
+    },
+    {
+      "Key": "UI_RUN_END_STAT_CYCLES",
+      "Value": "  Cycles CPU compilés ...... {0}"
+    },
+    {
+      "Key": "UI_RUN_END_STAT_CLEAN_BONUS",
+      "Value": "  dont bonus Clean Exit .... +{0}"
+    },
+    {
+      "Key": "UI_RUN_END_PRESTIGE_BUTTON",
+      "Value": "[ DÉPENSER — NOYAU IA ]"
     }
   ]
 }
