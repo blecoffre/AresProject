@@ -67,7 +67,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_Sprite: {fileID: 5406596623251724866, guid: b2e33de4bec867e40af1519db1d6868d, type: 3}
-  m_Type: 1
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -89,6 +89,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Core.UI.Prestige.UILineConnection
   _lineImage: {fileID: 4166741842579965484}
+  _solidSprite: {fileID: 5406596623251724866, guid: b2e33de4bec867e40af1519db1d6868d, type: 3}
+  _dashedSprite: {fileID: 21300000, guid: 5aec45cab4d534f49859376eb9f8a85d, type: 3}
   _lockedColor: {r: 0.2, g: 0.2, b: 0.2, a: 0.5}
   _unlockedColor: {r: 0, g: 1, b: 1, a: 1}
   _completedColor: {r: 0, g: 1, b: 0, a: 1}
+  _lockedThickness: 5
+  _unlockedThickness: 9
+  _completedThickness: 16

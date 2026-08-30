@@ -32,15 +32,29 @@ Compilation sans erreur ; 3 warnings, tous en code éditeur (voir plus bas).
       ⚠️ En attendant, **le libellé du bouton annonce 30 s** — il ment au joueur. Si le ×10 reste,
       c'est la durée affichée qu'il faudra revoir, pas seulement l'équilibrage.
 - **Accessibilité — daltonisme.** À terme, une option permettra d'adapter la palette au type de
-      daltonisme du joueur. Beaucoup de daltoniens insistent sur ce point dans ce genre de jeu, où
-      la consultation de l'arbre de prestige leur est souvent difficile.
-      ⚠️ **Le lot du 2026-08-29 a aggravé la dette sur ce point** : les cinq états d'un nœud sont
-      distingués par la COULEUR SEULE — gris, rouge, ambre, vert, vert inversé. Rouge et vert sont
-      précisément la paire que la deutéranopie confond, et c'est ici la différence entre « trop
-      cher » et « déjà entamé ». Le texte de la ligne d'état (« VERROUILLÉ », un prix, un niveau,
-      « MAX ») porte heureusement déjà l'information en toutes lettres : le nœud reste lisible
-      sans la couleur. Il manque un second canal sur la pastille elle-même — trame de fond,
-      épaisseur de cadre ou glyphe — le jour où le sujet sera traité.
+      daltonisme du joueur. La stratégie retenue le 2026-08-30, après inventaire, tient en trois
+      couches, dans cet ordre :
+
+      1. **Second canal non coloré** partout où un état se lit. L'audit a montré que le jeu était
+         déjà largement redondant — les nœuds écrivent leur état en toutes lettres, la console a
+         ses balises, les onglets ont une forme, les jauges un taux de remplissage. **Fait** pour
+         le seul trou réel, les liens de l'arbre.
+      2. **Canal préattentif** là où il faut BALAYER plutôt qu'identifier : sur 134 nœuds on ne
+         lit pas 134 libellés. La pulsation ambre en tient lieu, et le mouvement est perçu par
+         tous les daltonismes. ⚠️ **Reste à faire** : elle est coupée pendant une run, donc
+         précisément quand on consulte l'arbre pour planifier. Une pulsation plus lente vaudrait
+         mieux qu'une pulsation absente.
+      3. **Palette permutable** en dernier recours : `UiPaletteSO` à emplacements SÉMANTIQUES
+         (`Verrouillé`, `Actionnable`, `Terminé`… jamais `Vert`/`Rouge`), un SO par profil, un
+         `PaletteService` réactif. 25 champs `Color` éparpillés dans 8 vues s'y replient sur une
+         dizaine de rôles — et la dérive actuelle du vert de marque, écrit en deux orthographes,
+         disparaît par construction. Portée limitée à ce que le CODE peint : les couleurs figées
+         en scène et dans les matériaux de halo demanderaient un composant `ThemedGraphic`.
+         **Prérequis : aucun système d'options n'existe** dans le projet, pas même de `PlayerPrefs`.
+
+      ⚠️ **Piège à retenir pour toute palette alternative** : le Bloom a un seuil à 1. Une couleur
+      qui passe sous 1 après remappage cesse de briller, donc change la hiérarchie d'emphase sans
+      que rien ne le signale. Une palette doit préserver « est-ce que ça bloome », pas la teinte.
 
 ## Données et contenu
 
@@ -257,6 +271,14 @@ Trois bugs de la même famille ont déjà coûté du temps. Le motif :
   `ITickable` sans focus, appeler `Tick()` à la main.
 
 ## Corrigé à ce jour
+
+**Les liens de l'arbre ne dépendent plus de la couleur** (2026-08-30, vérifié en Play Mode via MCP) — première étape du chantier accessibilité, et la seule qui corrigeait un défaut réel. `UILineConnection` encodait ses trois états par la **teinte seule** : gris, cyan, vert. Une ligne n'a pas de texte, c'était donc le seul canal du jeu sans redondance — invisible pour un joueur deutéranope, et pour quiconque sur un mauvais écran. Chaque état porte désormais son MOTIF et son ÉPAISSEUR : verrouillé en pointillé fin, en cours en trait plein moyen, complété en trait plein épais. Les couleurs restent, elles ne sont simplement plus seules.
+
+Sprite de tiret **généré par un utilitaire d'éditeur** (`Tools/Core/Générer le sprite de ligne pointillée`) plutôt que déposé à la main : le rythme du pointillé est un réglage visuel qu'on voudra ajuster, et deux constantes se relisent mieux qu'une image binaire. Toutes ses lignes de pixels sont identiques, si bien que la répétition verticale est invisible et que l'épaisseur peut varier sans jamais couper un tiret de travers. Le vide est du blanc TRANSPARENT et non du noir : un pixel transparent noir baverait en gris sur les bords au moindre filtrage.
+
+**Défaut trouvé à la capture, pas au raisonnement** : avec 2 / 4 / 7 px, un lien verrouillé tombait à **0,7 px à l'écran** au zoom minimum de l'arbre — sous-pixel, donc la ligne s'effaçait et le pointillé avec elle. Les épaisseurs sont dimensionnées depuis le zoom RÉEL (`GraphZoomController` descend à 0,3) : 5 / 9 / 16 px, soit 1,5 / 2,7 / 4,8 px à l'écran dans le pire cas. Corrigé au passage : le sprite était en *Sliced* avec des bordures de 64 px pour un rectangle de 4 px de haut — faux depuis toujours, sans conséquence tant que l'image était uniformément blanche, mais cassant dès qu'on y met un motif.
+
+`DrawLine` perd son paramètre d'épaisseur, qui appartient désormais à l'état, et la vue mémorise ses extrémités pour refaire sa géométrie quand l'état change. Vérifié : 133 liens, **3 combinaisons distinctes** motif + épaisseur, une par état, observées simultanément à l'écran au zoom minimum. Zéro erreur console.
 
 **Le SaveScheduler n'abandonne plus d'écriture** (2026-08-30, vérifié en Play Mode via MCP) — une demande arrivant pendant une écriture en vol était **jetée**, au motif que « la prochaine capturera un état plus récent ». Ce qui ne tient que s'il y en a une prochaine : trois achats de prestige rapprochés suivis d'un Game Over avaient fait perdre l'écriture de fin de run. La demande arme désormais un tour de **rattrapage** — front descendant — si bien qu'une rafale de N demandes coûte au plus une écriture de plus et que le dernier état atteint toujours le disque.
 
