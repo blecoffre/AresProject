@@ -72,11 +72,6 @@ namespace Core.Models.Economy
         /// </summary>
         private double _globalYieldMultiplier = 1d;
 
-        /// <summary>
-        /// Niveaux retirés au seuil d'automatisation par les nœuds de prestige ciblés.
-        /// Alimenté par le PrestigeManager (thème Prestige) ; reste à 0 pour l'instant.
-        /// </summary>
-        private int _automationThresholdReduction;
 
         public UpgradeModel(UpgradeConfigSO config, BalancingConfigSO balancing, int savedLevel = 0)
         {
@@ -95,14 +90,21 @@ namespace Core.Models.Economy
         /// Jamais sous 1 : un nœud de prestige ne doit pas pouvoir automatiser un générateur
         /// que le joueur ne possède pas encore.
         /// </summary>
-        public int AutomationThreshold => Math.Max(1, Config.AutomationLevel - _automationThresholdReduction);
+        public int AutomationThreshold
+        {
+            get
+            {
+                // Arrondi et non troncature : un bonus de 1 par rang stocké en float peut valoir
+                // 0,99999994, et (int)(0,99999994 × 3) rendrait 2 niveaux au lieu de 3. Même
+                // piège que celui déjà rencontré sur les charges du Ghost Cache.
+                int reduction = UnityEngine.Mathf.RoundToInt(_bonuses.AutomationThresholdReduction);
+                if (reduction < 0) reduction = 0;
+
+                return Math.Max(1, Config.AutomationLevel - reduction);
+            }
+        }
 
         public bool IsAutomated => _level >= AutomationThreshold;
-
-        public void SetAutomationThresholdReduction(int levels)
-        {
-            _automationThresholdReduction = levels < 0 ? 0 : levels;
-        }
 
         /// <summary>
         /// Met à jour la capacité de calcul et recalcule la durée de cycle si elle a changé.
@@ -154,7 +156,8 @@ namespace Core.Models.Economy
         {
             if (bonuses.CostReduction == _bonuses.CostReduction
                 && bonuses.YieldBoost == _bonuses.YieldBoost
-                && bonuses.TimeReduction == _bonuses.TimeReduction)
+                && bonuses.TimeReduction == _bonuses.TimeReduction
+                && bonuses.AutomationThresholdReduction == _bonuses.AutomationThresholdReduction)
             {
                 return;
             }

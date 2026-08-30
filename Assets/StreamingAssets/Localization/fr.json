@@ -281,6 +281,10 @@
       "Value": "{0} (Opti Temps)"
     },
     {
+      "Key": "PRESTIGE_AUTOMATION_NAME",
+      "Value": "{0} (Réduction Automatisation)"
+    },
+    {
       "Key": "PRESTIGE_SPECIFIC_COST_DESC",
       "Value": "Réduit le coût de base de {0}."
     },
@@ -291,6 +295,10 @@
     {
       "Key": "PRESTIGE_SPECIFIC_TIME_DESC",
       "Value": "Réduit la durée de cycle de {0}."
+    },
+    {
+      "Key": "PRESTIGE_AUTOMATION_DESC",
+      "Value": "Abaisse le niveau à partir duquel {0} relance ses cycles tout seul."
     },
     {
       "Key": "UI_EXFIL_LOCKED",
@@ -623,6 +631,10 @@
     {
       "Key": "UI_PRESTIGE_EFFECT_SPECIFIC_TIME",
       "Value": "> Durée de cycle de {1} : -{0:0.##} % par niveau"
+    },
+     {
+      "Key": "UI_PRESTIGE_EFFECT_AUTOMATION",
+      "Value": "> Réduction du palier d'automatisation de {1} : -{0} par niveau"
     },
     {
       "Key": "UI_PRESTIGE_EFFECT_START_MONEY",

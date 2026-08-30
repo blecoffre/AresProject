@@ -22,22 +22,44 @@ namespace Core.Models.Economy
         /// <summary>Fraction retirée à la durée de cycle de base. 0,5 = cycle deux fois plus court.</summary>
         public readonly float TimeReduction;
 
-        public SpecificUpgradeBonuses(float costReduction, float yieldBoost, float timeReduction)
+        /// <summary>
+        /// NIVEAUX retirés au seuil d'automatisation — et non une fraction, contrairement aux
+        /// trois autres.
+        ///
+        /// C'est la seule exception à la règle du « tout en fraction », et elle est assumée :
+        /// un seuil d'automatisation est un numéro de niveau, pas un pourcentage. 3 ici veut dire
+        /// « ce Script s'automatise trois niveaux plus tôt ». Stocké en float par uniformité de
+        /// cumul ; c'est <see cref="UpgradeModel"/> qui l'arrondit au moment de s'en servir.
+        ///
+        /// <b>Ne concerne que les Scripts</b> : eux seuls relancent des cycles, donc eux seuls
+        /// ont quelque chose à automatiser.
+        /// </summary>
+        public readonly float AutomationThresholdReduction;
+
+        public SpecificUpgradeBonuses(
+            float costReduction,
+            float yieldBoost,
+            float timeReduction,
+            float automationThresholdReduction)
         {
             CostReduction = costReduction;
             YieldBoost = yieldBoost;
             TimeReduction = timeReduction;
+            AutomationThresholdReduction = automationThresholdReduction;
         }
 
         public SpecificUpgradeBonuses WithCostReduction(float value) =>
-            new SpecificUpgradeBonuses(value, YieldBoost, TimeReduction);
+            new SpecificUpgradeBonuses(value, YieldBoost, TimeReduction, AutomationThresholdReduction);
 
         public SpecificUpgradeBonuses WithYieldBoost(float value) =>
-            new SpecificUpgradeBonuses(CostReduction, value, TimeReduction);
+            new SpecificUpgradeBonuses(CostReduction, value, TimeReduction, AutomationThresholdReduction);
 
         public SpecificUpgradeBonuses WithTimeReduction(float value) =>
-            new SpecificUpgradeBonuses(CostReduction, YieldBoost, value);
+            new SpecificUpgradeBonuses(CostReduction, YieldBoost, value, AutomationThresholdReduction);
 
-        public static readonly SpecificUpgradeBonuses None = new SpecificUpgradeBonuses(0f, 0f, 0f);
+        public SpecificUpgradeBonuses WithAutomationThresholdReduction(float value) =>
+            new SpecificUpgradeBonuses(CostReduction, YieldBoost, TimeReduction, value);
+
+        public static readonly SpecificUpgradeBonuses None = new SpecificUpgradeBonuses(0f, 0f, 0f, 0f);
     }
 }

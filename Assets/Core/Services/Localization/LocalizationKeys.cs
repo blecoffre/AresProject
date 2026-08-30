@@ -37,5 +37,8 @@ namespace Core.Services.Localization
 
         public const string PrestigeSpecificTimeName = "PRESTIGE_SPECIFIC_TIME_NAME";
         public const string PrestigeSpecificTimeDescription = "PRESTIGE_SPECIFIC_TIME_DESC";
+
+        public const string PrestigeAutomationName = "PRESTIGE_AUTOMATION_NAME";
+        public const string PrestigeAutomationDescription = "PRESTIGE_AUTOMATION_DESC";
     }
 }

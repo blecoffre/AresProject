@@ -23,7 +23,14 @@ namespace Core.Models.Economy
 
         // Le clic d'Overclock réveille les Scripts à l'arrêt. Nœud tardif : galérer au lancement
         // manuel fait partie de l'expérience pendant une bonne partie de la partie.
-        OverclockWakesScripts
+        OverclockWakesScripts,
+
+        // Palier d'automatisation des Scripts. APPENDÉ EN FIN, comme tous les autres :
+        // ce type avait été inséré après SpecificUpgradeTimeReduction, ce qui a décalé de un
+        // l'index de TOUTE la famille Zéro-Day dans les .asset déjà générés. Symptôme relevé
+        // en console le 2026-08-30 : P_EXPLOIT_CHARGES se croyait un nœud d'automatisation.
+        // Seuls les Scripts sont concernés : eux seuls relancent des cycles.
+        SpecificUpgradeAutomationTresholdReduction
     }
 
     [CreateAssetMenu(fileName = "NewPrestigeConfig", menuName = "Core/Economy/Prestige Config")]

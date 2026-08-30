@@ -289,15 +289,19 @@ namespace Core.Services.Economy
                         break;
 
                     case PrestigeBonusType.SpecificUpgradeCostReduction:
-                        AccumulateSpecific(config.TargetUpgradeId, totalBonus, SpecificKind.Cost);
+                        AccumulateSpecific(config.TargetUpgradeId, totalBonus, UpgradePrestigeNodeBonusType.Cost);
                         break;
 
                     case PrestigeBonusType.SpecificUpgradeYieldBoost:
-                        AccumulateSpecific(config.TargetUpgradeId, totalBonus, SpecificKind.Yield);
+                        AccumulateSpecific(config.TargetUpgradeId, totalBonus, UpgradePrestigeNodeBonusType.Yield);
                         break;
 
                     case PrestigeBonusType.SpecificUpgradeTimeReduction:
-                        AccumulateSpecific(config.TargetUpgradeId, totalBonus, SpecificKind.Time);
+                        AccumulateSpecific(config.TargetUpgradeId, totalBonus, UpgradePrestigeNodeBonusType.Time);
+                        break;
+
+                    case PrestigeBonusType.SpecificUpgradeAutomationTresholdReduction:
+                        AccumulateSpecific(config.TargetUpgradeId, totalBonus, UpgradePrestigeNodeBonusType.Automation);
                         break;
                 }
             }
@@ -322,13 +326,13 @@ namespace Core.Services.Economy
             _onBonusesRecalculated.OnNext(Unit.Default);
         }
 
-        private enum SpecificKind { Cost, Yield, Time }
+        private enum UpgradePrestigeNodeBonusType { Cost, Yield, Time, Automation }
 
         /// <summary>
         /// Cumule un bonus ciblé dans la table. Plusieurs nœuds peuvent viser la même upgrade —
         /// c'est même la règle : chaque upgrade a son COST, son PROD et, pour les Scripts, son TIME.
         /// </summary>
-        private void AccumulateSpecific(string targetUpgradeId, float amount, SpecificKind kind)
+        private void AccumulateSpecific(string targetUpgradeId, float amount, UpgradePrestigeNodeBonusType kind)
         {
             if (string.IsNullOrEmpty(targetUpgradeId)) return;
 
@@ -336,16 +340,24 @@ namespace Core.Services.Economy
 
             switch (kind)
             {
-                case SpecificKind.Cost:
+                case UpgradePrestigeNodeBonusType.Cost:
                     current = current.WithCostReduction(current.CostReduction + amount);
                     break;
 
-                case SpecificKind.Yield:
+                case UpgradePrestigeNodeBonusType.Yield:
                     current = current.WithYieldBoost(current.YieldBoost + amount);
                     break;
 
-                case SpecificKind.Time:
+                case UpgradePrestigeNodeBonusType.Time:
                     current = current.WithTimeReduction(current.TimeReduction + amount);
+                    break;
+
+                // Des NIVEAUX, pas une fraction : ce nœud avance le palier d'automatisation d'un
+                // cran par rang. Le cas existait déjà dans le switch appelant, mais il n'avait
+                // aucune branche ici — le bonus était cumulé puis jeté en silence.
+                case UpgradePrestigeNodeBonusType.Automation:
+                    current = current.WithAutomationThresholdReduction(
+                        current.AutomationThresholdReduction + amount);
                     break;
             }
 

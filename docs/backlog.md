@@ -22,9 +22,6 @@ Compilation sans erreur ; 3 warnings, tous en code éditeur (voir plus bas).
 ---
 
 ## Majeurs restants
-- 📖 **Le nœud de prestige d'automatisation n'existe pas dans les données.** Prévu ciblé
-      (`TargetUpgradeId`), achetable par rangs, abaissant `AutomationLevel`. Le hook est prêt côté
-      code : `UpgradeModel.SetAutomationThresholdReduction()`, qui n'a aucun appelant.
 - 📖 **Le `SaveScheduler` abandonne silencieusement une écriture** si une autre est en vol
       (`_isWriting`). Le commentaire la justifie par « la prochaine capturera un état plus récent »,
       ce qui ne tient que s'il y en a une prochaine. Constaté pendant un test : trois achats de
@@ -256,6 +253,14 @@ Trois bugs de la même famille ont déjà coûté du temps. Le motif :
   `ITickable` sans focus, appeler `Tick()` à la main.
 
 ## Corrigé à ce jour
+
+**Nœud d'automatisation des Scripts** (2026-08-30, vérifié en Play Mode via MCP) — Bertrand avait posé l'amorce : la valeur d'enum, les clés `PrestigeAutomationName/Description`, les trois branches de `PrestigeLabels`, le cas dans `RecalculateBonuses` et la reconnaissance du type par le générateur. **Trois maillons manquaient.** (1) `SpecificUpgradeBonuses` n'avait pas de champ pour l'automatisation : le `case Automation` d'`AccumulateSpecific` cumulait dans le vide, sans branche. (2) La garde d'égalité de `SetSpecificBonuses` ne couvrait pas le nouveau champ — un achat ne touchant QUE l'automatisation serait sorti par le retour anticipé. (3) **Les 15 nœuds n'existaient pas dans les données**, ce qui explique qu'aucun ne s'affichait.
+
+**Défaut trouvé à la compilation, et il était grave** : la nouvelle valeur avait été insérée **au milieu** de `PrestigeBonusType`, juste après `SpecificUpgradeTimeReduction`. L'index est sérialisé dans les `.asset` : toute la famille Zéro-Day s'est décalée d'un cran, et la console a signalé que `P_EXPLOIT_CHARGES` se croyait un nœud d'automatisation — donc que les charges de Ghost Cache, le rendement de l'Exploit et son malus de Trace désignaient tous autre chose. C'est exactement ce contre quoi le commentaire de l'enum met en garde. Valeur déplacée en fin d'enum : les `.asset` existants retrouvent leur sens sans migration, et les sauvegardes n'étaient pas concernées (elles indexent par id, pas par index).
+
+**Convention assumée** : `bonus` vaut ici un NOMBRE DE NIVEAUX, pas une fraction — seule exception à la règle du « tout en fraction », documentée dans la struct. Un seuil d'automatisation est un numéro de niveau. Arrondi et non troncature à l'application, même piège que les charges du Ghost Cache. **Choix de données** : un nœud par Script (15, eux seuls relancent des cycles), en Y=4 sous le nœud TIME et **en prolongement de celui-ci** plutôt qu'en quatrième frère du nœud COST — automatiser est le terme de la branche d'un Script, le seul bonus qui change sa façon de se jouer plutôt que ses chiffres. Valeurs alignées sur les frères (maxLevel 5, costMult 1.4, baseCost 50 × n), donc du remplissage comme les 105 autres. Arbre regénéré : **134 nœuds, 0 orphelin, 0 avertissement**.
+
+Vérifié : le seuil de `SCR_02` descend d'exactement un niveau par rang, 10 → 5 ; à 5 rangs, un `SCR_02` de niveau 7 est **automatisé** là où il en aurait fallu 10 ; `SCR_03`, sans nœud, reste à 10 — le ciblage tient ; l'achat direct du nœud sans ses parents est refusé ; le 6ᵉ rang est refusé ; `P_EXPLOIT_CHARGES` a retrouvé son vrai type ; les 15 pastilles s'affichent avec nom, lore, effet et prérequis résolus. **Clé manquante ajoutée** : `PRESTIGE_AUTOMATION_DESC`, que `ResolveDescription` réclamait déjà.
 
 **Prix arrondis à la hausse, polices unifiées** (2026-08-30, vérifié en Play Mode via MCP) — les deux points que Bertrand avait explicitement autorisés dans ce backlog. **`FormatCost`** : `Format` tronque vers le bas, ce qui est correct pour un solde et faux pour un prix. `SCR_01` au niveau 1 coûte 10,7 et s'affichait « Coût: 10 » ; un joueur avec exactement 10 Datas lisait le prix, voyait le bouton rester gris, et concluait que le jeu était cassé. Le nouveau formateur plafonne à la précision **réellement affichée**, pas à l'unité : « 1,234K » masque déjà 999 unités, et arrondir vers le bas cette décimale-là reproduirait le défaut un cran plus haut. Un arrondi à six décimales précède le plafonnement : les coûts sortent d'un `Math.Pow`, où un prix valant exactement 100 se stocke en 100,000000000000014, et plafonner tel quel afficherait 101 — un mensonge dans l'autre sens. Appliqué aux cinq endroits qui affichent un prix ou un seuil à atteindre ; les soldes et les gains gardent `Format`. Vérifié en jeu sur le cas d'origine : la vue affiche bien « Coût: 11 » pour un coût réel de 10,7. Contrepartie assumée : le garde-bruit avale une différence réelle de 0,5 à l'échelle du milliard, où elle n'a plus de sens.
 

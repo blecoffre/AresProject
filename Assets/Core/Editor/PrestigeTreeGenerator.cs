@@ -148,7 +148,8 @@ namespace Core.Economy.Editor
         {
             return type == PrestigeBonusType.SpecificUpgradeCostReduction
                 || type == PrestigeBonusType.SpecificUpgradeYieldBoost
-                || type == PrestigeBonusType.SpecificUpgradeTimeReduction;
+                || type == PrestigeBonusType.SpecificUpgradeTimeReduction
+                || type == PrestigeBonusType.SpecificUpgradeAutomationTresholdReduction;
         }
 
         private static PrestigeConfigSO CreateNodeBase(PrestigeItemData data, PrestigeBonusType type)

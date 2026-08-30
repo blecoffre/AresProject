@@ -37,6 +37,9 @@ namespace Core.UI.Prestige
                 case PrestigeBonusType.SpecificUpgradeTimeReduction:
                     return loc.GetText(LocalizationKeys.PrestigeSpecificTimeName, TargetName(config, loc));
 
+                case PrestigeBonusType.SpecificUpgradeAutomationTresholdReduction:
+                    return loc.GetText(LocalizationKeys.PrestigeAutomationName, TargetName(config, loc));
+
                 default:
                     return loc.GetText(config.DisplayNameKey);
             }
@@ -54,6 +57,9 @@ namespace Core.UI.Prestige
 
                 case PrestigeBonusType.SpecificUpgradeTimeReduction:
                     return loc.GetText(LocalizationKeys.PrestigeSpecificTimeDescription, TargetName(config, loc));
+
+                case PrestigeBonusType.SpecificUpgradeAutomationTresholdReduction:
+                    return loc.GetText(LocalizationKeys.PrestigeAutomationDescription, TargetName(config, loc));
 
                 default:
                     return loc.GetText(config.DisplayDescriptionKey);
@@ -96,6 +102,9 @@ namespace Core.UI.Prestige
 
                 case PrestigeBonusType.SpecificUpgradeTimeReduction:
                     return loc.GetText("UI_PRESTIGE_EFFECT_SPECIFIC_TIME", AsPercent(perLevel), TargetName(config, loc));
+
+                case PrestigeBonusType.SpecificUpgradeAutomationTresholdReduction:
+                    return loc.GetText("UI_PRESTIGE_EFFECT_AUTOMATION", perLevel, TargetName(config, loc));
 
                 // ---- Familles en valeur absolue ---------------------------------------------
                 case PrestigeBonusType.StartingMoney:
