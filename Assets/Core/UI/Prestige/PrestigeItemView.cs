@@ -62,11 +62,21 @@ namespace Core.UI.Prestige
         [Tooltip("Opacité du voile de sélection, par-dessus la couleur d'état du nœud.")]
         [SerializeField, Range(0f, 1f)] private float _selectionAlpha = 0.18f;
 
-        [Tooltip("Vitesse de la pulsation ambre, en radians par seconde.")]
+        [Header("Pulsation")]
+        [Tooltip("Vitesse de la pulsation quand le nœud est achetable TOUT DE SUITE, en radians " +
+                 "par seconde. C'est l'appel à l'action : franc et rapide.")]
         [SerializeField] private float _pulseSpeed = 3f;
 
-        [Tooltip("Opacité minimale atteinte au creux de la pulsation.")]
+        [Tooltip("Opacité minimale au creux de la pulsation d'appel à l'action.")]
         [SerializeField, Range(0f, 1f)] private float _pulseMinAlpha = 0.35f;
+
+        [Tooltip("Vitesse de la pulsation pendant une run, où l'achat est impossible. Plus lente : " +
+                 "elle signale où porter son attention sans réclamer un geste irréalisable.")]
+        [SerializeField] private float _idlePulseSpeed = 1.2f;
+
+        [Tooltip("Opacité minimale au creux de la pulsation de veille. Plus haute, donc " +
+                 "respiration discrète plutôt que clignotement.")]
+        [SerializeField, Range(0f, 1f)] private float _idlePulseMinAlpha = 0.7f;
 
         public event Action OnNodeClicked;
 
@@ -74,6 +84,12 @@ namespace Core.UI.Prestige
         private Color _stateColor;
 
         private bool _isSelected;
+
+        /// <summary>
+        /// La pulsation est-elle en régime d'appel à l'action, par opposition à la veille. Le
+        /// nœud respire dans les deux cas ; seule l'insistance change.
+        /// </summary>
+        private bool _isPulseUrgent;
 
         /// <summary>
         /// Résolution paresseuse, et surtout PAS dans Awake().
@@ -111,16 +127,23 @@ namespace Core.UI.Prestige
 
         /// <summary>
         /// La pulsation ambre. Ce composant se DÉSACTIVE lui-même dès qu'un nœud n'a plus à
-        /// pulser (voir <see cref="Render"/>) : sur 116 nœuds, laisser 116 Update() tourner pour
-        /// que 3 d'entre eux clignotent serait payer le pire des deux mondes.
+        /// pulser (voir <see cref="Render"/>) : sur 134 nœuds, laisser 134 Update() tourner pour
+        /// que 3 d'entre eux respirent serait payer le pire des deux mondes.
         ///
         /// `unscaledTime` et non `time` : toutes les branches ouvertes battent alors en phase,
         /// ce qui donne un balayage de terminal plutôt qu'un sapin de Noël.
+        ///
+        /// <b>C'est aussi le seul canal accessible à TOUS les daltonismes.</b> Le mouvement est
+        /// perçu indépendamment de la teinte, et c'est ce qui permet de repérer un nœud
+        /// actionnable parmi 134 sans lire un seul libellé.
         /// </summary>
         private void Update()
         {
-            float wave = (Mathf.Sin(Time.unscaledTime * _pulseSpeed) + 1f) * 0.5f;
-            float alpha = Mathf.Lerp(_pulseMinAlpha, 1f, wave);
+            float speed = _isPulseUrgent ? _pulseSpeed : _idlePulseSpeed;
+            float minAlpha = _isPulseUrgent ? _pulseMinAlpha : _idlePulseMinAlpha;
+
+            float wave = (Mathf.Sin(Time.unscaledTime * speed) + 1f) * 0.5f;
+            float alpha = Mathf.Lerp(minAlpha, 1f, wave);
 
             Color border = _stateColor;
             border.a = alpha;
@@ -136,11 +159,14 @@ namespace Core.UI.Prestige
         /// Peint le nœud. La chaîne arrive déjà localisée et déjà formatée, cas « niveau max » et
         /// « verrouillé » compris : aucun texte affichable ne vit ici.
         /// </summary>
-        /// <param name="pulse">
-        /// La pulsation est un appel à l'action, pas un code couleur. Elle est donc coupée
-        /// pendant une run, où la couleur ambre ne dit plus que « tu pourras te l'offrir ».
+        /// <param name="canPurchaseNow">
+        /// L'achat est-il possible à l'instant. Un nœud débloquable respire dans les DEUX cas —
+        /// il faut bien pouvoir le repérer quand on consulte l'arbre pour planifier, ce qui se
+        /// fait justement pendant une run — mais l'appel à l'action est plus insistant quand le
+        /// geste est réalisable. La pulsation était coupée pendant une run jusqu'au 2026-08-30 :
+        /// elle s'éteignait donc précisément au moment où le balayage sert le plus.
         /// </param>
-        public void Render(string statusText, PrestigeNodeState state, bool pulse)
+        public void Render(string statusText, PrestigeNodeState state, bool canPurchaseNow)
         {
             if (_statusText != null) _statusText.text = statusText;
 
@@ -161,7 +187,9 @@ namespace Core.UI.Prestige
             // Repeindre le cadre AVANT d'armer la pulsation : sinon un nœud qui vient de cesser
             // de pulser resterait figé sur l'opacité du dernier creux de sinusoïde.
             _borderImage.color = _stateColor;
-            enabled = pulse && state == PrestigeNodeState.Affordable;
+
+            _isPulseUrgent = canPurchaseNow;
+            enabled = state == PrestigeNodeState.Affordable;
 
             ApplySelectionTint();
         }

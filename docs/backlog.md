@@ -41,9 +41,11 @@ Compilation sans erreur ; 3 warnings, tous en code éditeur (voir plus bas).
          le seul trou réel, les liens de l'arbre.
       2. **Canal préattentif** là où il faut BALAYER plutôt qu'identifier : sur 134 nœuds on ne
          lit pas 134 libellés. La pulsation ambre en tient lieu, et le mouvement est perçu par
-         tous les daltonismes. ⚠️ **Reste à faire** : elle est coupée pendant une run, donc
-         précisément quand on consulte l'arbre pour planifier. Une pulsation plus lente vaudrait
-         mieux qu'une pulsation absente.
+         tous les daltonismes. **Fait** — elle ne s'éteint plus pendant une run, elle ralentit.
+         ⚠️ **Conséquence à assumer** : le jeu s'appuie désormais sur le mouvement comme canal
+         d'accessibilité, ce qui gêne la sensibilité vestibulaire et la photosensibilité. Une
+         option « réduire les animations » devra accompagner le menu d'options, et elle devra
+         alors rendre un autre second canal aux nœuds débloquables — pas simplement tout figer.
       3. **Palette permutable** en dernier recours : `UiPaletteSO` à emplacements SÉMANTIQUES
          (`Verrouillé`, `Actionnable`, `Terminé`… jamais `Vert`/`Rouge`), un SO par profil, un
          `PaletteService` réactif. 25 champs `Color` éparpillés dans 8 vues s'y replient sur une
@@ -271,6 +273,12 @@ Trois bugs de la même famille ont déjà coûté du temps. Le motif :
   `ITickable` sans focus, appeler `Tick()` à la main.
 
 ## Corrigé à ce jour
+
+**Le nœud débloquable respire aussi pendant une run** (2026-08-30, vérifié en Play Mode via MCP) — deuxième étape du chantier accessibilité, décidée par Bertrand. La pulsation était coupée quand la fenêtre de compilation était fermée, au motif qu'un appel à l'action n'a pas de sens si l'achat est impossible. Le raisonnement ratait l'essentiel : c'est précisément pendant une run qu'on ouvre l'arbre pour PLANIFIER, et sur 134 nœuds on repère les actionnables du coin de l'œil, pas en lisant les libellés. Le canal préattentif s'éteignait au moment où le balayage sert le plus.
+
+Deux régimes désormais, tous deux réglables à l'inspecteur : **appel à l'action** quand l'achat est possible (vitesse 3, creux à 0,35 — franc), **veille** pendant une run (vitesse 1,2, creux à 0,7 — respiration discrète plutôt que clignotement). Le paramètre de `Render` cesse de s'appeler `pulse` pour `canPurchaseNow` : il ne décide plus SI le nœud respire, seulement avec quelle insistance.
+
+Le composant continue de se **désactiver** sur les nœuds qui n'ont pas à pulser : trois `Update()` sur 134, pas 134. Vérifié : pendant une run, 3 nœuds respirent en régime veille là où il y en avait **zéro** ; à la fin de la run les mêmes trois passent en régime urgent. Contrôle déterministe plutôt qu'à l'œil : l'alpha observé du cadre a été recalculé depuis `Time.unscaledTime` pour les deux régimes — correspondance **exacte à quatre décimales** avec le régime attendu, écart de 0,5 avec l'autre.
 
 **Les liens de l'arbre ne dépendent plus de la couleur** (2026-08-30, vérifié en Play Mode via MCP) — première étape du chantier accessibilité, et la seule qui corrigeait un défaut réel. `UILineConnection` encodait ses trois états par la **teinte seule** : gris, cyan, vert. Une ligne n'a pas de texte, c'était donc le seul canal du jeu sans redondance — invisible pour un joueur deutéranope, et pour quiconque sur un mauvais écran. Chaque état porte désormais son MOTIF et son ÉPAISSEUR : verrouillé en pointillé fin, en cours en trait plein moyen, complété en trait plein épais. Les couleurs restent, elles ne sont simplement plus seules.
 

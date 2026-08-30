@@ -101,11 +101,13 @@ namespace Core.UI.Prestige
                     break;
             }
 
-            // La pulsation est un appel à l'action : elle n'a pas lieu d'être quand la fenêtre
-            // de compilation est fermée, c'est-à-dire pendant toute une run.
-            bool pulse = _prestigeManager.ArePurchasesAllowed.CurrentValue;
+            // Le nœud débloquable respire dans tous les cas ; la fenêtre de compilation ne décide
+            // que de l'insistance. Pendant une run l'achat est impossible, mais c'est aussi le
+            // moment où l'on consulte l'arbre pour planifier — et sur 134 nœuds, on repère les
+            // actionnables du coin de l'œil, pas en lisant les libellés.
+            bool canPurchaseNow = _prestigeManager.ArePurchasesAllowed.CurrentValue;
 
-            _view.Render(statusText, state, pulse);
+            _view.Render(statusText, state, canPurchaseNow);
         }
 
         /// <summary>
