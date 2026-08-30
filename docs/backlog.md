@@ -22,12 +22,6 @@ Compilation sans erreur ; 3 warnings, tous en code éditeur (voir plus bas).
 ---
 
 ## Majeurs restants
-- 📖 **Le `SaveScheduler` abandonne silencieusement une écriture** si une autre est en vol
-      (`_isWriting`). Le commentaire la justifie par « la prochaine capturera un état plus récent »,
-      ce qui ne tient que s'il y en a une prochaine. Constaté pendant un test : trois achats de
-      prestige rapprochés suivis d'un Game Over ont fait perdre l'écriture de fin de run. Sans
-      conséquence depuis que le wipe précède toute capture, mais un drapeau « écriture en attente »
-      serait plus sûr qu'un abandon.
 - ⚠️ 🔬 **Les 30 s du Zéro-Day Exploit ne sont jamais atteintes — assumé, à observer en jeu.**
       Bertrand a tranché le 2026-08-27 : on garde le ×10 et on regarde ce que ça donne à la
       manette avant de décider si c'est la défense qui est trop faible ou le multiplicateur trop
@@ -263,6 +257,14 @@ Trois bugs de la même famille ont déjà coûté du temps. Le motif :
   `ITickable` sans focus, appeler `Tick()` à la main.
 
 ## Corrigé à ce jour
+
+**Le SaveScheduler n'abandonne plus d'écriture** (2026-08-30, vérifié en Play Mode via MCP) — une demande arrivant pendant une écriture en vol était **jetée**, au motif que « la prochaine capturera un état plus récent ». Ce qui ne tient que s'il y en a une prochaine : trois achats de prestige rapprochés suivis d'un Game Over avaient fait perdre l'écriture de fin de run. La demande arme désormais un tour de **rattrapage** — front descendant — si bien qu'une rafale de N demandes coûte au plus une écriture de plus et que le dernier état atteint toujours le disque.
+
+**Un seul emplacement d'attente, et c'est délibéré.** Une file serait FAUSSE ici : `GameStateGateway.Capture()` retourne un tampon partagé qui continue de muter, donc empiler des demandes empilerait N références au même objet. Le code ne s'en sort déjà que parce que `SaveAsync` sérialise avant son premier `await`. Un `SemaphoreSlim` aurait le même défaut, en écrivant plusieurs fois le même état final. Écarté aussi : router les déclencheurs critiques vers `SaveBlocking`, qui commite sur le même fichier qu'une écriture asynchrone potentiellement en vol — la voie async, sérialisée plus tôt donc plus ANCIENNE, pouvait commiter en dernier et écraser le plus récent.
+
+Le `catch` est placé DANS la boucle : un échec d'écriture ne doit pas emporter la demande qui attend son tour. Et le rattrapage porte son propre message de console — sans lui, deux écritures consécutives produisent deux lignes identiques que Unity replie en une seule, rendant le mécanisme invisible à qui le débogue. C'est d'ailleurs ce qui a faussé la première mesure.
+
+Vérifié : trois achats dans la **même frame** produisent exactement deux lignes, dont une « rattrapage », et le fichier contient les trois nœuds. La preuve tient parce que `Capture()` est appelé dans la notification du premier achat : l'écriture nº1 ne pouvait contenir que le premier nœud. Rien à signaler côté atomicité, déjà traitée — `LocalJsonSaveService` écrit dans un temporaire puis bascule par `File.Replace`, avec `.bak` de secours.
 
 **Nœud d'automatisation des Scripts** (2026-08-30, vérifié en Play Mode via MCP) — Bertrand avait posé l'amorce : la valeur d'enum, les clés `PrestigeAutomationName/Description`, les trois branches de `PrestigeLabels`, le cas dans `RecalculateBonuses` et la reconnaissance du type par le générateur. **Trois maillons manquaient.** (1) `SpecificUpgradeBonuses` n'avait pas de champ pour l'automatisation : le `case Automation` d'`AccumulateSpecific` cumulait dans le vide, sans branche. (2) La garde d'égalité de `SetSpecificBonuses` ne couvrait pas le nouveau champ — un achat ne touchant QUE l'automatisation serait sorti par le retour anticipé. (3) **Les 15 nœuds n'existaient pas dans les données**, ce qui explique qu'aucun ne s'affichait.
 

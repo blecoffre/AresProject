@@ -33,7 +33,20 @@ namespace Core.Services.Persistence
 
         private DisposableBag _disposables;
         private CancellationTokenSource _linkedCts;
+
+        /// <summary>Une écriture est en vol. Interdit d'en lancer une seconde en parallèle.</summary>
         private bool _isWriting;
+
+        /// <summary>
+        /// Motif de la demande arrivée PENDANT une écriture, null si rien n'attend.
+        ///
+        /// Un seul emplacement, et c'est délibéré : entre deux demandes en attente, seule la
+        /// dernière a un intérêt — l'état intermédiaire n'a jamais besoin d'atteindre le disque.
+        /// Une file serait même FAUSSE ici : <see cref="GameStateGateway.Capture"/> retourne un
+        /// tampon partagé qui continue de muter, donc empiler des demandes empilerait N
+        /// références au même objet.
+        /// </summary>
+        private string _pendingReason;
 
         public SaveScheduler(
             ISaveService saveService,
@@ -92,43 +105,76 @@ namespace Core.Services.Persistence
             WriteAsync(reason, ct).Forget();
         }
 
+        /// <summary>
+        /// Écrit l'état courant, et rattrape ce qui a été demandé pendant l'écriture.
+        ///
+        /// Une demande refusée n'est plus ABANDONNÉE. L'ancienne version se justifiait par « la
+        /// prochaine capturera un état plus récent », ce qui ne tient que s'il y en a une
+        /// prochaine : trois achats de prestige rapprochés suivis d'un Game Over avaient fait
+        /// perdre l'écriture de fin de run. La demande arme désormais un tour de rattrapage, si
+        /// bien qu'une rafale de N demandes coûte AU PLUS une écriture de plus — et que le
+        /// dernier état atteint toujours le disque.
+        /// </summary>
         private async UniTask WriteAsync(string reason, CancellationToken ct)
         {
-            if (!CanWrite()) return;
+            // Verrou de démarrage : tant que la restauration n'a pas eu lieu, l'état vivant est
+            // vide. Écrire maintenant remplacerait la sauvegarde du joueur par une partie neuve —
+            // ce qui arriverait pour de vrai s'il ferme le jeu pendant le chargement.
+            if (!_gateway.HasRestored) return;
+
+            if (_isWriting)
+            {
+                _pendingReason = reason;
+                return;
+            }
 
             _isWriting = true;
 
             try
             {
-                await _saveService.SaveAsync(_gateway.Capture(), ct);
-                Debug.Log($"[SAVE] Sauvegarde écrite ({reason}).");
-            }
-            catch (OperationCanceledException)
-            {
-                // Fermeture pendant l'écriture : HandleApplicationQuitting prend le relais.
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"[SAVE] Sauvegarde impossible ({reason}) : {e.Message}");
+                string current = reason;
+
+                // Le rattrapage porte son propre message : sans lui, deux écritures consécutives
+                // produisent deux lignes identiques que la console de Unity replie en une seule,
+                // et le mécanisme devient invisible — y compris pour qui le débogue.
+                bool isCatchUp = false;
+
+                do
+                {
+                    // Remis à null AVANT l'écriture, jamais après : une demande qui arrive
+                    // pendant celle-ci repositionne le drapeau, et déclenche donc un tour de
+                    // plus. L'effacer ensuite l'écraserait au lieu de la servir.
+                    _pendingReason = null;
+
+                    try
+                    {
+                        await _saveService.SaveAsync(_gateway.Capture(), ct);
+
+                        Debug.Log(isCatchUp
+                            ? $"[SAVE] Sauvegarde écrite ({current}, rattrapage)."
+                            : $"[SAVE] Sauvegarde écrite ({current}).");
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // Fermeture pendant l'écriture : HandleApplicationQuitting prend le relais.
+                        return;
+                    }
+                    catch (Exception e)
+                    {
+                        // Capture DANS la boucle : un échec ne doit pas emporter avec lui la
+                        // demande qui attend son tour.
+                        Debug.LogError($"[SAVE] Sauvegarde impossible ({current}) : {e.Message}");
+                    }
+
+                    current = _pendingReason;
+                    isCatchUp = true;
+                }
+                while (current != null);
             }
             finally
             {
                 _isWriting = false;
             }
-        }
-
-        private bool CanWrite()
-        {
-            // Verrou de démarrage : tant que la restauration n'a pas eu lieu, l'état vivant est
-            // vide. Écrire maintenant remplacerait la sauvegarde du joueur par une partie neuve —
-            // ce qui arriverait pour de vrai s'il ferme le jeu pendant le chargement.
-            if (!_gateway.HasRestored) return false;
-
-            // Une écriture est déjà en vol. On abandonne celle-ci plutôt que de l'empiler :
-            // la prochaine capturera de toute façon un état plus récent.
-            if (_isWriting) return false;
-
-            return true;
         }
 
         private void HandleApplicationQuitting()
