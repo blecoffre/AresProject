@@ -248,15 +248,15 @@ Trois bugs de la même famille ont déjà coûté du temps. Le motif :
   `SceneLoader` ne tourne pas, donc pas d'`EnqueueParent`, donc le scope de scène n'a pas de parent
   et aucun service n'est résoluble. Le message d'erreur ne le dit pas. Une garde explicite dans
   `GameSceneLifetimeScope` éviterait le diagnostic à chaque fois.
-- **Un JSON de `GameData/Editor` écrasé fait disparaître les `.asset` SANS ERREUR.** Vu le
-  2026-08-30 : les 15 nœuds d'automatisation ajoutés à `04_SpecificUpgrades.json` ont été perdus
-  84 secondes après leur commit — tampon d'éditeur périmé réenregistré par-dessus, très
-  probablement. Le générateur, relancé sur le fichier amputé, a fait son travail : il a supprimé
-  les 15 `.asset` devenus orphelins. Aucune erreur, aucun avertissement — seulement le compte
-  d'orphelins dans son message de succès, que personne ne lit. **Le JSON est la source de
-  vérité : commiter le JSON ET les `.asset` dans le même commit est ce qui a permis de tout
-  restaurer d'un `git checkout`.** Avant de conclure qu'un nœud « ne s'affiche pas », compter les
-  entrées du JSON.
+- **`04_SpecificUpgrades.json` est une SORTIE, pas une source.** `PrestigeSpecificNodesGenerator`
+  (`Tools/Core/Générer JSON (Grille - Arête de poisson Corrigée)`) le réécrit **intégralement**
+  depuis le catalogue d'upgrades. Y ajouter des nœuds à la main ne survit pas à la prochaine
+  exécution : c'est arrivé le 2026-08-30, où 15 nœuds d'automatisation écrits directement dans
+  le fichier ont disparu, puis où le générateur d'arbre a supprimé les 15 `.asset` devenus
+  orphelins — sans erreur ni avertissement, seulement un compte d'orphelins dans son message de
+  succès que personne ne lit. **Un nouveau type de nœud ciblé s'ajoute dans le générateur, jamais
+  dans le JSON.** Et avant de conclure qu'un nœud « ne s'affiche pas », compter les entrées du
+  fichier : c'est la vérification la moins chère.
 
 - **Le player loop de l'éditeur est figé tant que la fenêtre Unity n'a pas le focus**
   (`Time.frameCount` ne bouge pas), et `runInBackground` n'y change rien. Pour vérifier un

@@ -51,9 +51,9 @@
             "baseCost": 50.0,
             "costMult": 1.4,
             "bonus": 1.0,
-            "posX": -4.0,
-            "posY": 4.0,
-            "prerequisiteId": "P_UPG_SCR_01_TIME",
+            "posX": -5.0,
+            "posY": 5.0,
+            "prerequisiteId": "P_UPG_SCR_01_COST",
             "targetUpgradeId": "SCR_01"
         },
         {
@@ -65,7 +65,7 @@
             "baseCost": 100.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -6.0,
+            "posX": -7.0,
             "posY": 6.0,
             "prerequisiteId": "P_UPG_SCR_01_COST",
             "targetUpgradeId": "SCR_02"
@@ -79,7 +79,7 @@
             "baseCost": 100.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -6.0,
+            "posX": -7.0,
             "posY": 7.0,
             "prerequisiteId": "P_UPG_SCR_02_COST",
             "targetUpgradeId": "SCR_02"
@@ -93,7 +93,7 @@
             "baseCost": 100.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -6.0,
+            "posX": -7.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_02_COST",
             "targetUpgradeId": "SCR_02"
@@ -107,9 +107,9 @@
             "baseCost": 100.0,
             "costMult": 1.4,
             "bonus": 1.0,
-            "posX": -6.0,
-            "posY": 4.0,
-            "prerequisiteId": "P_UPG_SCR_02_TIME",
+            "posX": -8.0,
+            "posY": 5.0,
+            "prerequisiteId": "P_UPG_SCR_02_COST",
             "targetUpgradeId": "SCR_02"
         },
         {
@@ -121,7 +121,7 @@
             "baseCost": 150.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -8.0,
+            "posX": -10.0,
             "posY": 6.0,
             "prerequisiteId": "P_UPG_SCR_02_COST",
             "targetUpgradeId": "SCR_03"
@@ -135,7 +135,7 @@
             "baseCost": 150.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -8.0,
+            "posX": -10.0,
             "posY": 7.0,
             "prerequisiteId": "P_UPG_SCR_03_COST",
             "targetUpgradeId": "SCR_03"
@@ -149,7 +149,7 @@
             "baseCost": 150.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -8.0,
+            "posX": -10.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_03_COST",
             "targetUpgradeId": "SCR_03"
@@ -163,9 +163,9 @@
             "baseCost": 150.0,
             "costMult": 1.4,
             "bonus": 1.0,
-            "posX": -8.0,
-            "posY": 4.0,
-            "prerequisiteId": "P_UPG_SCR_03_TIME",
+            "posX": -11.0,
+            "posY": 5.0,
+            "prerequisiteId": "P_UPG_SCR_03_COST",
             "targetUpgradeId": "SCR_03"
         },
         {
@@ -177,7 +177,7 @@
             "baseCost": 200.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -10.0,
+            "posX": -13.0,
             "posY": 6.0,
             "prerequisiteId": "P_UPG_SCR_03_COST",
             "targetUpgradeId": "SCR_04"
@@ -191,7 +191,7 @@
             "baseCost": 200.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -10.0,
+            "posX": -13.0,
             "posY": 7.0,
             "prerequisiteId": "P_UPG_SCR_04_COST",
             "targetUpgradeId": "SCR_04"
@@ -205,7 +205,7 @@
             "baseCost": 200.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -10.0,
+            "posX": -13.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_04_COST",
             "targetUpgradeId": "SCR_04"
@@ -219,9 +219,9 @@
             "baseCost": 200.0,
             "costMult": 1.4,
             "bonus": 1.0,
-            "posX": -10.0,
-            "posY": 4.0,
-            "prerequisiteId": "P_UPG_SCR_04_TIME",
+            "posX": -14.0,
+            "posY": 5.0,
+            "prerequisiteId": "P_UPG_SCR_04_COST",
             "targetUpgradeId": "SCR_04"
         },
         {
@@ -233,7 +233,7 @@
             "baseCost": 250.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -12.0,
+            "posX": -16.0,
             "posY": 6.0,
             "prerequisiteId": "P_UPG_SCR_04_COST",
             "targetUpgradeId": "SCR_05"
@@ -247,7 +247,7 @@
             "baseCost": 250.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -12.0,
+            "posX": -16.0,
             "posY": 7.0,
             "prerequisiteId": "P_UPG_SCR_05_COST",
             "targetUpgradeId": "SCR_05"
@@ -261,7 +261,7 @@
             "baseCost": 250.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -12.0,
+            "posX": -16.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_05_COST",
             "targetUpgradeId": "SCR_05"
@@ -275,9 +275,9 @@
             "baseCost": 250.0,
             "costMult": 1.4,
             "bonus": 1.0,
-            "posX": -12.0,
-            "posY": 4.0,
-            "prerequisiteId": "P_UPG_SCR_05_TIME",
+            "posX": -17.0,
+            "posY": 5.0,
+            "prerequisiteId": "P_UPG_SCR_05_COST",
             "targetUpgradeId": "SCR_05"
         },
         {
@@ -289,7 +289,7 @@
             "baseCost": 300.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -14.0,
+            "posX": -19.0,
             "posY": 6.0,
             "prerequisiteId": "P_UPG_SCR_05_COST",
             "targetUpgradeId": "SCR_06"
@@ -303,7 +303,7 @@
             "baseCost": 300.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -14.0,
+            "posX": -19.0,
             "posY": 7.0,
             "prerequisiteId": "P_UPG_SCR_06_COST",
             "targetUpgradeId": "SCR_06"
@@ -317,7 +317,7 @@
             "baseCost": 300.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -14.0,
+            "posX": -19.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_06_COST",
             "targetUpgradeId": "SCR_06"
@@ -331,9 +331,9 @@
             "baseCost": 300.0,
             "costMult": 1.4,
             "bonus": 1.0,
-            "posX": -14.0,
-            "posY": 4.0,
-            "prerequisiteId": "P_UPG_SCR_06_TIME",
+            "posX": -20.0,
+            "posY": 5.0,
+            "prerequisiteId": "P_UPG_SCR_06_COST",
             "targetUpgradeId": "SCR_06"
         },
         {
@@ -345,7 +345,7 @@
             "baseCost": 350.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -16.0,
+            "posX": -22.0,
             "posY": 6.0,
             "prerequisiteId": "P_UPG_SCR_06_COST",
             "targetUpgradeId": "SCR_07"
@@ -359,7 +359,7 @@
             "baseCost": 350.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -16.0,
+            "posX": -22.0,
             "posY": 7.0,
             "prerequisiteId": "P_UPG_SCR_07_COST",
             "targetUpgradeId": "SCR_07"
@@ -373,7 +373,7 @@
             "baseCost": 350.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -16.0,
+            "posX": -22.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_07_COST",
             "targetUpgradeId": "SCR_07"
@@ -387,9 +387,9 @@
             "baseCost": 350.0,
             "costMult": 1.4,
             "bonus": 1.0,
-            "posX": -16.0,
-            "posY": 4.0,
-            "prerequisiteId": "P_UPG_SCR_07_TIME",
+            "posX": -23.0,
+            "posY": 5.0,
+            "prerequisiteId": "P_UPG_SCR_07_COST",
             "targetUpgradeId": "SCR_07"
         },
         {
@@ -401,7 +401,7 @@
             "baseCost": 400.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -18.0,
+            "posX": -25.0,
             "posY": 6.0,
             "prerequisiteId": "P_UPG_SCR_07_COST",
             "targetUpgradeId": "SCR_08"
@@ -415,7 +415,7 @@
             "baseCost": 400.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -18.0,
+            "posX": -25.0,
             "posY": 7.0,
             "prerequisiteId": "P_UPG_SCR_08_COST",
             "targetUpgradeId": "SCR_08"
@@ -429,7 +429,7 @@
             "baseCost": 400.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -18.0,
+            "posX": -25.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_08_COST",
             "targetUpgradeId": "SCR_08"
@@ -443,9 +443,9 @@
             "baseCost": 400.0,
             "costMult": 1.4,
             "bonus": 1.0,
-            "posX": -18.0,
-            "posY": 4.0,
-            "prerequisiteId": "P_UPG_SCR_08_TIME",
+            "posX": -26.0,
+            "posY": 5.0,
+            "prerequisiteId": "P_UPG_SCR_08_COST",
             "targetUpgradeId": "SCR_08"
         },
         {
@@ -457,7 +457,7 @@
             "baseCost": 450.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -20.0,
+            "posX": -28.0,
             "posY": 6.0,
             "prerequisiteId": "P_UPG_SCR_08_COST",
             "targetUpgradeId": "SCR_09"
@@ -471,7 +471,7 @@
             "baseCost": 450.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -20.0,
+            "posX": -28.0,
             "posY": 7.0,
             "prerequisiteId": "P_UPG_SCR_09_COST",
             "targetUpgradeId": "SCR_09"
@@ -485,7 +485,7 @@
             "baseCost": 450.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -20.0,
+            "posX": -28.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_09_COST",
             "targetUpgradeId": "SCR_09"
@@ -499,9 +499,9 @@
             "baseCost": 450.0,
             "costMult": 1.4,
             "bonus": 1.0,
-            "posX": -20.0,
-            "posY": 4.0,
-            "prerequisiteId": "P_UPG_SCR_09_TIME",
+            "posX": -29.0,
+            "posY": 5.0,
+            "prerequisiteId": "P_UPG_SCR_09_COST",
             "targetUpgradeId": "SCR_09"
         },
         {
@@ -513,7 +513,7 @@
             "baseCost": 500.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -22.0,
+            "posX": -31.0,
             "posY": 6.0,
             "prerequisiteId": "P_UPG_SCR_09_COST",
             "targetUpgradeId": "SCR_10"
@@ -527,7 +527,7 @@
             "baseCost": 500.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -22.0,
+            "posX": -31.0,
             "posY": 7.0,
             "prerequisiteId": "P_UPG_SCR_10_COST",
             "targetUpgradeId": "SCR_10"
@@ -541,7 +541,7 @@
             "baseCost": 500.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -22.0,
+            "posX": -31.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_10_COST",
             "targetUpgradeId": "SCR_10"
@@ -555,9 +555,9 @@
             "baseCost": 500.0,
             "costMult": 1.4,
             "bonus": 1.0,
-            "posX": -22.0,
-            "posY": 4.0,
-            "prerequisiteId": "P_UPG_SCR_10_TIME",
+            "posX": -32.0,
+            "posY": 5.0,
+            "prerequisiteId": "P_UPG_SCR_10_COST",
             "targetUpgradeId": "SCR_10"
         },
         {
@@ -569,7 +569,7 @@
             "baseCost": 550.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -24.0,
+            "posX": -34.0,
             "posY": 6.0,
             "prerequisiteId": "P_UPG_SCR_10_COST",
             "targetUpgradeId": "SCR_11"
@@ -583,7 +583,7 @@
             "baseCost": 550.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -24.0,
+            "posX": -34.0,
             "posY": 7.0,
             "prerequisiteId": "P_UPG_SCR_11_COST",
             "targetUpgradeId": "SCR_11"
@@ -597,7 +597,7 @@
             "baseCost": 550.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -24.0,
+            "posX": -34.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_11_COST",
             "targetUpgradeId": "SCR_11"
@@ -611,9 +611,9 @@
             "baseCost": 550.0,
             "costMult": 1.4,
             "bonus": 1.0,
-            "posX": -24.0,
-            "posY": 4.0,
-            "prerequisiteId": "P_UPG_SCR_11_TIME",
+            "posX": -35.0,
+            "posY": 5.0,
+            "prerequisiteId": "P_UPG_SCR_11_COST",
             "targetUpgradeId": "SCR_11"
         },
         {
@@ -625,7 +625,7 @@
             "baseCost": 600.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -26.0,
+            "posX": -37.0,
             "posY": 6.0,
             "prerequisiteId": "P_UPG_SCR_11_COST",
             "targetUpgradeId": "SCR_12"
@@ -639,7 +639,7 @@
             "baseCost": 600.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -26.0,
+            "posX": -37.0,
             "posY": 7.0,
             "prerequisiteId": "P_UPG_SCR_12_COST",
             "targetUpgradeId": "SCR_12"
@@ -653,7 +653,7 @@
             "baseCost": 600.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -26.0,
+            "posX": -37.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_12_COST",
             "targetUpgradeId": "SCR_12"
@@ -667,9 +667,9 @@
             "baseCost": 600.0,
             "costMult": 1.4,
             "bonus": 1.0,
-            "posX": -26.0,
-            "posY": 4.0,
-            "prerequisiteId": "P_UPG_SCR_12_TIME",
+            "posX": -38.0,
+            "posY": 5.0,
+            "prerequisiteId": "P_UPG_SCR_12_COST",
             "targetUpgradeId": "SCR_12"
         },
         {
@@ -681,7 +681,7 @@
             "baseCost": 650.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -28.0,
+            "posX": -40.0,
             "posY": 6.0,
             "prerequisiteId": "P_UPG_SCR_12_COST",
             "targetUpgradeId": "SCR_13"
@@ -695,7 +695,7 @@
             "baseCost": 650.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -28.0,
+            "posX": -40.0,
             "posY": 7.0,
             "prerequisiteId": "P_UPG_SCR_13_COST",
             "targetUpgradeId": "SCR_13"
@@ -709,7 +709,7 @@
             "baseCost": 650.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -28.0,
+            "posX": -40.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_13_COST",
             "targetUpgradeId": "SCR_13"
@@ -723,9 +723,9 @@
             "baseCost": 650.0,
             "costMult": 1.4,
             "bonus": 1.0,
-            "posX": -28.0,
-            "posY": 4.0,
-            "prerequisiteId": "P_UPG_SCR_13_TIME",
+            "posX": -41.0,
+            "posY": 5.0,
+            "prerequisiteId": "P_UPG_SCR_13_COST",
             "targetUpgradeId": "SCR_13"
         },
         {
@@ -737,7 +737,7 @@
             "baseCost": 700.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -30.0,
+            "posX": -43.0,
             "posY": 6.0,
             "prerequisiteId": "P_UPG_SCR_13_COST",
             "targetUpgradeId": "SCR_14"
@@ -751,7 +751,7 @@
             "baseCost": 700.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -30.0,
+            "posX": -43.0,
             "posY": 7.0,
             "prerequisiteId": "P_UPG_SCR_14_COST",
             "targetUpgradeId": "SCR_14"
@@ -765,7 +765,7 @@
             "baseCost": 700.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -30.0,
+            "posX": -43.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_14_COST",
             "targetUpgradeId": "SCR_14"
@@ -779,9 +779,9 @@
             "baseCost": 700.0,
             "costMult": 1.4,
             "bonus": 1.0,
-            "posX": -30.0,
-            "posY": 4.0,
-            "prerequisiteId": "P_UPG_SCR_14_TIME",
+            "posX": -44.0,
+            "posY": 5.0,
+            "prerequisiteId": "P_UPG_SCR_14_COST",
             "targetUpgradeId": "SCR_14"
         },
         {
@@ -793,7 +793,7 @@
             "baseCost": 750.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -32.0,
+            "posX": -46.0,
             "posY": 6.0,
             "prerequisiteId": "P_UPG_SCR_14_COST",
             "targetUpgradeId": "SCR_15"
@@ -807,7 +807,7 @@
             "baseCost": 750.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -32.0,
+            "posX": -46.0,
             "posY": 7.0,
             "prerequisiteId": "P_UPG_SCR_15_COST",
             "targetUpgradeId": "SCR_15"
@@ -821,7 +821,7 @@
             "baseCost": 750.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
-            "posX": -32.0,
+            "posX": -46.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_15_COST",
             "targetUpgradeId": "SCR_15"
@@ -835,9 +835,9 @@
             "baseCost": 750.0,
             "costMult": 1.4,
             "bonus": 1.0,
-            "posX": -32.0,
-            "posY": 4.0,
-            "prerequisiteId": "P_UPG_SCR_15_TIME",
+            "posX": -47.0,
+            "posY": 5.0,
+            "prerequisiteId": "P_UPG_SCR_15_COST",
             "targetUpgradeId": "SCR_15"
         },
         {

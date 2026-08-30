@@ -18,6 +18,15 @@ namespace Core.Economy.Tools
         /// <summary>Seule source légitime d'upgrades : le dossier que génère UpgradeCatalogGenerator.</summary>
         private const string UpgradeFolder = "Assets/GameData/Upgrades";
 
+        /// <summary>Écartement des arêtes pour les branches à deux ramifications.</summary>
+        private const int DefaultColumnStep = 2;
+
+        /// <summary>
+        /// Écartement des arêtes de la branche Scripts, qui en porte trois. La troisième part en
+        /// diagonale : sans cette case supplémentaire, sa ligne passerait au ras du nœud TEMPS.
+        /// </summary>
+        private const int ScriptColumnStep = 3;
+
         [MenuItem("Tools/Core/Générer JSON (Grille - Arête de poisson Corrigée)")]
         public static void ShowWindow()
         {
@@ -74,15 +83,20 @@ namespace Core.Economy.Tools
 
             PrestigeJsonDatabase database = new PrestigeJsonDatabase { items = new List<PrestigeItemData>() };
 
-            // On génère les 3 branches en s'assurant de passer la bonne racine de référence
+            // On génère les 3 branches en s'assurant de passer la bonne racine de référence.
+            //
+            // Les Scripts avancent de TROIS cases par arête, les deux autres de deux. Eux seuls
+            // portent quatre nœuds : la quatrième ramification part en diagonale, et à deux cases
+            // d'écart sa ligne de liaison frôlerait le nœud TEMPS à cinquante pixels. La branche
+            // Scripts est donc plus longue que les deux autres — c'est le prix d'un lien lisible.
             CreateFishboneBranch(database, allUpgrades.Where(u => u.Type == UpgradeType.Script).OrderBy(u => u.Order).ToList(),
-                new Vector2Int(-4, 6), _scriptBranchRootId);
+                new Vector2Int(-4, 6), _scriptBranchRootId, ScriptColumnStep);
 
             CreateFishboneBranch(database, allUpgrades.Where(u => u.Type == UpgradeType.Hardware).OrderBy(u => u.Order).ToList(),
-                new Vector2Int(-4, 0), _hardwareBranchRootId);
+                new Vector2Int(-4, 0), _hardwareBranchRootId, DefaultColumnStep);
 
             CreateFishboneBranch(database, allUpgrades.Where(u => u.Type == UpgradeType.Proxy).OrderBy(u => u.Order).ToList(),
-                new Vector2Int(-4, -6), _proxyBranchRootId);
+                new Vector2Int(-4, -6), _proxyBranchRootId, DefaultColumnStep);
 
             // Sauvegarde du fichier JSON
             string jsonOutput = JsonUtility.ToJson(database, true);
@@ -97,7 +111,7 @@ namespace Core.Economy.Tools
             Debug.Log($"<color=green>[Générateur]</color> Fichier JSON généré avec succès : {fullPath} ({database.items.Count} nœuds).");
         }
 
-        private void CreateFishboneBranch(PrestigeJsonDatabase db, List<UpgradeConfigSO> sortedUpgrades, Vector2Int startPos, string branchRootPrereqId)
+        private void CreateFishboneBranch(PrestigeJsonDatabase db, List<UpgradeConfigSO> sortedUpgrades, Vector2Int startPos, string branchRootPrereqId, int columnStep)
         {
             // Variable claire pour stocker l'ID du nœud COST précédent
             string lastCostId = branchRootPrereqId;
@@ -133,6 +147,22 @@ namespace Core.Economy.Tools
                     string timeId = $"P_UPG_{target.Id}_TIME";
                     Vector2Int timePos = currentPos + new Vector2Int(0, -1);
                     db.items.Add(CreateGridItem(timeId, target, "SpecificUpgradeTimeReduction", mainCostId, timePos));
+
+                    // --- 4. RAMIFICATION DIAGONALE : PALIER D'AUTOMATISATION, SCRIPTS UNIQUEMENT ---
+                    // Eux seuls relancent des cycles, donc eux seuls ont quelque chose à automatiser.
+                    //
+                    // Le prérequis est le nœud COST, comme les deux autres ramifications : les
+                    // trois rayonnent depuis la même arête, et c'est ce qui doit se LIRE. La
+                    // position part en diagonale parce que la dorsale occupe déjà la gauche et la
+                    // droite du nœud principal, PROD le haut et TEMPS le bas — il ne reste que
+                    // les diagonales pour un quatrième lien qui ne traverse rien.
+                    //
+                    // Le bonus vaut 1 : c'est un NOMBRE DE NIVEAUX retirés au palier, pas une
+                    // fraction. Seul nœud du jeu dans ce cas, d'où le paramètre explicite.
+                    string autoId = $"P_UPG_{target.Id}_AUTO";
+                    Vector2Int autoPos = currentPos + new Vector2Int(-1, -1);
+                    db.items.Add(CreateGridItem(
+                        autoId, target, "SpecificUpgradeAutomationTresholdReduction", mainCostId, autoPos, 1f));
                 }
 
                 // --- MISE À JOUR POUR LE PROCHAIN TOUR ---
@@ -140,7 +170,7 @@ namespace Core.Economy.Tools
                 lastCostId = mainCostId;
 
                 // On avance sur la grille vers la gauche
-                currentPos += new Vector2Int(-2, 0);
+                currentPos += new Vector2Int(-columnStep, 0);
             }
         }
 
@@ -150,7 +180,12 @@ namespace Core.Economy.Tools
         /// targetUpgradeId. Écrire ici « Phishing familial (Opti Coût) » remettrait du français
         /// en dur dans les données et obligerait à régénérer tout l'arbre au moindre renommage.
         /// </summary>
-        private PrestigeItemData CreateGridItem(string id, UpgradeConfigSO target, string bonusType, string prereqId, Vector2Int pos)
+        /// <param name="bonus">
+        /// Apport par rang. Une FRACTION pour les trois ramifications historiques — 0,1 vaut
+        /// −10 % de coût, +10 % de rendement, −10 % de durée. Un NOMBRE DE NIVEAUX pour le nœud
+        /// d'automatisation, qui déplace un palier et non un pourcentage.
+        /// </param>
+        private PrestigeItemData CreateGridItem(string id, UpgradeConfigSO target, string bonusType, string prereqId, Vector2Int pos, float bonus = 0.1f)
         {
             return new PrestigeItemData
             {
@@ -160,7 +195,7 @@ namespace Core.Economy.Tools
                 maxLevel = 5,
                 baseCost = 50.0 * target.Order,
                 costMult = 1.4,
-                bonus = 0.1f,
+                bonus = bonus,
                 posX = pos.x,
                 posY = pos.y,
                 prerequisiteId = prereqId // Le lien logique crucial
