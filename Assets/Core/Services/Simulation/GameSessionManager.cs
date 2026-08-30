@@ -196,7 +196,7 @@ namespace Core.Services.Simulation
             _ghostCacheSystem.ResetForNewRun();
             _runElapsedSeconds = 0f;
 
-            _threatManager.ReduceThreat(1f);
+            _threatManager.ResetTrace();
             _upgradeManager.InitializeFromSave(EmptyLevels);
         }
 

@@ -88,7 +88,12 @@ namespace Core.Services.Persistence
             _prestigeManager.InitializeFromSave(_prestigeLevels);
 
             // 4. État de menace de la run
-            _threatManager.RestoreThreat(Mathf.Min(data.NormalizedThreat, MaxRestorableThreat));
+            //
+            // Le plafond D'ABORD : il se compose du parc Hardware, restauré à l'étape 2, et la
+            // trace restaurée est plafonnée par lui. L'ordre inverse écrêterait sur le plafond de
+            // base et rendrait une trace trop faible à qui possède du matériel.
+            _threatManager.SetCapacityBonus(_upgradeManager.TraceCapacityBonus.CurrentValue);
+            _threatManager.RestoreTrace(Mathf.Min(data.CurrentTrace, _threatManager.TraceCap * MaxRestorableThreat));
             _emergencyProtocol.Restore(
                 data.EmergencyUsesInRun,
                 data.EmergencyBlockRemainingSeconds,
@@ -116,7 +121,7 @@ namespace Core.Services.Persistence
             _buffer.TotalCpuCycles = _currencies.TotalCpuCyclesGenerated.CurrentValue;
             _buffer.TotalDetections = _currencies.TotalNumberOfDetections.CurrentValue;
 
-            _buffer.NormalizedThreat = _threatManager.NormalizedThreat.CurrentValue;
+            _buffer.CurrentTrace = _threatManager.CurrentTrace.CurrentValue;
             _buffer.EmergencyUsesInRun = _emergencyProtocol.UsesInCurrentRun;
             _buffer.EmergencyBlockRemainingSeconds = _emergencyProtocol.BlockRemaining.CurrentValue;
             _buffer.EmergencyCooldownRemainingSeconds = _emergencyProtocol.CooldownRemaining.CurrentValue;

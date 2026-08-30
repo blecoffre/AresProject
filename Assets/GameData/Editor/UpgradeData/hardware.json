@@ -10,7 +10,8 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 0.08,
+      "traceGeneratedPerSecond": 0.045,
+      "traceCapIncrease": 2.87,
       "milestones": [
         { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
@@ -28,7 +29,8 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 0.2,
+      "traceGeneratedPerSecond": 0.188,
+      "traceCapIncrease": 18.8,
       "milestones": [
         { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
@@ -46,7 +48,8 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 0.5,
+      "traceGeneratedPerSecond": 0.516,
+      "traceCapIncrease": 26.2,
       "milestones": [
         { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
@@ -64,7 +67,8 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 1.2,
+      "traceGeneratedPerSecond": 1.09,
+      "traceCapIncrease": 54.9,
       "milestones": [
         { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
@@ -82,7 +86,8 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 3.0,
+      "traceGeneratedPerSecond": 1.89,
+      "traceCapIncrease": 61.5,
       "milestones": [
         { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
@@ -100,7 +105,8 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 8.0,
+      "traceGeneratedPerSecond": 4.14,
+      "traceCapIncrease": 217.0,
       "milestones": [
         { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
@@ -118,7 +124,8 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 20.0,
+      "traceGeneratedPerSecond": 9.48,
+      "traceCapIncrease": 533.0,
       "milestones": [
         { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
@@ -136,7 +143,8 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 60.0,
+      "traceGeneratedPerSecond": 20.7,
+      "traceCapIncrease": 1090.0,
       "milestones": [
         { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
@@ -154,7 +162,8 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 150.0,
+      "traceGeneratedPerSecond": 44.1,
+      "traceCapIncrease": 2220.0,
       "milestones": [
         { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
@@ -172,7 +181,8 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 400.0,
+      "traceGeneratedPerSecond": 104.0,
+      "traceCapIncrease": 6090.0,
       "milestones": [
         { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
@@ -190,7 +200,8 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 1200.0,
+      "traceGeneratedPerSecond": 209.0,
+      "traceCapIncrease": 9570.0,
       "milestones": [
         { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
@@ -208,7 +219,8 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 4000.0,
+      "traceGeneratedPerSecond": 357.0,
+      "traceCapIncrease": 11010.0,
       "milestones": [
         { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
@@ -226,7 +238,8 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 15000.0,
+      "traceGeneratedPerSecond": 843.0,
+      "traceCapIncrease": 49290.0,
       "milestones": [
         { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
@@ -244,7 +257,8 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 50000.0,
+      "traceGeneratedPerSecond": 1420.0,
+      "traceCapIncrease": 42000.0,
       "milestones": [
         { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
@@ -262,7 +276,8 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 200000.0,
+      "traceGeneratedPerSecond": 3490.0,
+      "traceCapIncrease": 214200.0,
       "milestones": [
         { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },

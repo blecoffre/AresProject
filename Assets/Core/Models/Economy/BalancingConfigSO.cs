@@ -28,7 +28,7 @@ namespace Core.Models.Economy
         [Tooltip("Convertit une Trace par seconde en fraction de jauge par seconde. À 100, un " +
                  "débit de 100 Trace/s remplit la jauge en une seconde. BAISSER cette valeur rend " +
                  "tout le jeu plus dangereux.")]
-        [SerializeField, Min(1f)] private float _traceToGaugeDivisor = 100f;
+        [SerializeField, Min(1f)] private float _baseTraceCap = 100f;
 
         // ------------------------------------------------------------------
         // TFlops et générateurs
@@ -122,7 +122,12 @@ namespace Core.Models.Economy
         // Lecture. Propriétés et non champs publics : l'asset est une donnée de
         // référence, aucun système n'a le droit de la modifier au runtime.
         // ------------------------------------------------------------------
-        public float TraceToGaugeDivisor => _traceToGaugeDivisor;
+        /// <summary>
+        /// Plafond de Trace avant saisie, hors apport du Hardware. Ancien « diviseur de jauge » :
+        /// il jouait déjà ce rôle, la jauge normalisée valant trace / diviseur. Le nommer pour ce
+        /// qu'il est était le préalable au plafond dynamique.
+        /// </summary>
+        public float BaseTraceCap => _baseTraceCap;
 
         public double TFlopsTimeCompression => _tflopsTimeCompression;
         public float MaxTargetedReduction => _maxTargetedReduction;

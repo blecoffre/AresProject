@@ -137,7 +137,7 @@ namespace Core.Services.Security
             if (IsOnCooldown) return false;
             if (!HasEnoughPower) return false;
 
-            _threatManager.ReduceThreat(_balancing.EmergencyTraceReduction);
+            _threatManager.ReduceTraceByFraction(_balancing.EmergencyTraceReduction);
 
             // La tranche est calculée AVANT l'incrément : le premier usage d'une run en
             // immobilise 30 %, pas 40 %.

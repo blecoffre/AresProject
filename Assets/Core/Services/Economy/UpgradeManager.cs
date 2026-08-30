@@ -58,6 +58,12 @@ namespace Core.Services.Economy
         public ReactiveProperty<float> HardwareTracePerSecond { get; } = new(0f);
 
         /// <summary>
+        /// Plafond de Trace apporté par le parc Hardware, hors plafond de base. Le Hardware est
+        /// le rempart : il achète de la marge avant saisie, là où les Proxies achètent du débit.
+        /// </summary>
+        public ReactiveProperty<float> TraceCapacityBonus { get; } = new(0f);
+
+        /// <summary>
         /// Dissipation cumulée des Proxies, TFlops déjà appliquées :
         /// Σ (base × niveau) × (1 + log10(1 + TFlops)).
         /// Valeur POSITIVE, à soustraire du débit brut — c'est le second rôle des TFlops.
@@ -259,8 +265,6 @@ namespace Core.Services.Economy
             }
         }
 
-        public IReadOnlyDictionary<string, UpgradeModel> GetAllActiveUpgrades() => _activeUpgrades;
-
         /// <summary>
         /// Applique un multiplicateur temporaire au rendement de TOUS les Scripts. Réservé au
         /// Zéro-Day Exploit, qui l'élève à 50 pendant 30 s puis le ramène à 1.
@@ -356,6 +360,7 @@ namespace Core.Services.Economy
             double moneyPerSecond = 0d;
             float hardwareTrace = 0f;
             float proxyBase = 0f;
+            float traceCapacity = 0f;
 
             foreach (var model in _activeUpgrades.Values)
             {
@@ -371,6 +376,7 @@ namespace Core.Services.Economy
 
                     case UpgradeType.Hardware:
                         hardwareTrace += model.GetTraceMagnitudePerSecond();
+                        traceCapacity += model.GetTraceCapIncrease();
                         break;
 
                     case UpgradeType.Proxy:
@@ -387,6 +393,7 @@ namespace Core.Services.Economy
             TotalTFlops.Value = totalTFlops;
             ProxySynergyMultiplier.Value = synergy;
             HardwareTracePerSecond.Value = hardwareTrace;
+            TraceCapacityBonus.Value = traceCapacity;
             ProxyDissipationPerSecond.Value = (float)(proxyBase * dissipationFactor);
         }
 
@@ -405,6 +412,7 @@ namespace Core.Services.Economy
             TotalMoneyYieldPerSecond.Dispose();
             TotalTFlops.Dispose();
             HardwareTracePerSecond.Dispose();
+            TraceCapacityBonus.Dispose();
             ProxyDissipationPerSecond.Dispose();
             ProxySynergyMultiplier.Dispose();
         }

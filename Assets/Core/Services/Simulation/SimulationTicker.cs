@@ -49,6 +49,11 @@ namespace Core.Services.Simulation
 
         public void Tick()
         {
+            // Le plafond suit le parc Hardware. Poussé AVANT toute sortie anticipée : une run
+            // stabilisée n'appelle jamais AddThreat, et le plafond resterait alors figé sur sa
+            // valeur d'avant l'achat — la jauge afficherait un pourcentage périmé.
+            _threatManager.SetCapacityBonus(_upgradeManager.TraceCapacityBonus.CurrentValue);
+
             if (!_sessionManager.IsGameActive.Value) return;
 
             float deltaTime = Time.deltaTime;
@@ -101,7 +106,7 @@ namespace Core.Services.Simulation
 
             if (debit == 0f) return;
 
-            _threatManager.AddThreat((debit / _balancing.TraceToGaugeDivisor) * deltaTime);
+            _threatManager.AddThreat(debit * deltaTime);
         }
     }
 }

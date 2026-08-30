@@ -37,6 +37,7 @@ namespace Core.Models.Economy
 
         private double _cachedYield;
         private float _cachedTraceMagnitude;
+        private float _cachedTraceCapIncrease;
         private double _cachedCost;
         private float _cachedCycleDuration;
 
@@ -203,6 +204,14 @@ namespace Core.Models.Economy
         /// </summary>
         public float GetTraceMagnitudePerSecond() => _cachedTraceMagnitude;
 
+        /// <summary>
+        /// Plafond de Trace apporté par ce générateur. MULTIPLIÉ par le niveau, contrairement à
+        /// la trace générée qui est forfaitaire : c'est l'asymétrie voulue par le GD. Approfondir
+        /// une machine améliore son refroidissement sans augmenter son encombrement, ce qui donne
+        /// au joueur un levier défensif abordable à côté de l'achat du palier suivant.
+        /// </summary>
+        public float GetTraceCapIncrease() => _cachedTraceCapIncrease;
+
         /// <summary>Rendement théorique par seconde si le cycle tourne en continu. Sert à l'affichage.</summary>
         public double GetYieldPerSecond()
         {
@@ -308,6 +317,7 @@ namespace Core.Models.Economy
 
             _cachedYield = yield;
             _cachedTraceMagnitude = traceMagnitude;
+            _cachedTraceCapIncrease = (float)(Config.BaseTraceCapIncrease * level);
             _cachedCycleDuration = Math.Max(Config.MinCycleDuration, (float)compressed);
             _cachedCost = AdjustedBaseCost * Math.Pow(Config.CostMultiplier, level);
         }

@@ -34,7 +34,14 @@ namespace Core.Models
         /// correspondant dans Migrate(). Sans ça, le premier changement post-lancement casse
         /// silencieusement les sauvegardes des joueurs.
         /// </summary>
-        public const int CurrentVersion = 6;
+        public const int CurrentVersion = 7;
+
+        /// <summary>
+        /// Le plafond de Trace tel qu'il était FIGÉ jusqu'en v6. Sert uniquement à convertir
+        /// l'ancienne fraction en points absolus lors de la migration ; il ne doit jamais suivre
+        /// le plafond courant, devenu dynamique.
+        /// </summary>
+        private const float LegacyTraceCap = 100f;
 
         public int Version;
 
@@ -65,7 +72,20 @@ namespace Core.Models
         /// </summary>
         public double RunMoney;
 
+        /// <summary>
+        /// Trace accumulée, en points ABSOLUS. Remplace la fraction normalisée en v7 : le
+        /// plafond étant devenu dynamique, une fraction ne veut plus rien dire hors du parc
+        /// Hardware qui l'a produite — acheter une machine aurait rescalé la trace en silence.
+        /// </summary>
+        public float CurrentTrace;
+
+        /// <summary>
+        /// OBSOLÈTE depuis la v7, conservé pour la seule migration. JsonUtility ne peut lire un
+        /// champ que s'il existe encore dans la classe : le retirer rendrait les sauvegardes
+        /// antérieures illisibles, et le joueur repartirait de zéro sans un mot.
+        /// </summary>
         public float NormalizedThreat;
+
         public int EmergencyUsesInRun;
 
         /// <summary>
@@ -116,7 +136,7 @@ namespace Core.Models
 
             Money = 10d,
             RunMoney = 0d,
-            NormalizedThreat = 0f,
+            CurrentTrace = 0f,
             EmergencyUsesInRun = 0,
             GhostCacheSeconds = 0f,
             EmergencyBlockRemainingSeconds = 0f,
@@ -136,8 +156,9 @@ namespace Core.Models
             if (Upgrades == null) Upgrades = new List<UpgradeSaveEntry>();
             if (PrestigeUpgrades == null) PrestigeUpgrades = new List<UpgradeSaveEntry>();
 
-            if (NormalizedThreat < 0f) NormalizedThreat = 0f;
-            if (NormalizedThreat > 1f) NormalizedThreat = 1f;
+            // Borne basse seulement : le plafond appartient au ThreatManager, qui le compose
+            // depuis le parc Hardware. Le dupliquer ici créerait deux sources de vérité.
+            if (CurrentTrace < 0f) CurrentTrace = 0f;
             if (EmergencyUsesInRun < 0) EmergencyUsesInRun = 0;
 
             // Borne basse seulement : le plafond appartient au GhostCacheSystem, seul détenteur
@@ -216,6 +237,18 @@ namespace Core.Models
                     goto case 6;
 
                 case 6:
+                    // v6 -> v7 : la jauge passe de la FRACTION à la valeur absolue.
+                    //
+                    // L'ancien champ valait trace / plafond, avec un plafond alors figé à 100.
+                    // La conversion est donc une multiplication par ce plafond historique — et
+                    // NON par le plafond courant, que le parc Hardware du joueur a pu élever :
+                    // on rendrait sinon une trace bien plus lourde que celle qu'il avait.
+                    data.CurrentTrace = data.NormalizedThreat * LegacyTraceCap;
+                    data.NormalizedThreat = 0f;
+                    data.Version = 7;
+                    goto case 7;
+
+                case 7:
                     // Format courant : rien à faire.
                     break;
 

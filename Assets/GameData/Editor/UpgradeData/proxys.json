@@ -10,7 +10,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 0.4,
+      "traceGeneratedPerSecond": 0.254,
       "milestones": [
         { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },
@@ -28,7 +28,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 5.0,
+      "traceGeneratedPerSecond": 1.06,
       "milestones": [
         { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },
@@ -46,7 +46,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 18.0,
+      "traceGeneratedPerSecond": 2.9,
       "milestones": [
         { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },
@@ -64,7 +64,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 60.0,
+      "traceGeneratedPerSecond": 6.15,
       "milestones": [
         { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },
@@ -82,7 +82,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 200.0,
+      "traceGeneratedPerSecond": 10.7,
       "milestones": [
         { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },
@@ -100,7 +100,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 800.0,
+      "traceGeneratedPerSecond": 23.3,
       "milestones": [
         { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },
@@ -118,7 +118,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 2500.0,
+      "traceGeneratedPerSecond": 53.4,
       "milestones": [
         { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },
@@ -136,7 +136,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 8500.0,
+      "traceGeneratedPerSecond": 117.0,
       "milestones": [
         { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },
@@ -154,7 +154,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 25000.0,
+      "traceGeneratedPerSecond": 248.0,
       "milestones": [
         { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },
@@ -172,7 +172,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 80000.0,
+      "traceGeneratedPerSecond": 586.0,
       "milestones": [
         { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },
@@ -190,7 +190,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 250000.0,
+      "traceGeneratedPerSecond": 1180.0,
       "milestones": [
         { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },
@@ -208,7 +208,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 800000.0,
+      "traceGeneratedPerSecond": 2010.0,
       "milestones": [
         { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },
@@ -226,7 +226,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 2500000.0,
+      "traceGeneratedPerSecond": 4750.0,
       "milestones": [
         { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },
@@ -244,7 +244,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 8000000.0,
+      "traceGeneratedPerSecond": 7990.0,
       "milestones": [
         { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },
@@ -262,7 +262,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 25000000.0,
+      "traceGeneratedPerSecond": 19670.0,
       "milestones": [
         { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },

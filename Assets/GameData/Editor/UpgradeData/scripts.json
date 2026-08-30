@@ -29,7 +29,7 @@
       "baseCycleDuration": 2.0,
       "durationReductionPerLevel": 0.02,
       "minCycleDuration": 0.5,
-      "traceGeneratedPerSecond": 2.0,
+      "traceGeneratedPerSecond": 0.626,
       "automationLevel": 10,
       "milestones": [
         { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
@@ -48,7 +48,7 @@
       "baseCycleDuration": 3.0,
       "durationReductionPerLevel": 0.05,
       "minCycleDuration": 1.0,
-      "traceGeneratedPerSecond": 8.0,
+      "traceGeneratedPerSecond": 1.72,
       "automationLevel": 10,
       "milestones": [
         { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
@@ -67,7 +67,7 @@
       "baseCycleDuration": 5.0,
       "durationReductionPerLevel": 0.1,
       "minCycleDuration": 1.5,
-      "traceGeneratedPerSecond": 25.0,
+      "traceGeneratedPerSecond": 3.64,
       "automationLevel": 10,
       "milestones": [
         { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
@@ -86,7 +86,7 @@
       "baseCycleDuration": 10.0,
       "durationReductionPerLevel": 0.2,
       "minCycleDuration": 2.0,
-      "traceGeneratedPerSecond": 80.0,
+      "traceGeneratedPerSecond": 6.31,
       "automationLevel": 10,
       "milestones": [
         { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
@@ -105,7 +105,7 @@
       "baseCycleDuration": 15.0,
       "durationReductionPerLevel": 0.25,
       "minCycleDuration": 2.5,
-      "traceGeneratedPerSecond": 250.0,
+      "traceGeneratedPerSecond": 13.8,
       "automationLevel": 10,
       "milestones": [
         { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
@@ -124,7 +124,7 @@
       "baseCycleDuration": 20.0,
       "durationReductionPerLevel": 0.3,
       "minCycleDuration": 3.0,
-      "traceGeneratedPerSecond": 800.0,
+      "traceGeneratedPerSecond": 31.6,
       "automationLevel": 10,
       "milestones": [
         { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
@@ -143,7 +143,7 @@
       "baseCycleDuration": 30.0,
       "durationReductionPerLevel": 0.5,
       "minCycleDuration": 5.0,
-      "traceGeneratedPerSecond": 2500.0,
+      "traceGeneratedPerSecond": 69.0,
       "automationLevel": 10,
       "milestones": [
         { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
@@ -162,7 +162,7 @@
       "baseCycleDuration": 45.0,
       "durationReductionPerLevel": 0.8,
       "minCycleDuration": 8.0,
-      "traceGeneratedPerSecond": 8000.0,
+      "traceGeneratedPerSecond": 147.0,
       "automationLevel": 10,
       "milestones": [
         { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
@@ -181,7 +181,7 @@
       "baseCycleDuration": 60.0,
       "durationReductionPerLevel": 1.0,
       "minCycleDuration": 10.0,
-      "traceGeneratedPerSecond": 25000.0,
+      "traceGeneratedPerSecond": 347.0,
       "automationLevel": 10,
       "milestones": [
         { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
@@ -200,7 +200,7 @@
       "baseCycleDuration": 120.0,
       "durationReductionPerLevel": 2.0,
       "minCycleDuration": 15.0,
-      "traceGeneratedPerSecond": 80000.0,
+      "traceGeneratedPerSecond": 696.0,
       "automationLevel": 10,
       "milestones": [
         { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
@@ -219,7 +219,7 @@
       "baseCycleDuration": 300.0,
       "durationReductionPerLevel": 5.0,
       "minCycleDuration": 30.0,
-      "traceGeneratedPerSecond": 250000.0,
+      "traceGeneratedPerSecond": 1190.0,
       "automationLevel": 10,
       "milestones": [
         { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
@@ -238,7 +238,7 @@
       "baseCycleDuration": 600.0,
       "durationReductionPerLevel": 10.0,
       "minCycleDuration": 60.0,
-      "traceGeneratedPerSecond": 800000.0,
+      "traceGeneratedPerSecond": 2810.0,
       "automationLevel": 10,
       "milestones": [
         { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
@@ -257,7 +257,7 @@
       "baseCycleDuration": 1800.0,
       "durationReductionPerLevel": 25.0,
       "minCycleDuration": 120.0,
-      "traceGeneratedPerSecond": 2500000.0,
+      "traceGeneratedPerSecond": 4730.0,
       "automationLevel": 10,
       "milestones": [
         { "level": 10, "effect": "DurationMultiplier", "factor": 0.2 },
@@ -276,7 +276,7 @@
       "baseCycleDuration": 3600.0,
       "durationReductionPerLevel": 50.0,
       "minCycleDuration": 300.0,
-      "traceGeneratedPerSecond": 8000000.0,
+      "traceGeneratedPerSecond": 11640.0,
       "automationLevel": 10,
       "milestones": [
         { "level": 10, "effect": "DurationMultiplier", "factor": 0.2 },

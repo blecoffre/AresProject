@@ -39,6 +39,7 @@ namespace Core.Economy.Editor
         public double costMultiplier;
         public double baseProductionYield;
         public double traceGeneratedPerSecond;
+        public double traceCapIncrease;
 
         // Cycle
         public float baseCycleDuration;
@@ -164,6 +165,7 @@ namespace Core.Economy.Editor
             so.FindProperty("_costMultiplier").doubleValue = data.costMultiplier;
             so.FindProperty("_baseProductionYield").doubleValue = data.baseProductionYield;
             so.FindProperty("_traceGeneratedPerSecond").doubleValue = data.traceGeneratedPerSecond;
+            so.FindProperty("_traceCapIncrease").doubleValue = data.traceCapIncrease;
 
             // Ces trois champs étaient déjà écrits dans les JSON mais n'étaient jamais recopiés :
             // tous les générateurs héritaient donc de la durée par défaut du ScriptableObject.

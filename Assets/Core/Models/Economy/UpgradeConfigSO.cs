@@ -41,6 +41,13 @@ namespace Core.Models.Economy
         [SerializeField] private double _baseProductionYield = 1d;
         [SerializeField] private double _traceGeneratedPerSecond = 1f;
 
+        [Tooltip("Points de PLAFOND de Trace apportés par niveau. Réservé au Hardware : c'est " +
+                 "sa capacité de refroidissement et de dissimulation, l'équivalent d'un gain de " +
+                 "points de vie maximum. Contrairement à la trace générée, qui est forfaitaire, " +
+                 "celle-ci se multiplie par le niveau — optimiser une machine améliore sa " +
+                 "capacité d'absorption, alors que son encombrement physique ne bouge pas.")]
+        [SerializeField] private double _traceCapIncrease;
+
         [Header("Cycle (Scripts uniquement)")]
         [SerializeField] private float _baseCycleDuration = 1f;
         [Tooltip("Plancher absolu : aucun palier ni bonus ne peut descendre sous cette durée")]
@@ -68,6 +75,9 @@ namespace Core.Models.Economy
         public double CostMultiplier => _costMultiplier;
         public double BaseProductionYield => _baseProductionYield;
         public double BaseTraceGeneratedPerSecond => _traceGeneratedPerSecond;
+
+        /// <summary>Plafond de Trace apporté PAR NIVEAU. Nul en dehors du Hardware.</summary>
+        public double BaseTraceCapIncrease => _traceCapIncrease;
         public float BaseCycleDuration => _baseCycleDuration;
         public float MinCycleDuration => _minCycleDuration;
         public int AutomationLevel => _automationLevel;

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c843462bcc362c409285299e6c41c3c, type: 3}
   m_Name: BalancingConfig
   m_EditorClassIdentifier: Assembly-CSharp::Core.Models.Economy.BalancingConfigSO
-  _traceToGaugeDivisor: 100
+  _baseTraceCap: 100
   _tflopsTimeCompression: 0.05
   _maxTargetedReduction: 0.95
   _proxySynergyPerLevel: 0.01
@@ -26,7 +26,7 @@ MonoBehaviour:
   _overdriveTraceMultiplier: 10
   _emergencyBaseRequiredTFlops: 50
   _emergencyRequirementMultiplier: 3
-  _emergencyTraceReduction: 0.2
+  _emergencyTraceReduction: 0.25
   _emergencyBaseBlockedFraction: 0.3
   _emergencyBlockedIncreasePerUse: 0.1
   _emergencyMaxBlockedFraction: 0.9
