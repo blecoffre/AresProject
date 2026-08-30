@@ -10,7 +10,7 @@
       "baseCycleDuration": 1.5,
       "durationReductionPerLevel": 0.01,
       "minCycleDuration": 0.2,
-      "traceGeneratedPerSecond": 0.5,
+      "traceGeneratedPerSecond": 0.15,
       "automationLevel": 10,
       "milestones": [
         { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },

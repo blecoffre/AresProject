@@ -10,7 +10,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 1.5,
+      "traceGeneratedPerSecond": 0.4,
       "milestones": [
         { "level": 10, "effect": "TraceMultiplier", "factor": 2.0 },
         { "level": 25, "effect": "TraceMultiplier", "factor": 3.0 },

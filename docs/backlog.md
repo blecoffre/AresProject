@@ -274,6 +274,16 @@ Trois bugs de la même famille ont déjà coûté du temps. Le motif :
 
 ## Corrigé à ce jour
 
+**Lot 1 d'équilibrage : la trace devient un coût de surface** (2026-08-30, vérifié en Play Mode via MCP) — la Trace était `base × niveau` pour les trois types. Rendement et trace croissant tous deux linéairement, monter un générateur accélérait les gains ET la mort dans la même proportion : **une run rapportait 133 Datas quoi que fasse le joueur**, le premier palier utile de `SCR_01` en coûtait 138, et `floor(√(133/1000))` donnait **zéro CPU Cycle**. Aucun cliquet, aucune marge de progression : le Game Over était un mur mathématique, pas un réglage trop dur.
+
+**Règle par type**, arrêtée avec le GD. Scripts et Hardware : trace **forfaitaire**, payée à l'acquisition et figée ensuite — approfondir un outil devient silencieux, élargir l'arsenal est ce qui attire l'attention. Proxies : **× niveau, inchangé**, et c'était la condition à ne pas rater — `traceMagnitude` est le MÊME champ pour la génération et pour la dissipation, donc le figer aurait rendu un Proxy de niveau 50 aussi efficace qu'un de niveau 1, ses quatre paliers `TraceMultiplier` devenant son seul moteur. Une garde `level > 0` remplace la multiplication : sans elle, un générateur jamais acheté exposerait le joueur.
+
+Deux ancrages de données fournis par le GD : `SCR_01` 0,5 → **0,15**, `PRX_01` 1,5 → **0,4** — le premier Proxy devient un soulagement et non une immunité. Catalogue régénéré : 45 améliorations, 180 paliers, 0 orphelin.
+
+Vérifié : la trace de `SCR_01` vaut 0,150 aux niveaux 1, 2, 5, 10 et 20 ; celle de `HW_01` 0,080 partout ; la dissipation de `PRX_01` suit bien le niveau (0,4 → 0,8 → 2,0 → 8,0 avec son palier ×2). **L'invariant est rompu** : le budget d'une run passe de 988 Datas au niveau 1 à 106 667 au niveau 20. Et l'ouverture de partie atteint les 100 Datas du premier Proxy à **23 % de jauge**, contre 75 % avant.
+
+⚠️ **Reste à faire, et c'est bloquant pour le palier 2** : seules deux valeurs sur trente ont été ancrées. `SCR_02` vaut toujours 2,00, soit **treize fois** `SCR_01`. Posséder les deux donne un débit net de 1,75 contre le premier Proxy, donc une jauge pleine en **57 secondes**. Avec la valeur de 0,8 évoquée par le GD, on remonte à 182 s. Les colonnes Scripts et Proxies doivent être dérivées ensemble avant que ce lot soit jouable au-delà du premier palier.
+
 **Le nœud débloquable respire aussi pendant une run** (2026-08-30, vérifié en Play Mode via MCP) — deuxième étape du chantier accessibilité, décidée par Bertrand. La pulsation était coupée quand la fenêtre de compilation était fermée, au motif qu'un appel à l'action n'a pas de sens si l'achat est impossible. Le raisonnement ratait l'essentiel : c'est précisément pendant une run qu'on ouvre l'arbre pour PLANIFIER, et sur 134 nœuds on repère les actionnables du coin de l'œil, pas en lisant les libellés. Le canal préattentif s'éteignait au moment où le balayage sert le plus.
 
 Deux régimes désormais, tous deux réglables à l'inspecteur : **appel à l'action** quand l'achat est possible (vitesse 3, creux à 0,35 — franc), **veille** pendant une run (vitesse 1,2, creux à 0,7 — respiration discrète plutôt que clignotement). Le paramètre de `Render` cesse de s'appeler `pulse` pour `canPurchaseNow` : il ne décide plus SI le nœud respire, seulement avec quelle insistance.

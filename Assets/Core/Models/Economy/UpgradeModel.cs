@@ -233,14 +233,34 @@ namespace Core.Models.Economy
             double yield = Config.BaseProductionYield * (1d + _bonuses.YieldBoost) * level;
             float duration = Config.BaseCycleDuration * (1f - Math.Min(_balancing.MaxTargetedReduction, _bonuses.TimeReduction));
 
-            // La magnitude de Trace suit la même logique : base × niveau, puis les paliers.
-            // Pour un Proxy — et pour lui seul — le « boost de rendement » du prestige amplifie
-            // cette magnitude, qui est chez lui une DISSIPATION. L'appliquer à un Script ou à un
-            // Hardware augmenterait leur trace générée, soit l'exact inverse d'un bonus.
-            float traceMagnitude = (float)(Config.BaseTraceGeneratedPerSecond * level);
+            // La magnitude de Trace ne suit PAS la même logique que le rendement, et c'est le
+            // cœur de l'équilibrage arrêté le 2026-08-30.
+            //
+            // Tant qu'elle valait base × niveau, monter un générateur accélérait les gains ET la
+            // mort dans la même proportion : une run rapportait 133 Datas quoi que fasse le
+            // joueur, et le premier palier utile coûtait 138. Bien jouer ne changeait rien.
+            //
+            // Pour un générateur, la trace est désormais un COÛT DE SURFACE : on la paie à
+            // l'acquisition et elle ne bouge plus. Approfondir un outil devient silencieux,
+            // élargir l'arsenal est ce qui attire l'attention fédérale.
+            //
+            // Le Proxy fait exception, et il le DOIT : sa magnitude n'est pas une génération
+            // mais une DISSIPATION. La figer rendrait un Proxy de niveau 50 aussi efficace qu'un
+            // de niveau 1, et le monter deviendrait toujours un mauvais achat. Lui seul voit
+            // aussi le « boost de rendement » du prestige amplifier cette magnitude — l'appliquer
+            // à un Script augmenterait sa trace, soit l'exact inverse d'un bonus.
+            float traceMagnitude;
+
             if (Config.Type == UpgradeType.Proxy)
             {
-                traceMagnitude *= 1f + _bonuses.YieldBoost;
+                traceMagnitude = (float)(Config.BaseTraceGeneratedPerSecond * level)
+                               * (1f + _bonuses.YieldBoost);
+            }
+            else
+            {
+                // La garde sur le niveau remplace la multiplication : sans elle, un générateur
+                // jamais acheté exposerait quand même le joueur.
+                traceMagnitude = level > 0 ? (float)Config.BaseTraceGeneratedPerSecond : 0f;
             }
 
             // Paliers : effets multiplicatifs, cumulatifs, et définitifs une fois atteints.
