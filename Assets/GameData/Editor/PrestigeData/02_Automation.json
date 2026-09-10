@@ -4,7 +4,7 @@
       "id": "P_CLICK",
       "bonusType": "ClickPowerMultiplier",
       "maxLevel": 10,
-      "baseCost": 15.0,
+      "baseCost": 1.0,
       "costMult": 1.5,
       "bonus": 0.5,
       "posX": 1.0,
@@ -15,7 +15,7 @@
       "id": "P_POWER_START",
       "bonusType": "StartingComputerPower",
       "maxLevel": 5,
-      "baseCost": 50.0,
+      "baseCost": 1.0,
       "costMult": 2.0,
       "bonus": 5.0,
       "posX": 2.0,
@@ -26,7 +26,7 @@
       "id": "P_OVERCLOCK_POWER_1",
       "bonusType": "ClickPowerMultiplier",
       "maxLevel": 5,
-      "baseCost": 75.0,
+      "baseCost": 1.0,
       "costMult": 1.8,
       "bonus": 0.5,
       "posX": 3.0,
@@ -37,34 +37,37 @@
       "id": "P_OVERCLOCK_POWER_2",
       "bonusType": "ClickPowerMultiplier",
       "maxLevel": 5,
-      "baseCost": 250.0,
+      "baseCost": 1.0,
       "costMult": 2.0,
       "bonus": 1.0,
       "posX": 4.0,
       "posY": 1.0,
-      "prerequisiteId": "P_OVERCLOCK_POWER_1"
+      "prerequisiteId": "P_OVERCLOCK_POWER_1",
+      "requiredLevel": 0
     },
     {
       "id": "P_OVERCLOCK_POWER_3",
       "bonusType": "ClickPowerMultiplier",
       "maxLevel": 5,
-      "baseCost": 1000.0,
+      "baseCost": 1.0,
       "costMult": 2.5,
       "bonus": 2.0,
       "posX": 5.0,
       "posY": 1.0,
-      "prerequisiteId": "P_OVERCLOCK_POWER_2"
+      "prerequisiteId": "P_OVERCLOCK_POWER_2",
+      "requiredLevel": 0
     },
     {
       "id": "P_OVERCLOCK_AWAKE",
       "bonusType": "OverclockWakesScripts",
       "maxLevel": 1,
-      "baseCost": 5000.0,
+      "baseCost": 2.0,
       "costMult": 1.0,
       "bonus": 1.0,
       "posX": 6.0,
       "posY": 5.0,
-      "prerequisiteId": "P_OVERCLOCK_POWER_3"
+      "prerequisiteId": "P_OVERCLOCK_POWER_3",
+      "requiredLevel": 0
     }
   ]
 }

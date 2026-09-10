@@ -17,9 +17,11 @@ MonoBehaviour:
   _displayDescriptionKey: PRESTIGE_P_CLICK_DESC
   _bonusType: 2
   _maxLevel: 10
-  _baseCost: 15
+  _baseCost: 1
   _costMultiplier: 1.5
   _bonusPerLevel: 0.5
   _uiPosition: {x: 1, y: 1}
-  _prerequisite: {fileID: 11400000, guid: 88a68911de243534bbbe44191b74ba23, type: 2}
+  _requirement:
+    _node: {fileID: 11400000, guid: 88a68911de243534bbbe44191b74ba23, type: 2}
+    _requiredLevel: 1
   _targetUpgradeId: 

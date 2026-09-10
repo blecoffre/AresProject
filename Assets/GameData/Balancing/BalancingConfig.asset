@@ -12,12 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c843462bcc362c409285299e6c41c3c, type: 3}
   m_Name: BalancingConfig
   m_EditorClassIdentifier: Assembly-CSharp::Core.Models.Economy.BalancingConfigSO
-  _baseTraceCap: 100
+  _baseTraceCap: 5000000
+  _maxTraceReduction: 0.85
+  _dissipationHalfPointRatio: 0.3
+  _traceYieldExponent: 0.6
+  _ghostCacheReductionThreshold: 0.75
   _tflopsTimeCompression: 0.05
+  _tflopsCompressionExponent: 0.25
+  _tflopsYieldExponent: 0.15
+  _absoluteMinCycleDuration: 0.05
   _maxTargetedReduction: 0.95
   _proxySynergyPerLevel: 0.01
   _baseStartingMoney: 10
-  _moneyPerCpuCycle: 1000
+  _moneyPerCpuCycle: 400000
   _cleanExitMultiplier: 1.2
   _overclockWarpSeconds: 0.5
   _ghostCacheCapacitySeconds: 300

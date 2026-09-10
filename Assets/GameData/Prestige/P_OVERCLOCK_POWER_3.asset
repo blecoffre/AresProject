@@ -17,9 +17,11 @@ MonoBehaviour:
   _displayDescriptionKey: PRESTIGE_P_OVERCLOCK_POWER_3_DESC
   _bonusType: 2
   _maxLevel: 5
-  _baseCost: 1000
+  _baseCost: 1
   _costMultiplier: 2.5
   _bonusPerLevel: 2
   _uiPosition: {x: 5, y: 1}
-  _prerequisite: {fileID: 11400000, guid: 7aada6b1a6ca60c4c980af1bfdf73069, type: 2}
+  _requirement:
+    _node: {fileID: 11400000, guid: 7aada6b1a6ca60c4c980af1bfdf73069, type: 2}
+    _requiredLevel: 0
   _targetUpgradeId: 

@@ -17,11 +17,11 @@ MonoBehaviour:
   _displayDescriptionKey: UPG_HW_12_DESC
   _type: 1
   _order: 12
-  _baseCost: 2500000000
-  _costMultiplier: 1.34
+  _baseCost: 49207500000000
+  _costMultiplier: 1.42
   _baseProductionYield: 10000000
-  _traceGeneratedPerSecond: 357
-  _traceCapIncrease: 11010
+  _traceGeneratedPerSecond: 6426
+  _traceCapIncrease: 110100000
   _baseCycleDuration: 1
   _minCycleDuration: 0.1
   _durationReductionPerLevel: 0
@@ -29,13 +29,13 @@ MonoBehaviour:
   _milestones:
   - Level: 10
     Effect: 0
-    Factor: 2
+    Factor: 1.32
   - Level: 25
     Effect: 0
-    Factor: 3
+    Factor: 1.552
   - Level: 50
     Effect: 0
-    Factor: 5
+    Factor: 1.904
   - Level: 100
     Effect: 0
-    Factor: 10
+    Factor: 2.512

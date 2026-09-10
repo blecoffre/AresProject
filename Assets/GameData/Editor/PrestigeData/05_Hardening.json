@@ -1,0 +1,51 @@
+{
+  "items": [
+    {
+      "id": "P_HARDEN_1",
+      "bonusType": "TraceCapacityMultiplier",
+      "maxLevel": 10,
+      "baseCost": 1.0,
+      "costMult": 1.5,
+      "bonus": 0.01,
+      "posX": -1.0,
+      "posY": -1.0,
+      "prerequisiteId": "P_STEALTH"
+    },
+    {
+      "id": "P_HARDEN_2",
+      "bonusType": "TraceCapacityMultiplier",
+      "maxLevel": 10,
+      "baseCost": 1.0,
+      "costMult": 1.5,
+      "bonus": 0.05,
+      "posX": -1.0,
+      "posY": -2.0,
+      "prerequisiteId": "P_HARDEN_1",
+      "requiredLevel": 3
+    },
+    {
+      "id": "P_HARDEN_3",
+      "bonusType": "TraceCapacityMultiplier",
+      "maxLevel": 10,
+      "baseCost": 1.0,
+      "costMult": 1.5,
+      "bonus": 0.2,
+      "posX": -1.0,
+      "posY": -3.0,
+      "prerequisiteId": "P_HARDEN_2",
+      "requiredLevel": 3
+    },
+    {
+      "id": "P_HARDEN_4",
+      "bonusType": "TraceCapacityMultiplier",
+      "maxLevel": 10,
+      "baseCost": 1.0,
+      "costMult": 1.5,
+      "bonus": 1.0,
+      "posX": -1.0,
+      "posY": -4.0,
+      "prerequisiteId": "P_HARDEN_3",
+      "requiredLevel": 3
+    }
+  ]
+}

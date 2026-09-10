@@ -17,10 +17,10 @@ MonoBehaviour:
   _displayDescriptionKey: UPG_SCR_04_DESC
   _type: 0
   _order: 4
-  _baseCost: 8500
-  _costMultiplier: 1.14
+  _baseCost: 25500
+  _costMultiplier: 1.22
   _baseProductionYield: 450
-  _traceGeneratedPerSecond: 3.64
+  _traceGeneratedPerSecond: 65.52
   _traceCapIncrease: 0
   _baseCycleDuration: 5
   _minCycleDuration: 1.5
@@ -29,13 +29,13 @@ MonoBehaviour:
   _milestones:
   - Level: 10
     Effect: 0
-    Factor: 2
+    Factor: 1.32
   - Level: 25
     Effect: 0
-    Factor: 3
+    Factor: 1.552
   - Level: 50
     Effect: 0
-    Factor: 5
+    Factor: 1.904
   - Level: 100
     Effect: 0
-    Factor: 10
+    Factor: 2.512

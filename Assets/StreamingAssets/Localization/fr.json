@@ -501,6 +501,38 @@
       "Value": "Débloque le Data Wiper : un ver envoyé dans les serveurs fédéraux, qui efface une part de ton dossier."
     },
     {
+      "Key": "PRESTIGE_P_HARDEN_1_NAME",
+      "Value": "Cage de Faraday"
+    },
+    {
+      "Key": "PRESTIGE_P_HARDEN_1_DESC",
+      "Value": "Du grillage de poulailler agrafé aux murs du sous-sol. Ridicule, mais l'A.M.I. doit accumuler bien plus avant de lancer la saisie."
+    },
+    {
+      "Key": "PRESTIGE_P_HARDEN_2_NAME",
+      "Value": "Refroidissement liquide"
+    },
+    {
+      "Key": "PRESTIGE_P_HARDEN_2_DESC",
+      "Value": "Une machine qui chauffe est une machine qui parle. Augmente encore la marge avant saisie."
+    },
+    {
+      "Key": "PRESTIGE_P_HARDEN_3_NAME",
+      "Value": "Faux plafond"
+    },
+    {
+      "Key": "PRESTIGE_P_HARDEN_3_DESC",
+      "Value": "Tout le matériel disparaît derrière des dalles. Ce qu'ils ne trouvent pas ne compte pas au dossier."
+    },
+    {
+      "Key": "PRESTIGE_P_HARDEN_4_NAME",
+      "Value": "Bunker"
+    },
+    {
+      "Key": "PRESTIGE_P_HARDEN_4_DESC",
+      "Value": "Béton, sas étanche, et une réserve de nouilles pour six mois. La jauge de Trace encaisse un ordre de grandeur de plus."
+    },
+    {
       "Key": "UI_RUN_END_SEIZED_NARRATIVE",
       "Value": "// SAISIE FÉDÉRALE //\nIls ont remonté la ligne. Le matériel est parti dans un carton scellé."
     },
@@ -569,6 +601,14 @@
       "Value": "> PRÉREQUIS MANQUANT : {0}"
     },
     {
+      "Key": "UI_PRESTIGE_DETAILS_PREREQ_LEVEL_OK",
+      "Value": "> PRÉREQUIS ATTEINT : {0} — niveau {1}/{2}"
+    },
+    {
+      "Key": "UI_PRESTIGE_DETAILS_PREREQ_LEVEL_MISSING",
+      "Value": "> PRÉREQUIS MANQUANT : {0} — niveau {1}/{2}"
+    },
+    {
       "Key": "UI_PRESTIGE_DETAILS_COST",
       "Value": "> CYCLES REQUIS : {0}"
     },
@@ -632,7 +672,7 @@
       "Key": "UI_PRESTIGE_EFFECT_SPECIFIC_TIME",
       "Value": "> Durée de cycle de {1} : -{0:0.##} % par niveau"
     },
-     {
+    {
       "Key": "UI_PRESTIGE_EFFECT_AUTOMATION",
       "Value": "> Réduction du palier d'automatisation de {1} : -{0} par niveau"
     },
@@ -659,6 +699,34 @@
     {
       "Key": "UI_PRESTIGE_EFFECT_OVERCLOCK_WAKE",
       "Value": "> L'Overclock relance les Scripts à l'arrêt"
+    },
+    {
+      "Key": "UI_BUY_ONE",
+      "Value": "ACHETER"
+    },
+    {
+      "Key": "UI_BUY_BULK",
+      "Value": "ACHETER x{0}"
+    },
+    {
+      "Key": "UI_BUY_QTY_X1",
+      "Value": "x1"
+    },
+    {
+      "Key": "UI_BUY_QTY_X10",
+      "Value": "x10"
+    },
+    {
+      "Key": "UI_BUY_QTY_X100",
+      "Value": "x100"
+    },
+    {
+      "Key": "UI_BUY_QTY_MAX",
+      "Value": "MAX"
+    },
+    {
+      "Key": "LOG_UPGRADE_PURCHASED_BULK",
+      "Value": "Matériel {0} amélioré de {1} niveaux — niveau {2} atteint"
     }
   ]
 }

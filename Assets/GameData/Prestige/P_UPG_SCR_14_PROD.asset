@@ -21,5 +21,7 @@ MonoBehaviour:
   _costMultiplier: 1.4
   _bonusPerLevel: 0.1
   _uiPosition: {x: -43, y: 7}
-  _prerequisite: {fileID: 11400000, guid: 7792fd0fa311a73409a3a473fa717b12, type: 2}
+  _requirement:
+    _node: {fileID: 11400000, guid: 7792fd0fa311a73409a3a473fa717b12, type: 2}
+    _requiredLevel: 1
   _targetUpgradeId: SCR_14

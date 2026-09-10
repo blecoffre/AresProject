@@ -21,5 +21,7 @@ MonoBehaviour:
   _costMultiplier: 1.4
   _bonusPerLevel: 0.1
   _uiPosition: {x: -6, y: 0}
-  _prerequisite: {fileID: 11400000, guid: dd06ec5371c7f264daf5489e43e63882, type: 2}
+  _requirement:
+    _node: {fileID: 11400000, guid: dd06ec5371c7f264daf5489e43e63882, type: 2}
+    _requiredLevel: 1
   _targetUpgradeId: HW_02

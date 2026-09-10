@@ -17,9 +17,11 @@ MonoBehaviour:
   _displayDescriptionKey: PRESTIGE_P_POWER_START_DESC
   _bonusType: 5
   _maxLevel: 5
-  _baseCost: 50
+  _baseCost: 1
   _costMultiplier: 2
   _bonusPerLevel: 5
   _uiPosition: {x: 2, y: 2}
-  _prerequisite: {fileID: 11400000, guid: aa52381dd1c0e3d43852547ee40a3096, type: 2}
+  _requirement:
+    _node: {fileID: 11400000, guid: aa52381dd1c0e3d43852547ee40a3096, type: 2}
+    _requiredLevel: 1
   _targetUpgradeId: 

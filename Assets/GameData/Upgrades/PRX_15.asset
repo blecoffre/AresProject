@@ -17,8 +17,8 @@ MonoBehaviour:
   _displayDescriptionKey: UPG_PRX_15_DESC
   _type: 2
   _order: 15
-  _baseCost: 15000000000000
-  _costMultiplier: 1.32
+  _baseCost: 7.971615e+18
+  _costMultiplier: 1.4
   _baseProductionYield: 0
   _traceGeneratedPerSecond: 19670
   _traceCapIncrease: 0
@@ -29,13 +29,13 @@ MonoBehaviour:
   _milestones:
   - Level: 10
     Effect: 2
-    Factor: 2
+    Factor: 1.32
   - Level: 25
     Effect: 2
-    Factor: 3
+    Factor: 1.552
   - Level: 50
     Effect: 2
-    Factor: 5
+    Factor: 1.904
   - Level: 100
     Effect: 2
-    Factor: 10
+    Factor: 2.512

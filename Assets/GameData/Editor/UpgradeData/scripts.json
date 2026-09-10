@@ -5,18 +5,34 @@
       "type": "Script",
       "order": 1,
       "baseCost": 10.0,
-      "costMultiplier": 1.07,
+      "costMultiplier": 1.15,
       "baseProductionYield": 1.0,
       "baseCycleDuration": 1.5,
       "durationReductionPerLevel": 0.01,
       "minCycleDuration": 0.2,
-      "traceGeneratedPerSecond": 0.15,
+      "traceGeneratedPerSecond": 2.7,
       "automationLevel": 10,
       "milestones": [
-        { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
-        { "level": 25, "effect": "DurationMultiplier", "factor": 0.5 },
-        { "level": 50, "effect": "YieldMultiplier", "factor": 3.0 },
-        { "level": 100, "effect": "YieldMultiplier", "factor": 5.0 }
+        {
+          "level": 10,
+          "effect": "YieldMultiplier",
+          "factor": 1.32
+        },
+        {
+          "level": 25,
+          "effect": "DurationMultiplier",
+          "factor": 0.7579
+        },
+        {
+          "level": 50,
+          "effect": "YieldMultiplier",
+          "factor": 1.552
+        },
+        {
+          "level": 100,
+          "effect": "YieldMultiplier",
+          "factor": 1.904
+        }
       ]
     },
     {
@@ -24,18 +40,34 @@
       "type": "Script",
       "order": 2,
       "baseCost": 150.0,
-      "costMultiplier": 1.09,
+      "costMultiplier": 1.17,
       "baseProductionYield": 12.0,
       "baseCycleDuration": 2.0,
       "durationReductionPerLevel": 0.02,
       "minCycleDuration": 0.5,
-      "traceGeneratedPerSecond": 0.626,
+      "traceGeneratedPerSecond": 11.268,
       "automationLevel": 10,
       "milestones": [
-        { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
-        { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
-        { "level": 50, "effect": "YieldMultiplier", "factor": 5.0 },
-        { "level": 100, "effect": "YieldMultiplier", "factor": 10.0 }
+        {
+          "level": 10,
+          "effect": "YieldMultiplier",
+          "factor": 1.32
+        },
+        {
+          "level": 25,
+          "effect": "YieldMultiplier",
+          "factor": 1.552
+        },
+        {
+          "level": 50,
+          "effect": "YieldMultiplier",
+          "factor": 1.904
+        },
+        {
+          "level": 100,
+          "effect": "YieldMultiplier",
+          "factor": 2.512
+        }
       ]
     },
     {
@@ -43,246 +75,454 @@
       "type": "Script",
       "order": 3,
       "baseCost": 1200.0,
-      "costMultiplier": 1.12,
+      "costMultiplier": 1.2,
       "baseProductionYield": 85.0,
       "baseCycleDuration": 3.0,
       "durationReductionPerLevel": 0.05,
       "minCycleDuration": 1.0,
-      "traceGeneratedPerSecond": 1.72,
+      "traceGeneratedPerSecond": 30.96,
       "automationLevel": 10,
       "milestones": [
-        { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
-        { "level": 25, "effect": "DurationMultiplier", "factor": 0.5 },
-        { "level": 50, "effect": "YieldMultiplier", "factor": 4.0 },
-        { "level": 100, "effect": "YieldMultiplier", "factor": 10.0 }
+        {
+          "level": 10,
+          "effect": "YieldMultiplier",
+          "factor": 1.32
+        },
+        {
+          "level": 25,
+          "effect": "DurationMultiplier",
+          "factor": 0.7579
+        },
+        {
+          "level": 50,
+          "effect": "YieldMultiplier",
+          "factor": 1.741
+        },
+        {
+          "level": 100,
+          "effect": "YieldMultiplier",
+          "factor": 2.512
+        }
       ]
     },
     {
       "id": "SCR_04",
       "type": "Script",
       "order": 4,
-      "baseCost": 8500.0,
-      "costMultiplier": 1.14,
+      "baseCost": 25500.0,
+      "costMultiplier": 1.22,
       "baseProductionYield": 450.0,
       "baseCycleDuration": 5.0,
       "durationReductionPerLevel": 0.1,
       "minCycleDuration": 1.5,
-      "traceGeneratedPerSecond": 3.64,
+      "traceGeneratedPerSecond": 65.52,
       "automationLevel": 10,
       "milestones": [
-        { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
-        { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
-        { "level": 50, "effect": "YieldMultiplier", "factor": 5.0 },
-        { "level": 100, "effect": "YieldMultiplier", "factor": 10.0 }
+        {
+          "level": 10,
+          "effect": "YieldMultiplier",
+          "factor": 1.32
+        },
+        {
+          "level": 25,
+          "effect": "YieldMultiplier",
+          "factor": 1.552
+        },
+        {
+          "level": 50,
+          "effect": "YieldMultiplier",
+          "factor": 1.904
+        },
+        {
+          "level": 100,
+          "effect": "YieldMultiplier",
+          "factor": 2.512
+        }
       ]
     },
     {
       "id": "SCR_05",
       "type": "Script",
       "order": 5,
-      "baseCost": 45000.0,
-      "costMultiplier": 1.15,
+      "baseCost": 405000.0,
+      "costMultiplier": 1.23,
       "baseProductionYield": 2100.0,
       "baseCycleDuration": 10.0,
       "durationReductionPerLevel": 0.2,
       "minCycleDuration": 2.0,
-      "traceGeneratedPerSecond": 6.31,
+      "traceGeneratedPerSecond": 113.58,
       "automationLevel": 10,
       "milestones": [
-        { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
-        { "level": 25, "effect": "DurationMultiplier", "factor": 0.5 },
-        { "level": 50, "effect": "YieldMultiplier", "factor": 4.0 },
-        { "level": 100, "effect": "YieldMultiplier", "factor": 10.0 }
+        {
+          "level": 10,
+          "effect": "YieldMultiplier",
+          "factor": 1.32
+        },
+        {
+          "level": 25,
+          "effect": "DurationMultiplier",
+          "factor": 0.7579
+        },
+        {
+          "level": 50,
+          "effect": "YieldMultiplier",
+          "factor": 1.741
+        },
+        {
+          "level": 100,
+          "effect": "YieldMultiplier",
+          "factor": 2.512
+        }
       ]
     },
     {
       "id": "SCR_06",
       "type": "Script",
       "order": 6,
-      "baseCost": 250000.0,
-      "costMultiplier": 1.16,
+      "baseCost": 6750000.0,
+      "costMultiplier": 1.24,
       "baseProductionYield": 10500.0,
       "baseCycleDuration": 15.0,
       "durationReductionPerLevel": 0.25,
       "minCycleDuration": 2.5,
-      "traceGeneratedPerSecond": 13.8,
+      "traceGeneratedPerSecond": 248.4,
       "automationLevel": 10,
       "milestones": [
-        { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
-        { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
-        { "level": 50, "effect": "YieldMultiplier", "factor": 5.0 },
-        { "level": 100, "effect": "YieldMultiplier", "factor": 10.0 }
+        {
+          "level": 10,
+          "effect": "YieldMultiplier",
+          "factor": 1.32
+        },
+        {
+          "level": 25,
+          "effect": "YieldMultiplier",
+          "factor": 1.552
+        },
+        {
+          "level": 50,
+          "effect": "YieldMultiplier",
+          "factor": 1.904
+        },
+        {
+          "level": 100,
+          "effect": "YieldMultiplier",
+          "factor": 2.512
+        }
       ]
     },
     {
       "id": "SCR_07",
       "type": "Script",
       "order": 7,
-      "baseCost": 1500000.0,
-      "costMultiplier": 1.17,
+      "baseCost": 121500000.0,
+      "costMultiplier": 1.25,
       "baseProductionYield": 50000.0,
       "baseCycleDuration": 20.0,
       "durationReductionPerLevel": 0.3,
       "minCycleDuration": 3.0,
-      "traceGeneratedPerSecond": 31.6,
+      "traceGeneratedPerSecond": 568.8,
       "automationLevel": 10,
       "milestones": [
-        { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
-        { "level": 25, "effect": "DurationMultiplier", "factor": 0.5 },
-        { "level": 50, "effect": "YieldMultiplier", "factor": 4.0 },
-        { "level": 100, "effect": "YieldMultiplier", "factor": 10.0 }
+        {
+          "level": 10,
+          "effect": "YieldMultiplier",
+          "factor": 1.32
+        },
+        {
+          "level": 25,
+          "effect": "DurationMultiplier",
+          "factor": 0.7579
+        },
+        {
+          "level": 50,
+          "effect": "YieldMultiplier",
+          "factor": 1.741
+        },
+        {
+          "level": 100,
+          "effect": "YieldMultiplier",
+          "factor": 2.512
+        }
       ]
     },
     {
       "id": "SCR_08",
       "type": "Script",
       "order": 8,
-      "baseCost": 10000000.0,
-      "costMultiplier": 1.18,
+      "baseCost": 2430000000.0,
+      "costMultiplier": 1.26,
       "baseProductionYield": 250000.0,
       "baseCycleDuration": 30.0,
       "durationReductionPerLevel": 0.5,
       "minCycleDuration": 5.0,
-      "traceGeneratedPerSecond": 69.0,
+      "traceGeneratedPerSecond": 1242.0,
       "automationLevel": 10,
       "milestones": [
-        { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
-        { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
-        { "level": 50, "effect": "YieldMultiplier", "factor": 5.0 },
-        { "level": 100, "effect": "YieldMultiplier", "factor": 10.0 }
+        {
+          "level": 10,
+          "effect": "YieldMultiplier",
+          "factor": 1.32
+        },
+        {
+          "level": 25,
+          "effect": "YieldMultiplier",
+          "factor": 1.552
+        },
+        {
+          "level": 50,
+          "effect": "YieldMultiplier",
+          "factor": 1.904
+        },
+        {
+          "level": 100,
+          "effect": "YieldMultiplier",
+          "factor": 2.512
+        }
       ]
     },
     {
       "id": "SCR_09",
       "type": "Script",
       "order": 9,
-      "baseCost": 85000000.0,
-      "costMultiplier": 1.19,
+      "baseCost": 61965000000.0,
+      "costMultiplier": 1.27,
       "baseProductionYield": 1200000.0,
       "baseCycleDuration": 45.0,
       "durationReductionPerLevel": 0.8,
       "minCycleDuration": 8.0,
-      "traceGeneratedPerSecond": 147.0,
+      "traceGeneratedPerSecond": 2646.0,
       "automationLevel": 10,
       "milestones": [
-        { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
-        { "level": 25, "effect": "DurationMultiplier", "factor": 0.5 },
-        { "level": 50, "effect": "YieldMultiplier", "factor": 4.0 },
-        { "level": 100, "effect": "YieldMultiplier", "factor": 10.0 }
+        {
+          "level": 10,
+          "effect": "YieldMultiplier",
+          "factor": 1.32
+        },
+        {
+          "level": 25,
+          "effect": "DurationMultiplier",
+          "factor": 0.7579
+        },
+        {
+          "level": 50,
+          "effect": "YieldMultiplier",
+          "factor": 1.741
+        },
+        {
+          "level": 100,
+          "effect": "YieldMultiplier",
+          "factor": 2.512
+        }
       ]
     },
     {
       "id": "SCR_10",
       "type": "Script",
       "order": 10,
-      "baseCost": 600000000.0,
-      "costMultiplier": 1.2,
+      "baseCost": 1312200000000.0,
+      "costMultiplier": 1.28,
       "baseProductionYield": 6000000.0,
       "baseCycleDuration": 60.0,
       "durationReductionPerLevel": 1.0,
       "minCycleDuration": 10.0,
-      "traceGeneratedPerSecond": 347.0,
+      "traceGeneratedPerSecond": 6246.0,
       "automationLevel": 10,
       "milestones": [
-        { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
-        { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
-        { "level": 50, "effect": "YieldMultiplier", "factor": 5.0 },
-        { "level": 100, "effect": "YieldMultiplier", "factor": 10.0 }
+        {
+          "level": 10,
+          "effect": "YieldMultiplier",
+          "factor": 1.32
+        },
+        {
+          "level": 25,
+          "effect": "YieldMultiplier",
+          "factor": 1.552
+        },
+        {
+          "level": 50,
+          "effect": "YieldMultiplier",
+          "factor": 1.904
+        },
+        {
+          "level": 100,
+          "effect": "YieldMultiplier",
+          "factor": 2.512
+        }
       ]
     },
     {
       "id": "SCR_11",
       "type": "Script",
       "order": 11,
-      "baseCost": 4500000000.0,
-      "costMultiplier": 1.21,
+      "baseCost": 29524500000000.0,
+      "costMultiplier": 1.29,
       "baseProductionYield": 35000000.0,
       "baseCycleDuration": 120.0,
       "durationReductionPerLevel": 2.0,
       "minCycleDuration": 15.0,
-      "traceGeneratedPerSecond": 696.0,
+      "traceGeneratedPerSecond": 12528.0,
       "automationLevel": 10,
       "milestones": [
-        { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
-        { "level": 25, "effect": "DurationMultiplier", "factor": 0.5 },
-        { "level": 50, "effect": "YieldMultiplier", "factor": 4.0 },
-        { "level": 100, "effect": "YieldMultiplier", "factor": 10.0 }
+        {
+          "level": 10,
+          "effect": "YieldMultiplier",
+          "factor": 1.32
+        },
+        {
+          "level": 25,
+          "effect": "DurationMultiplier",
+          "factor": 0.7579
+        },
+        {
+          "level": 50,
+          "effect": "YieldMultiplier",
+          "factor": 1.741
+        },
+        {
+          "level": 100,
+          "effect": "YieldMultiplier",
+          "factor": 2.512
+        }
       ]
     },
     {
       "id": "SCR_12",
       "type": "Script",
       "order": 12,
-      "baseCost": 35000000000.0,
-      "costMultiplier": 1.22,
+      "baseCost": 688905000000000.0,
+      "costMultiplier": 1.3,
       "baseProductionYield": 200000000.0,
       "baseCycleDuration": 300.0,
       "durationReductionPerLevel": 5.0,
       "minCycleDuration": 30.0,
-      "traceGeneratedPerSecond": 1190.0,
+      "traceGeneratedPerSecond": 21420.0,
       "automationLevel": 10,
       "milestones": [
-        { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
-        { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
-        { "level": 50, "effect": "YieldMultiplier", "factor": 5.0 },
-        { "level": 100, "effect": "YieldMultiplier", "factor": 10.0 }
+        {
+          "level": 10,
+          "effect": "YieldMultiplier",
+          "factor": 1.32
+        },
+        {
+          "level": 25,
+          "effect": "YieldMultiplier",
+          "factor": 1.552
+        },
+        {
+          "level": 50,
+          "effect": "YieldMultiplier",
+          "factor": 1.904
+        },
+        {
+          "level": 100,
+          "effect": "YieldMultiplier",
+          "factor": 2.512
+        }
       ]
     },
     {
       "id": "SCR_13",
       "type": "Script",
       "order": 13,
-      "baseCost": 250000000000.0,
-      "costMultiplier": 1.23,
+      "baseCost": 1.476225e+16,
+      "costMultiplier": 1.31,
       "baseProductionYield": 1500000000.0,
       "baseCycleDuration": 600.0,
       "durationReductionPerLevel": 10.0,
       "minCycleDuration": 60.0,
-      "traceGeneratedPerSecond": 2810.0,
+      "traceGeneratedPerSecond": 50580.0,
       "automationLevel": 10,
       "milestones": [
-        { "level": 10, "effect": "YieldMultiplier", "factor": 2.0 },
-        { "level": 25, "effect": "DurationMultiplier", "factor": 0.5 },
-        { "level": 50, "effect": "YieldMultiplier", "factor": 4.0 },
-        { "level": 100, "effect": "YieldMultiplier", "factor": 10.0 }
+        {
+          "level": 10,
+          "effect": "YieldMultiplier",
+          "factor": 1.32
+        },
+        {
+          "level": 25,
+          "effect": "DurationMultiplier",
+          "factor": 0.7579
+        },
+        {
+          "level": 50,
+          "effect": "YieldMultiplier",
+          "factor": 1.741
+        },
+        {
+          "level": 100,
+          "effect": "YieldMultiplier",
+          "factor": 2.512
+        }
       ]
     },
     {
       "id": "SCR_14",
       "type": "Script",
       "order": 14,
-      "baseCost": 2000000000000.0,
-      "costMultiplier": 1.24,
+      "baseCost": 3.54294e+17,
+      "costMultiplier": 1.32,
       "baseProductionYield": 10000000000.0,
       "baseCycleDuration": 1800.0,
       "durationReductionPerLevel": 25.0,
       "minCycleDuration": 120.0,
-      "traceGeneratedPerSecond": 4730.0,
+      "traceGeneratedPerSecond": 85140.0,
       "automationLevel": 10,
       "milestones": [
-        { "level": 10, "effect": "DurationMultiplier", "factor": 0.2 },
-        { "level": 25, "effect": "YieldMultiplier", "factor": 3.0 },
-        { "level": 50, "effect": "DurationMultiplier", "factor": 0.5 },
-        { "level": 100, "effect": "YieldMultiplier", "factor": 10.0 }
+        {
+          "level": 10,
+          "effect": "DurationMultiplier",
+          "factor": 0.5253
+        },
+        {
+          "level": 25,
+          "effect": "YieldMultiplier",
+          "factor": 1.552
+        },
+        {
+          "level": 50,
+          "effect": "DurationMultiplier",
+          "factor": 0.7579
+        },
+        {
+          "level": 100,
+          "effect": "YieldMultiplier",
+          "factor": 2.512
+        }
       ]
     },
     {
       "id": "SCR_15",
       "type": "Script",
       "order": 15,
-      "baseCost": 15000000000000.0,
-      "costMultiplier": 1.25,
+      "baseCost": 7.971615e+18,
+      "costMultiplier": 1.33,
       "baseProductionYield": 80000000000.0,
       "baseCycleDuration": 3600.0,
       "durationReductionPerLevel": 50.0,
       "minCycleDuration": 300.0,
-      "traceGeneratedPerSecond": 11640.0,
+      "traceGeneratedPerSecond": 209520.0,
       "automationLevel": 10,
       "milestones": [
-        { "level": 10, "effect": "DurationMultiplier", "factor": 0.2 },
-        { "level": 25, "effect": "YieldMultiplier", "factor": 4.0 },
-        { "level": 50, "effect": "DurationMultiplier", "factor": 0.5 },
-        { "level": 100, "effect": "YieldMultiplier", "factor": 10.0 }
+        {
+          "level": 10,
+          "effect": "DurationMultiplier",
+          "factor": 0.5253
+        },
+        {
+          "level": 25,
+          "effect": "YieldMultiplier",
+          "factor": 1.741
+        },
+        {
+          "level": 50,
+          "effect": "DurationMultiplier",
+          "factor": 0.7579
+        },
+        {
+          "level": 100,
+          "effect": "YieldMultiplier",
+          "factor": 2.512
+        }
       ]
     }
   ]

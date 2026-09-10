@@ -21,5 +21,7 @@ MonoBehaviour:
   _costMultiplier: 1.4
   _bonusPerLevel: 0.1
   _uiPosition: {x: -4, y: -6}
-  _prerequisite: {fileID: 11400000, guid: 88d27e22247b91148a9faf62b9da9344, type: 2}
+  _requirement:
+    _node: {fileID: 11400000, guid: 88d27e22247b91148a9faf62b9da9344, type: 2}
+    _requiredLevel: 1
   _targetUpgradeId: PRX_01
