@@ -53,3 +53,13 @@ Thumbs.db
 # ---- Ne PAS ignorer ----
 # Les .meta sont indispensables : Unity casse ses références sans eux.
 !*.meta
+
+# Mesures d'équilibrage générées par Tools/Core/Équilibrage — jamais versionnées.
+/BalanceReports/
+
+# Archive de build : 174 Mo, reconstructible, et irretirable de l'historique une fois entrée.
+/WinBUILD.7z
+/WinBUILD/
+
+# Sortie de l'outil graphify : dérivée du dépôt, jamais une source.
+/graphify-out/
