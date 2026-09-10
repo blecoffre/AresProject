@@ -398,6 +398,7 @@ MonoBehaviour:
   _sweepBackgroundImage: {fileID: 7472005168701164637}
   _buyButton: {fileID: 3356447077186908584}
   _runButton: {fileID: 1424997338531184327}
+  _buyLabelText: {fileID: 4447927400310386409}
 --- !u!114 &2957440375534472073
 MonoBehaviour:
   m_ObjectHideFlags: 0
