@@ -25,19 +25,33 @@ La valeur ne bouge qu'à l'achat d'un Hardware. Elle ne s'accumule pas dans le t
 
 Les TFlops agissent à deux endroits :
 
+⚠️ **Les TFlops agissent désormais à TROIS endroits, et les formules ci-dessous ont changé le
+2026-08-31.** Voir « Le Hardware n'est plus un pilier mort » plus bas, qui fait foi.
+
 **1. Compression du temps sur les Scripts**
 ```
-TempsReel = TempsBase / (1 + TFlops × 0.05)
+TempsReel = TempsBase / (1 + TFlops × 0.05) ^ TFlopsCompressionExponent
 ```
 
-10 s de base avec 20 TFlops → 5 s. Décroissance asymptotique : ne tombe jamais à zéro.
+Décroissance asymptotique : ne tombe jamais à zéro. L'exposant a été ajouté le 31/08 — sans lui,
+la compression butait sur `minCycleDuration` dès quelques dizaines de TFlops.
 
 **2. Efficacité des Proxies**
 ```
 DissipationTrace = ProxyBase × (1 + log10(1 + TFlops))
 ```
 
-Le `log10` donne un gros boost au début puis aplatit la courbe — le joueur ne doit **jamais** devenir indétectable.
+Le `log10` donne un gros boost au début puis aplatit la courbe — le joueur ne doit **jamais**
+devenir indétectable. Inchangé, mais ce n'est plus une valeur soustraite : elle alimente la
+puissance `D` de la formule de saturation.
+
+**3. Rendement des Scripts** *(ajouté le 2026-08-31)*
+```
+RendementScript × = (1 + TFlops) ^ TFlopsYieldExponent
+```
+
+Réservé aux Scripts. Chez un Hardware le rendement EST la capacité en TFlops : le brancher là
+créerait une boucle divergente.
 
 ## Cycles de production — Scripts uniquement
 
@@ -72,12 +86,129 @@ Les cycles sont **gelés** en fin de run et remis à zéro au redémarrage. La p
 
 ## Trace — les Proxies agissent sur le débit, jamais sur la jauge
 
+**Refonte du 2026-08-31 — la soustraction plate est morte, remplacée par une saturation.**
+
 ```
 TraceBrute  = (Σ TraceScriptsActifs + Σ TraceHardwarePossédés) × (1 − ReductionPrestige)
-DebitTrace  = max(0, TraceBrute − Σ DissipationProxies)
+Reduction   = MaxTraceReduction × D / (D + HalfPointRatio × TraceBrute)
+DebitTrace  = TraceBrute × (1 − Reduction)
 ```
 
-La réduction de prestige s'applique **avant** la soustraction des Proxies.
+où `D` est la puissance de dissipation cumulée des Proxies :
+
+```
+D = Σ (base × niveau × paliers) × (1 + log10(1 + TFlops)) × (1 + TFlops × k) ^ CompressionExponent
+```
+
+**Le facteur de compression y a été ajouté le 2026-08-31, et il n'est pas un bonus de plus.**
+Sans lui la défense décrochait mécaniquement : un Script comprimé ×33 verse sa trace de cycle
+trente-trois fois plus souvent, donc son Trace/s est multiplié d'autant, alors que la dissipation
+— exprimée par seconde — ne gagnait que le `log10`. Mesuré en simulation de fin de partie :
+1 500 niveaux de Proxies achetés ne tenaient plus que **24 %** de réduction. Avec le facteur,
+**80 %**.
+
+Un Proxy filtre du **trafic**, pas des secondes, et il tourne sur le matériel du joueur : si les
+Scripts vont trente fois plus vite, sa charge suit. La compression devient ainsi **neutre** sur le
+rapport dissipation/génération, et tout le danger du Hardware passe par où il doit — sa propre
+chaleur et le boost de rendement qu'il donne aux Scripts, tous deux comptés en `puissance^0,6`.
+
+**Pourquoi.** L'ancienne formule `max(0, Brut − Dissipation)` opposait une valeur **non bornée**
+à une génération **bornée** — la trace étant devenue forfaitaire le 30/08, elle plafonnait à
+28 192/s pour le jeu ENTIER. Mesuré : un unique `PRX_01` monté au niveau 100, soit 2,7 M$ dans
+une économie qui atteint 1e13, annulait toute la trace du jeu définitivement. Le joueur ne
+mourait plus que s'il le décidait, et il n'existait aucun arbitrage.
+
+**Trois propriétés de la nouvelle forme :**
+
+1. **L'asymptote n'est jamais atteinte.** Une fraction de la trace passe toujours, donc la jauge
+   monte toujours. L'invulnérabilité n'est plus un réglage à ne pas rater : elle est
+   arithmétiquement hors d'atteinte.
+2. **Le coût de chaque tranche explose.** Passer de 42,5 % à 76,5 % de réduction demande 9× plus
+   de puissance ; atteindre 84,9 % en demande 849×. C'est ce qui rend **tout plafond de niveau
+   inutile** — le rendement décroissant *est* le plafond, et il est naturel plutôt qu'arbitraire.
+   Vérifié : tout au niveau 1000, Proxies compris, donne 18,7 % de réduction seulement.
+3. **Seul le RATIO `D/Brut` compte, jamais la magnitude.** La formule se comporte à l'identique à
+   1e0 et à 1e13. Conséquence voulue et centrale : **faire grossir son économie dilue les Proxies
+   déjà achetés**. Défense figée à 100 niveaux de `PRX_01`, en poussant la production :
+   84,4 % → 62,8 % → 3,6 %. Le joueur doit réinvestir en permanence, ou assumer le risque.
+
+Il n'y a **pas** de plafond par Proxy : les quinze versent dans un `D` unique et c'est le *pool*
+qui sature. Des budgets séparés feraient une check-list à remplir, pas un arbitrage.
+
+La réduction de prestige s'applique **avant** la réduction des Proxies.
+
+### La trace suit le rendement, à un exposant strictement entre 0 et 1
+
+**Tranché le 2026-08-31, annule et remplace le « coût de surface » du 30/08.**
+
+```
+TraceParCycle = BaseTrace × BaseCycleDuration × (Puissance × BoostTFlops) ^ TraceYieldExponent
+TracePerSeconde = TraceParCycle / DuréeCycleCourante
+```
+
+`Puissance` = niveau × paliers de rendement. Le Hardware suit la même règle, mais en continu.
+Le Proxy garde un couplage **linéaire** : sa magnitude est une dissipation, l'amortir rendrait un
+Proxy de niveau 50 à peine meilleur qu'un de niveau 1.
+
+C'est la synthèse de deux échecs successifs. À l'exposant **1** (avant le 30/08), monter un
+générateur accélérait les gains ET la mort dans la même proportion : une run rapportait 133 Datas
+quoi que fasse le joueur. À l'exposant **0** (le coût de surface du 30/08), la génération devenait
+bornée pour toujours et la défense gagnait mécaniquement. À **0,6**, doubler son rendement ne
+multiplie la trace que par 1,52 : progresser paie, sans jamais supprimer le danger.
+
+Le facteur `BaseCycleDuration` convertit la donnée historique — exprimée par seconde — en quantité
+par cycle. Au niveau 1, sans palier ni TFlops, les deux écritures coïncident exactement : **aucune
+des 45 valeurs de trace des JSON n'a eu besoin d'être réécrite.**
+
+### Le Hardware n'est plus un pilier mort
+
+**Tranché le 2026-08-31.** `minCycleDuration` bornait la compression, et les seuils de saturation
+étaient dérisoires : `SCR_15` à **4 TFlops**, `SCR_14` et `SCR_03` à **10**, médiane à 55 — alors
+que `HW_01` niveau 10 en fournit déjà 40. Passé ce mur, le Hardware n'apportait plus rien
+économiquement. Constaté en simulation : après 60 min, une IA d'achat au meilleur ROI avait
+`SCR_01=252` mais `HW_01=13, HW_02=2`.
+
+Deux changements :
+
+```
+DuréeCycle = DuréeBase / (1 + TFlops × k) ^ TFlopsCompressionExponent     (plus de mur par générateur)
+RendementScript × = (1 + TFlops) ^ TFlopsYieldExponent                    (nouveau)
+```
+
+`minCycleDuration` **n'est plus lu** — comme `durationReductionPerLevel`, le champ survit dans les
+données sans être utilisé. Un plancher **absolu** unique, dans `BalancingConfig`, sert de garde-fou
+de boucle au `ScriptCycleRunner`.
+
+Le boost de rendement est **réservé aux Scripts** : chez un Hardware le rendement EST la capacité
+en TFlops, donc le brancher là créerait une boucle divergente.
+
+Les deux effets ne jouent pas le même rôle face au risque. La **compression** accélère l'argent et
+la trace dans la même proportion, et depuis le correctif ci-dessus elle accélère aussi la
+dissipation : elle est donc neutre sur le risque, et n'est plus qu'un accélérateur d'horloge. Le
+**boost de rendement**, lui, passe par l'exposant 0,6 : il rapporte plus qu'il ne coûte en trace.
+C'est le versant récompense du pilier.
+
+### Le plafond de jauge suit la puissance, plus le seul niveau
+
+**Tranché le 2026-08-31 — annule l'asymétrie posée le 30/08.**
+
+```
+PlafondHardware = traceCapIncrease × puissance ^ TraceYieldExponent
+```
+
+Il valait `base × niveau`, et le GDD assumait cette asymétrie — « approfondir une machine améliore
+son refroidissement sans augmenter son encombrement » — tant que la trace générée était
+forfaitaire. Elle suit désormais `puissance^0,6` : un plafond resté linéaire décroche aussitôt.
+
+Mesuré, et c'est sans appel : **avec l'arbre de prestige entièrement acheté, le brut était
+multiplié par 98 quand le plafond ne gagnait que 8 %** — une run de fin de partie tombait de
+1 766 s à **82 s**. Plus le joueur progressait, plus ses runs se raccourcissaient, jusqu'à rendre
+la méta-progression impossible.
+
+Les deux grandeurs partagent donc l'exposant, ce qui rend la contribution du Hardware à la survie
+constante en proportion, donc **calable** : le rapport entre `traceCapIncrease` et
+`traceGeneratedPerSecond` d'un palier dit à lui seul combien de secondes de survie cette machine
+achète contre sa propre chaleur. Il vaut ≈ 60 sur les quinze paliers actuels.
 
 **Génération de la Trace :** Un Script génère de la Trace **uniquement pendant qu'un cycle tourne**. Cela renforce le concept de risk/reward (l'A.M.I. ne repère le piratage que lorsqu'il est actif), particulièrement en début de partie quand le lancement est strictement manuel.
 
@@ -88,6 +219,180 @@ La réduction de prestige s'applique **avant** la soustraction des Proxies.
 **Synergie des Proxies (tranché le 2026-08-27)** : chaque niveau de Proxy possédé accélère TOUS les Scripts de 1 %, cumulé sur l'ensemble du parc — `1 + niveaux × 0,01`. Un achat de Proxy n'est donc jamais perdu, même quand la Trace est basse. Multiplicateur **dédié**, appliqué à la durée de cycle : le brancher sur les TFlops créerait une boucle, la dissipation dépendant elle-même des TFlops par son `log10`. ⚠️ Linéaire et sans plafond, contrairement au reste du jeu — c'est `minCycleDuration` qui bornera l'effet, donc un plafond subi plutôt que choisi.
 
 **La règle d'or tient, confirmée le 2026-08-27.** Un excédent de dissipation ne fait PAS redescendre la jauge : il est capté par le Ghost Cache. Si la jauge se vidait, le joueur aurait toujours toute la marge devant lui et déclencher l'Overdrive ne coûterait rien. En la laissant où elle est, le Ghost Cache se remplit à la hauteur où le joueur s'est arrêté : à 30 % il a de la marge, à 80 % c'est un pari. C'est là que naît le choix « j'exfiltre ou je charge encore ».
+
+## Prérequis de prestige — un nœud ET un niveau
+
+**Tranché le 2026-09-09.** Le prérequis n'était qu'une référence vers le nœud parent, et la règle
+d'ouverture était figée à `niveau > 0`. Conséquence : **acheter le premier rang d'un nœud à dix
+rangs ouvrait toute la suite de la branche.** La ligne d'Overclock — trois paliers de cinq rangs
+puis l'Injecteur Automatique — se déverrouillait entièrement pour le prix d'un seul cran.
+
+Le prérequis est désormais une struct, `PrestigeRequirement` : **quel parent, et à quel niveau.**
+
+```json
+"prerequisiteId": "P_OVERCLOCK_POWER_1",
+"requiredLevel": 0
+```
+
+| `requiredLevel` | Sens |
+|---|---|
+| **absent ou 1** | Il suffit de posséder le parent — le comportement historique |
+| **n > 1** | Ce rang précis du parent |
+| **0** | Le **niveau MAXIMUM** du parent, quel qu'il devienne |
+
+La sentinelle `0` est **auto-maintenue**, et c'est pour ça qu'elle existe : passer un nœud de cinq
+à dix rangs déplace automatiquement l'exigence de ses enfants. Un entier écrit en dur aurait
+silencieusement cessé de vouloir dire « au max ».
+
+⚠️ **Piège de sérialisation à ne jamais retirer.** `PrestigeItemData.requiredLevel` est initialisé
+à `1` dans le générateur. JsonUtility construit l'objet avant de le remplir : un champ absent du
+fichier conserve donc cette valeur. Sans cet initialiseur, un champ omis vaudrait `0` — donc
+« parent au maximum » — et les cent trente nœuds qui ne déclarent rien deviendraient tous
+silencieusement bien plus durs à ouvrir. Le générateur imprime pour cette raison un
+**récapitulatif des seules exigences non triviales** : si ce filet cédait, la liste passerait de
+trois lignes à plus de cent trente, ce qui saute aux yeux.
+
+Une exigence supérieure au `maxLevel` du parent est **ramenée à ce maximum**, avec avertissement :
+une branche fermée pour toujours est toujours une faute de saisie, jamais une intention.
+
+**Un seul prérequis par nœud** — l'arbre reste un arbre. Rien n'empêche de passer à une liste plus
+tard, mais ce serait un graphe, avec N liens à tracer par nœud et une ligne de détail qui doit
+énumérer plusieurs manques.
+
+**Côté UI**, le lien reste en pointillé tant que le niveau exigé n'est pas atteint — un trait plein
+vers un nœud verrouillé serait un mensonge visuel — et le panneau de détail chiffre l'exigence
+(`> PRÉREQUIS MANQUANT : Surcharge — niveau 3/5`). Les exigences au premier rang gardent l'ancien
+libellé, sans chiffres : afficher « niveau 1/1 » sur cent trente nœuds n'apprendrait rien.
+
+### Où la règle est appliquée
+
+| Chaîne | Exigence | Raison |
+|---|---|---|
+| Overclock — `P_OVERCLOCK_POWER_2`, `_3`, `P_OVERCLOCK_AWAKE` | `requiredLevel: 0` (le max, soit 5) | Cinq rangs par palier : au premier rang, toute la ligne s'ouvrait d'un coup |
+| Blindage — `P_HARDEN_2`, `_3`, `_4` | `requiredLevel: 3` | Voir ci-dessous |
+
+**Pourquoi 3 et non le maximum sur le Blindage (tranché le 2026-09-09).** `P_HARDEN_4` verse
+**cent fois** le bonus de `P_HARDEN_1` par rang (1,0 contre 0,01). Le chemin le plus court jusqu'à
+lui, avec un coût de rang valant `1,5^(k-1)` :
+
+| Règle | Cycles pour ouvrir `P_HARDEN_4` | Plafond obtenu au passage |
+|---|---|---|
+| Niveau 1 (avant) | **4,0** | ×2,26 |
+| **Niveau 3 (retenu)** | **15,25** | ×2,78 |
+| Niveau max | 340 | ×4,39 |
+
+Exiger le maximum coûterait une quinzaine de runs rien que pour ouvrir la fin de la branche —
+punitif, et cela **forcerait le joueur à maximiser contre sa volonté**. Le palier 3 multiplie le
+ticket d'entrée par 3,8 tout en donnant 23 % de plafond en plus au passage, puisqu'il impose
+d'acheter les rangs intermédiaires : il retarde sans punir. Rapporté au rythme calé (~22 cycles
+en run 1), la chaîne passe de 18 % à 69 % du budget de la première run.
+
+⚠️ **Chiffrage arithmétique, toujours pas simulé.** Le simulateur a été réécrit le 2026-09-09 dans
+`tools/balance/` (versionné cette fois, et il lit `BalancingConfig.asset` directement). Son
+**modèle de run est vérifié fidèle** — il reproduit au chiffre près les mesures du tableau
+ci-dessus. Sa **boucle de campagne ne l'est pas** : là où ce document consigne 19 runs / 9,93 h /
+arbre complet, la réécriture donne 11 runs / 16 h / 18 %, quelle que soit la règle de sortie de
+run testée. L'agent réécrit est environ deux fois plus faible en fin de partie.
+
+L'effet des paliers de prérequis sur la durée totale reste donc **non mesuré**. Ce qu'on sait :
+le palier coûte ~15 cycles sur un arbre de 3 477, soit **0,4 %** — l'ordre de grandeur rend un
+dérapage des 10 h très improbable, mais ce n'est pas une confirmation.
+
+L'entrée de branche (`P_HARDEN_1` derrière `P_STEALTH`) reste au niveau 1 : ouvrir une branche et
+la parcourir sont deux décisions différentes.
+
+## Branche Blindage — la colonne vertébrale de la méta
+
+**Ajoutée le 2026-08-31.** Quatre nœuds (`P_HARDEN_1` à `_4`, dix rangs chacun, derrière
+`P_STEALTH`) portant un nouveau `bonusType` : **`TraceCapacityMultiplier`**, qui multiplie le
+plafond de la jauge — base comprise, donc utile dès la première run.
+
+**Pourquoi elle existe.** Sans elle, la campagne était un tapis roulant : **125 runs identiques de
+quatre minutes**, mesurées en simulation. Aucun des 134 nœuds ne déplaçait la contrainte qui met
+fin à une run — la jauge se remplissait au même point quels que soient les bonus achetés. Le
+plafond est le SEUL levier qui fasse grandir une run, et l'écart est brutal :
+
+| Levier, arbre de prestige complet | Durée de run | CPU Cycles |
+|---|---|---|
+| référence | 236 s | 6 |
+| plafond ×10 | 563 s | 70 |
+| plafond ×1000 | 2 016 s | **80 050** |
+| asymptote de défense 0,85 → 0,98 | 238 s | 6 *(nul)* |
+
+La boucle qui manquait : survivre plus longtemps → construire plus haut → gagner plus → racheter
+du plafond. C'est elle qui rend une campagne progressive.
+
+⚠️ **`TraceCapacityMultiplier` est appendé en FIN d'enum**, comme tous les types depuis l'incident
+du 30/08 : l'index est sérialisé dans les `.asset` générés, une insertion au milieu redéfinirait
+silencieusement des nœuds existants.
+
+## Rythme — calé le 2026-08-31, corrigé deux fois le 2026-09-01
+
+**Deux échecs successifs, et les deux leçons sont structurantes.**
+
+**Échec 1 — ralentir le début.** Pour atteindre « 30 minutes avant le premier prestige », le
+premier calage avait divisé **tous** les rendements par 10 et alourdi **toutes** les courbes de
+coût. Mesuré en jeu : `SCR_01` atteignait son automatisation en **1 256 s au lieu de 69 s**.
+
+> **Règle 1 : on ne ralentit JAMAIS le début pour allonger une run.** Le frein se place plus loin.
+
+**Échec 2 — l'explosion de la cinquième minute.** Avec les rendements restaurés, la production
+passait de 7 000 Datas à la 2ᵉ minute à **1,7 milliard** à la 5ᵉ. Le joueur brûlait toute
+l'économie du jeu dans sa première run, et le prestige ne servait plus à rien.
+
+> **Règle 2 : la montée en puissance doit venir des bonus de prestige, pas de l'intérieur d'une
+> run.** Cible fixée par le GD : quelques **dizaines de milliers** de Datas à la 5ᵉ minute.
+
+### Ce qui freine, et ce qui ne freine pas
+
+Le coupable de l'explosion n'était ni les rendements ni le prix des nœuds de prestige (ceux-ci
+coûtaient **0,01 CPU Cycle** — vérifié) mais deux choses :
+
+| Levier | Effet sur les 10 premiers niveaux | Effet au niveau 190 |
+|---|---|---|
+| `costMultiplier` **1,07 → 1,15** | 138 $ → 203 $ *(négligeable)* | 5,5e7 $ → **2,3e13 $** |
+| Paliers **`facteur ^ 0,4`** | aucun *(le 1ᵉʳ palier est au niveau 10)* | empilement ×300 → **×4** |
+
+C'est le levier chirurgical cherché : **le début est intact, la profondeur devient chère.** Les
+`baseProductionYield` restent ceux d'origine et ne doivent plus jamais servir de variable de
+rythme.
+
+### Mesures obtenues, sur les fichiers du projet
+
+| Mesure | Valeur | Cible |
+|---|---|---|
+| `SCR_01` niveau 10 (automatisation) | **90 s** | rapide ✅ |
+| Datas générées à la 5ᵉ minute | **33 760** | quelques dizaines de milliers ✅ |
+| Première run | **27 min**, jusqu'à `SCR_05` | ~30 min ✅ |
+| Durée de run (min / médiane / max) | 19,6 / **31,0** / 40,9 min | — |
+| Campagne complète (arbre entier) | **9,93 h** | ~10 h ✅ |
+| Nombre de runs | 19 | — |
+| Datas, run 1 → dernière | 1,4e8 → 9,3e10 (**×660**) | montée sensible ✅ |
+| Arbitrage | lourde en début/milieu, **aucun Proxy en fin** | varie ✅ |
+
+La première run monte jusqu'à `SCR_05` en pyramide (`84 / 60 / 42 / 23 / 9`) : le joueur achète
+sans arrêt, il n'y a ni plateau mort ni empilement dégénéré sur un seul générateur.
+
+### La branche Blindage est le moteur de la campagne
+
+Sans elle, les Datas ne progressaient que de ×13 sur toute la campagne — 90 runs identiques. Avec
+elle calée à `+0,01 / +0,05 / +0,2 / +1,0` par rang (plafond ×13,6 au maximum), elles font **×660**
+et les runs s'allongent de 19 à 41 minutes.
+
+⚠️ **Piège vécu :** un facteur d'échelle appliqué deux fois avait ramené ses bonus à 0,00016 par
+rang. La branche devenait inerte et la campagne redevenait un tapis roulant — sans que rien ne le
+signale. Toute modification du Blindage doit être suivie d'une mesure de la croissance des Datas
+sur une campagne complète.
+
+### `DissipationHalfPointRatio` (κ) décide si la défense vaut le coup
+
+Ramené à **0,3**. À cette valeur, les Proxies sont inutiles en début de partie — le joueur est trop
+petit pour être repéré — deviennent payants en milieu, puis redeviennent un mauvais achat en fin de
+campagne, où le budget doit repartir vers la production.
+
+⚠️ **κ est à revérifier après CHAQUE modification des magnitudes de trace ou de plafond.** Il ne
+porte pas une valeur absolue mais un rapport, et tout changement d'échelle le déplace. Il a dû être
+repris trois fois pendant ce calage (0,3 → 10 → 0,3).
 
 ## Ghost Cache et Zéro-Day Exploit
 
@@ -101,7 +406,9 @@ Valeurs tranchées par le GD le 2026-08-27. L'excédent de dissipation, jusque-l
 | **Contrepartie 1** | **Dissipation → 0** | Tous les Proxies s'éteignent |
 | **Contrepartie 2** | **×10 sur la génération brute de Trace** | Ajouté le 2026-08-27. La jauge se remplit dix fois plus vite en plus de n'être plus dissipée |
 
-**La charge se remplit en TEMPS, pas en magnitude.** Une seconde passée en excédent vaut une seconde de charge, que l'excédent soit de 1 ou de 100 000. Le prix à payer est un maintien de posture défensive, pas un empilement de Proxies. ⚠️ Conséquence à surveiller : rien ne récompense un excédent massif, seulement sa durée.
+**La charge se remplit en TEMPS, pas en magnitude.** Une seconde de posture défensive tenue vaut une seconde de charge. Le prix à payer est un maintien de posture, pas un empilement de Proxies. ⚠️ Conséquence à surveiller : rien ne récompense une dissipation massive, seulement sa durée.
+
+**Condition de charge revue le 2026-08-31.** Elle captait « l'excédent de dissipation ». Cette notion n'existe plus : la réduction étant asymptotique, la trace monte toujours et il n'y a plus rien à jeter. Le seuil porte désormais sur la **fraction de réduction tenue** (`GhostCacheReductionThreshold`, en part de l'asymptote). ⚠️ **Charger n'est plus gratuit** — la jauge continue de grimper pendant l'accumulation, là où l'excédent mettait le joueur à l'abri. Se constituer une réserve devient un pari sur la jauge, ce qui est le propos même de la mécanique.
 
 **Le ×50 ne touche QUE les Scripts.** Chez un Hardware, le « rendement » EST sa contribution en TFlops : le laisser passer multiplierait par 50 la capacité de calcul, donc la compression des cycles *et* la dissipation des Proxies. Un buff économique deviendrait une invulnérabilité.
 
