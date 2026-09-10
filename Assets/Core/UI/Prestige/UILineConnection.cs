@@ -98,13 +98,19 @@ namespace Core.UI.Prestige
             ApplyGeometry();
         }
 
-        public void BindState(Observable<int> parentLevel, Observable<int> childLevel, int childMaxLevel)
+        /// <param name="requiredParentLevel">
+        /// Niveau à atteindre sur le parent pour que la branche s'ouvre. Le lien reste en
+        /// pointillé en dessous : depuis le 2026-09-09 un parent acheté ne suffit plus toujours,
+        /// et un trait plein vers un nœud encore verrouillé serait un mensonge visuel.
+        /// </param>
+        public void BindState(Observable<int> parentLevel, Observable<int> childLevel,
+                              int childMaxLevel, int requiredParentLevel)
         {
             _disposables.Clear(); // Nettoyage en cas de réutilisation (Pooling)
 
             Observable.CombineLatest(parentLevel, childLevel, (parent, child) =>
             {
-                if (parent == 0) return LinkState.Locked;                  // Le parent n'est pas acheté
+                if (parent < requiredParentLevel) return LinkState.Locked; // Exigence non tenue
                 if (child >= childMaxLevel) return LinkState.Completed;    // L'enfant est au max
                 return LinkState.InProgress;                               // En cours de progression
             })

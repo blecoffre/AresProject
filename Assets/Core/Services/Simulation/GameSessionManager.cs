@@ -1,6 +1,7 @@
 using Core.Models.Economy;
 using Core.Models.Simulation;
 using Core.Services.Economy;
+using Core.Services.Platform;
 using Core.Services.Security;
 using R3;
 using System;
@@ -24,6 +25,7 @@ namespace Core.Services.Simulation
         private readonly PrestigeManager _prestigeManager;
         private readonly EmergencyProtocolSystem _emergencyProtocolSystem;
         private readonly GhostCacheSystem _ghostCacheSystem;
+        private readonly ITimeSource _time;
         private readonly BalancingConfigSO _balancing;
 
         /// <summary>
@@ -41,8 +43,9 @@ namespace Core.Services.Simulation
 
         private DisposableBag _disposables;
 
-        public GameSessionManager(UserCurrencies userCurrencies, ThreatManager threatManager, UpgradeManager upgradeManager, PrestigeManager prestigeManager, EmergencyProtocolSystem emergencyProtocolSystem, GhostCacheSystem ghostCacheSystem, BalancingConfigSO balancing)
+        public GameSessionManager(UserCurrencies userCurrencies, ThreatManager threatManager, UpgradeManager upgradeManager, PrestigeManager prestigeManager, EmergencyProtocolSystem emergencyProtocolSystem, GhostCacheSystem ghostCacheSystem, BalancingConfigSO balancing, ITimeSource time)
         {
+            _time = time;
             _userCurrencies = userCurrencies;
             _threatManager = threatManager;
             _upgradeManager = upgradeManager;
@@ -82,7 +85,7 @@ namespace Core.Services.Simulation
         {
             if (!IsGameActive.CurrentValue) return;
 
-            _runElapsedSeconds += UnityEngine.Time.deltaTime;
+            _runElapsedSeconds += _time.DeltaTime;
         }
 
         /// <summary>Restaure le chronomètre depuis une sauvegarde.</summary>

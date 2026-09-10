@@ -30,13 +30,71 @@ namespace Core.Models.Economy
                  "tout le jeu plus dangereux.")]
         [SerializeField, Min(1f)] private float _baseTraceCap = 100f;
 
+        [Tooltip("ASYMPTOTE de la réduction apportée par les Proxies. Jamais atteinte, seulement " +
+                 "approchée : il reste TOUJOURS au moins (1 − cette valeur) de la Trace brute qui " +
+                 "passe.\n\n" +
+                 "C'est ce qui rend l'invulnérabilité arithmétiquement impossible. Avant le " +
+                 "2026-08-31 la dissipation était soustraite platement, donc une valeur non " +
+                 "bornée face à une génération bornée : 2,7 M$ de Proxies annulaient toute la " +
+                 "Trace du jeu, définitivement.")]
+        [SerializeField, Range(0.1f, 0.99f)] private float _maxTraceReduction = 0.85f;
+
+        [Tooltip("Rapport Dissipation/Brut qui procure la MOITIÉ de l'asymptote ci-dessus.\n\n" +
+                 "Formule : R = MaxTraceReduction × D / (D + cette valeur × Brut).\n\n" +
+                 "Seul le RATIO compte, jamais la magnitude : la formule se comporte pareil à " +
+                 "1e0 et à 1e13 de Trace. Conséquence voulue — faire grossir son économie " +
+                 "augmente le Brut, donc DILUE les Proxies déjà achetés. C'est là que naît " +
+                 "l'arbitrage permanent entre pousser la production et tenir la défense.\n\n" +
+                 "MONTER cette valeur rend la défense plus chère à tous les stades.")]
+        [SerializeField, Min(0.01f)] private float _dissipationHalfPointRatio = 1f;
+
+        [Tooltip("Exposant qui lie la Trace d'un générateur à son RENDEMENT : " +
+                 "trace = base × (rendement / rendement de base) ^ exposant.\n\n" +
+                 "⚠️ RÉGLAGE STRUCTURANT. À 1, monter un générateur accélère les gains ET la mort " +
+                 "dans la même proportion — bien jouer ne change rien, c'est l'échec constaté " +
+                 "avant le 2026-08-30. À 0, la Trace est forfaitaire et bornée pour toujours, " +
+                 "c'est l'échec constaté après. Entre les deux, progresser paie sans jamais " +
+                 "supprimer le danger : à 0,6, doubler son rendement ne multiplie la Trace " +
+                 "que par 1,52.")]
+        [SerializeField, Range(0f, 1f)] private float _traceYieldExponent = 0.6f;
+
+        [Tooltip("Fraction de l'asymptote au-delà de laquelle le Ghost Cache se charge.\n\n" +
+                 "Remplace l'ancienne condition « la dissipation dépasse la génération », qui " +
+                 "n'a plus de sens : avec une réduction asymptotique il n'existe plus d'excédent. " +
+                 "L'intention du GDD est conservée à l'identique — ce qui se paie est un MAINTIEN " +
+                 "DE POSTURE DÉFENSIVE, et la charge se remplit toujours en temps, pas en " +
+                 "magnitude. À 0,75 avec une asymptote de 0,85, il faut tenir 63,75 % de " +
+                 "réduction pour charger.")]
+        [SerializeField, Range(0f, 1f)] private float _ghostCacheReductionThreshold = 0.75f;
+
         // ------------------------------------------------------------------
         // TFlops et générateurs
         // ------------------------------------------------------------------
         [Header("TFlops et générateurs")]
-        [Tooltip("Compression du temps par TFlop : durée = base / (1 + TFlops × k). " +
+        [Tooltip("Compression du temps par TFlop : durée = base / (1 + TFlops × k) ^ exposant. " +
                  "Décroissance asymptotique, la durée ne tombe jamais à zéro.")]
         [SerializeField, Range(0.001f, 1f)] private float _tflopsTimeCompression = 0.05f;
+
+        [Tooltip("Exposant de la compression ci-dessus. À 1 on retrouve la formule linéaire " +
+                 "d'origine, qui saturait : le mur MinCycleDuration était atteint entre 4 et " +
+                 "180 TFlops selon le Script, alors que HW_01 niveau 10 en fournit déjà 40. " +
+                 "Passé ce point le Hardware n'apportait plus rien. Un exposant < 1 étale la " +
+                 "compression sur toute la partie sans jamais la borner.")]
+        [SerializeField, Range(0.05f, 1f)] private float _tflopsCompressionExponent = 0.25f;
+
+        [Tooltip("Les TFlops multiplient aussi le RENDEMENT des Scripts : " +
+                 "rendement × (1 + TFlops) ^ exposant. Réservé aux Scripts — l'appliquer au " +
+                 "Hardware créerait une boucle, son rendement ÉTANT la capacité en TFlops.\n\n" +
+                 "C'est le versant « récompense » du Hardware. La compression, elle, accélère " +
+                 "l'argent ET la Trace dans la même proportion : elle est neutre sur le risque " +
+                 "par Data gagnée, et ne nuit qu'en gonflant le Brut, ce qui dilue les Proxies.")]
+        [SerializeField, Range(0f, 0.5f)] private float _tflopsYieldExponent = 0.15f;
+
+        [Tooltip("Plancher ABSOLU de durée de cycle, en secondes, tous générateurs confondus. " +
+                 "Garde-fou de boucle, pas un levier d'équilibrage : depuis le 2026-08-31 le " +
+                 "champ MinCycleDuration de chaque générateur n'est plus un mur — c'est lui qui " +
+                 "tuait le pilier Hardware.")]
+        [SerializeField, Range(0.01f, 1f)] private float _absoluteMinCycleDuration = 0.05f;
 
         [Tooltip("Plafond de TOUTES les réductions ciblées de prestige (coût, temps). " +
                  "Empêche qu'un générateur devienne gratuit ou son cycle instantané.")]
@@ -129,7 +187,22 @@ namespace Core.Models.Economy
         /// </summary>
         public float BaseTraceCap => _baseTraceCap;
 
+        /// <summary>Asymptote de la réduction des Proxies. Jamais atteinte, seulement approchée.</summary>
+        public float MaxTraceReduction => _maxTraceReduction;
+
+        /// <summary>Rapport Dissipation/Brut donnant la moitié de <see cref="MaxTraceReduction"/>.</summary>
+        public float DissipationHalfPointRatio => _dissipationHalfPointRatio;
+
+        /// <summary>Exposant liant la Trace d'un générateur à son rendement. Strictement entre 0 et 1.</summary>
+        public float TraceYieldExponent => _traceYieldExponent;
+
+        /// <summary>Fraction de l'asymptote au-delà de laquelle le Ghost Cache se charge.</summary>
+        public float GhostCacheReductionThreshold => _ghostCacheReductionThreshold;
+
         public double TFlopsTimeCompression => _tflopsTimeCompression;
+        public double TFlopsCompressionExponent => _tflopsCompressionExponent;
+        public double TFlopsYieldExponent => _tflopsYieldExponent;
+        public float AbsoluteMinCycleDuration => _absoluteMinCycleDuration;
         public float MaxTargetedReduction => _maxTargetedReduction;
         public double ProxySynergyPerLevel => _proxySynergyPerLevel;
 

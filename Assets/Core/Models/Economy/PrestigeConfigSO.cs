@@ -30,7 +30,19 @@ namespace Core.Models.Economy
         // l'index de TOUTE la famille Zéro-Day dans les .asset déjà générés. Symptôme relevé
         // en console le 2026-08-30 : P_EXPLOIT_CHARGES se croyait un nœud d'automatisation.
         // Seuls les Scripts sont concernés : eux seuls relancent des cycles.
-        SpecificUpgradeAutomationTresholdReduction
+        SpecificUpgradeAutomationTresholdReduction,
+
+        // Blindage — multiplie le PLAFOND de la jauge de Trace. Ajouté le 2026-08-31, et
+        // appendé en fin comme tous les autres, pour la raison ci-dessus.
+        //
+        // C'est la colonne vertébrale de la méta-progression, et elle manquait. Mesuré en
+        // simulation de campagne : sans elle, le joueur enchaînait 125 runs identiques de
+        // quatre minutes — aucun des 134 nœuds ne déplaçait la contrainte qui met fin à une
+        // run. Multiplier le plafond par 1 000 fait passer une run de fin de partie de 6 à
+        // 80 050 CPU Cycles. Chaque prestige laisse survivre plus longtemps, donc construire
+        // plus haut, donc gagner plus, donc racheter du plafond : c'est la boucle qui rend
+        // une campagne progressive au lieu d'un tapis roulant.
+        TraceCapacityMultiplier
     }
 
     [CreateAssetMenu(fileName = "NewPrestigeConfig", menuName = "Core/Economy/Prestige Config")]
@@ -56,8 +68,10 @@ namespace Core.Models.Economy
 
         [Header("Toile d'Araignée (UI)")]
         [SerializeField] private Vector2 _uiPosition;
-        [Tooltip("Le nœud précédent obligatoire. Laisser vide si c'est le point de départ.")]
-        [SerializeField] private PrestigeConfigSO _prerequisite;
+
+        [Tooltip("Le nœud précédent obligatoire et le niveau à y atteindre. " +
+                 "Laisser le nœud vide si c'est le point de départ d'une branche.")]
+        [SerializeField] private PrestigeRequirement _requirement;
 
         [Header("Ciblage Spécifique")]
         [Tooltip("L'ID de l'amélioration d'économie ciblée (laisser vide si le bonus est global)")]
@@ -72,7 +86,12 @@ namespace Core.Models.Economy
         public double CostMultiplier => _costMultiplier;
         public float BonusPerLevel => _bonusPerLevel;
         public Vector2 UiPosition => _uiPosition;
-        public PrestigeConfigSO Prerequisite => _prerequisite;
+        /// <summary>
+        /// La condition d'ouverture : quel parent, et à quel niveau. Remplace depuis le
+        /// 2026-09-09 la simple référence <c>_prerequisite</c>, qui ne pouvait exprimer que
+        /// « posséder le parent » et ouvrait donc une branche entière au premier rang acheté.
+        /// </summary>
+        public PrestigeRequirement Requirement => _requirement;
         public string TargetUpgradeId => _targetUpgradeId;
     }
 }

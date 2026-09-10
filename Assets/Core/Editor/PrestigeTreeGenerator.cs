@@ -33,6 +33,19 @@ namespace Core.Economy.Editor
         public float posX;
         public float posY;
         public string prerequisiteId;
+
+        /// <summary>
+        /// Niveau à atteindre sur le prérequis. 1 = il suffit de le posséder, 0 = son niveau
+        /// MAXIMUM (voir <see cref="PrestigeRequirement.RequireParentMaxLevel"/>).
+        ///
+        /// <b>L'initialisation à 1 est porteuse de sens et ne doit pas être retirée.</b>
+        /// JsonUtility construit l'objet avant de le remplir : un champ absent du fichier
+        /// conserve donc cette valeur. Sans elle, un champ omis vaudrait 0 — c'est-à-dire
+        /// « parent au maximum » — et les cent trente nœuds existants, qui ne déclarent rien,
+        /// deviendraient tous silencieusement bien plus durs à ouvrir.
+        /// </summary>
+        public int requiredLevel = 1;
+
         public string targetUpgradeId; // <- Ajoute cette ligne
     }
 
@@ -102,20 +115,42 @@ namespace Core.Economy.Editor
             // ==========================================
             // Note : Grâce à la fusion, un objet dans Stealth.json peut très bien 
             // avoir comme prérequis un objet situé dans Core.json !
+            // Le récapitulatif ci-dessous n'est pas décoratif : c'est le filet de sécurité du
+            // champ `requiredLevel`. Absent du JSON, il doit valoir 1 grâce à son initialiseur
+            // de champ ; si ce mécanisme venait à céder, TOUS les nœuds tomberaient à 0 —
+            // c'est-à-dire « parent au maximum » — et l'arbre deviendrait silencieusement
+            // infranchissable. En ne listant que les exigences non triviales, la régression
+            // saute aux yeux : la liste passerait de quelques lignes à plus de cent trente.
+            List<string> reinforced = new List<string>();
+
             foreach (var item in allItems)
             {
-                if (!string.IsNullOrEmpty(item.prerequisiteId))
+                if (string.IsNullOrEmpty(item.prerequisiteId)) continue;
+
+                if (createdAssets.TryGetValue(item.id, out PrestigeConfigSO childAsset) &&
+                    createdAssets.TryGetValue(item.prerequisiteId, out PrestigeConfigSO parentAsset))
                 {
-                    if (createdAssets.TryGetValue(item.id, out PrestigeConfigSO childAsset) &&
-                        createdAssets.TryGetValue(item.prerequisiteId, out PrestigeConfigSO parentAsset))
+                    int required = ResolveRequiredLevel(item, parentAsset);
+                    LinkPrerequisite(childAsset, parentAsset, item.requiredLevel);
+
+                    if (required > 1)
                     {
-                        LinkPrerequisite(childAsset, parentAsset);
-                    }
-                    else
-                    {
-                        Debug.LogWarning($"[PrestigeGenerator] Prérequis '{item.prerequisiteId}' introuvable pour '{item.id}'.");
+                        bool followsMax = item.requiredLevel <= PrestigeRequirement.RequireParentMaxLevel;
+                        reinforced.Add(
+                            $"{item.id} ← {item.prerequisiteId} niveau {required}"
+                            + (followsMax ? " (suit le max du parent)" : string.Empty));
                     }
                 }
+                else
+                {
+                    Debug.LogWarning($"[PrestigeGenerator] Prérequis '{item.prerequisiteId}' introuvable pour '{item.id}'.");
+                }
+            }
+
+            if (reinforced.Count > 0)
+            {
+                Debug.Log($"[PrestigeGenerator] {reinforced.Count} prérequis exigent plus que le premier rang :\n  "
+                          + string.Join("\n  ", reinforced));
             }
 
             // On extrait la liste des valeurs de notre dictionnaire
@@ -198,7 +233,10 @@ namespace Core.Economy.Editor
             so.FindProperty("_bonusPerLevel").floatValue = data.bonus;
             so.FindProperty("_uiPosition").vector2Value = new Vector2(data.posX, data.posY);
 
-            so.FindProperty("_prerequisite").objectReferenceValue = null;
+            // La condition est remise à neuf ici et recâblée en passe 2 : un nœud dont le
+            // prérequis disparaît du JSON ne doit pas conserver l'ancien.
+            so.FindProperty("_requirement._node").objectReferenceValue = null;
+            so.FindProperty("_requirement._requiredLevel").intValue = 1;
             so.FindProperty("_targetUpgradeId").stringValue = string.IsNullOrEmpty(data.targetUpgradeId) ? "" : data.targetUpgradeId;
 
             so.ApplyModifiedProperties();
@@ -254,12 +292,39 @@ namespace Core.Economy.Editor
             }
         }
 
-        private static void LinkPrerequisite(PrestigeConfigSO child, PrestigeConfigSO parent)
+        /// <summary>
+        /// Écrit la condition d'ouverture. Le niveau est stocké <b>brut</b>, sentinelle comprise :
+        /// résoudre 0 en un entier figé ici ferait perdre le « suit le maximum du parent », et
+        /// l'exigence cesserait de se maintenir toute seule si ce maximum changeait plus tard.
+        /// </summary>
+        private static void LinkPrerequisite(PrestigeConfigSO child, PrestigeConfigSO parent, int requiredLevel)
         {
             SerializedObject so = new SerializedObject(child);
-            so.FindProperty("_prerequisite").objectReferenceValue = parent;
+            so.FindProperty("_requirement._node").objectReferenceValue = parent;
+            so.FindProperty("_requirement._requiredLevel").intValue = requiredLevel;
             so.ApplyModifiedProperties();
             EditorUtility.SetDirty(child);
+        }
+
+        /// <summary>
+        /// Le niveau réellement exigé, sentinelle résolue. Sert au récapitulatif et à la
+        /// détection d'exigences intenables ; la résolution qui fait foi au runtime vit dans
+        /// <see cref="PrestigeRequirement.ResolveRequiredLevel"/>.
+        /// </summary>
+        private static int ResolveRequiredLevel(PrestigeItemData item, PrestigeConfigSO parent)
+        {
+            if (item.requiredLevel <= PrestigeRequirement.RequireParentMaxLevel) return parent.MaxLevel;
+
+            if (item.requiredLevel > parent.MaxLevel)
+            {
+                Debug.LogWarning(
+                    $"[PrestigeGenerator] '{item.id}' exige le niveau {item.requiredLevel} de " +
+                    $"'{item.prerequisiteId}', qui plafonne à {parent.MaxLevel}. L'exigence sera " +
+                    "ramenée au maximum du parent — sans quoi la branche resterait fermée pour toujours.");
+                return parent.MaxLevel;
+            }
+
+            return item.requiredLevel;
         }
 
         private static void EnsureFolderExists(string path)

@@ -25,6 +25,11 @@ namespace Core.UI.Upgrades
         [Tooltip("Bouton qui lance un cycle à la main. Requis pour les Scripts, inutile ailleurs.")]
         [SerializeField] private Button _runButton;
 
+        [Tooltip("Facultatif : le libellé DANS le bouton d'achat. Il porte le multiplicateur " +
+                 "courant (« ACHETER x10 »), donc laisser ce champ vide fait perdre au joueur " +
+                 "la seule indication, sur la carte, du lot qu'il s'apprête à acheter.")]
+        [SerializeField] private TextMeshProUGUI _buyLabelText;
+
         public event Action OnBuyClicked;
         public event Action OnRunClicked;
 
@@ -56,6 +61,9 @@ namespace Core.UI.Upgrades
         /// <summary>Signale au presenter si ce prefab dispose d'un bouton de lancement câblé.</summary>
         public bool HasRunButton => _runButton != null;
 
+        /// <summary>Signale au presenter si le libellé du bouton d'achat est câblé.</summary>
+        public bool HasBuyLabel => _buyLabelText != null;
+
         public void InitializeStaticData(string generatorName, string description, string stats)
         {
             if (_nameText != null) _nameText.text = generatorName;
@@ -73,10 +81,25 @@ namespace Core.UI.Upgrades
             if (_sweepBackgroundImage != null) _sweepBackgroundImage.fillAmount = normalizedProgress;
         }
 
-        public void UpdateCostAndLevel(string localizedLevel, string localizedCost)
+        /// <summary>
+        /// Le niveau courant et le prix sont écrits séparément depuis l'arrivée de l'achat
+        /// multiple : ils ne changent plus au même moment. Le niveau ne bouge qu'à l'achat, le
+        /// prix suit aussi le mode choisi et — en MAX — le solde du joueur.
+        /// </summary>
+        public void UpdateLevel(string localizedLevel)
         {
             if (_levelText != null) _levelText.text = localizedLevel;
+        }
+
+        public void UpdateCost(string localizedCost)
+        {
             if (_costText != null) _costText.text = localizedCost;
+        }
+
+        /// <summary>Libellé du bouton d'achat : il porte le multiplicateur courant.</summary>
+        public void UpdateBuyLabel(string localizedLabel)
+        {
+            if (_buyLabelText != null) _buyLabelText.text = localizedLabel;
         }
 
         public void UpdateStats(string statsText)

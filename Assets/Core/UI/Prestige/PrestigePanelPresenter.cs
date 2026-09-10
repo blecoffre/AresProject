@@ -224,14 +224,15 @@ namespace Core.UI.Prestige
             for (int i = 0; i < configs.Count; i++)
             {
                 PrestigeConfigSO config = configs[i];
-                if (config.Prerequisite == null) continue;
+                PrestigeRequirement requirement = config.Requirement;
+                if (!requirement.HasNode) continue;
 
-                if (!_nodePositions.TryGetValue(config.Prerequisite.Id, out Vector2 parentPosition))
+                if (!_nodePositions.TryGetValue(requirement.Node.Id, out Vector2 parentPosition))
                 {
                     // Prérequis absent du catalogue : le lien ne mène nulle part. On le signale
                     // plutôt que de tracer une ligne vers l'origine.
                     Debug.LogError(
-                        $"[PRESTIGE] Le nœud '{config.Id}' déclare le prérequis '{config.Prerequisite.Id}', " +
+                        $"[PRESTIGE] Le nœud '{config.Id}' déclare le prérequis '{requirement.Node.Id}', " +
                         "absent du catalogue. Lien ignoré.");
                     continue;
                 }
@@ -245,9 +246,10 @@ namespace Core.UI.Prestige
                 line.DrawLine(parentPosition, childPosition);
 
                 line.BindState(
-                    _prestigeManager.GetLevelObservable(config.Prerequisite.Id),
+                    _prestigeManager.GetLevelObservable(requirement.Node.Id),
                     _prestigeManager.GetLevelObservable(config.Id),
-                    config.MaxLevel);
+                    config.MaxLevel,
+                    requirement.ResolveRequiredLevel());
             }
         }
 

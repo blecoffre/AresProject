@@ -54,6 +54,17 @@ namespace Core.Services.Economy
         // Propriétés réactives globales que le reste du jeu écoutera
         public ReactiveProperty<float> GlobalComputeMultiplier { get; } = new(1f);
         public ReactiveProperty<float> TraceReductionMultiplier { get; } = new(1f);
+
+        /// <summary>
+        /// Multiplicateur du PLAFOND de la jauge de Trace, apporté par la branche Blindage.
+        /// Vaut 1 sans aucun nœud acheté.
+        ///
+        /// Distinct de <see cref="TraceReductionMultiplier"/>, qui agit sur le DÉBIT : celui-ci
+        /// achète de la marge avant saisie, l'autre ralentit le remplissage. Le premier fait
+        /// grandir les runs, le second les prolonge — et seul le premier compose d'une run à
+        /// l'autre, puisqu'il permet de construire plus haut avant de mourir.
+        /// </summary>
+        public ReactiveProperty<float> TraceCapacityMultiplier { get; } = new(1f);
         public ReactiveProperty<float> ClickPowerMultiplier { get; } = new(1f);
         public ReactiveProperty<float> CostMultiplierReduction { get; } = new(0f);
         public ReactiveProperty<double> StartingMoney { get; } = new(0d);
@@ -132,15 +143,21 @@ namespace Core.Services.Economy
         }
 
         /// <summary>
-        /// Nœud accessible : son prérequis est possédé, ou il n'en a pas. Exposé pour que la vue
-        /// reflète la règle au lieu de la redéfinir de son côté.
+        /// Nœud accessible : son parent est monté au niveau exigé, ou il n'a pas de parent.
+        /// Exposé pour que la vue reflète la règle au lieu de la redéfinir de son côté.
+        ///
+        /// Le seuil n'est plus figé à « niveau &gt; 0 » depuis le 2026-09-09 : un nœud peut
+        /// désormais exiger un rang précis du parent, voire son maximum. Sans quoi une ligne à
+        /// dix rangs comme les paliers d'Overclock s'ouvrait entièrement pour un seul cran acheté.
         /// </summary>
         public bool IsUnlocked(PrestigeConfigSO config)
         {
             if (config == null) return false;
-            if (config.Prerequisite == null) return true;
 
-            return GetLevel(config.Prerequisite.Id) > 0;
+            PrestigeRequirement requirement = config.Requirement;
+            if (!requirement.HasNode) return true;
+
+            return GetLevel(requirement.Node.Id) >= requirement.ResolveRequiredLevel();
         }
 
         /// <summary>
@@ -224,6 +241,7 @@ namespace Core.Services.Economy
             float costReduction = 0f;
             double startingFunds = 0d;
             double startingPower = 0d;
+            float traceCapacityBonus = 0f;
             bool emergencyUnlocked = false;
             int exploitCharges = 0;
             double exploitYieldBoost = 0d;
@@ -246,6 +264,10 @@ namespace Core.Services.Economy
 
                     case PrestigeBonusType.TraceReduction:
                         traceReduction += totalBonus;
+                        break;
+
+                    case PrestigeBonusType.TraceCapacityMultiplier:
+                        traceCapacityBonus += totalBonus;
                         break;
 
                     case PrestigeBonusType.ClickPowerMultiplier:
@@ -309,6 +331,11 @@ namespace Core.Services.Economy
             // Application mathématique des bonus
             GlobalComputeMultiplier.Value = 1f + computeBonus;
             TraceReductionMultiplier.Value = UnityEngine.Mathf.Max(0.1f, 1f - traceReduction); // Ne pas descendre sous 10%
+
+            // Additif comme les six autres bonus cumulés, puis appliqué en multiplicateur :
+            // dix rangs à +0,5 donnent ×6, pas ×0,5^10. Jamais sous 1 — un nœud de Blindage ne
+            // peut pas rendre le joueur plus fragile qu'à l'origine.
+            TraceCapacityMultiplier.Value = UnityEngine.Mathf.Max(1f, 1f + traceCapacityBonus);
             ClickPowerMultiplier.Value = 1f + clickBonus;
             CostMultiplierReduction.Value = costReduction;
             StartingMoney.Value = startingFunds;
@@ -387,6 +414,7 @@ namespace Core.Services.Economy
 
             GlobalComputeMultiplier.Dispose();
             TraceReductionMultiplier.Dispose();
+            TraceCapacityMultiplier.Dispose();
             ClickPowerMultiplier.Dispose();
             CostMultiplierReduction.Dispose();
             StartingMoney.Dispose();

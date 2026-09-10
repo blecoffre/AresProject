@@ -32,6 +32,7 @@ namespace Core.Services.Persistence
         private readonly EmergencyProtocolSystem _emergencyProtocol;
         private readonly GhostCacheSystem _ghostCache;
         private readonly GameSessionManager _sessionManager;
+        private readonly BuyQuantitySelector _buyQuantity;
 
         // Instance et tampons réutilisés d'une capture à l'autre : un autosave ne doit rien allouer
         // en dehors de la chaîne JSON elle-même.
@@ -52,7 +53,8 @@ namespace Core.Services.Persistence
             ThreatManager threatManager,
             EmergencyProtocolSystem emergencyProtocol,
             GhostCacheSystem ghostCache,
-            GameSessionManager sessionManager)
+            GameSessionManager sessionManager,
+            BuyQuantitySelector buyQuantity)
         {
             _currencies = currencies;
             _upgradeManager = upgradeManager;
@@ -61,6 +63,7 @@ namespace Core.Services.Persistence
             _emergencyProtocol = emergencyProtocol;
             _ghostCache = ghostCache;
             _sessionManager = sessionManager;
+            _buyQuantity = buyQuantity;
         }
 
         /// <summary>
@@ -92,7 +95,9 @@ namespace Core.Services.Persistence
             // Le plafond D'ABORD : il se compose du parc Hardware, restauré à l'étape 2, et la
             // trace restaurée est plafonnée par lui. L'ordre inverse écrêterait sur le plafond de
             // base et rendrait une trace trop faible à qui possède du matériel.
-            _threatManager.SetCapacityBonus(_upgradeManager.TraceCapacityBonus.CurrentValue);
+            _threatManager.SetCapacity(
+                _upgradeManager.TraceCapacityBonus.CurrentValue,
+                _prestigeManager.TraceCapacityMultiplier.CurrentValue);
             _threatManager.RestoreTrace(Mathf.Min(data.CurrentTrace, _threatManager.TraceCap * MaxRestorableThreat));
             _emergencyProtocol.Restore(
                 data.EmergencyUsesInRun,
@@ -100,6 +105,13 @@ namespace Core.Services.Persistence
                 data.EmergencyCooldownRemainingSeconds);
             _ghostCache.RestoreCharge(data.GhostCacheSeconds);
             _sessionManager.RestoreElapsed(data.RunElapsedSeconds);
+
+            // 5. Préférences d'interface
+            //
+            // Restaurées ici, donc AVANT que la GameScene ne soit chargée : l'UpgradePanelView
+            // n'existe pas encore, et c'est bien pour ça que le sélecteur est un service du scope
+            // racine que les presenters observent, plutôt qu'un état qu'ils détiendraient.
+            _buyQuantity.Restore(data.BuyQuantityMode);
 
             HasRestored = true;
         }
@@ -127,6 +139,8 @@ namespace Core.Services.Persistence
             _buffer.EmergencyCooldownRemainingSeconds = _emergencyProtocol.CooldownRemaining.CurrentValue;
             _buffer.GhostCacheSeconds = _ghostCache.ChargeSeconds.CurrentValue;
             _buffer.RunElapsedSeconds = _sessionManager.RunElapsedSeconds;
+
+            _buffer.BuyQuantityMode = _buyQuantity.Capture();
 
             _upgradeManager.CaptureLevelsInto(_buffer.Upgrades);
             _prestigeManager.CaptureLevelsInto(_buffer.PrestigeUpgrades);

@@ -19,6 +19,15 @@ namespace Core.Services.Economy
             UpgradeType.Proxy
         };
 
+        /// <summary>
+        /// Garde-fou du mode MAX. Il ne borne PAS le jeu : à un multiplicateur de 1,07, un solde
+        /// mille milliards de fois supérieur au prix du prochain cran ne paie qu'environ quatre
+        /// cents niveaux — la courbe exponentielle plafonne bien avant cette valeur. Il n'existe
+        /// que pour qu'un générateur au coût raboté à zéro, ou un multiplicateur collé à son
+        /// plancher de 1,01, ne puisse pas rendre un lot déraisonnable.
+        /// </summary>
+        public const int MaxBulkLevels = 100_000;
+
         private readonly UpgradeCatalogSO _catalog;
         private readonly UserCurrencies _userCurrencies;
         private readonly PrestigeManager _prestigeManager;
@@ -64,11 +73,16 @@ namespace Core.Services.Economy
         public ReactiveProperty<float> TraceCapacityBonus { get; } = new(0f);
 
         /// <summary>
-        /// Dissipation cumulée des Proxies, TFlops déjà appliquées :
-        /// Σ (base × niveau) × (1 + log10(1 + TFlops)).
-        /// Valeur POSITIVE, à soustraire du débit brut — c'est le second rôle des TFlops.
+        /// Puissance de dissipation cumulée des Proxies, TFlops déjà appliquées :
+        /// Σ (base × niveau × paliers) × (1 + log10(1 + TFlops)).
+        ///
+        /// <b>Ce n'est plus un débit à soustraire depuis le 2026-08-31</b>, et le renommage n'est
+        /// pas cosmétique. Tant qu'on la soustrayait platement, on opposait une valeur NON BORNÉE
+        /// à une génération bornée : 2,7 M$ de Proxies annulaient toute la Trace du jeu, pour
+        /// toujours. C'est désormais une grandeur qui n'a de sens que RAPPORTÉE au brut, et c'est
+        /// le SimulationTicker qui la convertit en fraction de réduction.
         /// </summary>
-        public ReactiveProperty<float> ProxyDissipationPerSecond { get; } = new(0f);
+        public ReactiveProperty<float> ProxyDissipationPower { get; } = new(0f);
 
         /// <summary>
         /// Accélération des cycles apportée par le parc de Proxies : 1 + niveaux cumulés × 1 %.
@@ -79,8 +93,8 @@ namespace Core.Services.Economy
         /// TFlops par son log10.
         ///
         /// ⚠️ Linéaire et sans plafond, contrairement au reste du jeu qui est asymptotique.
-        /// C'est le plancher MinCycleDuration qui finira par borner l'effet, donc un plafond subi
-        /// plutôt que choisi. À surveiller à l'équilibrage.
+        /// Depuis le 2026-08-31 le mur MinCycleDuration a disparu : seul le plancher ABSOLU de
+        /// BalancingConfig borne encore l'effet, et bien plus loin. À surveiller à l'équilibrage.
         /// </summary>
         public ReactiveProperty<double> ProxySynergyMultiplier { get; } = new(1d);
 
@@ -142,9 +156,18 @@ namespace Core.Services.Economy
         /// </summary>
         private void ApplyPrestigeBonuses()
         {
+            // Lue une fois hors de la boucle : la valeur est la même pour les quarante-cinq
+            // modèles, c'est précisément ce qui la distingue des bonus ciblés.
+            float globalCostReduction = _prestigeManager.CostMultiplierReduction.CurrentValue;
+
             foreach (var kvp in _activeUpgrades)
             {
                 kvp.Value.SetSpecificBonuses(_prestigeManager.GetSpecificBonuses(kvp.Key));
+
+                // Poussée dans le modèle depuis le 2026-08-30, au lieu d'être passée en argument
+                // au seul calcul d'achat. Tant qu'elle restait un argument, la vue l'oubliait et
+                // affichait un prix plus élevé que celui réellement débité.
+                kvp.Value.SetGlobalCostMultiplierReduction(globalCostReduction);
             }
 
             RecalculateTotals();
@@ -230,28 +253,101 @@ namespace Core.Services.Economy
             return visibleUpgrades;
         }
 
-        public bool TryPurchaseUpgrade(string upgradeId)
+        /// <summary>Nombre de niveaux visés par un mode à quantité fixe. MAX n'en a pas : il dépend du solde.</summary>
+        private static int ToLevelCount(BuyQuantity quantity) => quantity switch
+        {
+            BuyQuantity.X10 => 10,
+            BuyQuantity.X100 => 100,
+            _ => 1
+        };
+
+        /// <summary>
+        /// Nombre de niveaux réellement achetables MAINTENANT pour ce mode, avec ce solde.
+        /// Zéro veut dire « bouton gris ».
+        ///
+        /// En x10 et x100 c'est TOUT OU RIEN, et c'est une décision de conception : un lot
+        /// partiel ferait du montant affiché un plafond mensonger, et « x10 » se comporterait
+        /// comme un MAX déguisé en début de partie. Le prix qu'on lit doit toujours être un prix
+        /// qui suffit — c'est la règle déjà posée par CurrencyFormatter.FormatCost, qui arrondit
+        /// les prix vers le haut pour la même raison.
+        /// </summary>
+        public int GetAffordableLevels(string upgradeId, BuyQuantity quantity, double money)
+        {
+            return _activeUpgrades.TryGetValue(upgradeId, out var model)
+                ? GetAffordableLevels(model, quantity, money)
+                : 0;
+        }
+
+        private static int GetAffordableLevels(UpgradeModel model, BuyQuantity quantity, double money)
+        {
+            if (quantity == BuyQuantity.Max)
+            {
+                return model.GetAffordableLevels(money, MaxBulkLevels);
+            }
+
+            // Une comparaison contre une somme fermée, sans logarithme : c'est ce chemin-là que
+            // les quarante-cinq générateurs affichés parcourent à chaque versement de cycle, et
+            // les trois modes fixes sont le cas courant.
+            int target = ToLevelCount(quantity);
+            return money >= model.GetCumulativeCost(target) ? target : 0;
+        }
+
+        /// <summary>
+        /// Ce qu'un clic sur « Acheter » coûterait et rapporterait maintenant. Destiné à
+        /// l'affichage : l'achat, lui, recalcule tout à partir du solde de l'instant.
+        /// </summary>
+        public PurchaseQuote GetQuote(string upgradeId, BuyQuantity quantity, double money)
+        {
+            if (!_activeUpgrades.TryGetValue(upgradeId, out var model))
+            {
+                return new PurchaseQuote(1, 0d, false);
+            }
+
+            int affordable = GetAffordableLevels(model, quantity, money);
+
+            // Rien de payable : on affiche quand même un lot, pour que le bouton gris porte un
+            // montant. En MAX ce lot est d'UN niveau — le prochain cran est ce qui manque au
+            // joueur ; dans les modes fixes c'est le lot entier, puisque c'est tout ou rien.
+            int displayedLevels = affordable > 0
+                ? affordable
+                : (quantity == BuyQuantity.Max ? 1 : ToLevelCount(quantity));
+
+            return new PurchaseQuote(displayedLevels, model.GetCumulativeCost(displayedLevels), affordable > 0);
+        }
+
+        /// <summary>Achat simple. Conservé pour les appelants qui n'ont pas de mode à passer.</summary>
+        public bool TryPurchaseUpgrade(string upgradeId) => TryPurchaseUpgrade(upgradeId, BuyQuantity.X1);
+
+        /// <summary>
+        /// Achète le lot que <paramref name="quantity"/> désigne, ou rien du tout.
+        ///
+        /// Le nombre de niveaux est recalculé ICI depuis le solde de l'instant, jamais repris
+        /// d'un devis d'affichage : entre le rafraîchissement de la vue et le clic, un cycle a pu
+        /// verser — ou le Bouton d'Urgence avoir été pressé.
+        /// </summary>
+        public bool TryPurchaseUpgrade(string upgradeId, BuyQuantity quantity)
         {
             if (!_activeUpgrades.TryGetValue(upgradeId, out var model)) return false;
 
-            double currentCost = model.GetCurrentCost(_prestigeManager.CostMultiplierReduction.CurrentValue);
+            int levels = GetAffordableLevels(model, quantity, _userCurrencies.Money.Amount.CurrentValue);
+            if (levels <= 0) return false;
 
-            if (_userCurrencies.Money.TryRemove(currentCost))
+            // Le montant débité sort de la MÊME somme géométrique que le test d'abordabilité
+            // ci-dessus. Si TryRemove échoue quand même, c'est que le solde a bougé entre les
+            // deux lignes, pas que le calcul ment — et dans ce cas on n'achète rien.
+            if (!_userCurrencies.Money.TryRemove(model.GetCumulativeCost(levels))) return false;
+
+            bool isFirstPurchase = model.CurrentLevel.CurrentValue == 0;
+
+            model.AddLevels(levels);
+            RecalculateTotals();
+
+            if (isFirstPurchase)
             {
-                bool isFirstPurchase = model.CurrentLevel.CurrentValue == 0;
-
-                model.LevelUp();
-                RecalculateTotals();
-
-                if (isFirstPurchase)
-                {
-                    RevealNextUpgrade(model);
-                }
-
-                return true;
+                RevealNextUpgrade(model);
             }
 
-            return false;
+            return true;
         }
 
         private void RevealNextUpgrade(UpgradeModel justPurchased)
@@ -387,14 +483,31 @@ namespace Core.Services.Economy
 
             // Second rôle des TFlops. Le log10 donne un gros gain au début puis aplatit la
             // courbe : le joueur ne doit jamais devenir indétectable.
-            double dissipationFactor = 1d + Math.Log10(1d + totalTFlops);
+            //
+            // La COMPRESSION s'y ajoute depuis le 2026-08-31, et ce n'est pas un bonus de plus :
+            // c'est ce qui empêche la défense de décrocher mécaniquement. Un Script comprimé
+            // ×33 verse sa trace de cycle trente-trois fois plus souvent, donc son Trace/s est
+            // multiplié d'autant — alors que la dissipation, exprimée par seconde, ne gagnait
+            // que le log10. Mesuré en simulation de fin de partie : 1 500 niveaux de Proxies
+            // achetés ne tenaient plus que 24 % de réduction.
+            //
+            // Un Proxy filtre du TRAFIC, pas des secondes, et il tourne sur le matériel du
+            // joueur : si les Scripts vont trente fois plus vite, sa charge suit. La compression
+            // devient ainsi NEUTRE sur le rapport dissipation/génération, et tout le danger du
+            // Hardware passe par où il doit — sa propre chaleur et le boost de rendement qu'il
+            // donne aux Scripts, tous deux comptés en puissance^exposant.
+            double compressionFactor = Math.Pow(
+                1d + totalTFlops * _balancing.TFlopsTimeCompression,
+                _balancing.TFlopsCompressionExponent);
+
+            double dissipationFactor = (1d + Math.Log10(1d + totalTFlops)) * compressionFactor;
 
             TotalMoneyYieldPerSecond.Value = moneyPerSecond;
             TotalTFlops.Value = totalTFlops;
             ProxySynergyMultiplier.Value = synergy;
             HardwareTracePerSecond.Value = hardwareTrace;
             TraceCapacityBonus.Value = traceCapacity;
-            ProxyDissipationPerSecond.Value = (float)(proxyBase * dissipationFactor);
+            ProxyDissipationPower.Value = (float)(proxyBase * dissipationFactor);
         }
 
         public void Dispose()
@@ -413,7 +526,7 @@ namespace Core.Services.Economy
             TotalTFlops.Dispose();
             HardwareTracePerSecond.Dispose();
             TraceCapacityBonus.Dispose();
-            ProxyDissipationPerSecond.Dispose();
+            ProxyDissipationPower.Dispose();
             ProxySynergyMultiplier.Dispose();
         }
     }

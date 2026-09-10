@@ -103,15 +103,33 @@ namespace Core.UI.Prestige
             return _effects.ToString();
         }
 
+        /// <summary>
+        /// Dit ce qui manque, et depuis le 2026-09-09 <b>combien</b> il en manque.
+        ///
+        /// Deux gabarits et non un seul : une exigence au premier rang se lit « il faut posséder
+        /// ce nœud », et l'afficher comme « niveau 1/1 » n'apprendrait rien au joueur tout en
+        /// alourdissant la ligne des cent trente nœuds qui sont dans ce cas.
+        /// </summary>
         private string BuildPrerequisiteLine(bool isUnlocked)
         {
-            if (_selected.Prerequisite == null) return _loc.GetText("UI_PRESTIGE_DETAILS_PREREQ_NONE");
+            PrestigeRequirement requirement = _selected.Requirement;
+            if (!requirement.HasNode) return _loc.GetText("UI_PRESTIGE_DETAILS_PREREQ_NONE");
 
-            string parentName = PrestigeLabels.ResolveName(_selected.Prerequisite, _loc);
+            string parentName = PrestigeLabels.ResolveName(requirement.Node, _loc);
+            int required = requirement.ResolveRequiredLevel();
+
+            if (required <= 1)
+            {
+                return _loc.GetText(
+                    isUnlocked ? "UI_PRESTIGE_DETAILS_PREREQ_OK" : "UI_PRESTIGE_DETAILS_PREREQ_MISSING",
+                    parentName);
+            }
 
             return _loc.GetText(
-                isUnlocked ? "UI_PRESTIGE_DETAILS_PREREQ_OK" : "UI_PRESTIGE_DETAILS_PREREQ_MISSING",
-                parentName);
+                isUnlocked ? "UI_PRESTIGE_DETAILS_PREREQ_LEVEL_OK" : "UI_PRESTIGE_DETAILS_PREREQ_LEVEL_MISSING",
+                parentName,
+                _prestigeManager.GetLevel(requirement.Node.Id),
+                required);
         }
 
         private string BuildCostLine(double cost, bool isMaxedOut)

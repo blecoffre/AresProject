@@ -47,9 +47,11 @@ namespace Core.Services.Security
         /// Déclare la capacité apportée par le Hardware. Poussée plutôt qu'observée : ce
         /// gestionnaire ne dépend d'aucun autre service, et c'est ce qui le garde testable.
         /// </summary>
-        public void SetCapacityBonus(float bonus)
+        public void SetCapacity(float hardwareBonus, float prestigeMultiplier)
         {
-            float cap = _baseCap + Mathf.Max(0f, bonus);
+            // Le multiplicateur de Blindage porte sur le TOTAL, plafond de base compris : il est
+            // donc utile dès la première run, avant que le moindre Hardware ne soit acheté.
+            float cap = (_baseCap + Mathf.Max(0f, hardwareBonus)) * Mathf.Max(1f, prestigeMultiplier);
             if (Mathf.Approximately(cap, TraceCap)) return;
 
             TraceCap = cap;

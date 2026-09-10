@@ -9,11 +9,18 @@ namespace Core.Services.Simulation
     /// <summary>
     /// Le « Ghost Cache » et son déclencheur, le Zéro-Day Exploit.
     ///
-    /// Jusqu'ici, l'excédent de dissipation des Proxies était purement jeté : au-delà du point
-    /// où la Trace cessait de monter, chaque Proxie supplémentaire ne servait plus à rien. Ce
-    /// système le capte et le transforme en charges, chacune échangeable contre 30 secondes de
-    /// production démesurée — pendant lesquelles tous les Proxies s'éteignent et la Trace brute
-    /// est elle-même multipliée. Le joueur est à découvert, deux fois.
+    /// Ce système récompense le MAINTIEN D'UNE POSTURE DÉFENSIVE et le transforme en charges,
+    /// chacune échangeable contre 30 secondes de production démesurée — pendant lesquelles tous
+    /// les Proxies s'éteignent et la Trace brute est elle-même multipliée. Le joueur est à
+    /// découvert, deux fois.
+    ///
+    /// <b>La condition de charge a changé le 2026-08-31.</b> Elle captait l'excédent de
+    /// dissipation, c'est-à-dire la part au-delà du point où la Trace cessait de monter. Ce point
+    /// n'existe plus : la réduction des Proxies est désormais asymptotique, donc la Trace monte
+    /// toujours et il n'y a plus rien à « jeter ». Le seuil porte maintenant sur la FRACTION de
+    /// réduction tenue, ce qui dit la même chose que le GDD en des termes qui ont encore un sens.
+    /// Conséquence assumée : charger n'est plus gratuit, la jauge continue de grimper pendant ce
+    /// temps.
     ///
     /// <b>Le nombre de charges vient du prestige</b>, via le nœud `P_EXPLOIT_CHARGES` : zéro au
     /// départ, donc l'Exploit est verrouillé tant qu'il n'a pas été acheté, et rien ne
@@ -128,8 +135,9 @@ namespace Core.Services.Simulation
         }
 
         /// <summary>
-        /// Capte une frame d'excédent. Appelé par le SimulationTicker, et par lui seul : c'est
-        /// lui qui tient le calcul du débit et sait donc si la dissipation dépasse la génération.
+        /// Capte une frame de posture défensive tenue. Appelé par le SimulationTicker, et par lui
+        /// seul : c'est lui qui tient le calcul du débit et connaît donc la fraction de réduction
+        /// effectivement atteinte cette frame.
         ///
         /// Sans effet une fois la réserve pleine — le plafond étant borné par le prestige, on ne
         /// thésaurise jamais à l'infini — ni tant que l'Exploit est verrouillé.

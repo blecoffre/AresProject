@@ -1,5 +1,6 @@
 using Core.Models.Economy;
 using Core.Services.Economy;
+using Core.Services.Platform;
 using R3;
 using System;
 using UnityEngine;
@@ -25,6 +26,7 @@ namespace Core.Services.Security
     /// </summary>
     public class EmergencyProtocolSystem : ITickable, IDisposable
     {
+        private readonly ITimeSource _time;
         private readonly ThreatManager _threatManager;
         private readonly UpgradeManager _upgradeManager;
         private readonly PrestigeManager _prestigeManager;
@@ -88,12 +90,14 @@ namespace Core.Services.Security
             ThreatManager threatManager,
             UpgradeManager upgradeManager,
             PrestigeManager prestigeManager,
-            BalancingConfigSO balancing)
+            BalancingConfigSO balancing,
+            ITimeSource time)
         {
             _threatManager = threatManager;
             _upgradeManager = upgradeManager;
             _prestigeManager = prestigeManager;
             _balancing = balancing;
+            _time = time;
         }
 
         public void Tick()
@@ -101,7 +105,7 @@ namespace Core.Services.Security
             // Volontairement NON gardé par IsGameActive : le contrecoup et le délai doivent
             // continuer de s'écouler pendant l'écran de fin. Le wipe les remet à zéro de toute
             // façon, mais les figer donnerait un état incohérent si la run reprenait.
-            float deltaTime = Time.deltaTime;
+            float deltaTime = _time.DeltaTime;
 
             if (_blockRemaining.CurrentValue > 0f)
             {

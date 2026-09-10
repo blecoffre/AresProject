@@ -17,6 +17,7 @@ namespace Core.UI.Upgrades
         private readonly UpgradeManager _upgradeManager;
         private readonly ScriptCycleRunner _cycleRunner;
         private readonly UserCurrencies _currencies;
+        private readonly BuyQuantitySelector _buyQuantity;
         private readonly ConsolePresenter _console;
         private readonly ILocalizationService _loc;
 
@@ -24,12 +25,27 @@ namespace Core.UI.Upgrades
 
         private readonly bool _isScript;
 
+        /// <summary>
+        /// Le dernier état d'achat effectivement poussé à la vue : le lot payable, le mode et le
+        /// niveau du générateur.
+        ///
+        /// Ces trois valeurs sont la clé de déduplication du rafraîchissement, et elles sont
+        /// toutes les trois nécessaires. Le lot payable seul ne suffit pas : après un achat en
+        /// x1, il vaut souvent 1 avant comme après, alors que le PRIX, lui, a changé — la carte
+        /// serait restée sur l'ancien montant. Initialisées à des valeurs impossibles pour que le
+        /// tout premier rafraîchissement passe.
+        /// </summary>
+        private int _lastAffordableLevels = -1;
+        private int _lastModelLevel = -1;
+        private BuyQuantity _lastQuantity = (BuyQuantity)(-1);
+
         public GeneratorPresenter(
             UpgradeModel model,
             GeneratorView view,
             UpgradeManager upgradeManager,
             ScriptCycleRunner cycleRunner,
             UserCurrencies currencies,
+            BuyQuantitySelector buyQuantity,
             ConsolePresenter console,
             ILocalizationService loc)
         {
@@ -38,6 +54,7 @@ namespace Core.UI.Upgrades
             _upgradeManager = upgradeManager;
             _cycleRunner = cycleRunner;
             _currencies = currencies;
+            _buyQuantity = buyQuantity;
             _console = console;
             _loc = loc;
 
@@ -53,7 +70,7 @@ namespace Core.UI.Upgrades
             _view.OnRunClicked += HandleRunRequest;
 
             BindLevel();
-            BindAffordability();
+            BindPurchaseState();
             BindCycle();
         }
 
@@ -62,26 +79,79 @@ namespace Core.UI.Upgrades
             _model.CurrentLevel
                 .Subscribe(level =>
                 {
-                    _view.UpdateCostAndLevel(
-                        _loc.GetText("UI_GENERATOR_LEVEL", level),
-                        _loc.GetText("UI_GENERATOR_COST", CurrencyFormatter.FormatCost(_model.GetCurrentCost())));
-
+                    _view.UpdateLevel(_loc.GetText("UI_GENERATOR_LEVEL", level));
                     _view.UpdateStats(BuildStatsText());
+
+                    // Le prix du prochain lot vient de changer : il ne s'écrit plus ici mais dans
+                    // le rafraîchissement d'achat, seul endroit qui connaisse le mode courant.
+                    RefreshPurchaseState();
                     RefreshRunButton();
                 })
                 .AddTo(_disposables);
         }
 
-        private void BindAffordability()
+        /// <summary>
+        /// Le lot achetable dépend de trois entrées : le solde, le mode d'achat et le niveau du
+        /// générateur. La troisième est déjà couverte par BindLevel.
+        ///
+        /// Trois abonnements vers un point de rafraîchissement unique plutôt qu'un CombineLatest :
+        /// celui-ci serait plus court à écrire mais allouerait un tuple à chaque émission, sur une
+        /// source réveillée à chaque versement de cycle. Les lambdas, elles, ne sont allouées
+        /// qu'une fois, à l'abonnement.
+        /// </summary>
+        private void BindPurchaseState()
         {
-            // Le coût ne bouge qu'à l'achat, il est donc en cache dans le modèle. On ne pousse à
-            // la vue que le passage de "pas assez" à "assez" : sans ce DistinctUntilChanged,
-            // chaque versement de cycle réveillait les 45 générateurs affichés.
             _currencies.Money.Amount
-                .Select(money => money >= _model.GetCurrentCost())
-                .DistinctUntilChanged()
-                .Subscribe(_view.SetBuyButtonInteractable)
+                .Subscribe(_ => RefreshPurchaseState())
                 .AddTo(_disposables);
+
+            _buyQuantity.Current
+                .Subscribe(_ => RefreshPurchaseState())
+                .AddTo(_disposables);
+        }
+
+        /// <summary>
+        /// Recalcule le lot que le mode courant permet, et ne réveille la vue que si quelque
+        /// chose a réellement bougé.
+        ///
+        /// Ce filtre remplace le DistinctUntilChanged d'origine et joue le même rôle : sans lui,
+        /// chaque versement de cycle reformaterait deux chaînes par générateur affiché, soit
+        /// quatre-vingt-dix allocations par tick d'argent. Le calcul en amont, lui, est gratuit
+        /// pour les modes fixes — une comparaison contre une somme fermée — et ne paie un
+        /// logarithme qu'en MAX.
+        /// </summary>
+        private void RefreshPurchaseState()
+        {
+            double money = _currencies.Money.Amount.CurrentValue;
+            BuyQuantity quantity = _buyQuantity.Current.CurrentValue;
+            int level = _model.CurrentLevel.CurrentValue;
+
+            int affordable = _upgradeManager.GetAffordableLevels(_model.Config.Id, quantity, money);
+
+            if (affordable == _lastAffordableLevels
+                && quantity == _lastQuantity
+                && level == _lastModelLevel)
+            {
+                return;
+            }
+
+            _lastAffordableLevels = affordable;
+            _lastQuantity = quantity;
+            _lastModelLevel = level;
+
+            PurchaseQuote quote = _upgradeManager.GetQuote(_model.Config.Id, quantity, money);
+
+            _view.UpdateCost(
+                _loc.GetText("UI_GENERATOR_COST", CurrencyFormatter.FormatCost(quote.TotalCost)));
+
+            // Clé DISTINCTE pour le lot, et non la même avec un argument de plus : GetText passe
+            // par string.Format, donc un gabarit portant {0} lèverait une FormatException sur
+            // l'appel sans argument de l'achat simple.
+            _view.UpdateBuyLabel(quote.Levels > 1
+                ? _loc.GetText("UI_BUY_BULK", quote.Levels)
+                : _loc.GetText("UI_BUY_ONE"));
+
+            _view.SetBuyButtonInteractable(quote.IsAffordable);
         }
 
         private void BindCycle()
@@ -150,14 +220,27 @@ namespace Core.UI.Upgrades
 
         private void HandleBuyRequest()
         {
-            if (!_upgradeManager.TryPurchaseUpgrade(_model.Config.Id)) return;
+            // Relevé AVANT l'achat : c'est la seule façon de connaître le nombre de niveaux
+            // réellement obtenus. Le manager recalcule son lot depuis le solde de l'instant, donc
+            // le devis affiché ne fait pas foi — un cycle a pu verser entre les deux.
+            int levelBefore = _model.CurrentLevel.CurrentValue;
 
-            // Le log était construit puis jeté : il part enfin dans la console.
+            if (!_upgradeManager.TryPurchaseUpgrade(_model.Config.Id, _buyQuantity.Current.CurrentValue)) return;
+
+            int levelAfter = _model.CurrentLevel.CurrentValue;
+            int gained = levelAfter - levelBefore;
+
             _console.Log(
-                _loc.GetText(
-                    "LOG_UPGRADE_PURCHASED",
-                    _loc.GetText(_model.Config.DisplayNameKey),
-                    _model.CurrentLevel.CurrentValue),
+                gained > 1
+                    ? _loc.GetText(
+                        "LOG_UPGRADE_PURCHASED_BULK",
+                        _loc.GetText(_model.Config.DisplayNameKey),
+                        gained,
+                        levelAfter)
+                    : _loc.GetText(
+                        "LOG_UPGRADE_PURCHASED",
+                        _loc.GetText(_model.Config.DisplayNameKey),
+                        levelAfter),
                 ConsoleLogType.Standard);
         }
 

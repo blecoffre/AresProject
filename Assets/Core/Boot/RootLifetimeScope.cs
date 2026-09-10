@@ -5,6 +5,7 @@ using Core.Models.Economy;
 using Core.Services.Economy;
 using Core.Services.Localization;
 using Core.Services.Persistence;
+using Core.Services.Platform;
 using Core.Services.Save;
 using Core.Services.Scene;
 using Core.Services.Security;
@@ -49,8 +50,23 @@ namespace Core.Infrastructure
             //   builder.Register<SteamCloudSaveService>(Lifetime.Singleton);
             //   builder.Register<SaveServiceComposite>(Lifetime.Singleton).As<ISaveService>();
 
+            // La source de temps de TOUTE la simulation. En Singleton dans le Root, donc résolue
+            // aussi par le SimulationTicker qui vit dans le scope de scène — un scope enfant lit
+            // les enregistrements de son parent.
+            //
+            // En production elle rend exactement Time.deltaTime : ce n'est pas un point
+            // d'extension théorique, c'est ce qui permet au harnais d'équilibrage de dérouler une
+            // campagne de dix heures en quelques secondes, hors Play Mode, sur CE code plutôt que
+            // sur une réplique qui en dérive.
+            builder.Register<UnityTimeSource>(Lifetime.Singleton).As<ITimeSource>();
+
             // 4. Modèles de données
             builder.Register<UserCurrencies>(Lifetime.Singleton);
+
+            // Le mode d'achat multiple est une préférence d'interface, mais il vit ici et non
+            // dans le scope de scène : le GameStateGateway le restaure AVANT que la GameScene
+            // n'existe, et il doit survivre à son rechargement comme le reste de la partie.
+            builder.Register<BuyQuantitySelector>(Lifetime.Singleton);
 
             // 5. Navigation
             builder.Register<SceneLoader>(Lifetime.Singleton).As<ISceneLoader>();
@@ -77,6 +93,10 @@ namespace Core.Infrastructure
             builder.Register<GhostCacheSystem>(Lifetime.Singleton);
 
             // 7. Points d'entrée
+            // Enregistré en premier : il plafonne la cadence avant que quoi que ce soit ne
+            // s'affiche, plutôt que de laisser le jeu tourner libre le temps du chargement.
+            builder.RegisterEntryPoint<FrameRateGovernor>();
+
             builder.RegisterEntryPoint<GameBootstrapper>();
             builder.RegisterEntryPoint<SaveScheduler>();
 

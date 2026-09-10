@@ -1,4 +1,5 @@
 using Core.Models.Economy;
+using Core.Services.Platform;
 using Core.Services.Simulation;
 using R3;
 using System;
@@ -38,6 +39,7 @@ namespace Core.Services.Economy
         private readonly UserCurrencies _currencies;
         private readonly UpgradeManager _upgradeManager;
         private readonly GameSessionManager _sessionManager;
+        private readonly ITimeSource _time;
 
         private CycleSlot[] _slots = Array.Empty<CycleSlot>();
         private int _slotCount;
@@ -62,11 +64,13 @@ namespace Core.Services.Economy
         public ScriptCycleRunner(
             UserCurrencies currencies,
             UpgradeManager upgradeManager,
-            GameSessionManager sessionManager)
+            GameSessionManager sessionManager,
+            ITimeSource time)
         {
             _currencies = currencies;
             _upgradeManager = upgradeManager;
             _sessionManager = sessionManager;
+            _time = time;
         }
 
         public void Start()
@@ -177,7 +181,7 @@ namespace Core.Services.Economy
             // (RebuildSlots remet Elapsed à 0).
             if (!_sessionManager.IsGameActive.CurrentValue) return;
 
-            float deltaTime = Time.deltaTime;
+            float deltaTime = _time.DeltaTime;
             float activeTrace = 0f;
 
             for (int i = 0; i < _slotCount; i++)

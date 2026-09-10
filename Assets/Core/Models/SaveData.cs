@@ -34,7 +34,7 @@ namespace Core.Models
         /// correspondant dans Migrate(). Sans ça, le premier changement post-lancement casse
         /// silencieusement les sauvegardes des joueurs.
         /// </summary>
-        public const int CurrentVersion = 7;
+        public const int CurrentVersion = 8;
 
         /// <summary>
         /// Le plafond de Trace tel qu'il était FIGÉ jusqu'en v6. Sert uniquement à convertir
@@ -42,6 +42,15 @@ namespace Core.Models
         /// le plafond courant, devenu dynamique.
         /// </summary>
         private const float LegacyTraceCap = 100f;
+
+        /// <summary>
+        /// Dernière valeur valide de <c>BuyQuantityMode</c>, soit BuyQuantity.Max.
+        ///
+        /// Recopiée ici plutôt qu'importée depuis Core.Models.Economy, volontairement : ce fichier
+        /// décrit un FORMAT DE FICHIER, pas l'état vivant du jeu. Ajouter une quantité d'achat
+        /// oblige donc à toucher cette borne consciemment — c'est le but.
+        /// </summary>
+        private const int MaxBuyQuantityMode = 3;
 
         public int Version;
 
@@ -117,6 +126,21 @@ namespace Core.Models
         public float RunElapsedSeconds;
         public List<UpgradeSaveEntry> Upgrades;
 
+        // ---------------------------------------------------------------------
+        // Préférences d'interface : ni méta-progression, ni run. Le wipe n'y touche pas —
+        // perdre son mode d'achat parce qu'on s'est fait repérer n'aurait aucun sens.
+        // ---------------------------------------------------------------------
+
+        /// <summary>
+        /// Mode d'achat multiple sélectionné : 0 = x1, 1 = x10, 2 = x100, 3 = MAX.
+        ///
+        /// Stocké en int et non en BuyQuantity : JsonUtility sérialiserait l'enum par son entier
+        /// de toute façon, et l'int rend explicite le fait que ces valeurs sont un format de
+        /// fichier. Réordonner l'enum redéfinirait silencieusement la préférence de tous les
+        /// joueurs installés.
+        /// </summary>
+        public int BuyQuantityMode;
+
         /// <summary>
         /// Horodatage de l'écriture (UTC, secondes Unix). Sert uniquement à départager une
         /// sauvegarde locale d'une sauvegarde Steam Cloud. Aucune progression hors-ligne n'en
@@ -144,6 +168,8 @@ namespace Core.Models
             RunElapsedSeconds = 0f,
             Upgrades = new List<UpgradeSaveEntry>(),
 
+            BuyQuantityMode = 0,
+
             SavedAtUnixSeconds = 0L
         };
 
@@ -169,6 +195,11 @@ namespace Core.Models
             if (EmergencyBlockRemainingSeconds < 0f) EmergencyBlockRemainingSeconds = 0f;
             if (EmergencyCooldownRemainingSeconds < 0f) EmergencyCooldownRemainingSeconds = 0f;
             if (RunElapsedSeconds < 0f) RunElapsedSeconds = 0f;
+
+            // Le mode d'achat vient d'un fichier que le joueur peut avoir édité, ou d'un binaire
+            // plus récent : tout ce qui n'est pas un mode connu retombe sur x1 plutôt que de
+            // propager un enum hors domaine jusque dans les presenters.
+            if (BuyQuantityMode < 0 || BuyQuantityMode > MaxBuyQuantityMode) BuyQuantityMode = 0;
 
             if (Money < 0d) Money = 0d;
             if (RunMoney < 0d) RunMoney = 0d;
@@ -249,6 +280,14 @@ namespace Core.Models
                     goto case 7;
 
                 case 7:
+                    // v7 -> v8 : l'achat multiple apparaît, et avec lui la préférence de
+                    // quantité. Une sauvegarde antérieure n'a par définition rien choisi ; on
+                    // part de x1, qui est aussi le seul comportement qu'elle a connu.
+                    data.BuyQuantityMode = 0;
+                    data.Version = 8;
+                    goto case 8;
+
+                case 8:
                     // Format courant : rien à faire.
                     break;
 
