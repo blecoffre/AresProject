@@ -63,3 +63,7 @@ Thumbs.db
 
 # Sortie de l'outil graphify : dérivée du dépôt, jamais une source.
 /graphify-out/
+
+# Bytecode Python du simulateur d'équilibrage.
+__pycache__/
+*.pyc
