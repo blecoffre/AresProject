@@ -16,6 +16,7 @@ MonoBehaviour:
   _maxTraceReduction: 0.85
   _dissipationHalfPointRatio: 0.3
   _traceYieldExponent: 0.6
+  _passiveTraceFillMinutes: 25
   _ghostCacheReductionThreshold: 0.75
   _traceReadoutMinInterval: 0.5
   _traceReadoutMaxInterval: 120

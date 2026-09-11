@@ -79,8 +79,18 @@ namespace Core.Services.Simulation
             // La réduction s'applique AVANT la soustraction des Proxies : l'ordre compte, sinon
             // elle rognerait aussi la dissipation et les Proxies deviendraient moins efficaces
             // à mesure que le joueur progresse — exactement l'inverse de l'intention.
+            // La TRAQUE PASSIVE entre dans le brut, et c'est délibéré : elle doit se faire
+            // dissiper comme le reste. Sans ça elle serait un compte à rebours inesquivable, et
+            // les Proxies n'auraient toujours rien à faire pendant les vingt premières minutes.
+            //
+            // Elle existe parce que la Trace ne mesurait QUE la production : jouer faiblement
+            // achetait du temps illimité. Mesuré — acquisition seule, ni Hardware ni Proxy :
+            // 92,7 minutes de run et 6,3 % de jauge à la vingtième minute. Aucune pression
+            // absolue n'existait dans le jeu, le seul chronomètre était celui que le joueur
+            // remontait lui-même.
             float generated = _cycleRunner.ActiveScriptTracePerSecond
-                            + _upgradeManager.HardwareTracePerSecond.CurrentValue;
+                            + _upgradeManager.HardwareTracePerSecond.CurrentValue
+                            + _balancing.PassiveTracePerSecond;
 
             float brute = generated * _prestigeManager.TraceReductionMultiplier.CurrentValue;
 

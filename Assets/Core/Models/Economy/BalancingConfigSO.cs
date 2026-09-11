@@ -59,6 +59,22 @@ namespace Core.Models.Economy
                  "que par 1,52.")]
         [SerializeField, Range(0f, 1f)] private float _traceYieldExponent = 0.6f;
 
+        [Tooltip("Minutes que met l'A.M.I., À ELLE SEULE, pour remplir une jauge de base non " +
+                 "défendue. 0 désactive la traque passive.\n\n" +
+                 "⚠️ RÉGLAGE STRUCTURANT — c'est ce qui fait du temps un coût.\n\n" +
+                 "Sans lui, la Trace ne mesure QUE la production du joueur, donc jouer faiblement " +
+                 "achète du temps illimité. Mesuré le 2026-09-10 : un joueur qui n'achète que de " +
+                 "l'acquisition, ni Hardware ni Proxy, tenait 92,7 minutes — 6,3 % de jauge à la " +
+                 "vingtième minute — sans jamais courir le moindre risque. Il rampait, mais rien " +
+                 "ne venait jamais le chercher. Le seul chronomètre du jeu était celui que le " +
+                 "joueur remontait lui-même.\n\n" +
+                 "Le débit est calculé sur le plafond DE BASE, jamais sur le plafond courant : " +
+                 "c'est ce qui permet au Blindage et au Hardware d'acheter du temps en diluant " +
+                 "la traque. L'indexer sur le plafond courant la rendrait inesquivable.\n\n" +
+                 "La forme se règle toute seule : 0,067 Trace/s écrase une production naissante " +
+                 "et devient négligeable face à une économie mûre. La traque domine le début de " +
+                 "partie puis s'efface, sans réglage supplémentaire.")]
+        [SerializeField, Min(0f)] private float _passiveTraceFillMinutes = 25f;
 
         // ------------------------------------------------------------------
         // Relevé de Trace — le brouillard de guerre
@@ -245,6 +261,12 @@ namespace Core.Models.Economy
         /// <summary>Exposant liant la Trace d'un générateur à son rendement. Strictement entre 0 et 1.</summary>
         public float TraceYieldExponent => _traceYieldExponent;
 
+        /// <summary>
+        /// Trace par seconde générée par la seule traque de l'A.M.I., avant dissipation.
+        /// Dérivée du plafond de base pour que relever le plafond dilue la traque.
+        /// </summary>
+        public float PassiveTracePerSecond =>
+            _passiveTraceFillMinutes <= 0f ? 0f : _baseTraceCap / (_passiveTraceFillMinutes * 60f);
 
         public float TraceReadoutMinInterval => _traceReadoutMinInterval;
         public float TraceReadoutMaxInterval => _traceReadoutMaxInterval;
