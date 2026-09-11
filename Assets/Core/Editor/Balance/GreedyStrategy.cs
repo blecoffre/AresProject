@@ -24,21 +24,59 @@ namespace Core.Editor.Balance
         /// <summary>Garde-fou : un point de décision ne doit pas boucler indéfiniment.</summary>
         private const int MaxPurchasesPerDecision = 40;
 
-        /// <summary>Au-delà, la run est jugée finie et le joueur exfiltre au plus tard.</summary>
-        private const float ExitTraceFraction = 0.95f;
-
         /// <summary>Sous ce facteur de croissance, la run plafonne : mieux vaut repartir à neuf.</summary>
         private const double PlateauGrowth = 1.6d;
 
         private readonly float _safetySeconds;
+        private readonly float _exitTraceFraction;
+        private readonly float _reactionSeconds;
+
+        /// <summary>
+        /// Le joueur se fie-t-il au CHIFFRE AFFICHÉ plutôt qu'au bord de la fourchette ?
+        ///
+        /// C'est là que se joue tout le modèle de risque. Le prudent lit le bord haut : il sort
+        /// trop tôt et laisse des Datas sur la table. Le gourmand lit le nombre, qui date — et
+        /// se fait saisir. Le brouillard ne tue pas en soi, il force à choisir son poison.
+        /// </summary>
+        private readonly bool _trustsDisplayedNumber;
+
+        /// <summary>
+        /// Le joueur n'achète QUE des Scripts — ni Hardware, ni Proxy.
+        ///
+        /// Reproduit la posture d'un joueur qui découvre le jeu et se rue sur ce qui rapporte,
+        /// en ignorant les deux autres piliers. Sert à vérifier que le modèle correspond à ce
+        /// qui se passe dans une vraie partie : c'est la seule façon de distinguer un défaut de
+        /// build d'un défaut de game design.
+        /// </summary>
+        private readonly bool _scriptsOnly;
+
+        /// <summary>
+        /// Instant du dernier coup d'œil à la jauge. Sert au modèle de joueur imparfait : entre
+        /// deux regards, il ne voit rien monter.
+        /// </summary>
+        private float _lastGlance;
 
         /// <summary>Tampon réutilisé entre les évaluations : elles sont nombreuses.</summary>
         private readonly List<UpgradeModel> _ownedScripts = new List<UpgradeModel>(16);
 
-        public GreedyStrategy(string name, float safetySeconds)
+        /// <param name="reactionSeconds">
+        /// Secondes entre deux consultations de la jauge. À 0 le joueur est omniscient : il sort
+        /// toujours à la fraction voulue, à la frame près, et ne meurt donc JAMAIS.
+        ///
+        /// C'est une limite du modèle, pas du jeu : un agent parfait ne peut pas mesurer un Game
+        /// Over. Avec un délai réaliste, la saisie redevient possible — et la fréquence des
+        /// saisies devient une mesure de la brutalité réelle du début de partie.
+        /// </param>
+        public GreedyStrategy(string name, float safetySeconds,
+                              float exitTraceFraction = 0.95f, float reactionSeconds = 0f,
+                              bool trustsDisplayedNumber = false, bool scriptsOnly = false)
         {
+            _scriptsOnly = scriptsOnly;
             Name = name;
             _safetySeconds = safetySeconds;
+            _exitTraceFraction = exitTraceFraction;
+            _reactionSeconds = reactionSeconds;
+            _trustsDisplayedNumber = trustsDisplayedNumber;
         }
 
         public string Name { get; }
@@ -47,6 +85,45 @@ namespace Core.Editor.Balance
         public static GreedyStrategy NoDefense() => new GreedyStrategy("aucun Proxy", 0f);
         public static GreedyStrategy Balanced() => new GreedyStrategy("défense modérée", 120f);
         public static GreedyStrategy HeavyDefense() => new GreedyStrategy("défense lourde", 900f);
+
+        /// <summary>
+        /// Un joueur humain : il se défend raisonnablement, pousse sa chance plus loin (90 % de
+        /// jauge plutôt que 95), et ne regarde la Trace que toutes les huit secondes.
+        ///
+        /// C'est la SEULE posture qui puisse produire une saisie fédérale, donc la seule qui
+        /// mesure vraiment si le début de partie punit.
+        /// </summary>
+        public static GreedyStrategy Human() =>
+            new GreedyStrategy("humain prudent", 120f, exitTraceFraction: 0.90f, reactionSeconds: 8f);
+
+        /// <summary>
+        /// Le joueur gourmand : il pousse jusqu'à 95 % du chiffre AFFICHÉ, sans se méfier de son
+        /// âge. C'est la seule posture qui puisse se faire saisir, donc la seule qui mesure si le
+        /// brouillard mord — et à quel prix pour qui le sous-estime.
+        /// </summary>
+        public static GreedyStrategy HumanGreedy() =>
+            new GreedyStrategy("humain gourmand", 120f, exitTraceFraction: 0.95f,
+                               reactionSeconds: 8f, trustsDisplayedNumber: true);
+
+        /// <summary>
+        /// Le joueur qui VISE UN PALIER d'extraction et sort dès que le chiffre affiché le lui
+        /// annonce franchi.
+        ///
+        /// <b>C'est le modèle de joueur pertinent depuis que le bonus est en paliers.</b> Les
+        /// postures « prudent / gourmand » comparaient deux façons de lire la même jauge, ce qui
+        /// n'a plus grand sens : au-dessus du dernier seuil, s'attarder ne rapporte plus rien et
+        /// pousser jusqu'à 97 % est simplement une faute. La vraie question est devenue « quel
+        /// palier je vais chercher ? », et c'est ce que compare cette posture — viser haut paie
+        /// mieux, mais le relevé peut annoncer le seuil franchi trop tard.
+        /// </summary>
+        /// <summary>Le joueur qui ne mise que sur l'acquisition. Reproduit une vraie partie de découverte.</summary>
+        public static GreedyStrategy AcquisitionOnly() =>
+            new GreedyStrategy("acquisition seule", 0f, exitTraceFraction: 0.90f,
+                               reactionSeconds: 8f, trustsDisplayedNumber: true, scriptsOnly: true);
+
+        public static GreedyStrategy TierHunter(string label, float tierThreshold) =>
+            new GreedyStrategy(label, 120f, exitTraceFraction: tierThreshold,
+                               reactionSeconds: 8f, trustsDisplayedNumber: true);
 
         // ------------------------------------------------------------------
         // Achats pendant la run
@@ -63,10 +140,13 @@ namespace Core.Editor.Balance
 
             // La défense passe EN PREMIER quand la mort approche : ce qu'elle consomme n'ira pas
             // aux Scripts, et c'est exactement le coût d'opportunité qu'on cherche à mesurer.
-            for (int i = 0; i < MaxPurchasesPerDecision; i++)
+            if (!_scriptsOnly)
             {
-                if (SurvivalSeconds(h) >= _safetySeconds) break;
-                if (!BuyBestProxy(h)) break;
+                for (int i = 0; i < MaxPurchasesPerDecision; i++)
+                {
+                    if (SurvivalSeconds(h) >= _safetySeconds) break;
+                    if (!BuyBestProxy(h)) break;
+                }
             }
 
             for (int i = 0; i < MaxPurchasesPerDecision; i++)
@@ -122,8 +202,8 @@ namespace Core.Editor.Balance
                 double cost = model.GetCurrentCost();
                 if (cost <= 0d || cost > money) continue;
 
-                // Le facteur commun (1 + log10(1+TFlops)) x compression s'applique à TOUS les
-                // Proxies : il se simplifie dans un classement, inutile de le calculer.
+                // Le facteur de compression s'applique à TOUS les Proxies : il se simplifie
+                // dans un classement, inutile de le calculer.
                 double gain = ProbeTraceMagnitude(h, model, 1) - model.GetTraceMagnitudePerSecond();
                 if (gain <= 0d) continue;
 
@@ -164,6 +244,8 @@ namespace Core.Editor.Balance
                     bestScore = score;
                 }
             }
+
+            if (_scriptsOnly) return best != null && h.Upgrades.TryPurchaseUpgrade(best.Config.Id, BuyQuantity.X1);
 
             IReadOnlyList<UpgradeModel> hardware = h.Upgrades.GetUpgradesOfType(UpgradeType.Hardware);
             CollectOwnedScripts(scripts);
@@ -238,7 +320,6 @@ namespace Core.Editor.Balance
             probe.SetSpecificBonuses(h.Prestige.GetSpecificBonuses(source.Config.Id));
             probe.SetGlobalCostMultiplierReduction(h.Prestige.CostMultiplierReduction.CurrentValue);
             probe.SetTFlops(tflops);
-            probe.SetProxySynergy(h.Upgrades.ProxySynergyMultiplier.CurrentValue);
             return probe;
         }
 
@@ -271,9 +352,28 @@ namespace Core.Editor.Balance
         // ------------------------------------------------------------------
         public bool ShouldExfiltrate(SimulationHarness h, in RunProgress p)
         {
+            // Une run neuve remet le compteur de regards à zéro : l'instance de stratégie est
+            // réutilisée d'une run à l'autre par le pilote de campagne.
+            if (p.ElapsedSeconds < _lastGlance) _lastGlance = 0f;
+
+            if (_reactionSeconds > 0f)
+            {
+                if (p.ElapsedSeconds - _lastGlance < _reactionSeconds) return false;
+                _lastGlance = p.ElapsedSeconds;
+            }
+
             if (p.PendingCycles < 1d) return false;
 
-            if (p.TraceFraction >= ExitTraceFraction) return true;
+            // Un joueur qui a un temps de réaction lit aussi l'INTERFACE, pas la jauge interne :
+            // il décide contre le bord de la zone d'incertitude. C'est ce couple — délai de
+            // réaction ET capteur imparfait — qui rend une saisie fédérale possible. Les postures
+            // omniscientes gardent la vérité, et servent de référence.
+            float observed;
+            if (_reactionSeconds <= 0f) observed = p.TraceFraction;              // omniscient
+            else if (_trustsDisplayedNumber) observed = p.ReadoutLastKnownFraction; // gourmand
+            else observed = p.ReadoutMaxFraction;                                 // prudent
+
+            if (observed >= _exitTraceFraction) return true;
 
             // Plateau : la run ne monte plus assez pour mériter le risque qu'on prend.
             return p.GrowthSinceMark > 0d && p.GrowthSinceMark < PlateauGrowth;

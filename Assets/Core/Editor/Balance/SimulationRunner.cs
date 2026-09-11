@@ -60,6 +60,19 @@ namespace Core.Editor.Balance
         /// </summary>
         public bool TimedOut;
 
+        /// <summary>
+        /// Jauge REELLE a l'instant ou le joueur a decide de sortir. Diagnostic central : une
+        /// valeur tres inferieure au seuil de sortie signifie que la run s'est terminee sur la
+        /// detection de plateau, pas sur la peur. Le brouillard n'y peut alors rien.
+        /// </summary>
+        public float ExitTraceFraction = -1f;
+
+        /// <summary>Chiffre AFFICHE au meme instant. L'ecart avec le precedent est le mensonge.</summary>
+        public float ExitReadoutFraction = -1f;
+
+        /// <summary>Plus grand ecart constate sur la run entre la verite et le chiffre affiche.</summary>
+        public float PeakReadoutLag;
+
         public readonly List<RunSample> Samples = new List<RunSample>(256);
     }
 
@@ -158,10 +171,18 @@ namespace Core.Editor.Balance
                 }
 
                 var progress = new RunProgress(elapsed, h.Currencies.RunMoneyGenerated.CurrentValue,
-                                               growth, traceFraction, pending);
+                                               growth, traceFraction, pending,
+                                               h.Readout.EstimatedMaxFraction.CurrentValue,
+                                               h.Readout.LastKnownFraction.CurrentValue);
+
+                float lag = traceFraction - h.Readout.LastKnownFraction.CurrentValue;
+                if (lag > result.PeakReadoutLag) result.PeakReadoutLag = lag;
 
                 if (strategy.ShouldExfiltrate(h, progress))
                 {
+                    result.ExitTraceFraction = traceFraction;
+                    result.ExitReadoutFraction = h.Readout.LastKnownFraction.CurrentValue;
+
                     if (h.Session.TryResolveVoluntaryExit(out RunSummary voluntary))
                     {
                         h.Session.AnnounceRunEnded(voluntary);
@@ -256,7 +277,8 @@ namespace Core.Editor.Balance
 
             // Le brut n'est pas exposé : on le reconstitue depuis ce que le ticker additionne.
             float brute = h.CycleRunner.ActiveScriptTracePerSecond
-                        + h.Upgrades.HardwareTracePerSecond.CurrentValue;
+                        + h.Upgrades.HardwareTracePerSecond.CurrentValue
+                        + h.Balancing.PassiveTracePerSecond;
             brute *= h.Prestige.TraceReductionMultiplier.CurrentValue;
             if (brute <= 0f) return 0f;
 

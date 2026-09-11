@@ -57,6 +57,9 @@ namespace Core.Editor.Balance
         public PrestigeManager Prestige { get; }
         public UpgradeManager Upgrades { get; }
         public ThreatManager Threat { get; }
+
+        /// <summary>Le capteur imparfait. C'est LUI que doit lire un joueur simulé réaliste.</summary>
+        public TraceReadout Readout { get; }
         public EmergencyProtocolSystem Emergency { get; }
         public GhostCacheSystem GhostCache { get; }
         public GameSessionManager Session { get; }
@@ -91,6 +94,7 @@ namespace Core.Editor.Balance
             Prestige = new PrestigeManager(prestigeCatalog, Currencies);
             Upgrades = new UpgradeManager(upgradeCatalog, Currencies, Prestige, Balancing);
             Threat = new ThreatManager(Balancing);
+            Readout = new TraceReadout(Threat, Balancing, _time);
             Emergency = new EmergencyProtocolSystem(Threat, Upgrades, Prestige, Balancing, _time);
             GhostCache = new GhostCacheSystem(Upgrades, Prestige, Balancing);
             Session = new GameSessionManager(Currencies, Threat, Upgrades, Prestige,
@@ -139,6 +143,11 @@ namespace Core.Editor.Balance
             Emergency.Tick();
             Ticker.Tick();
 
+            // EN DERNIER : le capteur échantillonne la jauge telle qu'elle est à la fin du pas.
+            // Le faire avant lirait la valeur d'avant, et ajouterait un retard qui n'existe pas
+            // en production — le brouillard doit venir du modèle, pas d'un ordre d'appel.
+            Readout.Tick();
+
             float delta = Threat.CurrentTrace.CurrentValue - traceBefore;
             LastTraceDebitPerSecond = delta > 0f && deltaTime > 0f ? delta / deltaTime : 0f;
 
@@ -170,6 +179,7 @@ namespace Core.Editor.Balance
             Session?.Dispose();
             GhostCache?.Dispose();
             Emergency?.Dispose();
+            Readout?.Dispose();
             Threat?.Dispose();
             Upgrades?.Dispose();
             Prestige?.Dispose();

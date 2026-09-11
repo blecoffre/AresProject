@@ -57,7 +57,8 @@ namespace Core.Editor.Balance
             window.minSize = new Vector2(760f, 600f);
         }
 
-        private static string[] StrategyLabels => new[] { "aucun Proxy", "défense modérée", "défense lourde" };
+        private static string[] StrategyLabels =>
+            new[] { "aucun Proxy", "défense modérée", "défense lourde", "humain prudent", "humain gourmand" };
 
         private static ISimulationStrategy BuildStrategy(int index)
         {
@@ -65,6 +66,8 @@ namespace Core.Editor.Balance
             {
                 case 0: return GreedyStrategy.NoDefense();
                 case 2: return GreedyStrategy.HeavyDefense();
+                case 3: return GreedyStrategy.Human();
+                case 4: return GreedyStrategy.HumanGreedy();
                 default: return GreedyStrategy.Balanced();
             }
         }

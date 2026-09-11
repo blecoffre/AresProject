@@ -24,8 +24,24 @@ namespace Core.Editor.Balance
         /// <summary>CPU Cycles que la run rapporterait si elle s'arrêtait maintenant.</summary>
         public readonly double PendingCycles;
 
-        public RunProgress(float elapsed, double runMoney, double growth, float traceFraction, double pending)
+        /// <summary>
+        /// Bord haut de la zone d'incertitude, tel que le joueur le VOIT. Un modèle de joueur
+        /// réaliste décide là-dessus ; <see cref="TraceFraction"/> est la vérité, que seul un
+        /// agent omniscient devrait consulter.
+        /// </summary>
+        public readonly float ReadoutMaxFraction;
+
+        /// <summary>
+        /// Le CHIFFRE AFFICHÉ : la dernière position relevée. C'est ce que lit un joueur qui
+        /// pousse sa chance sans se méfier de l'âge du relevé — et c'est par là qu'on meurt.
+        /// </summary>
+        public readonly float ReadoutLastKnownFraction;
+
+        public RunProgress(float elapsed, double runMoney, double growth, float traceFraction,
+                           double pending, float readoutMaxFraction, float readoutLastKnown)
         {
+            ReadoutMaxFraction = readoutMaxFraction;
+            ReadoutLastKnownFraction = readoutLastKnown;
             ElapsedSeconds = elapsed;
             RunMoney = runMoney;
             GrowthSinceMark = growth;
