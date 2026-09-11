@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Core.Models.Economy
@@ -144,9 +145,28 @@ namespace Core.Models.Economy
                  "Pilote aussi le seuil de déblocage de l'exfiltration.")]
         [SerializeField, Min(1f)] private double _moneyPerCpuCycle = 1000d;
 
-        [Tooltip("Bonus « Clean Exit » : multiplicateur des CPU Cycles quand le joueur sort de " +
-                 "lui-même au lieu de se faire saisir. 1,2 = +20 %.")]
-        [SerializeField, Min(1f)] private double _cleanExitMultiplier = 1.2d;
+        [Tooltip("Paliers d'extraction : à ranger du MOINS au PLUS exigeant. Le joueur empoche le " +
+                 "bonus du plus haut palier dont il a atteint le seuil de Trace, et rien du tout " +
+                 "sous le premier.\n\n" +
+                 "⚠️ RÉGLAGE STRUCTURANT — c'est ici que vit le risque/récompense du jeu.\n\n" +
+                 "Ce bonus a d'abord été FORFAITAIRE (+20 % quoi qu'il arrive). Mesuré : les Datas " +
+                 "s'accumulent proportionnellement à la jauge (50 % de jauge = 31 % des Datas, " +
+                 "90 % = 90 %), la Trace étant un compteur de production. Le dernier pour-cent de " +
+                 "jauge valait donc exactement ce que valait le premier : pousser de 90 à 100 % " +
+                 "rapportait ~5 % de Cycles quand une seule saisie en coûtait 17. Un joueur qui " +
+                 "gagnait TOUS ses paris perdait quand même — un impôt, pas un arbitrage.\n\n" +
+                 "Il a ensuite été une COURBE CONTINUE, et c'était l'excès inverse : le bonus " +
+                 "passait de +25 % à +89 % entre 70 % et 90 % de jauge, ce qui rendait chaque " +
+                 "seconde de retard monnayable et transformait la sortie en optimisation au " +
+                 "chronomètre plutôt qu'en décision.\n\n" +
+                 "Un palier ne bouge pas entre deux seuils : traîner ne rapporte rien, et la seule " +
+                 "question qui se pose est franche — « je tente le suivant, oui ou non ? ».")]
+        [SerializeField] private CleanExitTier[] _cleanExitTiers =
+        {
+            new CleanExitTier(0.50f, 0.15d),
+            new CleanExitTier(0.75f, 0.30d),
+            new CleanExitTier(0.90f, 0.50d)
+        };
 
         [Tooltip("Secondes de progression offertes par clic d'Overclock, avant bonus de prestige.")]
         [SerializeField, Min(0f)] private float _overclockWarpSeconds = 0.5f;
@@ -242,7 +262,7 @@ namespace Core.Models.Economy
 
         public double BaseStartingMoney => _baseStartingMoney;
         public double MoneyPerCpuCycle => _moneyPerCpuCycle;
-        public double CleanExitMultiplier => _cleanExitMultiplier;
+        public IReadOnlyList<CleanExitTier> CleanExitTiers => _cleanExitTiers;
         public float OverclockWarpSeconds => _overclockWarpSeconds;
 
         public float GhostCacheCapacitySeconds => _ghostCacheCapacitySeconds;

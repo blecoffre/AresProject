@@ -55,7 +55,16 @@ namespace Core.Models.Economy
         // dissipation : bien trop faible pour tenir la promesse « les Proxies deviennent viables
         // en les améliorant au prestige ». Sans lui, affaiblir les Proxies de départ rendait la
         // défense inutilisable pour toujours, au lieu de la rendre méritée.
-        ProxyEfficiencyMultiplier
+        ProxyEfficiencyMultiplier,
+
+        // Extraction — multiplie le bonus des PALIERS d'exfiltration. Ajouté le 2026-09-10,
+        // appendé en fin comme tous les autres : l'index est sérialisé.
+        //
+        // La seule branche qui récompense la manière de jouer plutôt que la puissance brute.
+        // Les paliers valent +15/+30/+50 % nus ; cette branche les fait monter, donc plus le
+        // joueur investit ici, plus il a de raisons d'aller chercher le palier suivant — et
+        // plus une saisie lui coûte cher. Elle achète de l'appât, pas de la sécurité.
+        CleanExitBonusMultiplier
     }
 
     [CreateAssetMenu(fileName = "NewPrestigeConfig", menuName = "Core/Economy/Prestige Config")]

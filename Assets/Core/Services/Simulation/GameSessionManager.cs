@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Core.Models.Economy;
 using Core.Models.Simulation;
 using Core.Services.Economy;
@@ -131,8 +132,57 @@ namespace Core.Services.Simulation
             if (!IsGameActive.CurrentValue) return false;
 
             Debug.Log("[GameSessionManager] Exfiltration volontaire. Effacement propre.");
-            summary = ResolveRunEnd(RunEndReason.CleanExit, _balancing.CleanExitMultiplier);
+            summary = ResolveRunEnd(RunEndReason.CleanExit, ResolveCleanExitMultiplier());
             return true;
+        }
+
+        /// <summary>
+        /// Le bonus d'Effacement Propre : le PALIER d'extraction atteint, rien de plus.
+        ///
+        /// <b>C'est ici que vit le risque/récompense du jeu.</b> Tant que ce bonus était
+        /// forfaitaire, sortir à 40 % ou à 99 % rapportait le même supplément : le joueur n'avait
+        /// aucune raison de s'approcher du bord, et le danger n'achetait rien. Mesuré sur une
+        /// campagne complète — le joueur téméraire mourait neuf fois sur trente-deux pour 1,3 %
+        /// de Datas en plus. La prudence dominait strictement, ce qui n'est pas un arbitrage.
+        ///
+        /// La correction a d'abord été une courbe continue, et c'était l'excès inverse : chaque
+        /// seconde de retard devenait monnayable, et la sortie se jouait au chronomètre. Des
+        /// paliers rendent la décision DISCRÈTE — entre deux seuils le bonus ne bouge pas, donc
+        /// traîner ne rapporte rien, et la seule question est « je tente le suivant, oui ou
+        /// non ? ». C'est ce franchissement que le brouillard du <c>TraceReadout</c> rend
+        /// incertain.
+        ///
+        /// La saisie fédérale, elle, garde son multiplicateur de 1 : le GDD n'a pas bougé. La
+        /// punition est devenue implicite, et bien plus lourde — se faire prendre, c'est renoncer
+        /// à un bonus qu'on a passé toute la run à faire grossir.
+        /// </summary>
+        private double ResolveCleanExitMultiplier()
+        {
+            float fraction = _threatManager.NormalizedThreat.CurrentValue;
+
+            IReadOnlyList<CleanExitTier> tiers = _balancing.CleanExitTiers;
+            if (tiers == null) return 1d;
+
+            // On garde le MEILLEUR palier atteint plutôt que de s'arrêter au premier : rien
+            // n'oblige la liste réglée dans l'inspecteur à être triée, et un ordre involontaire
+            // ferait silencieusement toucher un joueur à 95 % le bonus d'un palier à 50 %.
+            double bonus = 0d;
+            float bestThreshold = -1f;
+
+            for (int i = 0; i < tiers.Count; i++)
+            {
+                CleanExitTier tier = tiers[i];
+                if (fraction < tier.TraceThreshold) continue;
+                if (tier.TraceThreshold <= bestThreshold) continue;
+
+                bestThreshold = tier.TraceThreshold;
+                bonus = tier.Bonus;
+            }
+
+            // Sous le premier palier, la sortie ne rapporte aucun bonus — mais elle reste une
+            // sortie propre : les Cycles de base sont acquis. Se faire saisir ne coûte donc
+            // jamais la run, seulement ce qu'on est allé chercher.
+            return 1d + bonus * _prestigeManager.CleanExitBonusMultiplier.CurrentValue;
         }
 
         /// <summary>

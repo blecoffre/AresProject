@@ -28,7 +28,13 @@ MonoBehaviour:
   _maxTargetedReduction: 0.95
   _baseStartingMoney: 10
   _moneyPerCpuCycle: 400000
-  _cleanExitMultiplier: 1.2
+  _cleanExitTiers:
+  - _traceThreshold: 0.5
+    _bonus: 0.15
+  - _traceThreshold: 0.75
+    _bonus: 0.3
+  - _traceThreshold: 0.9
+    _bonus: 0.5
   _overclockWarpSeconds: 0.5
   _ghostCacheCapacitySeconds: 300
   _overdriveDurationSeconds: 30

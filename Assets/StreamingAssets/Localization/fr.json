@@ -573,6 +573,30 @@
       "Value": "Dix mille grille-pain connectés répètent ton signal en chœur. Bonne chance pour trouver lequel est toi."
     },
     {
+      "Key": "PRESTIGE_P_EXTRACT_1_NAME",
+      "Value": "Sortie répétée"
+    },
+    {
+      "Key": "PRESTIGE_P_EXTRACT_1_DESC",
+      "Value": "Tu as fait le trajet à blanc cinquante fois, les yeux fermés. Chaque palier d'extraction rapporte davantage."
+    },
+    {
+      "Key": "PRESTIGE_P_EXTRACT_2_NAME",
+      "Value": "Itinéraire de repli"
+    },
+    {
+      "Key": "PRESTIGE_P_EXTRACT_2_DESC",
+      "Value": "Trois routes préparées, deux fausses pistes, un tunnel. Tu ne sors plus en improvisant."
+    },
+    {
+      "Key": "PRESTIGE_P_EXTRACT_3_NAME",
+      "Value": "Sortie chirurgicale"
+    },
+    {
+      "Key": "PRESTIGE_P_EXTRACT_3_DESC",
+      "Value": "Tu pars au moment exact où l'A.M.I. cligne. Ce que tu emportes au dernier palier n'a plus rien de raisonnable."
+    },
+    {
       "Key": "UI_RUN_END_SEIZED_NARRATIVE",
       "Value": "// SAISIE FÉDÉRALE //\nIls ont remonté la ligne. Le matériel est parti dans un carton scellé."
     },

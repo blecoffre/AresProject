@@ -1,0 +1,39 @@
+{
+  "items": [
+    {
+      "id": "P_EXTRACT_1",
+      "bonusType": "CleanExitBonusMultiplier",
+      "maxLevel": 10,
+      "baseCost": 1.0,
+      "costMult": 1.5,
+      "bonus": 0.05,
+      "posX": 2.0,
+      "posY": -1.0,
+      "prerequisiteId": "P_STEALTH"
+    },
+    {
+      "id": "P_EXTRACT_2",
+      "bonusType": "CleanExitBonusMultiplier",
+      "maxLevel": 10,
+      "baseCost": 1.0,
+      "costMult": 1.5,
+      "bonus": 0.15,
+      "posX": 2.0,
+      "posY": -2.0,
+      "prerequisiteId": "P_EXTRACT_1",
+      "requiredLevel": 3
+    },
+    {
+      "id": "P_EXTRACT_3",
+      "bonusType": "CleanExitBonusMultiplier",
+      "maxLevel": 10,
+      "baseCost": 1.0,
+      "costMult": 1.5,
+      "bonus": 0.4,
+      "posX": 2.0,
+      "posY": -3.0,
+      "prerequisiteId": "P_EXTRACT_2",
+      "requiredLevel": 3
+    }
+  ]
+}

@@ -66,6 +66,12 @@ namespace Core.Services.Economy
         public ReactiveProperty<float> ProxyEfficiencyMultiplier { get; } = new(1f);
 
         /// <summary>
+        /// Multiplie le bonus des paliers d'extraction. Jamais sous 1 : un noeud d'Extraction ne
+        /// peut pas rendre une sortie propre moins payante qu'a l'origine.
+        /// </summary>
+        public ReactiveProperty<float> CleanExitBonusMultiplier { get; } = new(1f);
+
+        /// <summary>
         /// Multiplicateur du PLAFOND de la jauge de Trace, apporté par la branche Blindage.
         /// Vaut 1 sans aucun nœud acheté.
         ///
@@ -253,6 +259,7 @@ namespace Core.Services.Economy
             double startingPower = 0d;
             float traceCapacityBonus = 0f;
             float proxyEfficiencyBonus = 0f;
+            float cleanExitBonus = 0f;
             bool emergencyUnlocked = false;
             int exploitCharges = 0;
             double exploitYieldBoost = 0d;
@@ -283,6 +290,10 @@ namespace Core.Services.Economy
 
                     case PrestigeBonusType.ProxyEfficiencyMultiplier:
                         proxyEfficiencyBonus += totalBonus;
+                        break;
+
+                    case PrestigeBonusType.CleanExitBonusMultiplier:
+                        cleanExitBonus += totalBonus;
                         break;
 
                     case PrestigeBonusType.ClickPowerMultiplier:
@@ -355,6 +366,7 @@ namespace Core.Services.Economy
             // Jamais sous 1, comme le Blindage : un nœud d'Interception ne peut pas rendre les
             // Proxies moins efficaces qu'à l'origine.
             ProxyEfficiencyMultiplier.Value = UnityEngine.Mathf.Max(1f, 1f + proxyEfficiencyBonus);
+            CleanExitBonusMultiplier.Value = UnityEngine.Mathf.Max(1f, 1f + cleanExitBonus);
             ClickPowerMultiplier.Value = 1f + clickBonus;
             CostMultiplierReduction.Value = costReduction;
             StartingMoney.Value = startingFunds;
@@ -435,6 +447,7 @@ namespace Core.Services.Economy
             TraceReductionMultiplier.Dispose();
             TraceCapacityMultiplier.Dispose();
             ProxyEfficiencyMultiplier.Dispose();
+            CleanExitBonusMultiplier.Dispose();
             ClickPowerMultiplier.Dispose();
             CostMultiplierReduction.Dispose();
             StartingMoney.Dispose();
