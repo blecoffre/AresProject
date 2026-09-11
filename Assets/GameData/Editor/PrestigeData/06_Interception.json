@@ -1,0 +1,51 @@
+{
+  "items": [
+    {
+      "id": "P_INTERCEPT_1",
+      "bonusType": "ProxyEfficiencyMultiplier",
+      "maxLevel": 10,
+      "baseCost": 1.0,
+      "costMult": 1.5,
+      "bonus": 0.02,
+      "posX": -2.0,
+      "posY": -1.0,
+      "prerequisiteId": "P_STEALTH"
+    },
+    {
+      "id": "P_INTERCEPT_2",
+      "bonusType": "ProxyEfficiencyMultiplier",
+      "maxLevel": 10,
+      "baseCost": 1.0,
+      "costMult": 1.5,
+      "bonus": 0.1,
+      "posX": -2.0,
+      "posY": -2.0,
+      "prerequisiteId": "P_INTERCEPT_1",
+      "requiredLevel": 3
+    },
+    {
+      "id": "P_INTERCEPT_3",
+      "bonusType": "ProxyEfficiencyMultiplier",
+      "maxLevel": 10,
+      "baseCost": 1.0,
+      "costMult": 1.5,
+      "bonus": 0.4,
+      "posX": -2.0,
+      "posY": -3.0,
+      "prerequisiteId": "P_INTERCEPT_2",
+      "requiredLevel": 3
+    },
+    {
+      "id": "P_INTERCEPT_4",
+      "bonusType": "ProxyEfficiencyMultiplier",
+      "maxLevel": 10,
+      "baseCost": 1.0,
+      "costMult": 1.5,
+      "bonus": 2.0,
+      "posX": -2.0,
+      "posY": -4.0,
+      "prerequisiteId": "P_INTERCEPT_3",
+      "requiredLevel": 3
+    }
+  ]
+}

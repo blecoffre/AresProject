@@ -193,7 +193,21 @@ namespace Core.Economy.Tools
                 bonusType = bonusType,
                 targetUpgradeId = target.Id,
                 maxLevel = 5,
-                baseCost = 50.0 * target.Order,
+
+                // Prix PLAT, et non indexé sur le palier de l'upgrade ciblée.
+                //
+                // Il valait 50 × Order, ce qui portait à lui seul 525 389 des 527 552 CPU Cycles
+                // de l'arbre — 99,6 % du total, pour un arbre calé sur ~3 500. La campagne
+                // plafonnait à 17 % en seize heures, faute de pouvoir rien s'offrir.
+                //
+                // Le piège est que ce fichier est une SORTIE de générateur : régler les prix dans
+                // 04_SpecificUpgrades.json ne survit pas au prochain passage de ce menu. C'est
+                // ici, et nulle part ailleurs, que se règle le prix des 120 nœuds spécifiques.
+                //
+                // La progression par palier n'est pas perdue pour autant : elle est portée par la
+                // CHAÎNE DE PRÉREQUIS — le nœud COST d'un palier ouvre le suivant — et par le
+                // costMult ci-dessous, qui rend les rangs profonds coûteux.
+                baseCost = 1.0,
                 costMult = 1.4,
                 bonus = bonus,
                 posX = pos.x,

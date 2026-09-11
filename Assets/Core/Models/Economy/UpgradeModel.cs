@@ -72,12 +72,8 @@ namespace Core.Models.Economy
         /// </summary>
         private SpecificUpgradeBonuses _bonuses = SpecificUpgradeBonuses.None;
 
-        /// <summary>
-        /// Accélération apportée par le parc de Proxies possédé. Poussée par l'UpgradeManager
-        /// comme les TFlops, et pour la même raison : elle ne dépend pas de CE générateur.
-        /// Vaut 1 quand aucun Proxy n'est possédé.
-        /// </summary>
-        private double _proxySynergy = 1d;
+        // L'accélération par les Proxies a été retirée le 2026-09-10 : un Proxy dissipe,
+        // il n'accélère plus rien. Voir UpgradeManager.RecalculateTotals.
 
         /// <summary>
         /// Multiplicateur temporaire de rendement, poussé par l'UpgradeManager. Sert le Zéro-Day
@@ -86,7 +82,7 @@ namespace Core.Models.Economy
         /// Il n'agit que sur les Scripts, et cette restriction n'est pas cosmétique : chez un
         /// Hardware, GetCurrentYield() EST sa contribution en TFlops. Le laisser passer
         /// multiplierait par 50 la capacité de calcul du joueur, donc la compression des cycles
-        /// ET la dissipation des Proxies — un buff économique deviendrait une invulnérabilité.
+        /// et le rendement de tous les Scripts — un buff temporaire deviendrait permanent.
         /// </summary>
         private double _globalYieldMultiplier = 1d;
 
@@ -151,18 +147,7 @@ namespace Core.Models.Economy
             RecalculateCache();
         }
 
-        /// <summary>
-        /// Met à jour l'accélération apportée par les Proxies. Même garde d'égalité que
-        /// SetTFlops : la valeur est poussée à tous les modèles à chaque achat.
-        /// </summary>
-        public void SetProxySynergy(double multiplier)
-        {
-            double safe = multiplier < 1d ? 1d : multiplier;
-            if (safe == _proxySynergy) return;
 
-            _proxySynergy = safe;
-            RecalculateCache();
-        }
 
         /// <summary>
         /// Met à jour le multiplicateur temporaire de rendement. Même garde d'égalité que
@@ -424,11 +409,6 @@ namespace Core.Models.Economy
             double compressed = duration
                 / Math.Pow(1d + _tflops * _balancing.TFlopsTimeCompression,
                            _balancing.TFlopsCompressionExponent);
-
-            // Puis la synergie des Proxies, qui accélère les cycles au même titre que les TFlops.
-            // Multiplicateur DÉDIÉ et non branché sur les TFlops : y passer créerait une boucle
-            // de rétroaction, la dissipation dépendant elle-même des TFlops par son log10.
-            compressed /= _proxySynergy;
 
             // Le plancher est désormais GLOBAL et non plus par générateur. MinCycleDuration n'est
             // plus lu : c'était lui le mur qui rendait le Hardware inutile passé quelques dizaines

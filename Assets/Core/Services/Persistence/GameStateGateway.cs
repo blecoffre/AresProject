@@ -29,6 +29,7 @@ namespace Core.Services.Persistence
         private readonly UpgradeManager _upgradeManager;
         private readonly PrestigeManager _prestigeManager;
         private readonly ThreatManager _threatManager;
+        private readonly TraceReadout _traceReadout;
         private readonly EmergencyProtocolSystem _emergencyProtocol;
         private readonly GhostCacheSystem _ghostCache;
         private readonly GameSessionManager _sessionManager;
@@ -51,6 +52,7 @@ namespace Core.Services.Persistence
             UpgradeManager upgradeManager,
             PrestigeManager prestigeManager,
             ThreatManager threatManager,
+            TraceReadout traceReadout,
             EmergencyProtocolSystem emergencyProtocol,
             GhostCacheSystem ghostCache,
             GameSessionManager sessionManager,
@@ -60,6 +62,7 @@ namespace Core.Services.Persistence
             _upgradeManager = upgradeManager;
             _prestigeManager = prestigeManager;
             _threatManager = threatManager;
+            _traceReadout = traceReadout;
             _emergencyProtocol = emergencyProtocol;
             _ghostCache = ghostCache;
             _sessionManager = sessionManager;
@@ -99,6 +102,11 @@ namespace Core.Services.Persistence
                 _upgradeManager.TraceCapacityBonus.CurrentValue,
                 _prestigeManager.TraceCapacityMultiplier.CurrentValue);
             _threatManager.RestoreTrace(Mathf.Min(data.CurrentTrace, _threatManager.TraceCap * MaxRestorableThreat));
+
+            // Le capteur se recale sur la valeur restaurée, sans délai. Sans ça il croirait voir
+            // la Trace bondir de zéro à sa valeur sauvegardée en une frame, en déduirait un débit
+            // délirant, et laisserait le joueur aveugle dès l'ouverture du jeu.
+            _traceReadout.Resync(_threatManager.NormalizedThreat.CurrentValue);
             _emergencyProtocol.Restore(
                 data.EmergencyUsesInRun,
                 data.EmergencyBlockRemainingSeconds,

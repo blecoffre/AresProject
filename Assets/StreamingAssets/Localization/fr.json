@@ -13,6 +13,14 @@
       "Value": "Trace"
     },
     {
+      "Key": "UI_TRACE_READOUT",
+      "Value": ": {0:F1} %  ·  relevé il y a {1:F0} s"
+    },
+    {
+      "Key": "UI_TRACE_READOUT_LIVE",
+      "Value": ": {0:F1} %"
+    },
+    {
       "Key": "CYCLES",
       "Value": "Cycles"
     },
@@ -531,6 +539,38 @@
     {
       "Key": "PRESTIGE_P_HARDEN_4_DESC",
       "Value": "Béton, sas étanche, et une réserve de nouilles pour six mois. La jauge de Trace encaisse un ordre de grandeur de plus."
+    },
+    {
+      "Key": "PRESTIGE_P_INTERCEPT_1_NAME",
+      "Value": "Filtrage DNS"
+    },
+    {
+      "Key": "PRESTIGE_P_INTERCEPT_1_DESC",
+      "Value": "Tu arrêtes de demander poliment ton chemin au fournisseur d'accès. Tous tes proxies dissipent un peu mieux."
+    },
+    {
+      "Key": "PRESTIGE_P_INTERCEPT_2_NAME",
+      "Value": "Chaînage d'oignons"
+    },
+    {
+      "Key": "PRESTIGE_P_INTERCEPT_2_DESC",
+      "Value": "Chaque paquet traverse sept inconnus avant d'arriver. Lent, pénible, et très efficace."
+    },
+    {
+      "Key": "PRESTIGE_P_INTERCEPT_3_NAME",
+      "Value": "Relais fantômes"
+    },
+    {
+      "Key": "PRESTIGE_P_INTERCEPT_3_DESC",
+      "Value": "Des machines qui n'existent sur aucun registre relaient ton trafic. L'A.M.I. remonte des lignes qui ne mènent nulle part."
+    },
+    {
+      "Key": "PRESTIGE_P_INTERCEPT_4_NAME",
+      "Value": "Nuage de témoins"
+    },
+    {
+      "Key": "PRESTIGE_P_INTERCEPT_4_DESC",
+      "Value": "Dix mille grille-pain connectés répètent ton signal en chœur. Bonne chance pour trouver lequel est toi."
     },
     {
       "Key": "UI_RUN_END_SEIZED_NARRATIVE",

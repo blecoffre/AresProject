@@ -17,7 +17,7 @@ MonoBehaviour:
   _displayDescriptionKey: 
   _bonusType: 7
   _maxLevel: 5
-  _baseCost: 350
+  _baseCost: 1
   _costMultiplier: 1.4
   _bonusPerLevel: 0.1
   _uiPosition: {x: -16, y: 0}

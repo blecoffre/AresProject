@@ -42,7 +42,20 @@ namespace Core.Models.Economy
         // 80 050 CPU Cycles. Chaque prestige laisse survivre plus longtemps, donc construire
         // plus haut, donc gagner plus, donc racheter du plafond : c'est la boucle qui rend
         // une campagne progressive au lieu d'un tapis roulant.
-        TraceCapacityMultiplier
+        TraceCapacityMultiplier,
+
+        // Interception — multiplie la DISSIPATION de tout le parc de Proxies. Ajouté le
+        // 2026-09-10, appendé en fin comme tous les autres : l'index est sérialisé.
+        //
+        // Le pendant défensif du Blindage. Celui-ci achète de la MARGE avant saisie, celui-là
+        // achète du DÉBIT dissipé — les deux moitiés de la survie, séparées parce qu'elles ne
+        // se règlent pas ensemble.
+        //
+        // Il existe parce que les nœuds ciblés qui visaient les Proxies plafonnaient à +50 % de
+        // dissipation : bien trop faible pour tenir la promesse « les Proxies deviennent viables
+        // en les améliorant au prestige ». Sans lui, affaiblir les Proxies de départ rendait la
+        // défense inutilisable pour toujours, au lieu de la rendre méritée.
+        ProxyEfficiencyMultiplier
     }
 
     [CreateAssetMenu(fileName = "NewPrestigeConfig", menuName = "Core/Economy/Prestige Config")]

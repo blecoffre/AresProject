@@ -6,12 +6,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 50.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -4.0,
             "posY": 6.0,
             "prerequisiteId": "P_REFAC",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_01"
         },
         {
@@ -20,12 +21,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 50.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -4.0,
             "posY": 7.0,
             "prerequisiteId": "P_UPG_SCR_01_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_01"
         },
         {
@@ -34,12 +36,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeTimeReduction",
             "maxLevel": 5,
-            "baseCost": 50.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -4.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_01_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_01"
         },
         {
@@ -48,12 +51,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeAutomationTresholdReduction",
             "maxLevel": 5,
-            "baseCost": 50.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 1.0,
             "posX": -5.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_01_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_01"
         },
         {
@@ -62,12 +66,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 100.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -7.0,
             "posY": 6.0,
             "prerequisiteId": "P_UPG_SCR_01_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_02"
         },
         {
@@ -76,12 +81,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 100.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -7.0,
             "posY": 7.0,
             "prerequisiteId": "P_UPG_SCR_02_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_02"
         },
         {
@@ -90,12 +96,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeTimeReduction",
             "maxLevel": 5,
-            "baseCost": 100.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -7.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_02_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_02"
         },
         {
@@ -104,12 +111,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeAutomationTresholdReduction",
             "maxLevel": 5,
-            "baseCost": 100.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 1.0,
             "posX": -8.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_02_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_02"
         },
         {
@@ -118,12 +126,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 150.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -10.0,
             "posY": 6.0,
             "prerequisiteId": "P_UPG_SCR_02_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_03"
         },
         {
@@ -132,12 +141,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 150.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -10.0,
             "posY": 7.0,
             "prerequisiteId": "P_UPG_SCR_03_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_03"
         },
         {
@@ -146,12 +156,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeTimeReduction",
             "maxLevel": 5,
-            "baseCost": 150.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -10.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_03_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_03"
         },
         {
@@ -160,12 +171,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeAutomationTresholdReduction",
             "maxLevel": 5,
-            "baseCost": 150.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 1.0,
             "posX": -11.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_03_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_03"
         },
         {
@@ -174,12 +186,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 200.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -13.0,
             "posY": 6.0,
             "prerequisiteId": "P_UPG_SCR_03_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_04"
         },
         {
@@ -188,12 +201,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 200.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -13.0,
             "posY": 7.0,
             "prerequisiteId": "P_UPG_SCR_04_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_04"
         },
         {
@@ -202,12 +216,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeTimeReduction",
             "maxLevel": 5,
-            "baseCost": 200.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -13.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_04_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_04"
         },
         {
@@ -216,12 +231,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeAutomationTresholdReduction",
             "maxLevel": 5,
-            "baseCost": 200.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 1.0,
             "posX": -14.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_04_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_04"
         },
         {
@@ -230,12 +246,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 250.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -16.0,
             "posY": 6.0,
             "prerequisiteId": "P_UPG_SCR_04_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_05"
         },
         {
@@ -244,12 +261,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 250.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -16.0,
             "posY": 7.0,
             "prerequisiteId": "P_UPG_SCR_05_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_05"
         },
         {
@@ -258,12 +276,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeTimeReduction",
             "maxLevel": 5,
-            "baseCost": 250.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -16.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_05_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_05"
         },
         {
@@ -272,12 +291,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeAutomationTresholdReduction",
             "maxLevel": 5,
-            "baseCost": 250.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 1.0,
             "posX": -17.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_05_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_05"
         },
         {
@@ -286,12 +306,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 300.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -19.0,
             "posY": 6.0,
             "prerequisiteId": "P_UPG_SCR_05_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_06"
         },
         {
@@ -300,12 +321,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 300.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -19.0,
             "posY": 7.0,
             "prerequisiteId": "P_UPG_SCR_06_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_06"
         },
         {
@@ -314,12 +336,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeTimeReduction",
             "maxLevel": 5,
-            "baseCost": 300.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -19.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_06_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_06"
         },
         {
@@ -328,12 +351,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeAutomationTresholdReduction",
             "maxLevel": 5,
-            "baseCost": 300.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 1.0,
             "posX": -20.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_06_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_06"
         },
         {
@@ -342,12 +366,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 350.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -22.0,
             "posY": 6.0,
             "prerequisiteId": "P_UPG_SCR_06_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_07"
         },
         {
@@ -356,12 +381,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 350.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -22.0,
             "posY": 7.0,
             "prerequisiteId": "P_UPG_SCR_07_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_07"
         },
         {
@@ -370,12 +396,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeTimeReduction",
             "maxLevel": 5,
-            "baseCost": 350.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -22.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_07_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_07"
         },
         {
@@ -384,12 +411,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeAutomationTresholdReduction",
             "maxLevel": 5,
-            "baseCost": 350.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 1.0,
             "posX": -23.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_07_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_07"
         },
         {
@@ -398,12 +426,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 400.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -25.0,
             "posY": 6.0,
             "prerequisiteId": "P_UPG_SCR_07_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_08"
         },
         {
@@ -412,12 +441,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 400.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -25.0,
             "posY": 7.0,
             "prerequisiteId": "P_UPG_SCR_08_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_08"
         },
         {
@@ -426,12 +456,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeTimeReduction",
             "maxLevel": 5,
-            "baseCost": 400.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -25.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_08_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_08"
         },
         {
@@ -440,12 +471,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeAutomationTresholdReduction",
             "maxLevel": 5,
-            "baseCost": 400.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 1.0,
             "posX": -26.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_08_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_08"
         },
         {
@@ -454,12 +486,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 450.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -28.0,
             "posY": 6.0,
             "prerequisiteId": "P_UPG_SCR_08_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_09"
         },
         {
@@ -468,12 +501,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 450.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -28.0,
             "posY": 7.0,
             "prerequisiteId": "P_UPG_SCR_09_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_09"
         },
         {
@@ -482,12 +516,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeTimeReduction",
             "maxLevel": 5,
-            "baseCost": 450.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -28.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_09_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_09"
         },
         {
@@ -496,12 +531,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeAutomationTresholdReduction",
             "maxLevel": 5,
-            "baseCost": 450.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 1.0,
             "posX": -29.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_09_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_09"
         },
         {
@@ -510,12 +546,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 500.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -31.0,
             "posY": 6.0,
             "prerequisiteId": "P_UPG_SCR_09_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_10"
         },
         {
@@ -524,12 +561,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 500.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -31.0,
             "posY": 7.0,
             "prerequisiteId": "P_UPG_SCR_10_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_10"
         },
         {
@@ -538,12 +576,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeTimeReduction",
             "maxLevel": 5,
-            "baseCost": 500.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -31.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_10_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_10"
         },
         {
@@ -552,12 +591,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeAutomationTresholdReduction",
             "maxLevel": 5,
-            "baseCost": 500.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 1.0,
             "posX": -32.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_10_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_10"
         },
         {
@@ -566,12 +606,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 550.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -34.0,
             "posY": 6.0,
             "prerequisiteId": "P_UPG_SCR_10_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_11"
         },
         {
@@ -580,12 +621,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 550.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -34.0,
             "posY": 7.0,
             "prerequisiteId": "P_UPG_SCR_11_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_11"
         },
         {
@@ -594,12 +636,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeTimeReduction",
             "maxLevel": 5,
-            "baseCost": 550.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -34.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_11_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_11"
         },
         {
@@ -608,12 +651,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeAutomationTresholdReduction",
             "maxLevel": 5,
-            "baseCost": 550.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 1.0,
             "posX": -35.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_11_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_11"
         },
         {
@@ -622,12 +666,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 600.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -37.0,
             "posY": 6.0,
             "prerequisiteId": "P_UPG_SCR_11_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_12"
         },
         {
@@ -636,12 +681,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 600.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -37.0,
             "posY": 7.0,
             "prerequisiteId": "P_UPG_SCR_12_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_12"
         },
         {
@@ -650,12 +696,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeTimeReduction",
             "maxLevel": 5,
-            "baseCost": 600.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -37.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_12_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_12"
         },
         {
@@ -664,12 +711,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeAutomationTresholdReduction",
             "maxLevel": 5,
-            "baseCost": 600.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 1.0,
             "posX": -38.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_12_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_12"
         },
         {
@@ -678,12 +726,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 650.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -40.0,
             "posY": 6.0,
             "prerequisiteId": "P_UPG_SCR_12_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_13"
         },
         {
@@ -692,12 +741,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 650.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -40.0,
             "posY": 7.0,
             "prerequisiteId": "P_UPG_SCR_13_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_13"
         },
         {
@@ -706,12 +756,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeTimeReduction",
             "maxLevel": 5,
-            "baseCost": 650.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -40.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_13_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_13"
         },
         {
@@ -720,12 +771,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeAutomationTresholdReduction",
             "maxLevel": 5,
-            "baseCost": 650.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 1.0,
             "posX": -41.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_13_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_13"
         },
         {
@@ -734,12 +786,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 700.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -43.0,
             "posY": 6.0,
             "prerequisiteId": "P_UPG_SCR_13_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_14"
         },
         {
@@ -748,12 +801,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 700.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -43.0,
             "posY": 7.0,
             "prerequisiteId": "P_UPG_SCR_14_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_14"
         },
         {
@@ -762,12 +816,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeTimeReduction",
             "maxLevel": 5,
-            "baseCost": 700.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -43.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_14_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_14"
         },
         {
@@ -776,12 +831,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeAutomationTresholdReduction",
             "maxLevel": 5,
-            "baseCost": 700.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 1.0,
             "posX": -44.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_14_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_14"
         },
         {
@@ -790,12 +846,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 750.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -46.0,
             "posY": 6.0,
             "prerequisiteId": "P_UPG_SCR_14_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_15"
         },
         {
@@ -804,12 +861,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 750.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -46.0,
             "posY": 7.0,
             "prerequisiteId": "P_UPG_SCR_15_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_15"
         },
         {
@@ -818,12 +876,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeTimeReduction",
             "maxLevel": 5,
-            "baseCost": 750.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -46.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_15_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_15"
         },
         {
@@ -832,12 +891,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeAutomationTresholdReduction",
             "maxLevel": 5,
-            "baseCost": 750.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 1.0,
             "posX": -47.0,
             "posY": 5.0,
             "prerequisiteId": "P_UPG_SCR_15_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "SCR_15"
         },
         {
@@ -846,12 +906,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 50.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -4.0,
             "posY": 0.0,
             "prerequisiteId": "P_CLICK",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_01"
         },
         {
@@ -860,12 +921,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 50.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -4.0,
             "posY": 1.0,
             "prerequisiteId": "P_UPG_HW_01_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_01"
         },
         {
@@ -874,12 +936,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 100.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -6.0,
             "posY": 0.0,
             "prerequisiteId": "P_UPG_HW_01_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_02"
         },
         {
@@ -888,12 +951,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 100.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -6.0,
             "posY": 1.0,
             "prerequisiteId": "P_UPG_HW_02_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_02"
         },
         {
@@ -902,12 +966,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 150.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -8.0,
             "posY": 0.0,
             "prerequisiteId": "P_UPG_HW_02_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_03"
         },
         {
@@ -916,12 +981,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 150.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -8.0,
             "posY": 1.0,
             "prerequisiteId": "P_UPG_HW_03_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_03"
         },
         {
@@ -930,12 +996,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 200.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -10.0,
             "posY": 0.0,
             "prerequisiteId": "P_UPG_HW_03_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_04"
         },
         {
@@ -944,12 +1011,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 200.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -10.0,
             "posY": 1.0,
             "prerequisiteId": "P_UPG_HW_04_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_04"
         },
         {
@@ -958,12 +1026,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 250.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -12.0,
             "posY": 0.0,
             "prerequisiteId": "P_UPG_HW_04_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_05"
         },
         {
@@ -972,12 +1041,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 250.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -12.0,
             "posY": 1.0,
             "prerequisiteId": "P_UPG_HW_05_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_05"
         },
         {
@@ -986,12 +1056,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 300.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -14.0,
             "posY": 0.0,
             "prerequisiteId": "P_UPG_HW_05_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_06"
         },
         {
@@ -1000,12 +1071,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 300.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -14.0,
             "posY": 1.0,
             "prerequisiteId": "P_UPG_HW_06_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_06"
         },
         {
@@ -1014,12 +1086,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 350.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -16.0,
             "posY": 0.0,
             "prerequisiteId": "P_UPG_HW_06_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_07"
         },
         {
@@ -1028,12 +1101,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 350.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -16.0,
             "posY": 1.0,
             "prerequisiteId": "P_UPG_HW_07_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_07"
         },
         {
@@ -1042,12 +1116,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 400.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -18.0,
             "posY": 0.0,
             "prerequisiteId": "P_UPG_HW_07_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_08"
         },
         {
@@ -1056,12 +1131,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 400.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -18.0,
             "posY": 1.0,
             "prerequisiteId": "P_UPG_HW_08_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_08"
         },
         {
@@ -1070,12 +1146,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 450.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -20.0,
             "posY": 0.0,
             "prerequisiteId": "P_UPG_HW_08_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_09"
         },
         {
@@ -1084,12 +1161,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 450.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -20.0,
             "posY": 1.0,
             "prerequisiteId": "P_UPG_HW_09_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_09"
         },
         {
@@ -1098,12 +1176,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 500.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -22.0,
             "posY": 0.0,
             "prerequisiteId": "P_UPG_HW_09_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_10"
         },
         {
@@ -1112,12 +1191,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 500.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -22.0,
             "posY": 1.0,
             "prerequisiteId": "P_UPG_HW_10_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_10"
         },
         {
@@ -1126,12 +1206,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 550.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -24.0,
             "posY": 0.0,
             "prerequisiteId": "P_UPG_HW_10_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_11"
         },
         {
@@ -1140,12 +1221,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 550.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -24.0,
             "posY": 1.0,
             "prerequisiteId": "P_UPG_HW_11_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_11"
         },
         {
@@ -1154,12 +1236,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 600.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -26.0,
             "posY": 0.0,
             "prerequisiteId": "P_UPG_HW_11_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_12"
         },
         {
@@ -1168,12 +1251,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 600.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -26.0,
             "posY": 1.0,
             "prerequisiteId": "P_UPG_HW_12_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_12"
         },
         {
@@ -1182,12 +1266,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 650.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -28.0,
             "posY": 0.0,
             "prerequisiteId": "P_UPG_HW_12_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_13"
         },
         {
@@ -1196,12 +1281,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 650.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -28.0,
             "posY": 1.0,
             "prerequisiteId": "P_UPG_HW_13_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_13"
         },
         {
@@ -1210,12 +1296,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 700.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -30.0,
             "posY": 0.0,
             "prerequisiteId": "P_UPG_HW_13_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_14"
         },
         {
@@ -1224,12 +1311,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 700.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -30.0,
             "posY": 1.0,
             "prerequisiteId": "P_UPG_HW_14_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_14"
         },
         {
@@ -1238,12 +1326,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 750.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -32.0,
             "posY": 0.0,
             "prerequisiteId": "P_UPG_HW_14_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_15"
         },
         {
@@ -1252,12 +1341,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 750.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -32.0,
             "posY": 1.0,
             "prerequisiteId": "P_UPG_HW_15_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "HW_15"
         },
         {
@@ -1266,12 +1356,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 50.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -4.0,
             "posY": -6.0,
             "prerequisiteId": "P_STEALTH",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_01"
         },
         {
@@ -1280,12 +1371,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 50.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -4.0,
             "posY": -5.0,
             "prerequisiteId": "P_UPG_PRX_01_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_01"
         },
         {
@@ -1294,12 +1386,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 100.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -6.0,
             "posY": -6.0,
             "prerequisiteId": "P_UPG_PRX_01_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_02"
         },
         {
@@ -1308,12 +1401,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 100.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -6.0,
             "posY": -5.0,
             "prerequisiteId": "P_UPG_PRX_02_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_02"
         },
         {
@@ -1322,12 +1416,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 150.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -8.0,
             "posY": -6.0,
             "prerequisiteId": "P_UPG_PRX_02_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_03"
         },
         {
@@ -1336,12 +1431,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 150.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -8.0,
             "posY": -5.0,
             "prerequisiteId": "P_UPG_PRX_03_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_03"
         },
         {
@@ -1350,12 +1446,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 200.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -10.0,
             "posY": -6.0,
             "prerequisiteId": "P_UPG_PRX_03_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_04"
         },
         {
@@ -1364,12 +1461,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 200.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -10.0,
             "posY": -5.0,
             "prerequisiteId": "P_UPG_PRX_04_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_04"
         },
         {
@@ -1378,12 +1476,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 250.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -12.0,
             "posY": -6.0,
             "prerequisiteId": "P_UPG_PRX_04_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_05"
         },
         {
@@ -1392,12 +1491,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 250.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -12.0,
             "posY": -5.0,
             "prerequisiteId": "P_UPG_PRX_05_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_05"
         },
         {
@@ -1406,12 +1506,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 300.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -14.0,
             "posY": -6.0,
             "prerequisiteId": "P_UPG_PRX_05_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_06"
         },
         {
@@ -1420,12 +1521,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 300.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -14.0,
             "posY": -5.0,
             "prerequisiteId": "P_UPG_PRX_06_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_06"
         },
         {
@@ -1434,12 +1536,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 350.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -16.0,
             "posY": -6.0,
             "prerequisiteId": "P_UPG_PRX_06_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_07"
         },
         {
@@ -1448,12 +1551,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 350.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -16.0,
             "posY": -5.0,
             "prerequisiteId": "P_UPG_PRX_07_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_07"
         },
         {
@@ -1462,12 +1566,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 400.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -18.0,
             "posY": -6.0,
             "prerequisiteId": "P_UPG_PRX_07_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_08"
         },
         {
@@ -1476,12 +1581,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 400.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -18.0,
             "posY": -5.0,
             "prerequisiteId": "P_UPG_PRX_08_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_08"
         },
         {
@@ -1490,12 +1596,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 450.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -20.0,
             "posY": -6.0,
             "prerequisiteId": "P_UPG_PRX_08_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_09"
         },
         {
@@ -1504,12 +1611,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 450.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -20.0,
             "posY": -5.0,
             "prerequisiteId": "P_UPG_PRX_09_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_09"
         },
         {
@@ -1518,12 +1626,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 500.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -22.0,
             "posY": -6.0,
             "prerequisiteId": "P_UPG_PRX_09_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_10"
         },
         {
@@ -1532,12 +1641,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 500.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -22.0,
             "posY": -5.0,
             "prerequisiteId": "P_UPG_PRX_10_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_10"
         },
         {
@@ -1546,12 +1656,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 550.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -24.0,
             "posY": -6.0,
             "prerequisiteId": "P_UPG_PRX_10_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_11"
         },
         {
@@ -1560,12 +1671,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 550.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -24.0,
             "posY": -5.0,
             "prerequisiteId": "P_UPG_PRX_11_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_11"
         },
         {
@@ -1574,12 +1686,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 600.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -26.0,
             "posY": -6.0,
             "prerequisiteId": "P_UPG_PRX_11_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_12"
         },
         {
@@ -1588,12 +1701,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 600.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -26.0,
             "posY": -5.0,
             "prerequisiteId": "P_UPG_PRX_12_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_12"
         },
         {
@@ -1602,12 +1716,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 650.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -28.0,
             "posY": -6.0,
             "prerequisiteId": "P_UPG_PRX_12_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_13"
         },
         {
@@ -1616,12 +1731,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 650.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -28.0,
             "posY": -5.0,
             "prerequisiteId": "P_UPG_PRX_13_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_13"
         },
         {
@@ -1630,12 +1746,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 700.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -30.0,
             "posY": -6.0,
             "prerequisiteId": "P_UPG_PRX_13_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_14"
         },
         {
@@ -1644,12 +1761,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 700.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -30.0,
             "posY": -5.0,
             "prerequisiteId": "P_UPG_PRX_14_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_14"
         },
         {
@@ -1658,12 +1776,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeCostReduction",
             "maxLevel": 5,
-            "baseCost": 750.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -32.0,
             "posY": -6.0,
             "prerequisiteId": "P_UPG_PRX_14_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_15"
         },
         {
@@ -1672,12 +1791,13 @@
             "descKey": "",
             "bonusType": "SpecificUpgradeYieldBoost",
             "maxLevel": 5,
-            "baseCost": 750.0,
+            "baseCost": 1.0,
             "costMult": 1.4,
             "bonus": 0.10000000149011612,
             "posX": -32.0,
             "posY": -5.0,
             "prerequisiteId": "P_UPG_PRX_15_COST",
+            "requiredLevel": 1,
             "targetUpgradeId": "PRX_15"
         }
     ]

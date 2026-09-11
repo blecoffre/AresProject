@@ -17,12 +17,15 @@ MonoBehaviour:
   _dissipationHalfPointRatio: 0.3
   _traceYieldExponent: 0.6
   _ghostCacheReductionThreshold: 0.75
+  _traceReadoutMinInterval: 0.5
+  _traceReadoutMaxInterval: 120
+  _traceReadoutReferenceFillRate: 0.001
+  _traceReadoutPessimism: 3
   _tflopsTimeCompression: 0.05
   _tflopsCompressionExponent: 0.25
   _tflopsYieldExponent: 0.15
   _absoluteMinCycleDuration: 0.05
   _maxTargetedReduction: 0.95
-  _proxySynergyPerLevel: 0.01
   _baseStartingMoney: 10
   _moneyPerCpuCycle: 400000
   _cleanExitMultiplier: 1.2

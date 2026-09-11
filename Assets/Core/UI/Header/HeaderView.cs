@@ -15,6 +15,11 @@ namespace Core.UI.Header
         [Header("Threat Gauge")]
         [SerializeField] private TextMeshProUGUI _traceText;
         [SerializeField] private Image _traceGaugeFill; // La nouvelle jauge visuelle
+
+        [Tooltip("Zone d'incertitude : où la Trace peut se trouver AU PIRE depuis le dernier " +
+                 "relevé. À placer DERRIÈRE la jauge principale, en teinte atténuée. " +
+                 "Facultatif — tant qu'il est vide, la jauge se contente de se figer.")]
+        [SerializeField] private Image _traceGaugeBand;
         [SerializeField] private Gradient _gaugeColorGradient; // Pour passer du vert au rouge
 
         [Header("Layout Reference")]
@@ -46,25 +51,41 @@ namespace Core.UI.Header
             RefreshLayoutIfNeeded();
         }
 
-        public void UpdateTraceDisplay(float normalizedValue)
+        /// <summary>
+        /// Peint la dernière position CONNUE de la Trace. Le libellé est composé par le presenter
+        /// — c'est lui qui a la localisation — et porte l'âge du relevé : une jauge qui se fige
+        /// sans dire pourquoi se lit comme un bug avant de se lire comme une menace.
+        /// </summary>
+        public void UpdateTraceDisplay(string label, float lastKnownFraction)
         {
             if (_traceText != null)
             {
-                _traceText.SetText(": {0:F1}%", normalizedValue * 100f);
+                _traceText.SetText(label);
             }
 
             if (_traceGaugeFill != null)
             {
-                _traceGaugeFill.fillAmount = normalizedValue;
+                _traceGaugeFill.fillAmount = lastKnownFraction;
 
                 // Bonus visuel : la couleur change dynamiquement selon le remplissage
                 if (_gaugeColorGradient != null)
                 {
-                    _traceGaugeFill.color = _gaugeColorGradient.Evaluate(normalizedValue);
+                    _traceGaugeFill.color = _gaugeColorGradient.Evaluate(lastKnownFraction);
                 }
             }
 
             RefreshLayoutIfNeeded();
+        }
+
+        /// <summary>
+        /// Étend la zone d'incertitude. Appelée à chaque frame, contrairement au relevé :
+        /// aucune allocation ici, et pas de RefreshLayoutIfNeeded — seule une largeur bouge.
+        /// </summary>
+        public void UpdateTraceBand(float estimatedMaxFraction)
+        {
+            if (_traceGaugeBand == null) return;
+
+            _traceGaugeBand.fillAmount = estimatedMaxFraction;
         }
 
         /// <summary>

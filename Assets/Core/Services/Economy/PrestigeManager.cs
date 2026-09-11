@@ -56,6 +56,16 @@ namespace Core.Services.Economy
         public ReactiveProperty<float> TraceReductionMultiplier { get; } = new(1f);
 
         /// <summary>
+        /// Multiplicateur de la DISSIPATION de tout le parc de Proxies, apporté par la branche
+        /// Interception. Vaut 1 sans aucun nœud acheté.
+        ///
+        /// Le pendant du Blindage : celui-ci achète de la marge avant saisie, celui-là achète du
+        /// débit dissipé. C'est ce qui permet aux Proxies de partir faibles et de le devenir
+        /// moins — sans lui, les affaiblir au départ les condamnait pour toute la partie.
+        /// </summary>
+        public ReactiveProperty<float> ProxyEfficiencyMultiplier { get; } = new(1f);
+
+        /// <summary>
         /// Multiplicateur du PLAFOND de la jauge de Trace, apporté par la branche Blindage.
         /// Vaut 1 sans aucun nœud acheté.
         ///
@@ -242,6 +252,7 @@ namespace Core.Services.Economy
             double startingFunds = 0d;
             double startingPower = 0d;
             float traceCapacityBonus = 0f;
+            float proxyEfficiencyBonus = 0f;
             bool emergencyUnlocked = false;
             int exploitCharges = 0;
             double exploitYieldBoost = 0d;
@@ -268,6 +279,10 @@ namespace Core.Services.Economy
 
                     case PrestigeBonusType.TraceCapacityMultiplier:
                         traceCapacityBonus += totalBonus;
+                        break;
+
+                    case PrestigeBonusType.ProxyEfficiencyMultiplier:
+                        proxyEfficiencyBonus += totalBonus;
                         break;
 
                     case PrestigeBonusType.ClickPowerMultiplier:
@@ -336,6 +351,10 @@ namespace Core.Services.Economy
             // dix rangs à +0,5 donnent ×6, pas ×0,5^10. Jamais sous 1 — un nœud de Blindage ne
             // peut pas rendre le joueur plus fragile qu'à l'origine.
             TraceCapacityMultiplier.Value = UnityEngine.Mathf.Max(1f, 1f + traceCapacityBonus);
+
+            // Jamais sous 1, comme le Blindage : un nœud d'Interception ne peut pas rendre les
+            // Proxies moins efficaces qu'à l'origine.
+            ProxyEfficiencyMultiplier.Value = UnityEngine.Mathf.Max(1f, 1f + proxyEfficiencyBonus);
             ClickPowerMultiplier.Value = 1f + clickBonus;
             CostMultiplierReduction.Value = costReduction;
             StartingMoney.Value = startingFunds;
@@ -415,6 +434,7 @@ namespace Core.Services.Economy
             GlobalComputeMultiplier.Dispose();
             TraceReductionMultiplier.Dispose();
             TraceCapacityMultiplier.Dispose();
+            ProxyEfficiencyMultiplier.Dispose();
             ClickPowerMultiplier.Dispose();
             CostMultiplierReduction.Dispose();
             StartingMoney.Dispose();

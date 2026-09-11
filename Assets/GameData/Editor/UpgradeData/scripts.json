@@ -15,23 +15,33 @@
       "milestones": [
         {
           "level": 10,
-          "effect": "YieldMultiplier",
-          "factor": 1.32
+          "effect": "DurationMultiplier",
+          "factor": 0.8
         },
         {
           "level": 25,
-          "effect": "DurationMultiplier",
-          "factor": 0.7579
+          "effect": "YieldMultiplier",
+          "factor": 1.5
         },
         {
           "level": 50,
-          "effect": "YieldMultiplier",
-          "factor": 1.552
+          "effect": "DurationMultiplier",
+          "factor": 0.8
         },
         {
           "level": 100,
           "effect": "YieldMultiplier",
-          "factor": 1.904
+          "factor": 1.5
+        },
+        {
+          "level": 150,
+          "effect": "DurationMultiplier",
+          "factor": 0.8
+        },
+        {
+          "level": 250,
+          "effect": "YieldMultiplier",
+          "factor": 1.5
         }
       ]
     },
@@ -50,23 +60,33 @@
       "milestones": [
         {
           "level": 10,
-          "effect": "YieldMultiplier",
-          "factor": 1.32
+          "effect": "DurationMultiplier",
+          "factor": 0.8
         },
         {
           "level": 25,
           "effect": "YieldMultiplier",
-          "factor": 1.552
+          "factor": 1.5
         },
         {
           "level": 50,
-          "effect": "YieldMultiplier",
-          "factor": 1.904
+          "effect": "DurationMultiplier",
+          "factor": 0.8
         },
         {
           "level": 100,
           "effect": "YieldMultiplier",
-          "factor": 2.512
+          "factor": 1.5
+        },
+        {
+          "level": 150,
+          "effect": "DurationMultiplier",
+          "factor": 0.8
+        },
+        {
+          "level": 250,
+          "effect": "YieldMultiplier",
+          "factor": 1.5
         }
       ]
     },
@@ -85,23 +105,33 @@
       "milestones": [
         {
           "level": 10,
-          "effect": "YieldMultiplier",
-          "factor": 1.32
+          "effect": "DurationMultiplier",
+          "factor": 0.8
         },
         {
           "level": 25,
-          "effect": "DurationMultiplier",
-          "factor": 0.7579
+          "effect": "YieldMultiplier",
+          "factor": 1.5
         },
         {
           "level": 50,
-          "effect": "YieldMultiplier",
-          "factor": 1.741
+          "effect": "DurationMultiplier",
+          "factor": 0.8
         },
         {
           "level": 100,
           "effect": "YieldMultiplier",
-          "factor": 2.512
+          "factor": 1.5
+        },
+        {
+          "level": 150,
+          "effect": "DurationMultiplier",
+          "factor": 0.8
+        },
+        {
+          "level": 250,
+          "effect": "YieldMultiplier",
+          "factor": 1.5
         }
       ]
     },
@@ -120,23 +150,33 @@
       "milestones": [
         {
           "level": 10,
-          "effect": "YieldMultiplier",
-          "factor": 1.32
+          "effect": "DurationMultiplier",
+          "factor": 0.8
         },
         {
           "level": 25,
           "effect": "YieldMultiplier",
-          "factor": 1.552
+          "factor": 1.5
         },
         {
           "level": 50,
-          "effect": "YieldMultiplier",
-          "factor": 1.904
+          "effect": "DurationMultiplier",
+          "factor": 0.8
         },
         {
           "level": 100,
           "effect": "YieldMultiplier",
-          "factor": 2.512
+          "factor": 1.5
+        },
+        {
+          "level": 150,
+          "effect": "DurationMultiplier",
+          "factor": 0.8
+        },
+        {
+          "level": 250,
+          "effect": "YieldMultiplier",
+          "factor": 1.5
         }
       ]
     },
@@ -155,23 +195,33 @@
       "milestones": [
         {
           "level": 10,
-          "effect": "YieldMultiplier",
-          "factor": 1.32
+          "effect": "DurationMultiplier",
+          "factor": 0.8
         },
         {
           "level": 25,
-          "effect": "DurationMultiplier",
-          "factor": 0.7579
+          "effect": "YieldMultiplier",
+          "factor": 1.5
         },
         {
           "level": 50,
-          "effect": "YieldMultiplier",
-          "factor": 1.741
+          "effect": "DurationMultiplier",
+          "factor": 0.8
         },
         {
           "level": 100,
           "effect": "YieldMultiplier",
-          "factor": 2.512
+          "factor": 1.5
+        },
+        {
+          "level": 150,
+          "effect": "DurationMultiplier",
+          "factor": 0.8
+        },
+        {
+          "level": 250,
+          "effect": "YieldMultiplier",
+          "factor": 1.5
         }
       ]
     },
@@ -190,23 +240,33 @@
       "milestones": [
         {
           "level": 10,
-          "effect": "YieldMultiplier",
-          "factor": 1.32
+          "effect": "DurationMultiplier",
+          "factor": 0.8
         },
         {
           "level": 25,
           "effect": "YieldMultiplier",
-          "factor": 1.552
+          "factor": 1.5
         },
         {
           "level": 50,
-          "effect": "YieldMultiplier",
-          "factor": 1.904
+          "effect": "DurationMultiplier",
+          "factor": 0.8
         },
         {
           "level": 100,
           "effect": "YieldMultiplier",
-          "factor": 2.512
+          "factor": 1.5
+        },
+        {
+          "level": 150,
+          "effect": "DurationMultiplier",
+          "factor": 0.8
+        },
+        {
+          "level": 250,
+          "effect": "YieldMultiplier",
+          "factor": 1.5
         }
       ]
     },
@@ -225,23 +285,33 @@
       "milestones": [
         {
           "level": 10,
-          "effect": "YieldMultiplier",
-          "factor": 1.32
+          "effect": "DurationMultiplier",
+          "factor": 0.8
         },
         {
           "level": 25,
-          "effect": "DurationMultiplier",
-          "factor": 0.7579
+          "effect": "YieldMultiplier",
+          "factor": 1.5
         },
         {
           "level": 50,
-          "effect": "YieldMultiplier",
-          "factor": 1.741
+          "effect": "DurationMultiplier",
+          "factor": 0.8
         },
         {
           "level": 100,
           "effect": "YieldMultiplier",
-          "factor": 2.512
+          "factor": 1.5
+        },
+        {
+          "level": 150,
+          "effect": "DurationMultiplier",
+          "factor": 0.8
+        },
+        {
+          "level": 250,
+          "effect": "YieldMultiplier",
+          "factor": 1.5
         }
       ]
     },
@@ -260,23 +330,33 @@
       "milestones": [
         {
           "level": 10,
-          "effect": "YieldMultiplier",
-          "factor": 1.32
+          "effect": "DurationMultiplier",
+          "factor": 0.8
         },
         {
           "level": 25,
           "effect": "YieldMultiplier",
-          "factor": 1.552
+          "factor": 1.5
         },
         {
           "level": 50,
-          "effect": "YieldMultiplier",
-          "factor": 1.904
+          "effect": "DurationMultiplier",
+          "factor": 0.8
         },
         {
           "level": 100,
           "effect": "YieldMultiplier",
-          "factor": 2.512
+          "factor": 1.5
+        },
+        {
+          "level": 150,
+          "effect": "DurationMultiplier",
+          "factor": 0.8
+        },
+        {
+          "level": 250,
+          "effect": "YieldMultiplier",
+          "factor": 1.5
         }
       ]
     },
@@ -295,23 +375,33 @@
       "milestones": [
         {
           "level": 10,
-          "effect": "YieldMultiplier",
-          "factor": 1.32
+          "effect": "DurationMultiplier",
+          "factor": 0.8
         },
         {
           "level": 25,
-          "effect": "DurationMultiplier",
-          "factor": 0.7579
+          "effect": "YieldMultiplier",
+          "factor": 1.5
         },
         {
           "level": 50,
-          "effect": "YieldMultiplier",
-          "factor": 1.741
+          "effect": "DurationMultiplier",
+          "factor": 0.8
         },
         {
           "level": 100,
           "effect": "YieldMultiplier",
-          "factor": 2.512
+          "factor": 1.5
+        },
+        {
+          "level": 150,
+          "effect": "DurationMultiplier",
+          "factor": 0.8
+        },
+        {
+          "level": 250,
+          "effect": "YieldMultiplier",
+          "factor": 1.5
         }
       ]
     },
@@ -330,23 +420,33 @@
       "milestones": [
         {
           "level": 10,
-          "effect": "YieldMultiplier",
-          "factor": 1.32
+          "effect": "DurationMultiplier",
+          "factor": 0.8
         },
         {
           "level": 25,
           "effect": "YieldMultiplier",
-          "factor": 1.552
+          "factor": 1.5
         },
         {
           "level": 50,
-          "effect": "YieldMultiplier",
-          "factor": 1.904
+          "effect": "DurationMultiplier",
+          "factor": 0.8
         },
         {
           "level": 100,
           "effect": "YieldMultiplier",
-          "factor": 2.512
+          "factor": 1.5
+        },
+        {
+          "level": 150,
+          "effect": "DurationMultiplier",
+          "factor": 0.8
+        },
+        {
+          "level": 250,
+          "effect": "YieldMultiplier",
+          "factor": 1.5
         }
       ]
     },
@@ -365,23 +465,33 @@
       "milestones": [
         {
           "level": 10,
-          "effect": "YieldMultiplier",
-          "factor": 1.32
+          "effect": "DurationMultiplier",
+          "factor": 0.8
         },
         {
           "level": 25,
-          "effect": "DurationMultiplier",
-          "factor": 0.7579
+          "effect": "YieldMultiplier",
+          "factor": 1.5
         },
         {
           "level": 50,
-          "effect": "YieldMultiplier",
-          "factor": 1.741
+          "effect": "DurationMultiplier",
+          "factor": 0.8
         },
         {
           "level": 100,
           "effect": "YieldMultiplier",
-          "factor": 2.512
+          "factor": 1.5
+        },
+        {
+          "level": 150,
+          "effect": "DurationMultiplier",
+          "factor": 0.8
+        },
+        {
+          "level": 250,
+          "effect": "YieldMultiplier",
+          "factor": 1.5
         }
       ]
     },
@@ -400,23 +510,33 @@
       "milestones": [
         {
           "level": 10,
-          "effect": "YieldMultiplier",
-          "factor": 1.32
+          "effect": "DurationMultiplier",
+          "factor": 0.8
         },
         {
           "level": 25,
           "effect": "YieldMultiplier",
-          "factor": 1.552
+          "factor": 1.5
         },
         {
           "level": 50,
-          "effect": "YieldMultiplier",
-          "factor": 1.904
+          "effect": "DurationMultiplier",
+          "factor": 0.8
         },
         {
           "level": 100,
           "effect": "YieldMultiplier",
-          "factor": 2.512
+          "factor": 1.5
+        },
+        {
+          "level": 150,
+          "effect": "DurationMultiplier",
+          "factor": 0.8
+        },
+        {
+          "level": 250,
+          "effect": "YieldMultiplier",
+          "factor": 1.5
         }
       ]
     },
@@ -435,23 +555,33 @@
       "milestones": [
         {
           "level": 10,
-          "effect": "YieldMultiplier",
-          "factor": 1.32
+          "effect": "DurationMultiplier",
+          "factor": 0.8
         },
         {
           "level": 25,
-          "effect": "DurationMultiplier",
-          "factor": 0.7579
+          "effect": "YieldMultiplier",
+          "factor": 1.5
         },
         {
           "level": 50,
-          "effect": "YieldMultiplier",
-          "factor": 1.741
+          "effect": "DurationMultiplier",
+          "factor": 0.8
         },
         {
           "level": 100,
           "effect": "YieldMultiplier",
-          "factor": 2.512
+          "factor": 1.5
+        },
+        {
+          "level": 150,
+          "effect": "DurationMultiplier",
+          "factor": 0.8
+        },
+        {
+          "level": 250,
+          "effect": "YieldMultiplier",
+          "factor": 1.5
         }
       ]
     },
@@ -471,22 +601,32 @@
         {
           "level": 10,
           "effect": "DurationMultiplier",
-          "factor": 0.5253
+          "factor": 0.8
         },
         {
           "level": 25,
           "effect": "YieldMultiplier",
-          "factor": 1.552
+          "factor": 1.5
         },
         {
           "level": 50,
           "effect": "DurationMultiplier",
-          "factor": 0.7579
+          "factor": 0.8
         },
         {
           "level": 100,
           "effect": "YieldMultiplier",
-          "factor": 2.512
+          "factor": 1.5
+        },
+        {
+          "level": 150,
+          "effect": "DurationMultiplier",
+          "factor": 0.8
+        },
+        {
+          "level": 250,
+          "effect": "YieldMultiplier",
+          "factor": 1.5
         }
       ]
     },
@@ -506,22 +646,32 @@
         {
           "level": 10,
           "effect": "DurationMultiplier",
-          "factor": 0.5253
+          "factor": 0.8
         },
         {
           "level": 25,
           "effect": "YieldMultiplier",
-          "factor": 1.741
+          "factor": 1.5
         },
         {
           "level": 50,
           "effect": "DurationMultiplier",
-          "factor": 0.7579
+          "factor": 0.8
         },
         {
           "level": 100,
           "effect": "YieldMultiplier",
-          "factor": 2.512
+          "factor": 1.5
+        },
+        {
+          "level": 150,
+          "effect": "DurationMultiplier",
+          "factor": 0.8
+        },
+        {
+          "level": 250,
+          "effect": "YieldMultiplier",
+          "factor": 1.5
         }
       ]
     }

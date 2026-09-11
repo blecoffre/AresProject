@@ -58,6 +58,39 @@ namespace Core.Models.Economy
                  "que par 1,52.")]
         [SerializeField, Range(0f, 1f)] private float _traceYieldExponent = 0.6f;
 
+
+        // ------------------------------------------------------------------
+        // Relevé de Trace — le brouillard de guerre
+        // ------------------------------------------------------------------
+        [Header("Relevé de Trace (incertitude)")]
+        [Tooltip("Intervalle MINIMUM entre deux relevés de la jauge, en secondes. C'est la " +
+                 "précision dont dispose un joueur dont la Trace monte doucement.")]
+        [SerializeField, Range(0.1f, 10f)] private float _traceReadoutMinInterval = 0.5f;
+
+        [Tooltip("Intervalle MAXIMUM entre deux relevés, atteint quand la jauge se remplit à la " +
+                 "vitesse de référence ci-dessous.\n\n" +
+                 "C'est le cœur du modèle de risque : plus le joueur pousse, plus sa télémétrie " +
+                 "bégaie, et plus il pilote au jugé. MONTER cette valeur rend la gourmandise " +
+                 "aveuglante.")]
+        [SerializeField, Range(1f, 300f)] private float _traceReadoutMaxInterval = 120f;
+
+        [Tooltip("Vitesse de remplissage, en fraction de jauge par seconde, à laquelle " +
+                 "l'intervalle atteint son maximum. À 0,005, la cécité totale s'installe quand " +
+                 "la jauge se remplirait en 200 secondes.")]
+        [SerializeField, Range(0.0001f, 0.05f)] private float _traceReadoutReferenceFillRate = 0.001f;
+
+        [Tooltip("Facteur de pessimisme du bord haut de la fourchette. Au-dessus de 1 parce " +
+                 "qu'entre deux relevés le débit a pu croître : une borne haute que la réalité " +
+                 "dépasse ne serait plus une borne.\n\n" +
+                 "Il en faut BEAUCOUP plus que l'intuition ne suggère. La projection est " +
+                 "linéaire — dernier débit connu × âge du relevé — alors que la production d'une " +
+                 "run accélère. À 1,5, mesuré : le joueur prudent croyait sortir à 90 % et " +
+                 "sortait en réalité à 93,8 %. Sa « borne haute » passait SOUS la vérité, donc " +
+                 "prudence et gourmandise se rejoignaient au bord du gouffre et il n'y avait " +
+                 "plus rien à arbitrer. À 3, il sort à 91,6 % et paie enfin sa prudence d'une " +
+                 "run supplémentaire — le choix redevient un choix.")]
+        [SerializeField, Range(1f, 4f)] private float _traceReadoutPessimism = 3f;
+
         [Tooltip("Fraction de l'asymptote au-delà de laquelle le Ghost Cache se charge.\n\n" +
                  "Remplace l'ancienne condition « la dissipation dépasse la génération », qui " +
                  "n'a plus de sens : avec une réduction asymptotique il n'existe plus d'excédent. " +
@@ -99,10 +132,6 @@ namespace Core.Models.Economy
         [Tooltip("Plafond de TOUTES les réductions ciblées de prestige (coût, temps). " +
                  "Empêche qu'un générateur devienne gratuit ou son cycle instantané.")]
         [SerializeField, Range(0.5f, 0.99f)] private float _maxTargetedReduction = 0.95f;
-
-        [Tooltip("Accélération des cycles par niveau de Proxy possédé. 0,01 = +1 % par niveau. " +
-                 "⚠️ Linéaire et sans plafond : c'est minCycleDuration qui borne l'effet.")]
-        [SerializeField, Range(0f, 0.1f)] private float _proxySynergyPerLevel = 0.01f;
 
         // ------------------------------------------------------------------
         // Run et prestige
@@ -196,6 +225,12 @@ namespace Core.Models.Economy
         /// <summary>Exposant liant la Trace d'un générateur à son rendement. Strictement entre 0 et 1.</summary>
         public float TraceYieldExponent => _traceYieldExponent;
 
+
+        public float TraceReadoutMinInterval => _traceReadoutMinInterval;
+        public float TraceReadoutMaxInterval => _traceReadoutMaxInterval;
+        public float TraceReadoutReferenceFillRate => _traceReadoutReferenceFillRate;
+        public float TraceReadoutPessimism => _traceReadoutPessimism;
+
         /// <summary>Fraction de l'asymptote au-delà de laquelle le Ghost Cache se charge.</summary>
         public float GhostCacheReductionThreshold => _ghostCacheReductionThreshold;
 
@@ -204,7 +239,6 @@ namespace Core.Models.Economy
         public double TFlopsYieldExponent => _tflopsYieldExponent;
         public float AbsoluteMinCycleDuration => _absoluteMinCycleDuration;
         public float MaxTargetedReduction => _maxTargetedReduction;
-        public double ProxySynergyPerLevel => _proxySynergyPerLevel;
 
         public double BaseStartingMoney => _baseStartingMoney;
         public double MoneyPerCpuCycle => _moneyPerCpuCycle;

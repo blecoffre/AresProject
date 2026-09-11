@@ -79,6 +79,14 @@ namespace Core.Models.Economy
         /// <summary>Plafond de Trace apporté PAR NIVEAU. Nul en dehors du Hardware.</summary>
         public double BaseTraceCapIncrease => _traceCapIncrease;
         public float BaseCycleDuration => _baseCycleDuration;
+        /// <summary>
+        /// OBSOLÈTE depuis le 2026-08-31 : plus lu nulle part. C'était un mur par générateur, et
+        /// c'est lui qui tuait le pilier Hardware — la compression butait dessus dès quelques
+        /// dizaines de TFlops. Le plancher est désormais unique et global
+        /// (<c>BalancingConfigSO.AbsoluteMinCycleDuration</c>). Conservé comme
+        /// <c>DurationReductionPerLevel</c> : ne pas perdre la donnée déjà écrite.
+        /// </summary>
+        [System.Obsolete("Remplacé par AbsoluteMinCycleDuration, unique et global.")]
         public float MinCycleDuration => _minCycleDuration;
         public int AutomationLevel => _automationLevel;
         public IReadOnlyList<UpgradeMilestone> Milestones => _milestones;

@@ -84,19 +84,7 @@ namespace Core.Services.Economy
         /// </summary>
         public ReactiveProperty<float> ProxyDissipationPower { get; } = new(0f);
 
-        /// <summary>
-        /// Accélération des cycles apportée par le parc de Proxies : 1 + niveaux cumulés × 1 %.
-        ///
-        /// Donne une raison d'acheter des Proxies en permanence, et pas seulement quand la Trace
-        /// menace : un niveau acheté n'est jamais perdu. Multiplicateur DÉDIÉ et non branché sur
-        /// les TFlops — y passer créerait une boucle, la dissipation dépendant elle-même des
-        /// TFlops par son log10.
-        ///
-        /// ⚠️ Linéaire et sans plafond, contrairement au reste du jeu qui est asymptotique.
-        /// Depuis le 2026-08-31 le mur MinCycleDuration a disparu : seul le plancher ABSOLU de
-        /// BalancingConfig borne encore l'effet, et bien plus loin. À surveiller à l'équilibrage.
-        /// </summary>
-        public ReactiveProperty<double> ProxySynergyMultiplier { get; } = new(1d);
+        // ProxySynergyMultiplier a disparu le 2026-09-10 avec la synergie qu'il exposait.
 
         /// <summary>
         /// Multiplicateur temporaire appliqué au rendement des Scripts. Vaut 1 hors Overdrive.
@@ -421,16 +409,13 @@ namespace Core.Services.Economy
             // la capacité finale, pas un facteur à composer avec le multiplicateur de prestige.
             totalTFlops *= 1d - _tflopsBlockedFraction;
 
-            // Synergie : chaque niveau de Proxy possédé accélère TOUS les Scripts. C'est ce qui
-            // rend un achat de Proxy jamais perdu, même quand la Trace est basse.
-            int totalProxyLevels = 0;
-            var proxyList = _upgradesByType[UpgradeType.Proxy];
-            for (int i = 0; i < proxyList.Count; i++)
-            {
-                totalProxyLevels += proxyList[i].CurrentLevel.CurrentValue;
-            }
-
-            double synergy = 1d + totalProxyLevels * _balancing.ProxySynergyPerLevel;
+            // La synergie des Proxies — chaque niveau accélérait TOUS les Scripts de 1 % — a été
+            // RETIRÉE le 2026-09-10. Elle existait pour qu'un achat de Proxy ne soit jamais perdu
+            // quand la Trace était basse, mais elle donnait de l'OFFENSE au pilier défensif et
+            // brouillait exactement ce qu'on cherche à rendre lisible. Un Proxy dissipe, point.
+            //
+            // Le confort qu'elle apportait est assumé perdu : c'est le coût d'opportunité des
+            // Proxies qui rend la répartition entre les trois piliers intéressante.
 
             // Poussée dans les modèles : c'est ce qui invalide leur cache de durée. Seuls les
             // Scripts ont un cycle, mais on pousse à tous — SetTFlops s'auto-garde sur l'égalité,
@@ -439,7 +424,6 @@ namespace Core.Services.Economy
             for (int i = 0; i < scriptList.Count; i++)
             {
                 scriptList[i].SetTFlops(totalTFlops);
-                scriptList[i].SetProxySynergy(synergy);
 
                 // Poussé aux seuls Scripts, comme le reste de cette boucle. Le modèle refuse de
                 // toute façon d'appliquer le multiplicateur à un autre type — ceinture et
@@ -481,33 +465,36 @@ namespace Core.Services.Economy
                 }
             }
 
-            // Second rôle des TFlops. Le log10 donne un gros gain au début puis aplatit la
-            // courbe : le joueur ne doit jamais devenir indétectable.
+            // LE HARDWARE N'AMÉLIORE PLUS LES PROXIES. Le facteur (1 + log10(1 + TFlops)) a été
+            // retiré le 2026-09-10 : c'était le vrai coupable du chevauchement des rôles, le
+            // Hardware tenant à lui seul les DEUX moitiés de la défense — il levait le plafond
+            // ET rendait les Proxies meilleurs. Les Proxies dissipent maintenant selon leur seul
+            // niveau, et la branche de prestige Interception.
             //
-            // La COMPRESSION s'y ajoute depuis le 2026-08-31, et ce n'est pas un bonus de plus :
-            // c'est ce qui empêche la défense de décrocher mécaniquement. Un Script comprimé
-            // ×33 verse sa trace de cycle trente-trois fois plus souvent, donc son Trace/s est
-            // multiplié d'autant — alors que la dissipation, exprimée par seconde, ne gagnait
-            // que le log10. Mesuré en simulation de fin de partie : 1 500 niveaux de Proxies
-            // achetés ne tenaient plus que 24 % de réduction.
+            // Ce qui RESTE ici n'est pas un bonus mais une CONVERSION D'UNITÉ, et la distinction
+            // est tout l'enjeu. La trace d'un Script se compte PAR CYCLE : comprimé ×33, il la
+            // verse trente-trois fois plus souvent, donc son Trace/s est multiplié d'autant. Une
+            // dissipation exprimée par seconde serait diluée d'autant. Mesuré avant correction :
+            // 1 500 niveaux de Proxies ne tenaient plus que 24 % de réduction.
             //
-            // Un Proxy filtre du TRAFIC, pas des secondes, et il tourne sur le matériel du
-            // joueur : si les Scripts vont trente fois plus vite, sa charge suit. La compression
-            // devient ainsi NEUTRE sur le rapport dissipation/génération, et tout le danger du
-            // Hardware passe par où il doit — sa propre chaleur et le boost de rendement qu'il
-            // donne aux Scripts, tous deux comptés en puissance^exposant.
-            double compressionFactor = Math.Pow(
+            // En appliquant la même compression aux deux côtés, elle devient NEUTRE sur le
+            // rapport dissipation/génération : le Hardware ne rend les Proxies ni meilleurs ni
+            // pires. C'est précisément la neutralité qu'exigent des rôles tranchés. Tout le
+            // danger du Hardware passe par où il doit — sa propre chaleur, et le boost de
+            // rendement qu'il donne aux Scripts.
+            double dissipationFactor = Math.Pow(
                 1d + totalTFlops * _balancing.TFlopsTimeCompression,
                 _balancing.TFlopsCompressionExponent);
 
-            double dissipationFactor = (1d + Math.Log10(1d + totalTFlops)) * compressionFactor;
-
             TotalMoneyYieldPerSecond.Value = moneyPerSecond;
             TotalTFlops.Value = totalTFlops;
-            ProxySynergyMultiplier.Value = synergy;
             HardwareTracePerSecond.Value = hardwareTrace;
             TraceCapacityBonus.Value = traceCapacity;
-            ProxyDissipationPower.Value = (float)(proxyBase * dissipationFactor);
+            // La branche Interception multiplie tout le parc d'un coup, là où les nœuds ciblés
+            // n'agissent que sur un Proxy à la fois. C'est ce qui rend les Proxies faibles au
+            // départ et méritables ensuite, plutôt que faibles pour toujours.
+            ProxyDissipationPower.Value = (float)(proxyBase * dissipationFactor
+                                                  * _prestigeManager.ProxyEfficiencyMultiplier.CurrentValue);
         }
 
         public void Dispose()
@@ -527,7 +514,6 @@ namespace Core.Services.Economy
             HardwareTracePerSecond.Dispose();
             TraceCapacityBonus.Dispose();
             ProxyDissipationPower.Dispose();
-            ProxySynergyMultiplier.Dispose();
         }
     }
 }

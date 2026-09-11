@@ -28,14 +28,20 @@ MonoBehaviour:
   _automationLevel: 10
   _milestones:
   - Level: 10
-    Effect: 0
-    Factor: 1.32
-  - Level: 25
     Effect: 1
-    Factor: 0.7579
-  - Level: 50
+    Factor: 0.8
+  - Level: 25
     Effect: 0
-    Factor: 1.552
+    Factor: 1.5
+  - Level: 50
+    Effect: 1
+    Factor: 0.8
   - Level: 100
     Effect: 0
-    Factor: 1.904
+    Factor: 1.5
+  - Level: 150
+    Effect: 1
+    Factor: 0.8
+  - Level: 250
+    Effect: 0
+    Factor: 1.5
