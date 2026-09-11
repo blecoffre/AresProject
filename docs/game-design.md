@@ -23,35 +23,91 @@ La valeur ne bouge qu'à l'achat d'un Hardware. Elle ne s'accumule pas dans le t
 
 **Conséquence technique :** `UserCurrencies.ComputerPower` ne doit plus être un `Currency` alimenté par `Add()`, mais une `ReadOnlyReactiveProperty<double>` calculée depuis `UpgradeManager`. Le champ `ComputerPower` de `SaveData` devient redondant (recalculable depuis les niveaux d'upgrades) — conservé en v1, à retirer au lot 2b.
 
-Les TFlops agissent à deux endroits :
+## LA TRINITÉ — un rôle par pilier, tranché le 2026-09-10
 
-⚠️ **Les TFlops agissent désormais à TROIS endroits, et les formules ci-dessous ont changé le
-2026-08-31.** Voir « Le Hardware n'est plus un pilier mort » plus bas, qui fait foi.
+**C'est la règle qui prime sur toutes les autres.** Trois sessions d'équilibrage se sont brisées
+dessus : chaque correction en cassait deux, parce qu'aucun pilier n'avait de frontière. Le
+Hardware faisait **cinq choses** — vitesse, rendement, plafond, efficacité des Proxies, sa propre
+chaleur — et les Proxies faisaient de l'offense.
+
+| Pilier | Rôle, en une phrase | Ce qu'il touche |
+|---|---|---|
+| **Scripts** | **L'attaque.** Ils rapportent, et c'est eux qu'on repère. | Argent, génération de Trace |
+| **Proxies** | **La furtivité active.** Dissipation pure, rien d'autre. | Dissipation |
+| **Hardware** | **L'infrastructure.** Il encaisse le choc et suralimente le moteur. | Plafond de jauge, compression des cycles, rendement des Scripts |
+
+La décision du joueur devient énonçable : *je stagne financièrement* → Scripts. *Le mur arrive trop
+vite* → Hardware. *La pression ne redescend pas* → Proxies.
+
+**Ce qui a été coupé le 2026-09-10 :**
+
+- **Le Hardware n'améliore plus les Proxies.** Le facteur `(1 + log10(1 + TFlops))` sur la
+  dissipation a disparu. C'était le vrai coupable : le Hardware tenait à lui seul les DEUX moitiés
+  de la défense, il levait le plafond *et* rendait les Proxies meilleurs. Aucun réglage ne pouvait
+  départager les deux piliers tant que ce facteur existait.
+- **Les Proxies n'accélèrent plus les cycles.** La synergie de +1 % par niveau existait pour qu'un
+  achat de Proxy ne soit « jamais perdu ». Elle donnait de l'offense au pilier défensif. Le confort
+  est assumé perdu : **c'est le coût d'opportunité des Proxies qui rend la répartition
+  intéressante.**
+
+⚠️ **Ce qui RESTE et n'est pas un bonus :** la compression s'applique aussi à la dissipation. Ce
+n'est pas « le Hardware aide les Proxies », c'est une **conversion d'unité**. La trace d'un Script
+se compte par CYCLE : comprimé ×33, il la verse trente-trois fois plus souvent. Une dissipation
+exprimée par seconde serait diluée d'autant — mesuré, 1 500 niveaux de Proxies ne tenaient plus que
+24 % de réduction. En l'appliquant des deux côtés, la compression devient **neutre** : le Hardware
+ne rend les Proxies ni meilleurs ni pires. C'est exactement la neutralité qu'exigent des rôles
+tranchés.
+
+## Les TFlops : deux effets, tous deux offensifs
+
+Ils ne touchent plus à la défense. Ce sont **la puissance de calcul du joueur, et rien d'autre** —
+un supercalculateur détourné doit calculer, pas servir de bouclier passif.
 
 **1. Compression du temps sur les Scripts**
 ```
-TempsReel = TempsBase / (1 + TFlops × 0.05) ^ TFlopsCompressionExponent
+DuréeRéelle = DuréeBase / (1 + TFlops × k) ^ CompressionExponent
 ```
+Décroissance asymptotique, jamais zéro. L'exposant a remplacé le mur `minCycleDuration`, qui
+saturait dès quelques dizaines de TFlops et tuait le pilier.
 
-Décroissance asymptotique : ne tombe jamais à zéro. L'exposant a été ajouté le 31/08 — sans lui,
-la compression butait sur `minCycleDuration` dès quelques dizaines de TFlops.
-
-**2. Efficacité des Proxies**
+**2. Rendement des Scripts**
 ```
-DissipationTrace = ProxyBase × (1 + log10(1 + TFlops))
+RendementScript × = (1 + TFlops) ^ YieldExponent
 ```
-
-Le `log10` donne un gros boost au début puis aplatit la courbe — le joueur ne doit **jamais**
-devenir indétectable. Inchangé, mais ce n'est plus une valeur soustraite : elle alimente la
-puissance `D` de la formule de saturation.
-
-**3. Rendement des Scripts** *(ajouté le 2026-08-31)*
-```
-RendementScript × = (1 + TFlops) ^ TFlopsYieldExponent
-```
-
-Réservé aux Scripts. Chez un Hardware le rendement EST la capacité en TFlops : le brancher là
+Réservé aux Scripts : chez un Hardware le rendement EST la capacité en TFlops, l'y brancher
 créerait une boucle divergente.
+
+Le **plafond de jauge**, lui, ne passe PAS par les TFlops : il vient directement du champ
+`traceCapIncrease` de chaque Hardware, en `puissance^TraceYieldExponent`.
+
+## Accélération des Scripts — une ladder uniforme
+
+**Refonte du 2026-09-10.** L'ancienne table alternait au petit bonheur et produisait **deux
+artefacts couplés** :
+
+- Les Scripts **impairs** avaient un palier de durée, les **pairs** aucun.
+- Chaque palier de durée *remplaçant* un palier de rendement dans les quatre emplacements, les
+  Scripts pairs se retrouvaient **70 % plus puissants en rendement** (produit 9,80 contre 5,77).
+
+L'équilibre entre paliers était donc en partie un accident de remplissage de tableau.
+
+Ladder unique, appliquée aux quinze :
+
+| Niveau | 10 | 25 | 50 | 100 | 150 | 250 |
+|---|---|---|---|---|---|---|
+| Effet | durée ×0,8 | rendt ×1,5 | durée ×0,8 | rendt ×1,5 | durée ×0,8 | rendt ×1,5 |
+
+Cumul : **rendement ×3,375, durée ×0,512** — soit ×6,6 de débit au niveau 250, paliers seuls.
+
+**Le premier cran est au niveau 10, et ce n'est pas un détail :** mesuré, la pyramide d'achats
+descend vite (`SCR_06` autour du niveau 33, `SCR_07` autour de 13). Un palier posé au niveau 25
+serait invisible pour la moitié du roster.
+
+**Uniforme en RELATIF, à dessein.** Les durées de base s'étalent de 1,5 s à 3 600 s — un facteur
+2 400. Rendre un Script à long cycle jouable dans l'absolu est le travail du **Hardware**, via la
+compression. Le palier n'a qu'une mission : que chaque Script donne le sentiment d'accélérer quand
+on l'approfondit. Et comme la trace se compte par cycle, un Script qui accélère génère mécaniquement
+plus de Trace par seconde — « plus d'argent ET plus de menace », ce qui referme sa définition.
 
 ## Cycles de production — Scripts uniquement
 
@@ -97,7 +153,7 @@ DebitTrace  = TraceBrute × (1 − Reduction)
 où `D` est la puissance de dissipation cumulée des Proxies :
 
 ```
-D = Σ (base × niveau × paliers) × (1 + log10(1 + TFlops)) × (1 + TFlops × k) ^ CompressionExponent
+D = Σ (base × niveau × paliers) × MultiplicateurInterception × (1 + TFlops × k) ^ CompressionExponent
 ```
 
 **Le facteur de compression y a été ajouté le 2026-08-31, et il n'est pas un bonus de plus.**
@@ -136,6 +192,52 @@ Il n'y a **pas** de plafond par Proxy : les quinze versent dans un `D` unique et
 qui sature. Des budgets séparés feraient une check-list à remplir, pas un arbitrage.
 
 La réduction de prestige s'applique **avant** la réduction des Proxies.
+
+### La TRAQUE PASSIVE — le temps est un coût (tranché le 2026-09-10)
+
+L'A.M.I. te cherche activement. Rester connecté coûte, **indépendamment de ce que tu produis** :
+un débit constant s'ajoute au brut, réglé par `PassiveTraceFillMinutes` (25 min).
+
+**Le constat qui l'a rendue nécessaire.** La Trace ne mesurait QUE la production du joueur. Elle
+était donc une horloge *proportionnelle* — jouer faiblement achetait du temps illimité. Mesuré sur
+la première run, en n'achetant que de l'acquisition (ni Hardware ni Proxy) :
+
+| | Sans traque passive | Avec |
+|---|---|---|
+| Durée de la run | **92,7 min** | **22,1 min** |
+| Jauge à 5 min | 0,2 % | 20,6 % |
+| Jauge à 20 min | 6,3 % | 86,9 % |
+
+Le joueur rampait pendant une heure et demie sans que rien ne vienne jamais le chercher. Il n'y
+avait **aucune pression absolue** dans le jeu : le seul chronomètre était celui que le joueur
+remontait lui-même. Confirmé en jeu réel, pas seulement en simulation.
+
+**Quatre conséquences, toutes voulues :**
+
+- **Le temps redevient un coût.** Traîner n'est plus gratuit.
+- **Les Proxies ont un rôle dès la première minute.** La traque entre dans le brut, donc elle
+  passe par la dissipation. Avant, ils n'avaient rien à dissiper avant la vingtième minute — d'où
+  l'impression, juste, qu'ils ne servaient à rien au début.
+- **Elle s'efface toute seule.** 0,067 fraction/s écrase une production naissante et devient
+  négligeable face à une économie mûre. La traque domine le début puis disparaît, sans second
+  réglage.
+- **Le Blindage garde son sens.** Le débit dérive du plafond **DE BASE**, jamais du plafond
+  courant : relever le plafond dilue donc la traque et achète du temps. L'indexer sur le plafond
+  courant la rendrait inesquivable, et viderait toute la branche Blindage de son intérêt.
+
+⚠️ **Ne jamais indexer la traque sur le plafond courant.** C'est le piège évident, et il annule à
+la fois le Hardware et le Blindage.
+
+**Rythme obtenu** (campagnes complètes, arbre mené à son terme) :
+
+| Palier visé | Runs | Durée de campagne |
+|---|---|---|
+| 50 % | 58 | 13,29 h |
+| 75 % | 32 | **10,30 h** |
+| 90 % | 25 | 8,58 h |
+
+La cible de 10 heures est désormais atteinte par un **style de jeu**, pas par une constante à
+caler : le prudent fait une campagne longue, le téméraire une campagne courte.
 
 ### La trace suit le rendement, à un exposant strictement entre 0 et 1
 
@@ -216,9 +318,91 @@ achète contre sa propre chaleur. Il vaut ≈ 60 sur les quinze paliers actuels.
 
 **Attention au nom du champ.** `traceGeneratedPerSecond` porte une **génération** pour les Scripts et les Hardware, mais une **dissipation** pour les Proxies (dont le `baseProductionYield` vaut 0). Le nom ment pour ce troisième type : c'est la valeur qui alimente `ProxyBase` dans la formule de dissipation ci-dessus, et elle doit être **soustraite**, jamais ajoutée.
 
-**Synergie des Proxies (tranché le 2026-08-27)** : chaque niveau de Proxy possédé accélère TOUS les Scripts de 1 %, cumulé sur l'ensemble du parc — `1 + niveaux × 0,01`. Un achat de Proxy n'est donc jamais perdu, même quand la Trace est basse. Multiplicateur **dédié**, appliqué à la durée de cycle : le brancher sur les TFlops créerait une boucle, la dissipation dépendant elle-même des TFlops par son `log10`. ⚠️ Linéaire et sans plafond, contrairement au reste du jeu — c'est `minCycleDuration` qui bornera l'effet, donc un plafond subi plutôt que choisi.
+**Synergie des Proxies — RETIRÉE le 2026-09-10.** Chaque niveau de Proxy accélérait tous les
+Scripts de 1 %, pour qu'un achat de Proxy ne soit « jamais perdu » même quand la Trace était basse.
+Elle donnait de l'offense au pilier défensif et brouillait la lecture des rôles. Voir « LA
+TRINITÉ » en tête de document, qui fait foi.
 
 **La règle d'or tient, confirmée le 2026-08-27.** Un excédent de dissipation ne fait PAS redescendre la jauge : il est capté par le Ghost Cache. Si la jauge se vidait, le joueur aurait toujours toute la marge devant lui et déclencher l'Overdrive ne coûterait rien. En la laissant où elle est, le Ghost Cache se remplit à la hauteur où le joueur s'est arrêté : à 30 % il a de la marge, à 80 % c'est un pari. C'est là que naît le choix « j'exfiltre ou je charge encore ».
+
+## Le relevé de Trace — le danger vient de l'INCERTITUDE (tranché le 2026-09-10)
+
+**Le constat qui a forcé ce modèle.** Plafond de jauge divisé par 250, et toujours **zéro saisie
+sur trente-cinq runs**. Ce n'était pas un défaut de réglage mais une impossibilité : le joueur
+contrôle les quatre termes de l'équation — débit, plafond, dissipation, instant de sortie — et les
+observe tous en temps réel. Un compte à rebours déterministe, entièrement observable et piloté par
+celui qu'il menace ne peut pas être dangereux. C'est un budget, pas une menace. Et baisser le
+plafond n'y change rien : ça comprime toute la courbe uniformément, donc la part d'avertissement
+reste identique. **Une jauge linéaire ne peut, par construction, surprendre personne.**
+
+**La réponse : un capteur imparfait.** `TraceReadout` échantillonne la vérité à intervalle
+variable, et **l'intervalle s'allonge quand la jauge se remplit vite**. Trace tranquille, relevé
+quasi continu ; Trace qui s'emballe, la télémétrie bégaie et le joueur pilote au jugé — exactement
+au moment où le chiffre comptait. L'incertitude n'est pas imposée au joueur, c'est la **conséquence
+de sa propre gourmandise**.
+
+L'interface affiche donc deux choses : la dernière position **relevée** (l'aiguille, qui se fige
+visiblement quand ça se dégrade) et le **bord haut de la fourchette**, extrapolé depuis le dernier
+débit connu. Le joueur décide contre un intervalle, jamais contre un nombre.
+
+**Aucun hasard.** La saisie tombe toujours à 100,000 % exactement. On ne perd jamais sur un tirage,
+on perd sur une estimation qu'on a mal faite — l'échec reste entièrement à la charge du joueur.
+
+**Frontière stricte.** `TraceReadout` est en LECTURE SEULE sur le `ThreatManager`, qui reste la
+seule vérité. **Aucune règle de jeu ne dépend du brouillard** : seul l'affichage est incertain.
+
+### Les trois réglages, et pourquoi ils sont si extrêmes
+
+| Réglage | Valeur | Pourquoi |
+|---|---|---|
+| `TraceReadoutMaxInterval` | **120 s** | À 20 s, aucune saisie. La jauge se remplit en ~25 min, soit 0,00067 fraction/s : un relevé vieux de 20 s se trompait de 1,3 point, très en-deçà de la marge du joueur. |
+| `TraceReadoutReferenceFillRate` | **0,001/s** | À 0,005, la cécité n'arrivait qu'à sept fois le débit réel d'une run — donc jamais. |
+| `TraceReadoutPessimism` | **3** | À 1,5, la « borne haute » passait **sous** la vérité (le prudent croyait sortir à 90 %, sortait à 93,8 %). La projection est linéaire alors que la production accélère. |
+
+⚠️ **Le pessimisme est un réglage de game design, pas un détail d'affichage.** C'est lui qui écarte
+le joueur prudent du bord. Trop bas, prudence et gourmandise se rejoignent à 94 % de jauge et il
+n'y a plus rien à arbitrer — les deux postures jouent le même jeu.
+
+Le brouillard seul ne suffit pourtant pas : il crée le danger, pas la tentation. Il ne devient une
+mécanique qu'associé aux **paliers d'extraction**, décrits plus bas — l'un rend le bord dangereux,
+l'autre le rend désirable.
+
+⚠️ **Limite connue, mesurée le 2026-09-10.** Indexer l'incertitude sur la vitesse de remplissage
+faisait punir le MILIEU de partie et jamais le début : une run lente est une run lisible, donc les
+premières runs — les plus lentes — étaient les plus sûres, et les saisies tombaient aux runs 6 à 8.
+
+La **traque passive** a corrigé la moitié du problème par effet de bord : la jauge monte désormais
+vite dès la première minute, donc le relevé bégaie aussi dès la première minute. Il reste que
+l'épaisseur du brouillard n'est toujours pas un CHOIX du joueur — et c'est ce qui manque pour que
+les saisies tombent quand il faut.
+
+**Direction tranchée pour le lot suivant :** l'incertitude ne doit pas venir de la vitesse mais du
+**manque de capteurs**. Run 1, le joueur est aveugle parce qu'il n'a ni ping, ni renifleur de
+paquets ; il achète sa visibilité avec le Hardware et une branche de prestige dédiée. Le début de
+partie devient brutal parce qu'on y pilote à l'aveugle, et le milieu de partie devient précis mais
+avec des enjeux plus lourds. Bénéfice secondaire : un troisième rôle propre au Hardware, qui
+n'empiète toujours pas sur les Proxies.
+
+## ⚠️ `04_SpecificUpgrades.json` est une SORTIE, pas une entrée
+
+**Piège constaté le 2026-09-10, après lui avoir coûté deux sessions d'équilibrage.**
+
+Contrairement aux cinq autres fichiers de `PrestigeData`, celui-ci est **écrit par un
+générateur** — `PrestigeSpecificNodesGenerator`, menu `Tools/Core/Générer JSON (Grille — Arête de
+poisson Corrigée)`. Y régler un prix à la main ne survit pas au prochain passage de ce menu.
+
+Ce que ça a produit : un calage avait ramené les 120 nœuds spécifiques à `baseCost = 1`. Le
+générateur relancé les a remis à `50 × Order`, et **l'arbre est passé de 3 477 à 527 552 CPU
+Cycles** — dont 525 389 pour ce seul fichier, soit 99,6 % du total. La campagne plafonnait à
+17 % de l'arbre en seize heures et personne ne voyait pourquoi : les JSON avaient l'air corrects,
+puisqu'ils l'étaient au moment où on les regardait.
+
+**Le prix de ces 120 nœuds se règle dans `PrestigeSpecificNodesGenerator.CreateGridItem`**, et
+nulle part ailleurs. Il est désormais **plat** (`baseCost = 1.0`) : la progression par palier est
+portée par la chaîne de prérequis et par `costMult`, pas par le prix de base.
+
+⚠️ La même prudence vaut pour tout fichier de `GameData/Editor/` : vérifier qu'il n'a pas de
+générateur avant d'y régler quoi que ce soit à la main.
 
 ## Prérequis de prestige — un nœud ET un niveau
 
@@ -479,9 +663,58 @@ bonus ; ici, ne pas sauvegarder permettrait d'ÉCHAPPER à une pénalité en fer
 | | Déclencheur | Récompense |
 |---|---|---|
 | **Saisie Fédérale** | Trace atteint 100 % | CPU Cycles calculés normalement |
-| **Effacement Propre** | Le joueur clique avant 100 % | CPU Cycles **+20 % « Clean Exit »** |
+| **Effacement Propre** | Le joueur clique avant 100 % | Bonus du **palier d'extraction** atteint |
 
-Le bonus pousse le joueur à flirter avec 95 % de Trace puis à sortir juste avant l'arrestation.
+### Paliers d'extraction — la décision est DISCRÈTE (tranché le 2026-09-10)
+
+| Palier | Jauge requise | Bonus de CPU Cycles |
+|---|---|---|
+| Extraction propre | 50 % | +15 % |
+| Extraction profonde | 75 % | +30 % |
+| Extraction critique | 90 % | +50 % |
+
+Sous 50 %, aucun bonus — mais les Cycles de base restent acquis. **Se faire saisir ne coûte
+jamais la run, seulement ce qu'on est allé chercher.**
+
+La branche de prestige **Extraction** (`07_Extraction.json`) multiplie la valeur de chaque palier.
+C'est la seule branche qui récompense la *manière* de jouer plutôt que la puissance brute : plus le
+joueur y investit, plus il a de raisons d'aller chercher le palier suivant, et plus une saisie lui
+coûte cher. Elle achète de l'appât, pas de la sécurité.
+
+**Deux échecs avant d'arriver là, et il faut les connaître pour ne pas y revenir.**
+
+*Le forfait.* Le bonus a longtemps valu +20 % quelle que soit la Trace atteinte. Les Datas
+s'accumulent **proportionnellement à la jauge** — mesuré : 50 % de jauge = 31 % des Datas, 90 % =
+90 %, la Trace étant un compteur de production. Le dernier pour-cent de jauge valait donc
+exactement ce que valait le premier : pousser de 90 à 100 % rapportait ~10 % de Datas, soit ~5 % de
+Cycles après la racine carrée, alors qu'une seule saisie en coûtait 17. **Un joueur qui gagnait
+tous ses paris perdait quand même.** Mesuré : le téméraire mourait 9 fois sur 32 pour 1,3 % de gain.
+Le danger ne s'achetait rien — un impôt, pas un arbitrage.
+
+*La courbe continue.* La correction suivante fut `1 + 1,5 × jauge⁵`. Excès inverse : le bonus
+passait de +25 % à +89 % entre 70 % et 90 % de jauge, donc chaque seconde de retard devenait
+monnayable et la sortie se jouait au chronomètre au lieu de se décider.
+
+**Un palier ne bouge pas entre deux seuils.** Traîner ne rapporte rien, ce qui supprime
+l'optimisation fine ; la seule question est franche — « je tente le palier suivant, oui ou non ? ».
+Et c'est **affichable** : des zones marquées sur la jauge, ce qu'une courbe ne permettait pas.
+
+**Mesure de validation** (campagnes complètes, arbre de prestige mené à son terme) :
+
+| Palier visé | Runs | Durée | Saisies | Sortie réelle |
+|---|---|---|---|---|
+| 50 % | 49 | 12,58 h | 0 | 53,2 % |
+| 75 % | 27 | 9,60 h | 0 | 83,7 % |
+| 90 % | 22 | 8,44 h | 0 | 95,5 % |
+| 90 %, mais en lisant le bord de la fourchette | 23 | 8,75 h | 0 | 93,0 % |
+
+Viser haut **divise la campagne par deux**. C'est l'appât, et il est énorme.
+
+⚠️ **Le risque, lui, n'est pas encore là : zéro saisie sur les quatre postures.** Un joueur qui sort
+dès que l'affichage annonce le palier franchi garde 10 % de marge, et le relevé actuel ne se trompe
+pas d'assez pour la manger. La récompense est en place, le danger reste à installer — c'est l'objet
+du lot « capteurs » : rendre le brouillard épais AU DÉBUT de la partie, quand le joueur n'a encore
+rien acheté pour voir clair. Voir la section sur le relevé de Trace.
 
 **Déblocage (précisé le 2026-08-26) :** condition UNIQUE — avoir de quoi gagner au moins 1 CPU Cycle, soit **1 000 Datas générées sur la run** (dépensées ou non), puisque `Cycles = floor(sqrt(RunMoney / 1000))`.
 
