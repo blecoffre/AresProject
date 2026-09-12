@@ -700,6 +700,73 @@ Le contrecoup ET le délai sont **sauvegardés** (`SaveData` v5), contrairement 
 Ghost Cache. L'asymétrie est volontaire : là-bas, sauvegarder aurait permis de mettre en PAUSE un
 bonus ; ici, ne pas sauvegarder permettrait d'ÉCHAPPER à une pénalité en fermant la fenêtre.
 
+## Les points de prestige — un CUMUL de campagne (tranché le 2026-09-13)
+
+Les points ne se calculent plus sur l'argent de la seule run. Un compteur de **Datas exfiltrées
+depuis le début de la campagne** ne retombe jamais à zéro, et le Nième point demande
+`PremierPalier × Croissance^(N−1)` de ce cumul.
+
+**Pourquoi.** L'ancienne conversion rendait 28 points dès la première run, et elle était pilotée
+par la même valeur que le déblocage de l'exfiltration : raréfier les points rendait mécaniquement
+la sortie inatteignable. Les deux sont désormais deux réglages distincts,
+`PrestigeFirstThresholdDatas` et `ExfiltrationUnlockDatas`.
+
+**Aucune run n'est perdue.** Une run qui n'atteint pas le palier suivant compte quand même : ce
+qu'elle a rapporté reste au cumul. C'est un gain de ressenti considérable pour un coût nul.
+
+⚠️ **Une SAISIE n'alimente pas le compteur, et contribution et points sont résolus au MÊME
+instant, à l'exfiltration.** Ce n'est pas un détail d'implémentation, c'est ce qui ferme un
+exploit : si les points tombaient pendant la run alors que la saisie annule la contribution, il
+deviendrait rentable de se faire prendre exprès — on encaisserait le palier sans jamais faire
+monter le seuil, et la run suivante le réencaisserait. Le multiplicateur du palier d'extraction
+porte sur la **contribution**, jamais sur les points, pour la même raison.
+
+### Tout coûte 1 point, et l'arbre a fondu
+
+Chaque niveau de chaque nœud coûte **1 CPU Cycle**. La courbe `BaseCost × CostMultiplier^niveau`
+est supprimée — elle était recopiée dans quatre fichiers indépendants, et l'arbre s'était déjà
+retrouvé 152 fois trop cher pour une erreur sur un seul terme.
+
+Elle créait surtout un piège invisible : **mesuré, un joueur qui achète naturellement le nœud le
+moins cher d'abord jouait cent fois moins bien qu'un joueur qui les évitait**, parce que 145 nœuds
+affichés au même prix n'avaient pas du tout la même valeur.
+
+L'arbre passe de **783 à 145 niveaux** : chaque nœud devient un choix unique portant d'un coup ce
+que ses cinq rangs apportaient. Même puissance totale, mais un point achète cinq fois plus.
+
+⚠️ **Les 120 nœuds ciblés sont une SORTIE de générateur.** `maxLevel` et le bonus se règlent dans
+`PrestigeSpecificNodesGenerator.cs`, jamais dans le JSON.
+
+**Couplage à connaître :** ces deux chantiers ne peuvent pas se calibrer séparément. Avec un arbre
+de 1450 niveaux, 4 points en achètent 4 — la production ne bouge pas, le cumul monte linéairement
+pendant que les seuils montent en exponentielle, et la progression se bloque DÉFINITIVEMENT.
+
+## ⚠️ Le simulateur CLIQUE, depuis le 2026-09-13
+
+Le harnais ne modélisait aucun clic d'Overclock. C'était son plus gros angle mort :
+
+| Première run | Datas | Points |
+|---|---|---|
+| Partie réelle | 196 M | 28 |
+| Simulée sans clic | 2,9 M | 0 |
+| Simulée avec clic | **107 M** | **5** |
+
+Un facteur **87**. Toute grandeur exprimée en Datas absolues — paliers de points, seuil
+d'exfiltration — était calibrée sur un joueur qui n'existe pas.
+
+**Conséquence rétroactive à connaître :** la mesure « 40 066 Datas à la 5ᵉ minute », consignée
+plus haut comme conforme à la cible, a été prise sans clic. Avec clic, c'est **18 M**. La cible
+« quelques dizaines de milliers » n'a jamais décrit une partie réelle.
+
+**Le modèle est une MAIN, pas un auto-clicker.** Cadence de rafale, part du temps réellement passée
+à cliquer, et fatigue qui allonge les pauses au fil de la run. Les rafales ne sont pas simulées une
+à une : l'apport d'un clic étant linéaire et sans temps de recharge, une cadence moyenne donne le
+même résultat pour un dixième du coût de calcul.
+
+⚠️ **Le modèle est calé sur UNE SEULE run réelle.** Il reste 1,8× sous elle. C'est infiniment mieux
+que zéro clic, mais ce n'est pas une distribution validée : toute conclusion tirée d'un écart
+inférieur à 2× est du bruit.
+
 ## Exfiltration volontaire — « Protocole Terre Brûlée »
 
 | | Déclencheur | Récompense |

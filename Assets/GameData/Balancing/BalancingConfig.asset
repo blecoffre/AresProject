@@ -28,8 +28,9 @@ MonoBehaviour:
   _absoluteMinCycleDuration: 0.05
   _maxTargetedReduction: 0.95
   _baseStartingMoney: 10
-  _moneyPerCpuCycle: 400000
-  _cpuCycleExponent: 0.5
+  _exfiltrationUnlockDatas: 400000
+  _prestigeFirstThresholdDatas: 100000000
+  _prestigeThresholdGrowth: 1.12
   _cleanExitTiers:
   - _traceThreshold: 0.5
     _bonus: 0.15
