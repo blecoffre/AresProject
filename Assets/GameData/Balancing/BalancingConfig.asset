@@ -29,6 +29,7 @@ MonoBehaviour:
   _maxTargetedReduction: 0.95
   _baseStartingMoney: 10
   _moneyPerCpuCycle: 400000
+  _cpuCycleExponent: 0.5
   _cleanExitTiers:
   - _traceThreshold: 0.5
     _bonus: 0.15

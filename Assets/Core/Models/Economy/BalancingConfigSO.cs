@@ -161,6 +161,19 @@ namespace Core.Models.Economy
                  "Pilote aussi le seuil de déblocage de l'exfiltration.")]
         [SerializeField, Min(1f)] private double _moneyPerCpuCycle = 1000d;
 
+        [Tooltip("Exposant de la conversion Datas -> CPU Cycles : cycles = (Datas / valeur " +
+                 "ci-dessus) ^ exposant. À 0,5 on retrouve la racine carrée d'origine.\n\n" +
+                 "Baisser cet exposant rend chaque point SUIVANT plus cher, sans jamais toucher " +
+                 "au premier : à Datas = MoneyPerCpuCycle le résultat vaut 1 quel que soit " +
+                 "l'exposant. C'est ce qui permet de raréfier les points de prestige sans " +
+                 "déplacer le seuil de déblocage de l'exfiltration, qui est la même valeur.\n\n" +
+                 "Le Nième point coûte MoneyPerCpuCycle x N^(1/exposant) : N² à 0,5, N^2,86 à " +
+                 "0,35, N⁴ à 0,25.\n\n" +
+                 "⚠️ Descendre trop bas aplatit la méta-progression : si une run de fin de partie " +
+                 "ne rapporte plus guère plus que la première, faire grossir son économie cesse " +
+                 "d'acheter de la puissance, et il faut rebaisser tout l'arbre en conséquence.")]
+        [SerializeField, Range(0.1f, 1f)] private double _cpuCycleExponent = 0.5d;
+
         [Tooltip("Paliers d'extraction : à ranger du MOINS au PLUS exigeant. Le joueur empoche le " +
                  "bonus du plus haut palier dont il a atteint le seuil de Trace, et rien du tout " +
                  "sous le premier.\n\n" +
@@ -284,6 +297,7 @@ namespace Core.Models.Economy
 
         public double BaseStartingMoney => _baseStartingMoney;
         public double MoneyPerCpuCycle => _moneyPerCpuCycle;
+        public double CpuCycleExponent => _cpuCycleExponent;
         public IReadOnlyList<CleanExitTier> CleanExitTiers => _cleanExitTiers;
         public float OverclockWarpSeconds => _overclockWarpSeconds;
 

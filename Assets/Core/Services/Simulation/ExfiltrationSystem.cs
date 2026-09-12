@@ -107,8 +107,10 @@ namespace Core.Services.Simulation
         /// </summary>
         public double GetNextCycleThreshold()
         {
+            // Inverse exact de CalculatePendingCpuCycles : si la conversion change d'exposant,
+            // cet objectif doit suivre, sinon le bouton promet un palier qui n'existe pas.
             double next = _pendingCycles.CurrentValue + 1d;
-            return next * next * _balancing.MoneyPerCpuCycle;
+            return Math.Pow(next, 1d / _balancing.CpuCycleExponent) * _balancing.MoneyPerCpuCycle;
         }
 
         /// <summary>

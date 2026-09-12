@@ -83,7 +83,14 @@ namespace Core.Models.Economy
         /// </summary>
         public double CalculatePendingCpuCycles()
         {
-            return Math.Floor(Math.Sqrt(_runMoneyGenerated.Value / _balancing.MoneyPerCpuCycle));
+            // Exposant réglable plutôt que racine carrée figée. À Datas = MoneyPerCpuCycle le
+            // résultat vaut 1 quel que soit l'exposant : le premier point, et donc le seuil de
+            // déblocage de l'exfiltration, ne bougent jamais. Seuls les points SUIVANTS se
+            // raréfient — le Nième coûte MoneyPerCpuCycle x N^(1/exposant).
+            double ratio = _runMoneyGenerated.Value / _balancing.MoneyPerCpuCycle;
+            if (ratio <= 0d) return 0d;
+
+            return Math.Floor(Math.Pow(ratio, _balancing.CpuCycleExponent));
         }
 
         /// <summary>
