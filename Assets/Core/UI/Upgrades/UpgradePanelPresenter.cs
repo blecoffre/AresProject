@@ -72,6 +72,12 @@ namespace Core.UI.Upgrades
                 .Subscribe(_panelView.ShowBuyQuantity)
                 .AddTo(_disposables);
 
+            _panelView.SetBuyQuantityLabels(
+                _loc.GetText("UI_BUY_QTY_X1"),
+                _loc.GetText("UI_BUY_QTY_X10"),
+                _loc.GetText("UI_BUY_QTY_X100"),
+                _loc.GetText("UI_BUY_QTY_MAX"));
+
             InitializePanel();
         }
 

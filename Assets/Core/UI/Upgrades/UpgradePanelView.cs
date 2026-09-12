@@ -187,6 +187,15 @@ namespace Core.UI.Upgrades
         /// notifiés, pas seulement le nouveau — c'est ce qui éteint celui qu'on quitte, exactement
         /// comme pour les onglets.
         /// </summary>
+        /// <summary>Libellés des sélecteurs de quantité, résolus par le presenter.</summary>
+        public void SetBuyQuantityLabels(string x1, string x10, string x100, string max)
+        {
+            if (_buyX1Visual != null) _buyX1Visual.SetLabel(x1);
+            if (_buyX10Visual != null) _buyX10Visual.SetLabel(x10);
+            if (_buyX100Visual != null) _buyX100Visual.SetLabel(x100);
+            if (_buyMaxVisual != null) _buyMaxVisual.SetLabel(max);
+        }
+
         public void ShowBuyQuantity(BuyQuantity quantity)
         {
             if (_buyX1Visual != null) _buyX1Visual.SetActiveState(quantity == BuyQuantity.X1);

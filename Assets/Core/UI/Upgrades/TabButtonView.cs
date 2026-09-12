@@ -43,6 +43,16 @@ namespace Core.UI.Upgrades
                  "serait un contresens.")]
         [SerializeField] private Material _inactiveMaterial;
 
+        /// <summary>
+        /// Pose le libellé de l'onglet. Il vivait jusqu'ici en dur dans la scène — « x10 », « MAX » —
+        /// ce que la règle de localisation du projet interdit sans exception, et qui rendait ces
+        /// boutons intraduisibles. Les clés existaient déjà, elles n'avaient jamais été branchées.
+        /// </summary>
+        public void SetLabel(string text)
+        {
+            if (_label != null) _label.text = text;
+        }
+
         public void SetActiveState(bool isActive)
         {
             if (_activeBackground != null && _activeBackground.activeSelf != isActive)
