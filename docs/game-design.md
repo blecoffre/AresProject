@@ -545,14 +545,56 @@ rythme.
 
 | Mesure | Valeur | Cible |
 |---|---|---|
-| `SCR_01` niveau 10 (automatisation) | **90 s** | rapide ✅ |
-| Datas générées à la 5ᵉ minute | **33 760** | quelques dizaines de milliers ✅ |
-| Première run | **27 min**, jusqu'à `SCR_05` | ~30 min ✅ |
-| Durée de run (min / médiane / max) | 19,6 / **31,0** / 40,9 min | — |
-| Campagne complète (arbre entier) | **9,93 h** | ~10 h ✅ |
-| Nombre de runs | 19 | — |
-| Datas, run 1 → dernière | 1,4e8 → 9,3e10 (**×660**) | montée sensible ✅ |
-| Arbitrage | lourde en début/milieu, **aucun Proxy en fin** | varie ✅ |
+| `SCR_01` niveau 10 (automatisation) | **75 s** | rapide ✅ |
+| Datas générées à la 5ᵉ minute | **40 066** | quelques dizaines de milliers ✅ |
+| Première run | **9,7 min**, jusqu'à `SCR_04` | ~10 min ✅ |
+| Campagne complète (arbre entier) | **10,69 h** au palier 75 % | ~10 h ✅ |
+| Nombre de runs | 39 à 45 selon le palier visé | — |
+
+## ⚠️ La cible « 30 minutes avant le premier prestige » est ABANDONNÉE (2026-09-12)
+
+Elle était une erreur, et c'est une partie jouée qui l'a tranchée, pas un calcul.
+
+**Le verdict manette en main :** « je trouve la run longue et ennuyante ; passé les cinq premières
+minutes cela devient long, les gains ne sont pas énormes donc on achète très rarement quoi que ce
+soit, le spam d'Overclock devient la seule solution, mais cela épuise vite ».
+
+**Ce que la mesure a confirmé.** Sur une run de 25 minutes, relevé minute par minute :
+
+| Minute | 5 | 10 | 15 | 20 | 24 |
+|---|---|---|---|---|---|
+| Achats dans la minute | 29 | 14 | 10 | 6 | 78 |
+| Croissance des Datas | ×3,97 | ×1,46 | ×1,26 | ×1,15 | ×1,11 |
+
+**La phase exponentielle meurt vers la minute 12.** Après, la run est linéaire : +10 à 15 % par
+minute, activité d'achat divisée par trois. Un incrémental linéaire est un incrémental ennuyeux.
+Les vingt dernières minutes n'ajoutaient rien qu'une attente.
+
+**Le réglage.** `PassiveTraceFillMinutes` passe de 25 à **6**, ce qui donne une première run de
+**9,7 minutes**. La courbe d'achats des premières minutes est rigoureusement identique — on n'a
+retiré aucun moment intéressant, on a coupé la partie plate. La run se termine désormais au PIC
+d'activité (61 achats à la minute 7) et en pleine exponentielle (×1,69 sur la dernière minute).
+
+⚠️ **Ce réglage n'est pas un cadran direct sur la durée de run.** Le Hardware relève le plafond et
+dilue la traque : à 12 minutes de remplissage, la run durait encore 19,9 minutes. Toujours mesurer
+plutôt que déduire.
+
+**Conséquence heureuse et non conçue :** les runs S'ALLONGENT au fil de la campagne — 9,7 min au
+départ, ~14,5 min en moyenne — parce que le Blindage relève le plafond. La méta-progression achète
+littéralement du temps de jeu par run.
+
+**Conséquence à assumer :** viser le palier 50 % ne boucle plus l'arbre (141 runs, 87 % au bout de
+16 h). Jouer très prudemment est devenu perdant, pas seulement lent.
+
+### ⚠️ Le simulateur ne clique jamais l'Overclock
+
+Mesuré le 2026-09-12 : première run réelle **28 CPU Cycles**, même run simulée **3**. Le harnais ne
+modélise aucun clic, alors qu'un joueur spamme l'Overclock — qui avance tous les Scripts en cours.
+L'écart est d'environ deux ordres de grandeur sur les Datas.
+
+**Toute mesure du harnais est donc une BORNE BASSE**, jamais une prédiction. C'est aussi ce qui
+expliquait un écart relevé plus tôt : une jauge à 27 % au bout de vingt minutes en partie réelle,
+contre 6 % en simulation.
 
 La première run monte jusqu'à `SCR_05` en pyramide (`84 / 60 / 42 / 23 / 9`) : le joueur achète
 sans arrêt, il n'y a ni plateau mort ni empilement dégénéré sur un seul générateur.
