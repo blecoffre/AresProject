@@ -38,6 +38,15 @@ namespace Core.Editor.Balance
         public float TimeSeconds;
         public double RunMoney;
         public float TraceFraction;
+
+        /// <summary>
+        /// Somme des niveaux possédés, tous piliers confondus. Sa dérivée est la DENSITÉ
+        /// D'ACHATS : combien de fois le joueur a eu quelque chose à faire dans la minute.
+        ///
+        /// Relevée plutôt que comptée à l'achat pour ne rien exiger de la stratégie — n'importe
+        /// quelle posture, présente ou future, se mesure ainsi sans être modifiée.
+        /// </summary>
+        public int TotalLevels;
     }
 
     public sealed class RunResult
@@ -84,6 +93,13 @@ namespace Core.Editor.Balance
         public bool TreeComplete;
         public float TreeProgress;
         public float FirstPrestigeSeconds = -1f;
+
+        /// <summary>
+        /// Multiplicateur d'Effacement Propre acquis au bout de la campagne, branche Extraction
+        /// comprise. Sert à vérifier que la seule branche qui majore DIRECTEMENT le gain de
+        /// Cycles est bien prise en compte par la mesure, plutôt que de le supposer.
+        /// </summary>
+        public float FinalCleanExitBonus = 1f;
     }
 
     /// <summary>
@@ -157,7 +173,8 @@ namespace Core.Editor.Balance
                     {
                         TimeSeconds = elapsed,
                         RunMoney = h.Currencies.RunMoneyGenerated.CurrentValue,
-                        TraceFraction = traceFraction
+                        TraceFraction = traceFraction,
+                        TotalLevels = ResolveTotalLevels(h)
                     });
                 }
 
@@ -240,6 +257,7 @@ namespace Core.Editor.Balance
                 if (run.CpuCyclesEarned < 1d && campaign.Runs.Count > 3) break;
             }
 
+            campaign.FinalCleanExitBonus = h.Prestige.CleanExitBonusMultiplier.CurrentValue;
             campaign.TreeComplete = IsTreeComplete(h);
             campaign.TreeProgress = ResolveTreeProgress(h);
             return campaign;
@@ -294,6 +312,22 @@ namespace Core.Editor.Balance
                 if (scripts[i].Config.Id == id) return scripts[i];
             }
             return null;
+        }
+
+        /// <summary>Niveaux cumulés des trois piliers. Le compteur d'activité du joueur.</summary>
+        private static int ResolveTotalLevels(SimulationHarness h)
+        {
+            return CountLevels(h, UpgradeType.Script)
+                 + CountLevels(h, UpgradeType.Hardware)
+                 + CountLevels(h, UpgradeType.Proxy);
+        }
+
+        private static int CountLevels(SimulationHarness h, UpgradeType type)
+        {
+            IReadOnlyList<UpgradeModel> all = h.Upgrades.GetUpgradesOfType(type);
+            int total = 0;
+            for (int i = 0; i < all.Count; i++) total += all[i].CurrentLevel.CurrentValue;
+            return total;
         }
 
         private static int ResolveTopScript(SimulationHarness h)

@@ -218,6 +218,18 @@ namespace Core.Editor.Balance
                           + $"{(campaign.TreeComplete ? "COMPLET" : $"{campaign.TreeProgress * 100f:0.0} %")}");
             sb.AppendLine($"              Datas cumulées {datas:0.000e+00}, sortie à "
                           + $"{(counted > 0 ? (sumExit / counted * 100f).ToString("0.0") : "—")} % de jauge");
+
+            // Cycles de la PREMIÈRE et de la DERNIÈRE run, plus le bonus d'Extraction acquis.
+            // C'est la preuve que la méta-progression est bien dans la boucle : si la dernière
+            // run rapportait autant que la première, la campagne serait un tapis roulant.
+            if (campaign.Runs.Count > 0)
+            {
+                double first = campaign.Runs[0].CpuCyclesEarned;
+                double last = campaign.Runs[campaign.Runs.Count - 1].CpuCyclesEarned;
+                sb.AppendLine($"              Cycles run 1 → dernière : {first:0} → {last:0}"
+                              + $" (×{(first > 0d ? last / first : 0d):0.0}), "
+                              + $"bonus Extraction ×{campaign.FinalCleanExitBonus:0.00}");
+            }
         }
 
         /// <summary>
@@ -327,6 +339,73 @@ namespace Core.Editor.Balance
         private static string FormatMinutes(float seconds)
         {
             return seconds < 0f ? "jamais" : $"{seconds / 60f:0.0} min";
+        }
+
+        /// <summary>
+        /// OU SE TROUVE LE TEMPS MORT — achats par minute sur la premiere run.
+        ///
+        /// Rapporte en jouant : « passe les cinq premieres minutes, cela devient long, les gains
+        /// ne sont pas enormes donc on achete tres rarement quoi que ce soit, le spam d'Overclock
+        /// devient la seule solution ». Un jeu incremental se juge a la frequence a laquelle le
+        /// joueur a quelque chose a faire ; cette mesure la chiffre minute par minute au lieu de
+        /// la deviner.
+        ///
+        /// La posture simulee vise le dernier palier d'extraction, donc c'est bien une run
+        /// jouee normalement — pas un cas limite.
+        /// </summary>
+        [MenuItem("Tools/Core/Équilibrage/Première run — où se trouve le temps mort ?")]
+        public static void FirstRunPurchaseDensity()
+        {
+            var options = new SimulationOptions();
+            using var harness = new SimulationHarness();
+            RunResult run = SimulationRunner.RunOnce(harness,
+                                                     GreedyStrategy.TierHunter("palier 90 %", 0.90f),
+                                                     options);
+
+            var sb = new StringBuilder(1024);
+            sb.AppendLine($"[Équilibrage] Première run — densité d'achats ({run.DurationSeconds / 60f:0.0} min, "
+                          + $"{DescribeOutcome(run)})");
+            sb.AppendLine("  minute | achats | jauge | Datas");
+
+            int previousLevels = 0;
+            int minute = 0;
+            int longestDrought = 0;
+            int currentDrought = 0;
+            int droughtStart = -1;
+            int worstStart = -1;
+
+            for (int i = 0; i < run.Samples.Count; i++)
+            {
+                RunSample sample = run.Samples[i];
+                int m = (int)(sample.TimeSeconds / 60f);
+                if (m < minute) continue;
+
+                int bought = sample.TotalLevels - previousLevels;
+                previousLevels = sample.TotalLevels;
+
+                if (bought == 0)
+                {
+                    if (currentDrought == 0) droughtStart = minute;
+                    currentDrought++;
+                    if (currentDrought > longestDrought)
+                    {
+                        longestDrought = currentDrought;
+                        worstStart = droughtStart;
+                    }
+                }
+                else currentDrought = 0;
+
+                sb.AppendLine($"  {minute,6} | {bought,6} | {sample.TraceFraction * 100f,4:0} % | "
+                              + $"{sample.RunMoney,16:N0}");
+                minute++;
+            }
+
+            sb.Append(longestDrought > 0
+                ? $"  PLUS LONG TEMPS MORT : {longestDrought} min d'affilée sans un seul achat, "
+                  + $"à partir de la minute {worstStart}."
+                : "  Aucune minute entière sans achat.");
+
+            Debug.Log(sb.ToString());
         }
 
         private static string DescribeOutcome(RunResult run)
