@@ -91,6 +91,19 @@ namespace Core.UI.Prestige
                 case PrestigeBonusType.CostMultiplierReduction:
                     return loc.GetText("UI_PRESTIGE_EFFECT_COSTINFLATION", AsPercent(perLevel));
 
+                // Les trois branches de survie et de sortie. Elles étaient absentes de ce switch
+                // depuis leur création — le Blindage depuis le 2026-08-31 — et tombaient donc dans
+                // le `default` : une LogError pour le développeur, et une ligne d'effet VIDE pour
+                // le joueur sur onze nœuds, dont toute la colonne vertébrale de la méta.
+                case PrestigeBonusType.TraceCapacityMultiplier:
+                    return loc.GetText("UI_PRESTIGE_EFFECT_TRACE_CAPACITY", AsPercent(perLevel));
+
+                case PrestigeBonusType.ProxyEfficiencyMultiplier:
+                    return loc.GetText("UI_PRESTIGE_EFFECT_PROXY_EFFICIENCY", AsPercent(perLevel));
+
+                case PrestigeBonusType.CleanExitBonusMultiplier:
+                    return loc.GetText("UI_PRESTIGE_EFFECT_CLEAN_EXIT", AsPercent(perLevel));
+
                 case PrestigeBonusType.ExploitYieldBoost:
                     return loc.GetText("UI_PRESTIGE_EFFECT_EXPLOIT_YIELD", AsPercent(perLevel));
 

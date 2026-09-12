@@ -474,7 +474,7 @@
     },
     {
       "Key": "PRESTIGE_P_DATAM_DESC",
-      "Value": "Augmente la capacité de calcul globale. Les TFlops accélèrent les cycles ET renforcent les proxies."
+      "Value": "Augmente la capacité de calcul globale. Les TFlops raccourcissent les cycles ET majorent le rendement des Scripts."
     },
     {
       "Key": "PRESTIGE_P_CLICK_NAME",
@@ -482,7 +482,7 @@
     },
     {
       "Key": "PRESTIGE_P_CLICK_DESC",
-      "Value": "Déverrouille l'accès manuel au processeur. Permet d'injecter des cycles supplémentaires d'un simple clic."
+      "Value": "Tu tapes plus fort sur le processeur. Chaque clic d'Overclock injecte davantage de cycles."
     },
     {
       "Key": "PRESTIGE_P_POWER_START_NAME",
@@ -739,6 +739,18 @@
     {
       "Key": "UI_PRESTIGE_EFFECT_AUTOMATION",
       "Value": "> Réduction du palier d'automatisation de {1} : -{0} par niveau"
+    },
+    {
+      "Key": "UI_PRESTIGE_EFFECT_TRACE_CAPACITY",
+      "Value": "> Plafond de la jauge de Trace : +{0:0.##} % par niveau"
+    },
+    {
+      "Key": "UI_PRESTIGE_EFFECT_PROXY_EFFICIENCY",
+      "Value": "> Dissipation de tous les Proxies : +{0:0.##} % par niveau"
+    },
+    {
+      "Key": "UI_PRESTIGE_EFFECT_CLEAN_EXIT",
+      "Value": "> Bonus des paliers d'extraction : +{0:0.##} % par niveau"
     },
     {
       "Key": "UI_PRESTIGE_EFFECT_START_MONEY",
