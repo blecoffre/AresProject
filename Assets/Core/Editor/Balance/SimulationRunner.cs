@@ -111,6 +111,9 @@ namespace Core.Editor.Balance
         /// Cycles est bien prise en compte par la mesure, plutôt que de le supposer.
         /// </summary>
         public float FinalCleanExitBonus = 1f;
+
+        /// <summary>La machine finale a-t-elle été construite. C'est la vraie fin de partie.</summary>
+        public bool Victory;
     }
 
     /// <summary>
@@ -255,7 +258,7 @@ namespace Core.Editor.Balance
 
             while (campaign.TotalSeconds < budget
                    && campaign.Runs.Count < options.MaxRuns
-                   && !IsTreeComplete(h))
+                   && !IsVictory(campaign))
             {
                 RunResult run = RunOnce(h, strategy, options);
                 campaign.TotalSeconds += run.DurationSeconds;
@@ -275,6 +278,7 @@ namespace Core.Editor.Balance
             }
 
             campaign.FinalCleanExitBonus = h.Prestige.CleanExitBonusMultiplier.CurrentValue;
+            campaign.Victory = IsVictory(campaign);
             campaign.TreeComplete = IsTreeComplete(h);
             campaign.TreeProgress = ResolveTreeProgress(h);
             return campaign;
@@ -362,6 +366,27 @@ namespace Core.Editor.Balance
             }
             return top;
         }
+
+        /// <summary>
+        /// La campagne est GAGNÉE quand le joueur a construit la machine finale.
+        ///
+        /// Remplace « l'arbre de prestige est complet », qui était une commodité d'outillage
+        /// prise à tort pour une règle du jeu. Le lore est le hack d'une clé USB surpuissante :
+        /// la fin se mesure en capacité de calcul, et l'arbre n'est qu'un moyen. Mesuré avec
+        /// l'ancien critère, la campagne s'arrêtait à SCR_07 sur 15 — elle finissait à
+        /// mi-parcours du contenu réel, et toute calibration faite dessus mesurait un autre jeu.
+        /// </summary>
+        private static bool IsVictory(CampaignResult campaign)
+        {
+            for (int i = 0; i < campaign.Runs.Count; i++)
+            {
+                if (campaign.Runs[i].TopHardwareOrder >= FinalHardwareOrder) return true;
+            }
+            return false;
+        }
+
+        /// <summary>Rang du dernier Hardware, « Architecture IA Non Alignée ».</summary>
+        private const int FinalHardwareOrder = 15;
 
         private static bool IsTreeComplete(SimulationHarness h)
         {
