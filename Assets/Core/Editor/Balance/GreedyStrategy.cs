@@ -1,6 +1,7 @@
 using Core.Models.Economy;
 using Core.Services.Economy;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Core.Editor.Balance
 {
@@ -23,6 +24,15 @@ namespace Core.Editor.Balance
     {
         /// <summary>Garde-fou : un point de décision ne doit pas boucler indéfiniment.</summary>
         private const int MaxPurchasesPerDecision = 40;
+
+        /// <summary>Part du temps encore passée à cliquer une fois le joueur bien fatigué.</summary>
+        private const float MinimumDutyCycle = 0.12f;
+
+        /// <summary>Minutes au bout desquelles la fatigue a produit tout son effet.</summary>
+        private const float FatigueRampMinutes = 12f;
+
+        /// <summary>Plafond de clics rattrapés sur un seul pas de simulation.</summary>
+        private const int MaxClicksPerStep = 60;
 
         /// <summary>Sous ce facteur de croissance, la run plafonne : mieux vaut repartir à neuf.</summary>
         private const double PlateauGrowth = 1.6d;
@@ -49,6 +59,15 @@ namespace Core.Editor.Balance
         /// build d'un défaut de game design.
         /// </summary>
         private readonly bool _scriptsOnly;
+
+        /// <summary>Cadence de clic PENDANT une rafale, en clics par seconde.</summary>
+        private readonly float _clicksPerSecond;
+
+        /// <summary>Part du temps réellement passée à cliquer, au début de la run.</summary>
+        private readonly float _clickDutyCycle;
+
+        /// <summary>Reliquat fractionnaire de clics, reporté d'un pas de simulation au suivant.</summary>
+        private float _pendingClicks;
 
         /// <summary>
         /// Le joueur ne sort JAMAIS de lui-même : il joue jusqu'à la saisie fédérale.
@@ -89,8 +108,11 @@ namespace Core.Editor.Balance
                               float exitTraceFraction = 0.95f, float reactionSeconds = 0f,
                               bool trustsDisplayedNumber = false, bool scriptsOnly = false,
                               bool runsUntilSeized = false,
-                              HashSet<PrestigeBonusType> ignoredBonuses = null)
+                              HashSet<PrestigeBonusType> ignoredBonuses = null,
+                              float clicksPerSecond = 8f, float clickDutyCycle = 0.62f)
         {
+            _clicksPerSecond = clicksPerSecond;
+            _clickDutyCycle = clickDutyCycle;
             _ignoredBonuses = ignoredBonuses;
             _scriptsOnly = scriptsOnly;
             _runsUntilSeized = runsUntilSeized;
@@ -177,6 +199,46 @@ namespace Core.Editor.Balance
         // ------------------------------------------------------------------
         // Achats pendant la run
         // ------------------------------------------------------------------
+        /// <summary>
+        /// Le clic d'Overclock, modélisé comme une MAIN HUMAINE et non comme un auto-clicker.
+        ///
+        /// Un joueur clique par rafales entrecoupées de pauses — il lit, il achète, il souffle —
+        /// et il se fatigue : les pauses s'allongent à mesure que la run dure. Le modèle ne
+        /// simule pas les rafales une à une : l'apport d'un clic étant LINÉAIRE et sans temps de
+        /// recharge, une cadence moyenne donne exactement le même résultat qu'une alternance
+        /// rafale/pause, pour un dixième du coût de calcul.
+        ///
+        /// Ce que ça corrige. Le harnais ne cliquait pas du tout, et se trompait donc d'un
+        /// facteur 87 sur les Datas d'une première run — 2,9 M contre 196 M en partie réelle.
+        /// Tout réglage exprimé en Datas absolues était calibré sur un joueur qui n'existe pas.
+        /// </summary>
+        public void OnTick(SimulationHarness h, float deltaTime)
+        {
+            if (_clicksPerSecond <= 0f || deltaTime <= 0f) return;
+
+            // La fatigue ronge le temps effectivement passé à cliquer, jamais la vitesse : un
+            // joueur fatigué ne clique pas plus lentement, il clique moins souvent.
+            float minutes = h.Session.RunElapsedSeconds / 60f;
+            float duty = Mathf.Lerp(_clickDutyCycle, MinimumDutyCycle,
+                                    Mathf.Clamp01(minutes / FatigueRampMinutes));
+
+            _pendingClicks += _clicksPerSecond * duty * deltaTime;
+
+            int clicks = (int)_pendingClicks;
+            if (clicks <= 0) return;
+
+            _pendingClicks -= clicks;
+
+            // Garde-fou : un grand pas de simulation ne doit pas se transformer en millier de
+            // clics d'un coup, ce qu'aucune main ne ferait.
+            if (clicks > MaxClicksPerStep) clicks = MaxClicksPerStep;
+
+            for (int i = 0; i < clicks; i++)
+            {
+                h.Overclock.TriggerManualOverclock();
+            }
+        }
+
         public void OnDecisionPoint(SimulationHarness h)
         {
             // Relancer les cycles à la main, D'ABORD. Sous son seuil d'automatisation, un Script
@@ -407,8 +469,13 @@ namespace Core.Editor.Balance
             if (_runsUntilSeized) return false;
 
             // Une run neuve remet le compteur de regards à zéro : l'instance de stratégie est
-            // réutilisée d'une run à l'autre par le pilote de campagne.
-            if (p.ElapsedSeconds < _lastGlance) _lastGlance = 0f;
+            // réutilisée d'une run à l'autre par le pilote de campagne. Le reliquat de clics part
+            // avec, pour la même raison.
+            if (p.ElapsedSeconds < _lastGlance)
+            {
+                _lastGlance = 0f;
+                _pendingClicks = 0f;
+            }
 
             if (_reactionSeconds > 0f)
             {
@@ -416,7 +483,19 @@ namespace Core.Editor.Balance
                 _lastGlance = p.ElapsedSeconds;
             }
 
-            if (p.PendingCycles < 1d) return false;
+            // Le joueur ne peut sortir que si le bouton est DÉVERROUILLÉ, c'est-à-dire au-delà
+            // d'un seuil de Datas sur la run.
+            //
+            // Cette garde lisait « au moins un point à gagner », ce qui n'a plus de sens depuis
+            // que les points se décrochent sur un cumul de campagne : tant que le cumul n'a pas
+            // franchi le premier palier, une run n'en rapporte aucun — et le joueur refusait donc
+            // de sortir, jouait jusqu'à la saisie, ne banquait rien, et ne franchissait jamais ce
+            // palier. Mesuré : quinze runs, quinze saisies, zéro exfiltration, sur les quatre
+            // postures à la fois.
+            //
+            // Exfiltrer reste utile même sans point à la clé : ce qu'on ramène alimente le cumul
+            // et rapproche du palier suivant. Se faire saisir, non.
+            if (p.RunMoney < h.Balancing.ExfiltrationUnlockDatas) return false;
 
             // Un joueur qui a un temps de réaction lit aussi l'INTERFACE, pas la jauge interne :
             // il décide contre le bord de la zone d'incertitude. C'est ce couple — délai de
@@ -458,7 +537,7 @@ namespace Core.Editor.Balance
                     if (_ignoredBonuses != null && _ignoredBonuses.Contains(config.BonusType)) continue;
                     if (!h.Prestige.IsUnlocked(config)) continue;
 
-                    double cost = config.BaseCost * System.Math.Pow(config.CostMultiplier, level);
+                    double cost = config.GetCostAtLevel(level);
                     if (cost > budget || cost >= cheapestCost) continue;
 
                     cheapestId = config.Id;

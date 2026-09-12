@@ -67,6 +67,16 @@ namespace Core.Editor.Balance
         public SimulationTicker Ticker { get; }
         public ExfiltrationSystem Exfiltration { get; }
 
+        /// <summary>
+        /// Le clic d'Overclock, absent du harnais jusqu'au 2026-09-13 — et c'était le plus gros
+        /// angle mort de tout l'outillage.
+        ///
+        /// Mesuré : une première run réelle rend 196 M de Datas et 28 points de prestige, la même
+        /// run simulée 2,9 M et 0 point. Un facteur 87. Toute grandeur réglée en Datas absolues —
+        /// les paliers de points, le seuil d'exfiltration — était donc calibrée sur une fiction.
+        /// </summary>
+        public OverclockSystem Overclock { get; }
+
         /// <summary>Temps de jeu simulé écoulé depuis la construction, en secondes.</summary>
         public double ElapsedSeconds { get; private set; }
 
@@ -103,6 +113,7 @@ namespace Core.Editor.Balance
             Ticker = new SimulationTicker(Upgrades, CycleRunner, Prestige, Threat,
                                           Session, GhostCache, Balancing, _time);
             Exfiltration = new ExfiltrationSystem(Currencies, Session, Balancing);
+            Overclock = new OverclockSystem(CycleRunner, Prestige, Balancing);
 
             // Les IStartable, dans l'ordre ou le conteneur les appellerait.
             Upgrades.Start();

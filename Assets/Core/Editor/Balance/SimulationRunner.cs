@@ -158,7 +158,13 @@ namespace Core.Editor.Balance
                     break;
                 }
 
-                h.Tick(ResolveStep(h, elapsed));
+                float step = ResolveStep(h, elapsed);
+
+                // Le clic passe AVANT le pas : il avance les cycles en cours, et les faire
+                // tourner d'abord reviendrait à cliquer sur l'état de la frame précédente.
+                strategy.OnTick(h, step);
+
+                h.Tick(step);
                 elapsed = h.Session.RunElapsedSeconds - startElapsed;
 
                 if (result.TimeToAutomation < 0f && automationProbe != null && automationProbe.IsAutomated)
@@ -171,7 +177,9 @@ namespace Core.Editor.Balance
                     result.MoneyAtProbe = h.Currencies.RunMoneyGenerated.CurrentValue;
                 }
 
-                double pending = h.Currencies.CalculatePendingCpuCycles();
+                // Points que l'exfiltration rapporterait MAINTENANT, cumul de campagne compris.
+                double pending = h.Currencies.PreviewPointsForContribution(
+                    h.Currencies.RunMoneyGenerated.CurrentValue);
                 if (result.FirstCycleAtSeconds < 0f && pending >= 1d)
                 {
                     result.FirstCycleAtSeconds = elapsed;
@@ -255,6 +263,8 @@ namespace Core.Editor.Balance
             using var h = new SimulationHarness();
 
             double budget = options.MaxCampaignHours * 3600d;
+            double lastBanked = 0d;
+            int stalledRuns = 0;
 
             while (campaign.TotalSeconds < budget
                    && campaign.Runs.Count < options.MaxRuns
@@ -272,9 +282,23 @@ namespace Core.Editor.Balance
                 h.OpenPrestigeWindow();
                 strategy.SpendCpuCycles(h);
 
-                // Progression bloquée : une run qui ne rapporte plus rien ne rapportera pas
-                // davantage à la suivante, l'état de départ étant le même.
-                if (run.CpuCyclesEarned < 1d && campaign.Runs.Count > 3) break;
+                // Progression bloquée. Le critère ne peut PLUS être « la run n'a rapporté aucun
+                // point » : depuis que les points se décrochent sur un cumul de campagne, une run
+                // qui n'en rapporte aucun reste utile — elle alimente le compteur et rapproche du
+                // palier suivant. Garder l'ancienne garde couperait la campagne dès la première
+                // run un peu maigre, et rendrait toute mesure de durée fausse par construction.
+                //
+                // Ce qui signale un vrai blocage, c'est un cumul qui n'avance plus : le joueur
+                // se fait saisir en boucle, ou ne produit plus rien.
+                // Il faut PLUSIEURS runs stériles d'affilée, pas une seule : une saisie isolée ne
+                // fait pas avancer le cumul, et couper là-dessus terminait la campagne au premier
+                // Game Over venu — mesuré, des campagnes de quatre runs annoncées « jamais
+                // finies » alors que le joueur progressait très bien.
+                double banked = h.Currencies.CampaignDatasBanked.CurrentValue;
+                stalledRuns = banked > lastBanked ? 0 : stalledRuns + 1;
+                lastBanked = banked;
+
+                if (stalledRuns >= MaxStalledRuns) break;
             }
 
             campaign.FinalCleanExitBonus = h.Prestige.CleanExitBonusMultiplier.CurrentValue;
@@ -387,6 +411,16 @@ namespace Core.Editor.Balance
 
         /// <summary>Rang du dernier Hardware, « Architecture IA Non Alignée ».</summary>
         private const int FinalHardwareOrder = 15;
+
+        /// <summary>
+        /// Runs consécutives sans progression du cumul avant de déclarer la campagne bloquée.
+        ///
+        /// Généreux à dessein. Un joueur qui vise le dernier palier se fait saisir une fois sur
+        /// deux en début de campagne, et une saisie ne verse rien au cumul : à quatre, la garde
+        /// coupait des campagnes parfaitement vivantes au bout de six runs et les annonçait
+        /// « jamais finies ». Le vrai garde-fou reste le budget d'heures et le plafond de runs.
+        /// </summary>
+        private const int MaxStalledRuns = 15;
 
         private static bool IsTreeComplete(SimulationHarness h)
         {

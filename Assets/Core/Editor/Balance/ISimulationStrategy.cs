@@ -63,6 +63,13 @@ namespace Core.Editor.Balance
         /// <summary>Achats pendant la run. Appelé aux points de décision, pas à chaque tick.</summary>
         void OnDecisionPoint(SimulationHarness harness);
 
+        /// <summary>
+        /// Appelé à CHAQUE pas de simulation. C'est là que vit le clic d'Overclock, qui ne peut
+        /// pas attendre les points de décision : un joueur clique en continu, pas toutes les dix
+        /// secondes.
+        /// </summary>
+        void OnTick(SimulationHarness harness, float deltaTime);
+
         /// <summary>Le joueur exfiltre-t-il maintenant ?</summary>
         bool ShouldExfiltrate(SimulationHarness harness, in RunProgress progress);
 
