@@ -16,10 +16,10 @@ MonoBehaviour:
   _displayNameKey: PRESTIGE_P_EXTRACT_2_NAME
   _displayDescriptionKey: PRESTIGE_P_EXTRACT_2_DESC
   _bonusType: 17
-  _maxLevel: 10
+  _maxLevel: 1
   _baseCost: 1
   _costMultiplier: 1.5
-  _bonusPerLevel: 0.15
+  _bonusPerLevel: 1.5
   _uiPosition: {x: 2, y: -2}
   _requirement:
     _node: {fileID: 11400000, guid: a236cce41cdf953458a9dae6774511d1, type: 2}

@@ -16,10 +16,10 @@ MonoBehaviour:
   _displayNameKey: PRESTIGE_P_INTERCEPT_2_NAME
   _displayDescriptionKey: PRESTIGE_P_INTERCEPT_2_DESC
   _bonusType: 16
-  _maxLevel: 10
+  _maxLevel: 1
   _baseCost: 1
   _costMultiplier: 1.5
-  _bonusPerLevel: 0.1
+  _bonusPerLevel: 1
   _uiPosition: {x: -2, y: -2}
   _requirement:
     _node: {fileID: 11400000, guid: 9e7b6070a3ed5d34abb53d4aa862b699, type: 2}

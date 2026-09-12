@@ -157,12 +157,13 @@ namespace Core.Economy.Tools
                     // droite du nœud principal, PROD le haut et TEMPS le bas — il ne reste que
                     // les diagonales pour un quatrième lien qui ne traverse rien.
                     //
-                    // Le bonus vaut 1 : c'est un NOMBRE DE NIVEAUX retirés au palier, pas une
-                    // fraction. Seul nœud du jeu dans ce cas, d'où le paramètre explicite.
+                    // Le bonus vaut 5 : c'est un NOMBRE DE NIVEAUX retirés au palier, pas une
+                    // fraction. Seul nœud du jeu dans ce cas, d'où le paramètre explicite — et
+                    // comme les autres, il porte d'un coup ce que ses cinq rangs apportaient.
                     string autoId = $"P_UPG_{target.Id}_AUTO";
                     Vector2Int autoPos = currentPos + new Vector2Int(-1, -1);
                     db.items.Add(CreateGridItem(
-                        autoId, target, "SpecificUpgradeAutomationTresholdReduction", mainCostId, autoPos, 1f));
+                        autoId, target, "SpecificUpgradeAutomationTresholdReduction", mainCostId, autoPos, 5f));
                 }
 
                 // --- MISE À JOUR POUR LE PROCHAIN TOUR ---
@@ -185,14 +186,24 @@ namespace Core.Economy.Tools
         /// −10 % de coût, +10 % de rendement, −10 % de durée. Un NOMBRE DE NIVEAUX pour le nœud
         /// d'automatisation, qui déplace un palier et non un pourcentage.
         /// </param>
-        private PrestigeItemData CreateGridItem(string id, UpgradeConfigSO target, string bonusType, string prereqId, Vector2Int pos, float bonus = 0.1f)
+        private PrestigeItemData CreateGridItem(string id, UpgradeConfigSO target, string bonusType, string prereqId, Vector2Int pos, float bonus = 0.5f)
         {
             return new PrestigeItemData
             {
                 id = id,
                 bonusType = bonusType,
                 targetUpgradeId = target.Id,
-                maxLevel = 5,
+
+                // Nœud à RANG UNIQUE depuis le 2026-09-13, et son bonus porte d'un coup ce que
+                // cinq rangs apportaient. Même puissance totale, mais un point de prestige achète
+                // cinq fois plus — c'est ce qui rend le point rare ET utile.
+                //
+                // Mesuré avant ce changement : l'arbre valait 783 niveaux quand une campagne n'en
+                // finançait que quelques dizaines. Le joueur achetait 1 % de l'arbre, sa
+                // production ne bougeait donc pas, et comme les paliers de points montent en
+                // exponentielle pendant que le cumul monte linéairement, la progression se
+                // bloquait DÉFINITIVEMENT au bout de sept runs.
+                maxLevel = 1,
 
                 // Prix PLAT, et non indexé sur le palier de l'upgrade ciblée.
                 //

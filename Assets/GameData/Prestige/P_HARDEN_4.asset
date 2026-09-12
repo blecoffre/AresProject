@@ -16,10 +16,10 @@ MonoBehaviour:
   _displayNameKey: PRESTIGE_P_HARDEN_4_NAME
   _displayDescriptionKey: PRESTIGE_P_HARDEN_4_DESC
   _bonusType: 15
-  _maxLevel: 10
+  _maxLevel: 1
   _baseCost: 1
   _costMultiplier: 1.5
-  _bonusPerLevel: 1
+  _bonusPerLevel: 10
   _uiPosition: {x: -1, y: -4}
   _requirement:
     _node: {fileID: 11400000, guid: b398d1d1fab1c574a9968a34327951cb, type: 2}

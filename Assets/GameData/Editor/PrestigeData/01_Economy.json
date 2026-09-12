@@ -3,10 +3,10 @@
     {
       "id": "P_REFAC",
       "bonusType": "CostMultiplierReduction",
-      "maxLevel": 5,
+      "maxLevel": 1,
       "baseCost": 1.0,
       "costMult": 1.5,
-      "bonus": 0.01,
+      "bonus": 0.05,
       "posX": -1.0,
       "posY": 1.0,
       "prerequisiteId": "P_ROOT"
@@ -14,10 +14,10 @@
     {
       "id": "P_DATAM",
       "bonusType": "GlobalComputeMultiplier",
-      "maxLevel": 10,
+      "maxLevel": 1,
       "baseCost": 1.0,
       "costMult": 1.7,
-      "bonus": 0.15,
+      "bonus": 1.5,
       "posX": -2.0,
       "posY": 2.0,
       "prerequisiteId": "P_REFAC"
@@ -25,10 +25,10 @@
     {
       "id": "P_EXPLOIT_CHARGES",
       "bonusType": "UnlockExploitCharges",
-      "maxLevel": 5,
+      "maxLevel": 1,
       "baseCost": 1.0,
       "costMult": 2.5,
-      "bonus": 1.0,
+      "bonus": 5.0,
       "posX": 2.0,
       "posY": 4.0,
       "prerequisiteId": "P_EMERG"
@@ -36,10 +36,10 @@
     {
       "id": "P_EXPLOIT_MULT",
       "bonusType": "ExploitYieldBoost",
-      "maxLevel": 10,
+      "maxLevel": 1,
       "baseCost": 1.0,
       "costMult": 2.0,
-      "bonus": 0.1,
+      "bonus": 1.0,
       "posX": 4.0,
       "posY": 4.0,
       "prerequisiteId": "P_EXPLOIT_CHARGES"
@@ -47,10 +47,10 @@
     {
       "id": "P_EXPLOIT_TRACE_REDUC",
       "bonusType": "ExploitTracePenaltyReduction",
-      "maxLevel": 5,
+      "maxLevel": 1,
       "baseCost": 1.0,
       "costMult": 2.2,
-      "bonus": 0.5,
+      "bonus": 2.5,
       "posX": 3.0,
       "posY": 5.0,
       "prerequisiteId": "P_EXPLOIT_CHARGES"
