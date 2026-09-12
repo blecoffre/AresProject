@@ -101,180 +101,360 @@
       "Value": "Vieux PC Recyclé"
     },
     {
+      "Key": "UPG_HW_01_DESC",
+      "Value": "Trouvé dans une benne, remonté avec ce qui traînait. Ça calcule, c'est déjà ça."
+    },
+    {
       "Key": "UPG_HW_02_NAME",
       "Value": "Kit de RAM Serveur 128 Go"
+    },
+    {
+      "Key": "UPG_HW_02_DESC",
+      "Value": "Récupérée sur une palette mal inventoriée. Tes scripts respirent enfin."
     },
     {
       "Key": "UPG_HW_03_NAME",
       "Value": "Refroidissement à Azote Liquide"
     },
     {
+      "Key": "UPG_HW_03_DESC",
+      "Value": "Le sous-sol est à moins dix. Les processeurs, eux, adorent."
+    },
+    {
       "Key": "UPG_HW_04_NAME",
       "Value": "Alimentation Industrielle Redondante"
+    },
+    {
+      "Key": "UPG_HW_04_DESC",
+      "Value": "Plus de coupure au milieu d'un transfert. Le compteur du voisin, lui, s'affole."
     },
     {
       "Key": "UPG_HW_05_NAME",
       "Value": "Ferme de GPU Clandestine"
     },
     {
+      "Key": "UPG_HW_05_DESC",
+      "Value": "Quarante cartes empilées sur des étagères en métal, et un extincteur à portée de main."
+    },
+    {
       "Key": "UPG_HW_06_NAME",
       "Value": "Baie de Serveurs d'Occasion"
+    },
+    {
+      "Key": "UPG_HW_06_DESC",
+      "Value": "Déclassée par une banque, rachetée au poids. Elle a encore beaucoup à donner."
     },
     {
       "Key": "UPG_HW_07_NAME",
       "Value": "Datacenter Souterrain"
     },
     {
+      "Key": "UPG_HW_07_DESC",
+      "Value": "Un ancien abri anti-atomique. Du béton, et aucune fenêtre à surveiller."
+    },
+    {
       "Key": "UPG_HW_08_NAME",
       "Value": "Botnet de Serveurs d'Entreprises"
+    },
+    {
+      "Key": "UPG_HW_08_DESC",
+      "Value": "Leurs machines travaillent pour eux le jour, et pour toi la nuit."
     },
     {
       "Key": "UPG_HW_09_NAME",
       "Value": "Détournement d'Infrastructures Cloud"
     },
     {
+      "Key": "UPG_HW_09_DESC",
+      "Value": "Provisionné en trois clics, facturé à quelqu'un d'autre."
+    },
+    {
       "Key": "UPG_HW_10_NAME",
       "Value": "Réseau de Calcul Distribué"
+    },
+    {
+      "Key": "UPG_HW_10_DESC",
+      "Value": "Des milliers de machines volontaires, qui ignorent parfaitement ce qu'elles calculent."
     },
     {
       "Key": "UPG_HW_11_NAME",
       "Value": "Infiltration des Serveurs AWS/Azure"
     },
     {
+      "Key": "UPG_HW_11_DESC",
+      "Value": "La moitié d'Internet tourne là-dessus. Toi aussi, désormais."
+    },
+    {
       "Key": "UPG_HW_12_NAME",
       "Value": "Détournement de Grille Électrique"
+    },
+    {
+      "Key": "UPG_HW_12_DESC",
+      "Value": "Tu ne paies plus l'électricité : tu décides qui la reçoit."
     },
     {
       "Key": "UPG_HW_13_NAME",
       "Value": "Supercalculateur Universitaire Hacké"
     },
     {
+      "Key": "UPG_HW_13_DESC",
+      "Value": "Officiellement il modélise le climat. La nuit, il fait autre chose."
+    },
+    {
       "Key": "UPG_HW_14_NAME",
       "Value": "Prototype d'Ordinateur Quantique"
+    },
+    {
+      "Key": "UPG_HW_14_DESC",
+      "Value": "Un seul exemplaire au monde, et il est à toi entre minuit et six heures."
     },
     {
       "Key": "UPG_HW_15_NAME",
       "Value": "Architecture IA Non Alignée"
     },
     {
+      "Key": "UPG_HW_15_DESC",
+      "Value": "Elle s'améliore seule et ne demande plus la permission. Ne pas débrancher."
+    },
+    {
       "Key": "UPG_PRX_01_NAME",
       "Value": "VPN Public Décentralisé"
+    },
+    {
+      "Key": "UPG_PRX_01_DESC",
+      "Value": "Gratuit, lent, partagé avec trois mille inconnus. C'est précisément l'intérêt."
     },
     {
       "Key": "UPG_PRX_02_NAME",
       "Value": "Spoofing d'Adresse MAC"
     },
     {
+      "Key": "UPG_PRX_02_DESC",
+      "Value": "Ta carte réseau ment sur son identité à chaque redémarrage."
+    },
+    {
       "Key": "UPG_PRX_03_NAME",
       "Value": "Chaîne de Proxies Anonymes"
+    },
+    {
+      "Key": "UPG_PRX_03_DESC",
+      "Value": "Trois rebonds, trois juridictions, trois mandats à obtenir."
     },
     {
       "Key": "UPG_PRX_04_NAME",
       "Value": "Routage Oignon Profond"
     },
     {
+      "Key": "UPG_PRX_04_DESC",
+      "Value": "Sept couches de chiffrement. Lent, pénible, redoutable."
+    },
+    {
       "Key": "UPG_PRX_05_NAME",
       "Value": "Injection de Faux Paquets"
+    },
+    {
+      "Key": "UPG_PRX_05_DESC",
+      "Value": "Pour un paquet vrai, mille faux. Qu'ils cherchent."
     },
     {
       "Key": "UPG_PRX_06_NAME",
       "Value": "Rotation IP Dynamique"
     },
     {
+      "Key": "UPG_PRX_06_DESC",
+      "Value": "Ton adresse change plus vite qu'ils ne remplissent un formulaire."
+    },
+    {
       "Key": "UPG_PRX_07_NAME",
       "Value": "Bouncing sur Serveurs Fantômes"
+    },
+    {
+      "Key": "UPG_PRX_07_DESC",
+      "Value": "Des machines qui ne figurent sur aucun registre relaient ton trafic."
     },
     {
       "Key": "UPG_PRX_08_NAME",
       "Value": "Lavage de Trafic Chiffré"
     },
     {
+      "Key": "UPG_PRX_08_DESC",
+      "Value": "Ton flux se fond dans celui d'un service de streaming. Bonne chance."
+    },
+    {
       "Key": "UPG_PRX_09_NAME",
       "Value": "Altération des Logs FAI"
+    },
+    {
+      "Key": "UPG_PRX_09_DESC",
+      "Value": "Les journaux du fournisseur d'accès racontent désormais une autre histoire."
     },
     {
       "Key": "UPG_PRX_10_NAME",
       "Value": "Infiltration des Routeurs BGP"
     },
     {
+      "Key": "UPG_PRX_10_DESC",
+      "Value": "Tu réécris la carte d'Internet. Les paquets vont où tu leur dis d'aller."
+    },
+    {
       "Key": "UPG_PRX_11_NAME",
       "Value": "Usurpation d'Accréditations NSA"
+    },
+    {
+      "Key": "UPG_PRX_11_DESC",
+      "Value": "Le meilleur endroit où se cacher reste derrière ceux qui cherchent."
     },
     {
       "Key": "UPG_PRX_12_NAME",
       "Value": "Bouclage sur Satellites Militaires"
     },
     {
+      "Key": "UPG_PRX_12_DESC",
+      "Value": "Ton trafic fait trois fois le tour de l'orbite avant d'arriver."
+    },
+    {
       "Key": "UPG_PRX_13_NAME",
       "Value": "Interception de Câbles Sous-Marins"
+    },
+    {
+      "Key": "UPG_PRX_13_DESC",
+      "Value": "Une dérivation à quatre mille mètres de fond. Personne n'ira vérifier."
     },
     {
       "Key": "UPG_PRX_14_NAME",
       "Value": "Algorithme de Chiffrement Quantique"
     },
     {
+      "Key": "UPG_PRX_14_DESC",
+      "Value": "Incassable avec la technologie dont dispose l'A.M.I. Pour l'instant."
+    },
+    {
       "Key": "UPG_PRX_15_NAME",
       "Value": "Purge des Bases de Données Fédérales"
+    },
+    {
+      "Key": "UPG_PRX_15_DESC",
+      "Value": "Tu n'effaces pas tes traces : tu effaces l'endroit où elles étaient rangées."
     },
     {
       "Key": "UPG_SCR_01_NAME",
       "Value": "Campagne de Phishing Basique"
     },
     {
+      "Key": "UPG_SCR_01_DESC",
+      "Value": "Dix mille courriels, trois crédules. Le point de départ de toute carrière."
+    },
+    {
       "Key": "UPG_SCR_02_NAME",
       "Value": "Usurpation d'Identités Locales"
+    },
+    {
+      "Key": "UPG_SCR_02_DESC",
+      "Value": "Des noms cueillis dans des boîtes aux lettres, revendus à qui ne vérifie rien."
     },
     {
       "Key": "UPG_SCR_03_NAME",
       "Value": "Adware Automatisé"
     },
     {
+      "Key": "UPG_SCR_03_DESC",
+      "Value": "Des bannières que personne ne clique volontairement. Le volume fait le reste."
+    },
+    {
       "Key": "UPG_SCR_04_NAME",
       "Value": "Botnet de Minage IoT"
+    },
+    {
+      "Key": "UPG_SCR_04_DESC",
+      "Value": "Le frigo des voisins mine pour toi. Personne ne surveille la consommation d'un frigo."
     },
     {
       "Key": "UPG_SCR_05_NAME",
       "Value": "Clonage de Cartes Bancaires (Dumps)"
     },
     {
+      "Key": "UPG_SCR_05_DESC",
+      "Value": "Des pistes magnétiques recopiées par lots, vidées avant la mise en opposition."
+    },
+    {
       "Key": "UPG_SCR_06_NAME",
       "Value": "Ransomware PME ciblées"
+    },
+    {
+      "Key": "UPG_SCR_06_DESC",
+      "Value": "Un chiffrement, une rançon raisonnable, un virement discret. Elles paient presque toujours."
     },
     {
       "Key": "UPG_SCR_07_NAME",
       "Value": "Siphonnage de Portefeuilles Crypto"
     },
     {
+      "Key": "UPG_SCR_07_DESC",
+      "Value": "Les clés privées traînent dans des fichiers texte. Il suffit de savoir où regarder."
+    },
+    {
       "Key": "UPG_SCR_08_NAME",
       "Value": "Infiltration de Terminaux de Paiement"
+    },
+    {
+      "Key": "UPG_SCR_08_DESC",
+      "Value": "Un skimmer logiciel dans dix mille caisses. Chaque passage en caisse te rapporte."
     },
     {
       "Key": "UPG_SCR_09_NAME",
       "Value": "Blanchiment via Smart Contracts"
     },
     {
+      "Key": "UPG_SCR_09_DESC",
+      "Value": "L'argent entre sale et ressort propre. Le contrat, lui, ne témoignera jamais."
+    },
+    {
       "Key": "UPG_SCR_10_NAME",
       "Value": "Détournement de Fonds Offshore"
+    },
+    {
+      "Key": "UPG_SCR_10_DESC",
+      "Value": "Des comptes qui n'existent officiellement nulle part, donc que personne ne déclarera volés."
     },
     {
       "Key": "UPG_SCR_11_NAME",
       "Value": "Délit d'Initié Algorithmique"
     },
     {
+      "Key": "UPG_SCR_11_DESC",
+      "Value": "Tu lis les ordres avant qu'ils ne passent. Le marché ne te bat plus jamais."
+    },
+    {
       "Key": "UPG_SCR_12_NAME",
       "Value": "Siphonnage de Fonds de Pension"
+    },
+    {
+      "Key": "UPG_SCR_12_DESC",
+      "Value": "Des décennies d'épargne, ponctionnées d'un centime à la fois. Qui relit ses relevés ?"
     },
     {
       "Key": "UPG_SCR_13_NAME",
       "Value": "Extorsion du Fortune 500"
     },
     {
+      "Key": "UPG_SCR_13_DESC",
+      "Value": "Un conseil d'administration ne discute pas quand la fuite est datée de demain."
+    },
+    {
       "Key": "UPG_SCR_14_NAME",
       "Value": "Manipulation des Taux Directeurs"
     },
     {
+      "Key": "UPG_SCR_14_DESC",
+      "Value": "Une virgule déplacée dans une décision de banque centrale. Les marchés font le travail."
+    },
+    {
       "Key": "UPG_SCR_15_NAME",
       "Value": "Prise de Contrôle du Réseau SWIFT"
+    },
+    {
+      "Key": "UPG_SCR_15_DESC",
+      "Value": "Toutes les transactions interbancaires de la planète passent par toi. Et ça s'entend."
     },
     {
       "Key": "PRESTIGE_SPECIFIC_COST_NAME",
