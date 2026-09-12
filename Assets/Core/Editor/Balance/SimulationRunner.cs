@@ -61,6 +61,17 @@ namespace Core.Editor.Balance
         public float TimeToAutomation = -1f;
         public double MoneyAtProbe = -1d;
         public int TopScriptOrder;
+
+        /// <summary>
+        /// Plus haut Hardware possédé, et pic de puissance de calcul atteint sur la run.
+        ///
+        /// Ce sont les deux candidats à la condition de VICTOIRE : le lore du jeu est le hack
+        /// d'une clé USB surpuissante, donc la fin se mesure en capacité de calcul, pas en
+        /// nombre de Scripts. Relevés PENDANT la run comme TopScriptOrder — après WipeRun, tout
+        /// est revenu à zéro.
+        /// </summary>
+        public int TopHardwareOrder;
+        public double PeakTFlops;
         public float FirstCycleAtSeconds = -1f;
 
         /// <summary>
@@ -220,6 +231,12 @@ namespace Core.Editor.Balance
                 // toujours SCR_00.
                 int top = ResolveTopScript(h);
                 if (top > result.TopScriptOrder) result.TopScriptOrder = top;
+
+                int topHw = ResolveTopOrder(h, UpgradeType.Hardware);
+                if (topHw > result.TopHardwareOrder) result.TopHardwareOrder = topHw;
+
+                double tflops = h.Upgrades.TotalTFlops.CurrentValue;
+                if (tflops > result.PeakTFlops) result.PeakTFlops = tflops;
             }
 
             result.DurationSeconds = hasSummary ? captured.ElapsedSeconds : h.Session.RunElapsedSeconds;
@@ -332,11 +349,16 @@ namespace Core.Editor.Balance
 
         private static int ResolveTopScript(SimulationHarness h)
         {
-            IReadOnlyList<UpgradeModel> scripts = h.Upgrades.GetUpgradesOfType(UpgradeType.Script);
+            return ResolveTopOrder(h, UpgradeType.Script);
+        }
+
+        private static int ResolveTopOrder(SimulationHarness h, UpgradeType type)
+        {
+            IReadOnlyList<UpgradeModel> all = h.Upgrades.GetUpgradesOfType(type);
             int top = 0;
-            for (int i = 0; i < scripts.Count; i++)
+            for (int i = 0; i < all.Count; i++)
             {
-                if (scripts[i].IsOwned && scripts[i].Config.Order > top) top = scripts[i].Config.Order;
+                if (all[i].IsOwned && all[i].Config.Order > top) top = all[i].Config.Order;
             }
             return top;
         }

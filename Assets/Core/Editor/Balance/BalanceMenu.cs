@@ -239,7 +239,16 @@ namespace Core.Editor.Balance
                     if (campaign.Runs[i].TopScriptOrder > topEver) topEver = campaign.Runs[i].TopScriptOrder;
                 }
 
-                sb.AppendLine($"              plus haut Script atteint : SCR_{topEver:00} / 15");
+                int topHw = 0;
+                double peakTFlops = 0d;
+                for (int i = 0; i < campaign.Runs.Count; i++)
+                {
+                    if (campaign.Runs[i].TopHardwareOrder > topHw) topHw = campaign.Runs[i].TopHardwareOrder;
+                    if (campaign.Runs[i].PeakTFlops > peakTFlops) peakTFlops = campaign.Runs[i].PeakTFlops;
+                }
+
+                sb.AppendLine($"              contenu atteint : SCR_{topEver:00} / 15, "
+                              + $"HW_{topHw:00} / 15, pic {peakTFlops:0.000e+00} TFlops");
             }
         }
 
