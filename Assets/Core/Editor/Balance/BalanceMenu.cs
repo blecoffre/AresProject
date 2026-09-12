@@ -229,6 +229,17 @@ namespace Core.Editor.Balance
                 sb.AppendLine($"              Cycles run 1 → dernière : {first:0} → {last:0}"
                               + $" (×{(first > 0d ? last / first : 0d):0.0}), "
                               + $"bonus Extraction ×{campaign.FinalCleanExitBonus:0.00}");
+
+                // Jusqu'où le joueur monte dans les générateurs. Sert à savoir si un palier de
+                // CONTENU — « débloquer SCR_15 » — est un objectif atteignable, donc utilisable
+                // comme vraie fin de partie à la place de la complétion de l'arbre.
+                int topEver = 0;
+                for (int i = 0; i < campaign.Runs.Count; i++)
+                {
+                    if (campaign.Runs[i].TopScriptOrder > topEver) topEver = campaign.Runs[i].TopScriptOrder;
+                }
+
+                sb.AppendLine($"              plus haut Script atteint : SCR_{topEver:00} / 15");
             }
         }
 
