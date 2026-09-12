@@ -408,6 +408,69 @@ namespace Core.Editor.Balance
             Debug.Log(sb.ToString());
         }
 
+        /// <summary>
+        /// CE QUE CHAQUE FAMILLE DE NOEUDS APPORTE REELLEMENT.
+        ///
+        /// Rejoue la meme campagne en privant le joueur d'une famille a la fois : l'ecart de
+        /// duree avec la campagne complete EST la contribution de cette famille. Repond a
+        /// « ces noeuds sont-ils vraiment les plus utiles ? » par une mesure plutot que par une
+        /// intuition — question posee au moment de decider lesquels supprimer en reduisant
+        /// l'arbre.
+        ///
+        /// Une famille dont la suppression ne change rien est une famille a couper.
+        /// </summary>
+        [MenuItem("Tools/Core/Équilibrage/Et si le joueur évitait une famille de nœuds ?")]
+        public static void PrestigeFamilyWorth()
+        {
+            CampaignResult full = SimulationRunner.RunCampaign(
+                GreedyStrategy.TierHunter("complet", 0.90f), BudgetedOptions());
+
+            var sb = new StringBuilder(1024);
+            sb.AppendLine("[Équilibrage] Contribution de chaque famille de nœuds "
+                          + "(15 runs pour tout le monde, le joueur ÉVITE une famille) :");
+            sb.AppendLine($"  {"arbre complet",-22} : {TotalDatas(full):0.000e+00} Datas   →  100 % (arbre entier, référence)");
+
+            AppendWithout(sb, full, "sans rendement ciblé", PrestigeBonusType.SpecificUpgradeYieldBoost);
+            AppendWithout(sb, full, "sans coût ciblé", PrestigeBonusType.SpecificUpgradeCostReduction);
+            AppendWithout(sb, full, "sans durée ciblée", PrestigeBonusType.SpecificUpgradeTimeReduction);
+            AppendWithout(sb, full, "sans automatisation", PrestigeBonusType.SpecificUpgradeAutomationTresholdReduction);
+
+            Debug.Log(sb.ToString());
+        }
+
+        private static void AppendWithout(StringBuilder sb, CampaignResult reference, string label,
+                                          params PrestigeBonusType[] ignored)
+        {
+            CampaignResult r = SimulationRunner.RunCampaign(
+                GreedyStrategy.TierHunterWithout(label, ignored), BudgetedOptions());
+
+            double mine = TotalDatas(r);
+            double theirs = TotalDatas(reference);
+            double ratio = theirs > 0d ? mine / theirs : 0d;
+
+            sb.AppendLine($"  {label,-22} : {mine:0.000e+00} Datas   →  "
+                          + $"{ratio * 100d:0} % de la puissance de référence");
+        }
+
+        private static double TotalDatas(CampaignResult c)
+        {
+            double total = 0d;
+            for (int i = 0; i < c.Runs.Count; i++) total += c.Runs[i].RunMoney;
+            return total;
+        }
+
+        /// <summary>
+        /// Budget FIXE en nombre de runs. Sans ça la mesure est inexploitable : « arbre complet »
+        /// exige que tous les nœuds soient au maximum, donc priver le joueur d'une famille rend la
+        /// complétion impossible par construction — la campagne va toujours au bout du budget
+        /// horaire et toutes les variantes se ressemblent. À nombre de runs égal, ce qu'on compare
+        /// est bien la PUISSANCE que la famille apporte, et plus la taille de l'arbre.
+        /// </summary>
+        private static SimulationOptions BudgetedOptions()
+        {
+            return new SimulationOptions { MaxRuns = 15, MaxCampaignHours = 100f };
+        }
+
         private static string DescribeOutcome(RunResult run)
         {
             if (run.TimedOut) return "PLAFOND DE DURÉE atteint (mesure incomplète)";

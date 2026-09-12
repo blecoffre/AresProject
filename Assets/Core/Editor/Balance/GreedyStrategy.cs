@@ -61,6 +61,14 @@ namespace Core.Editor.Balance
         private readonly bool _runsUntilSeized;
 
         /// <summary>
+        /// Familles de bonus que ce joueur n'achètera JAMAIS. Sert à mesurer ce qu'une branche
+        /// apporte réellement : on rejoue la même campagne sans elle, et l'écart de durée est sa
+        /// contribution. C'est la seule façon de répondre « ce nœud est-il utile ? » autrement
+        /// que par une intuition.
+        /// </summary>
+        private readonly HashSet<PrestigeBonusType> _ignoredBonuses;
+
+        /// <summary>
         /// Instant du dernier coup d'œil à la jauge. Sert au modèle de joueur imparfait : entre
         /// deux regards, il ne voit rien monter.
         /// </summary>
@@ -80,8 +88,10 @@ namespace Core.Editor.Balance
         public GreedyStrategy(string name, float safetySeconds,
                               float exitTraceFraction = 0.95f, float reactionSeconds = 0f,
                               bool trustsDisplayedNumber = false, bool scriptsOnly = false,
-                              bool runsUntilSeized = false)
+                              bool runsUntilSeized = false,
+                              HashSet<PrestigeBonusType> ignoredBonuses = null)
         {
+            _ignoredBonuses = ignoredBonuses;
             _scriptsOnly = scriptsOnly;
             _runsUntilSeized = runsUntilSeized;
             Name = name;
@@ -149,6 +159,20 @@ namespace Core.Editor.Balance
         public static GreedyStrategy TierHunter(string label, float tierThreshold) =>
             new GreedyStrategy(label, 120f, exitTraceFraction: tierThreshold,
                                reactionSeconds: 8f, trustsDisplayedNumber: true);
+
+        /// <summary>
+        /// Le même joueur, privé d'une ou plusieurs familles de nœuds de prestige.
+        ///
+        /// ⚠️ Se lit « que se passe-t-il si le joueur évite cette famille », JAMAIS « combien
+        /// vaut cette famille ». L'isolation inverse — n'autoriser qu'une famille — a été
+        /// essayée et ne peut pas fonctionner : l'arbre est gaté par des prérequis en chaîne
+        /// jusqu'à la racine, donc interdire les autres familles rend l'arbre entièrement
+        /// inachetable et toutes les variantes rendent le résultat d'un joueur sans prestige.
+        /// </summary>
+        public static GreedyStrategy TierHunterWithout(string label, params PrestigeBonusType[] ignored) =>
+            new GreedyStrategy(label, 120f, exitTraceFraction: 0.90f, reactionSeconds: 8f,
+                               trustsDisplayedNumber: true,
+                               ignoredBonuses: new HashSet<PrestigeBonusType>(ignored));
 
         // ------------------------------------------------------------------
         // Achats pendant la run
@@ -431,6 +455,7 @@ namespace Core.Editor.Balance
                     PrestigeConfigSO config = all[i];
                     int level = h.Prestige.GetLevel(config.Id);
                     if (level >= config.MaxLevel) continue;
+                    if (_ignoredBonuses != null && _ignoredBonuses.Contains(config.BonusType)) continue;
                     if (!h.Prestige.IsUnlocked(config)) continue;
 
                     double cost = config.BaseCost * System.Math.Pow(config.CostMultiplier, level);
