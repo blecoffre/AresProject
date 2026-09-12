@@ -1,3 +1,5 @@
+using Core.Models.Economy;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -248,6 +250,83 @@ namespace Core.Editor.Balance
             }
 
             Debug.Log(sb.ToString());
+        }
+
+        /// <summary>
+        /// Combien de temps l'A.M.I. laisse avant de tomber, sur la PREMIERE run et sur elle
+        /// seule — aucun bonus de prestige, aucune sortie volontaire.
+        ///
+        /// C'est la mesure du plafond DUR. Toutes les autres postures exfiltrent, donc elles
+        /// mesurent l'habilete du joueur a sortir au bon moment, jamais le temps qu'il avait
+        /// devant lui. Les trois postures ne different que par leur posture defensive : l'ecart
+        /// entre elles chiffre exactement ce que la defense achete comme temps de survie.
+        ///
+        /// Les seuils affiches sont lus depuis les PALIERS d'extraction reglés, jamais codes en
+        /// dur : si on retouche les paliers, cette mesure suit.
+        /// </summary>
+        [MenuItem("Tools/Core/Équilibrage/Première run — temps avant le Game Over")]
+        public static void FirstRunTimeToSeizure()
+        {
+            var options = new SimulationOptions();
+
+            var sb = new StringBuilder(1024);
+            sb.AppendLine("[Équilibrage] Première run — temps avant la saisie fédérale "
+                          + "(aucun prestige, aucune sortie volontaire) :");
+
+            AppendSeizure(sb, GreedyStrategy.UntilSeizedAcquisitionOnly(), options);
+            AppendSeizure(sb, GreedyStrategy.UntilSeizedBalanced(), options);
+            AppendSeizure(sb, GreedyStrategy.UntilSeizedHeavy(), options);
+
+            Debug.Log(sb.ToString());
+        }
+
+        private static void AppendSeizure(StringBuilder sb, GreedyStrategy strategy,
+                                          SimulationOptions options)
+        {
+            // Un harnais NEUF par posture : sans ça la deuxième mesurerait une run d'après
+            // prestige, et ne serait plus une première run.
+            using var harness = new SimulationHarness();
+            RunResult run = SimulationRunner.RunOnce(harness, strategy, options);
+
+            sb.AppendLine($"  {strategy.Name,-18} : {DescribeSeizure(run)}, "
+                          + $"SCR_{run.TopScriptOrder:00}, {run.RunMoney:0.000e+00} Datas");
+
+            IReadOnlyList<CleanExitTier> tiers = harness.Balancing.CleanExitTiers;
+            if (tiers == null || tiers.Count == 0) return;
+
+            var line = new StringBuilder(128);
+            for (int i = 0; i < tiers.Count; i++)
+            {
+                float threshold = tiers[i].TraceThreshold;
+                float reached = TimeAtFraction(run, threshold);
+
+                if (line.Length > 0) line.Append("  |  ");
+                line.Append($"{threshold * 100f:0} % à {FormatMinutes(reached)}");
+            }
+
+            sb.AppendLine($"                       paliers atteints : {line}");
+        }
+
+        /// <summary>Instant où la jauge franchit une fraction, en secondes. -1 si jamais atteinte.</summary>
+        private static float TimeAtFraction(RunResult run, float fraction)
+        {
+            for (int i = 0; i < run.Samples.Count; i++)
+            {
+                if (run.Samples[i].TraceFraction >= fraction) return run.Samples[i].TimeSeconds;
+            }
+            return -1f;
+        }
+
+        private static string DescribeSeizure(RunResult run)
+        {
+            if (run.TimedOut) return $"JAMAIS SAISI en {run.DurationSeconds / 60f:0.0} min (plafond de mesure)";
+            if (run.CleanExit) return "sortie volontaire — posture mal réglée, elle devait aller au bout";
+            return $"saisi à {run.DurationSeconds / 60f:0.0} min";
+        }
+
+        private static string FormatMinutes(float seconds)
+        {
+            return seconds < 0f ? "jamais" : $"{seconds / 60f:0.0} min";
         }
 
         private static string DescribeOutcome(RunResult run)

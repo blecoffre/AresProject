@@ -51,6 +51,16 @@ namespace Core.Editor.Balance
         private readonly bool _scriptsOnly;
 
         /// <summary>
+        /// Le joueur ne sort JAMAIS de lui-même : il joue jusqu'à la saisie fédérale.
+        ///
+        /// Toutes les autres postures exfiltrent, donc aucune ne mesure le PLAFOND DUR d'une run —
+        /// combien de temps l'A.M.I. laisse avant de tomber, indépendamment de l'habileté du
+        /// joueur à sortir au bon moment. C'est ce chiffre-là qui dit si une première run est
+        /// brutale ou confortable, et lui seul.
+        /// </summary>
+        private readonly bool _runsUntilSeized;
+
+        /// <summary>
         /// Instant du dernier coup d'œil à la jauge. Sert au modèle de joueur imparfait : entre
         /// deux regards, il ne voit rien monter.
         /// </summary>
@@ -69,9 +79,11 @@ namespace Core.Editor.Balance
         /// </param>
         public GreedyStrategy(string name, float safetySeconds,
                               float exitTraceFraction = 0.95f, float reactionSeconds = 0f,
-                              bool trustsDisplayedNumber = false, bool scriptsOnly = false)
+                              bool trustsDisplayedNumber = false, bool scriptsOnly = false,
+                              bool runsUntilSeized = false)
         {
             _scriptsOnly = scriptsOnly;
+            _runsUntilSeized = runsUntilSeized;
             Name = name;
             _safetySeconds = safetySeconds;
             _exitTraceFraction = exitTraceFraction;
@@ -116,6 +128,19 @@ namespace Core.Editor.Balance
         /// palier je vais chercher ? », et c'est ce que compare cette posture — viser haut paie
         /// mieux, mais le relevé peut annoncer le seuil franchi trop tard.
         /// </summary>
+        /// <summary>
+        /// Les trois postures qui mesurent le PLAFOND DUR d'une run : elles ne sortent jamais et
+        /// vont au Game Over. L'écart entre elles chiffre exactement ce que la défense achète.
+        /// </summary>
+        public static GreedyStrategy UntilSeizedAcquisitionOnly() =>
+            new GreedyStrategy("acquisition seule", 0f, scriptsOnly: true, runsUntilSeized: true);
+
+        public static GreedyStrategy UntilSeizedBalanced() =>
+            new GreedyStrategy("défense modérée", 120f, runsUntilSeized: true);
+
+        public static GreedyStrategy UntilSeizedHeavy() =>
+            new GreedyStrategy("défense lourde", 900f, runsUntilSeized: true);
+
         /// <summary>Le joueur qui ne mise que sur l'acquisition. Reproduit une vraie partie de découverte.</summary>
         public static GreedyStrategy AcquisitionOnly() =>
             new GreedyStrategy("acquisition seule", 0f, exitTraceFraction: 0.90f,
@@ -352,6 +377,11 @@ namespace Core.Editor.Balance
         // ------------------------------------------------------------------
         public bool ShouldExfiltrate(SimulationHarness h, in RunProgress p)
         {
+            // Court-circuit AVANT toute autre règle, y compris la détection de plateau : une
+            // posture « jusqu'à la saisie » qui sortirait sur un plateau mesurerait autre chose
+            // que ce qu'on lui demande.
+            if (_runsUntilSeized) return false;
+
             // Une run neuve remet le compteur de regards à zéro : l'instance de stratégie est
             // réutilisée d'une run à l'autre par le pilote de campagne.
             if (p.ElapsedSeconds < _lastGlance) _lastGlance = 0f;
