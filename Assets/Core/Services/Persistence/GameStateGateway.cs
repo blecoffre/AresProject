@@ -85,6 +85,11 @@ namespace Core.Services.Persistence
                 data.TotalCpuCycles,
                 data.TotalDetections);
 
+            // Le cumul de campagne est de la MÉTA-progression : il survit au wipe de run comme
+            // aux Game Over, et sans lui une sauvegarde rechargée réattribuerait les paliers
+            // déjà encaissés.
+            _currencies.RestoreCampaignProgress(data.CampaignDatasBanked, data.CpuCyclesAwarded);
+
             // 2. Générateurs de la run
             FillLevels(data.Upgrades, _upgradeLevels);
             _upgradeManager.InitializeFromSave(_upgradeLevels);
@@ -139,6 +144,8 @@ namespace Core.Services.Persistence
             _buffer.TotalMoney = _currencies.TotalMoneyGenerated.CurrentValue;
             _buffer.RunMoney = _currencies.RunMoneyGenerated.CurrentValue;
             _buffer.TotalCpuCycles = _currencies.TotalCpuCyclesGenerated.CurrentValue;
+            _buffer.CampaignDatasBanked = _currencies.CampaignDatasBanked.CurrentValue;
+            _buffer.CpuCyclesAwarded = _currencies.CpuCyclesAwarded.CurrentValue;
             _buffer.TotalDetections = _currencies.TotalNumberOfDetections.CurrentValue;
 
             _buffer.CurrentTrace = _threatManager.CurrentTrace.CurrentValue;

@@ -157,22 +157,29 @@ namespace Core.Models.Economy
         [Tooltip("Argent de départ d'une run neuve, AVANT le bonus de prestige qui s'y ajoute.")]
         [SerializeField, Min(0f)] private double _baseStartingMoney = 10d;
 
-        [Tooltip("Datas à générer pour valoir un CPU Cycle. Cycles = floor(sqrt(RunMoney / valeur)). " +
-                 "Pilote aussi le seuil de déblocage de l'exfiltration.")]
-        [SerializeField, Min(1f)] private double _moneyPerCpuCycle = 1000d;
+        [Tooltip("Datas à générer SUR LA RUN pour déverrouiller l'exfiltration.\n\n" +
+                 "Découplé du gain de points depuis le 2026-09-12. C'était la même valeur, et " +
+                 "elle ne pouvait donc pas bouger : raréfier les points rendait l'exfiltration " +
+                 "inatteignable, et l'assouplir inondait le joueur de points.")]
+        [SerializeField, Min(1f)] private double _exfiltrationUnlockDatas = 400000d;
 
-        [Tooltip("Exposant de la conversion Datas -> CPU Cycles : cycles = (Datas / valeur " +
-                 "ci-dessus) ^ exposant. À 0,5 on retrouve la racine carrée d'origine.\n\n" +
-                 "Baisser cet exposant rend chaque point SUIVANT plus cher, sans jamais toucher " +
-                 "au premier : à Datas = MoneyPerCpuCycle le résultat vaut 1 quel que soit " +
-                 "l'exposant. C'est ce qui permet de raréfier les points de prestige sans " +
-                 "déplacer le seuil de déblocage de l'exfiltration, qui est la même valeur.\n\n" +
-                 "Le Nième point coûte MoneyPerCpuCycle x N^(1/exposant) : N² à 0,5, N^2,86 à " +
-                 "0,35, N⁴ à 0,25.\n\n" +
-                 "⚠️ Descendre trop bas aplatit la méta-progression : si une run de fin de partie " +
-                 "ne rapporte plus guère plus que la première, faire grossir son économie cesse " +
-                 "d'acheter de la puissance, et il faut rebaisser tout l'arbre en conséquence.")]
-        [SerializeField, Range(0.1f, 1f)] private double _cpuCycleExponent = 0.5d;
+        [Tooltip("Datas CUMULÉES sur la campagne pour décrocher le PREMIER point de prestige.\n\n" +
+                 "⚠️ RÉGLAGE STRUCTURANT, avec la croissance ci-dessous.\n\n" +
+                 "Le compteur ne retombe jamais à zéro entre deux runs : une run qui n'atteint " +
+                 "pas le palier suivant n'est plus perdue, tout ce qu'elle a volé compte encore. " +
+                 "Seule une SAISIE annule la contribution de la run — c'est là que vit la " +
+                 "punition désormais.")]
+        [SerializeField, Min(1f)] private double _prestigeFirstThresholdDatas = 400000d;
+
+        [Tooltip("Facteur multiplicatif entre deux paliers de points. À 1,5, le deuxième point " +
+                 "demande 1,5 fois plus de Datas cumulées que le premier, le troisième 1,5 fois " +
+                 "plus encore.\n\n" +
+                 "C'est le bouton de DURÉE de campagne. Le rapport coût/rendement des échelles " +
+                 "de générateurs, lui, ne règle que l'ATTEIGNABILITÉ du contenu : mesuré le " +
+                 "2026-09-12, il fait passer la partie de « jamais finie en 16 h » à « finie en " +
+                 "17 minutes » sans jamais offrir de valeur intermédiaire. Les deux sont " +
+                 "orthogonaux, ne pas les confondre.")]
+        [SerializeField, Range(1.05f, 4f)] private double _prestigeThresholdGrowth = 1.5d;
 
         [Tooltip("Paliers d'extraction : à ranger du MOINS au PLUS exigeant. Le joueur empoche le " +
                  "bonus du plus haut palier dont il a atteint le seuil de Trace, et rien du tout " +
@@ -296,8 +303,9 @@ namespace Core.Models.Economy
         public float MaxTargetedReduction => _maxTargetedReduction;
 
         public double BaseStartingMoney => _baseStartingMoney;
-        public double MoneyPerCpuCycle => _moneyPerCpuCycle;
-        public double CpuCycleExponent => _cpuCycleExponent;
+        public double ExfiltrationUnlockDatas => _exfiltrationUnlockDatas;
+        public double PrestigeFirstThresholdDatas => _prestigeFirstThresholdDatas;
+        public double PrestigeThresholdGrowth => _prestigeThresholdGrowth;
         public IReadOnlyList<CleanExitTier> CleanExitTiers => _cleanExitTiers;
         public float OverclockWarpSeconds => _overclockWarpSeconds;
 

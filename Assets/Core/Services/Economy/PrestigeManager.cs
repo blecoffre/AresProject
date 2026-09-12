@@ -207,7 +207,7 @@ namespace Core.Services.Economy
             int currentLevel = GetLevel(id);
             if (currentLevel >= config.MaxLevel) return false;
 
-            double cost = config.BaseCost * Math.Pow(config.CostMultiplier, currentLevel);
+            double cost = config.GetCostAtLevel(currentLevel);
 
             if (_currencies.CpuCycles.TryRemove(cost))
             {

@@ -106,6 +106,28 @@ namespace Core.Models.Economy
         public int MaxLevel => _maxLevel;
         public double BaseCost => _baseCost;
         public double CostMultiplier => _costMultiplier;
+
+        /// <summary>
+        /// Coût du PROCHAIN niveau de ce nœud, en CPU Cycles.
+        ///
+        /// <b>Plat depuis le 2026-09-12 : le niveau ne renchérit plus rien.</b> Le coût vaut
+        /// <see cref="BaseCost"/>, réglé à 1 dans les données — chaque niveau de chaque nœud
+        /// coûte donc un point, et le joueur n'a plus qu'à choisir lequel.
+        ///
+        /// Ce que ça supprime. La courbe <c>BaseCost × CostMultiplier^niveau</c> était recopiée
+        /// dans QUATRE fichiers qui n'en savaient rien les uns des autres, et l'arbre s'était
+        /// déjà retrouvé 152 fois trop cher pour une erreur sur un seul de ces termes. Elle
+        /// créait surtout un piège invisible : mesuré, un joueur qui achetait naturellement le
+        /// nœud le moins cher d'abord jouait cent fois moins bien qu'un joueur qui les évitait,
+        /// parce que 145 nœuds affichés au même prix n'avaient pas du tout la même valeur.
+        ///
+        /// <paramref name="currentLevel"/> est conservé dans la signature : c'est le seul
+        /// endroit à toucher si une courbe devait réapparaître un jour.
+        /// </summary>
+        public double GetCostAtLevel(int currentLevel)
+        {
+            return _baseCost;
+        }
         public float BonusPerLevel => _bonusPerLevel;
         public Vector2 UiPosition => _uiPosition;
         /// <summary>

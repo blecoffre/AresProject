@@ -34,7 +34,7 @@ namespace Core.Models
         /// correspondant dans Migrate(). Sans ça, le premier changement post-lancement casse
         /// silencieusement les sauvegardes des joueurs.
         /// </summary>
-        public const int CurrentVersion = 8;
+        public const int CurrentVersion = 9;
 
         /// <summary>
         /// Le plafond de Trace tel qu'il était FIGÉ jusqu'en v6. Sert uniquement à convertir
@@ -62,6 +62,20 @@ namespace Core.Models
         public double TotalCpuCycles;
         public int TotalDetections;
         public List<UpgradeSaveEntry> PrestigeUpgrades;
+
+        /// <summary>
+        /// Datas exfiltrées depuis le début de la campagne. Ne retombe jamais à zéro entre deux
+        /// runs — c'est ce compteur qui décroche les points de prestige, et une saisie ne
+        /// l'alimente pas.
+        /// </summary>
+        public double CampaignDatasBanked;
+
+        /// <summary>
+        /// Points de prestige déjà accordés. Sauvegardé SÉPARÉMENT du solde de CPU Cycles, qui
+        /// baisse à chaque achat : sans ce compteur, recharger une partie où le joueur a tout
+        /// dépensé lui rendrait tous les paliers déjà encaissés.
+        /// </summary>
+        public double CpuCyclesAwarded;
 
         // ---------------------------------------------------------------------
         // Run en cours : remise à zéro au wipe.
@@ -205,6 +219,11 @@ namespace Core.Models
             if (RunMoney < 0d) RunMoney = 0d;
             if (CpuCycles < 0d) CpuCycles = 0d;
             if (TotalDetections < 0) TotalDetections = 0;
+
+            // Le cumul de campagne pilote directement le nombre de points de prestige : une
+            // valeur négative arrivée d'un fichier édité à la main fausserait tout le palier.
+            if (CampaignDatasBanked < 0d) CampaignDatasBanked = 0d;
+            if (CpuCyclesAwarded < 0d) CpuCyclesAwarded = 0d;
         }
 
         /// <summary>
@@ -288,6 +307,22 @@ namespace Core.Models
                     goto case 8;
 
                 case 8:
+                    // v8 -> v9 : les points de prestige se décrochent désormais sur un cumul de
+                    // Datas exfiltrées à l'échelle de la campagne, plus sur l'argent de la seule
+                    // run. Une sauvegarde antérieure n'a aucun cumul à reprendre : on repart de
+                    // zéro sur les DEUX compteurs à la fois.
+                    //
+                    // Les mettre tous les deux à zéro est volontaire et sans perte : le joueur
+                    // garde ses CPU Cycles et ses nœuds déjà achetés, et son prochain palier
+                    // sera simplement le premier. Ne remettre à zéro que le cumul en gardant les
+                    // points versés lui bloquerait la progression jusqu'à ce qu'il rattrape son
+                    // ancien total.
+                    data.CampaignDatasBanked = 0d;
+                    data.CpuCyclesAwarded = 0d;
+                    data.Version = 9;
+                    goto case 9;
+
+                case 9:
                     // Format courant : rien à faire.
                     break;
 

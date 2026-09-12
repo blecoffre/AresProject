@@ -65,7 +65,7 @@ namespace Core.UI.Prestige
             bool isUnlocked = _prestigeManager.IsUnlocked(Config);
             bool isMaxedOut = currentLevel >= Config.MaxLevel;
 
-            double cost = Config.BaseCost * Math.Pow(Config.CostMultiplier, currentLevel);
+            double cost = Config.GetCostAtLevel(currentLevel);
             bool canAfford = _currencies.CpuCycles.Amount.CurrentValue >= cost;
 
             PrestigeNodeState state = PrestigeNodeStates.Resolve(isUnlocked, isMaxedOut, currentLevel, canAfford);

@@ -206,18 +206,29 @@ namespace Core.Services.Simulation
 
             // Tout ce que l'écran de fin racontera est lu MAINTENANT, avant le wipe : trois lignes
             // plus bas, l'argent de la run, la Trace et le compteur d'urgence seront à zéro.
-            double baseCycles = Math.Floor(_userCurrencies.CalculatePendingCpuCycles());
             double dataGenerated = _userCurrencies.RunMoneyGenerated.CurrentValue;
             float threatAtEnd = _threatManager.NormalizedThreat.CurrentValue;
             int emergencyUses = _emergencyProtocolSystem.UsesInCurrentRun;
             float elapsed = _runElapsedSeconds;
 
-            double pendingPrestige = _userCurrencies.CalculatePendingCpuCycles() * prestigeMultiplier;
-            pendingPrestige = Math.Floor(pendingPrestige);
+            // La contribution au cumul de campagne, et les points qu'elle débloque, ne sont
+            // versés QUE sur une exfiltration réussie. Une saisie ne verse rien : ni Datas au
+            // compteur, ni point.
+            //
+            // Les deux sont résolus au même instant, et c'est indispensable. Si les points
+            // tombaient pendant la run alors que la saisie annule la contribution, il
+            // deviendrait rentable de se faire prendre exprès — on encaisserait le palier sans
+            // jamais faire monter le seuil suivant, et la run d'après le réencaisserait.
+            //
+            // Le multiplicateur du palier d'extraction s'applique à la CONTRIBUTION, jamais aux
+            // points : majorer directement des points entiers produirait des demi-paliers et
+            // rouvrirait exactement le même décalage.
+            double baseCycles = _userCurrencies.PreviewPointsForContribution(dataGenerated);
+            double pendingPrestige = 0d;
 
-            if (pendingPrestige > 0d)
+            if (reason == RunEndReason.CleanExit)
             {
-                _userCurrencies.AddCpuCycles(pendingPrestige);
+                pendingPrestige = _userCurrencies.BankRunContribution(dataGenerated * prestigeMultiplier);
             }
 
             // La run est effacée ICI, en entier, et AVANT la notification.

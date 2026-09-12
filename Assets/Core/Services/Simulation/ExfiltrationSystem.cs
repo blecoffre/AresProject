@@ -82,12 +82,16 @@ namespace Core.Services.Simulation
             _balancing = balancing;
 
             _pendingCycles = _currencies.RunMoneyGenerated
-                .Select(_ => _currencies.CalculatePendingCpuCycles())
+                .Select(money => _currencies.PreviewPointsForContribution(money))
                 .DistinctUntilChanged()
                 .ToReadOnlyReactiveProperty();
 
-            _isUnlocked = _pendingCycles
-                .Select(cycles => cycles >= 1d)
+            // Le déverrouillage ne dépend PLUS du gain de points, mais d'un seuil de Datas sur la
+            // run. Les deux étaient la même valeur, donc raréfier les points rendait mécaniquement
+            // l'exfiltration inatteignable — et une run tardive, qui part avec un cumul déjà
+            // fourni, aurait ouvert le bouton dès la première seconde.
+            _isUnlocked = _currencies.RunMoneyGenerated
+                .Select(money => money >= balancing.ExfiltrationUnlockDatas)
                 .DistinctUntilChanged()
                 .ToReadOnlyReactiveProperty();
 
@@ -97,7 +101,7 @@ namespace Core.Services.Simulation
                 .ToReadOnlyReactiveProperty();
 
             _progressToFirstCycle = _currencies.RunMoneyGenerated
-                .Select(money => (float)Math.Min(1d, money / balancing.MoneyPerCpuCycle))
+                .Select(money => (float)Math.Min(1d, money / balancing.ExfiltrationUnlockDatas))
                 .ToReadOnlyReactiveProperty();
         }
 
@@ -107,10 +111,17 @@ namespace Core.Services.Simulation
         /// </summary>
         public double GetNextCycleThreshold()
         {
-            // Inverse exact de CalculatePendingCpuCycles : si la conversion change d'exposant,
-            // cet objectif doit suivre, sinon le bouton promet un palier qui n'existe pas.
-            double next = _pendingCycles.CurrentValue + 1d;
-            return Math.Pow(next, 1d / _balancing.CpuCycleExponent) * _balancing.MoneyPerCpuCycle;
+            // Le palier vise le CUMUL de campagne, pas la run : on rend donc ce qu'il reste à
+            // voler SUR CETTE RUN, cumul déjà acquis déduit. Sans cette soustraction le bouton
+            // afficherait un objectif que le joueur a en réalité déjà à moitié atteint.
+            double awarded = _currencies.CpuCyclesAwarded.CurrentValue;
+            double pointsAfterExit = awarded + _pendingCycles.CurrentValue;
+
+            double growth = Math.Max(1.0001d, _balancing.PrestigeThresholdGrowth);
+            double bankedForNext = _balancing.PrestigeFirstThresholdDatas * Math.Pow(growth, pointsAfterExit);
+
+            double missing = bankedForNext - _currencies.CampaignDatasBanked.CurrentValue;
+            return missing < 0d ? 0d : missing;
         }
 
         /// <summary>

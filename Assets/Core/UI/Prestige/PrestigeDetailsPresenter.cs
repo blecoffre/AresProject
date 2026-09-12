@@ -70,7 +70,7 @@ namespace Core.UI.Prestige
             bool isMaxedOut = currentLevel >= _selected.MaxLevel;
             bool isWindowOpen = _prestigeManager.ArePurchasesAllowed.CurrentValue;
 
-            double cost = _selected.BaseCost * Math.Pow(_selected.CostMultiplier, currentLevel);
+            double cost = _selected.GetCostAtLevel(currentLevel);
             bool canAfford = _currencies.CpuCycles.Amount.CurrentValue >= cost;
 
             PrestigeNodeState state = PrestigeNodeStates.Resolve(isUnlocked, isMaxedOut, currentLevel, canAfford);
