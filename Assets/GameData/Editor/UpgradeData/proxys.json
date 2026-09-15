@@ -10,7 +10,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 0.254,
+      "traceGeneratedPerSecond": 2.54,
       "milestones": [
         {
           "level": 10,
@@ -44,7 +44,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 1.06,
+      "traceGeneratedPerSecond": 10.6,
       "milestones": [
         {
           "level": 10,
@@ -78,7 +78,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 2.9,
+      "traceGeneratedPerSecond": 29.0,
       "milestones": [
         {
           "level": 10,
@@ -112,7 +112,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 6.15,
+      "traceGeneratedPerSecond": 61.5,
       "milestones": [
         {
           "level": 10,
@@ -146,7 +146,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 10.7,
+      "traceGeneratedPerSecond": 107.0,
       "milestones": [
         {
           "level": 10,
@@ -180,7 +180,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 23.3,
+      "traceGeneratedPerSecond": 233.0,
       "milestones": [
         {
           "level": 10,
@@ -214,7 +214,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 53.4,
+      "traceGeneratedPerSecond": 534.0,
       "milestones": [
         {
           "level": 10,
@@ -248,7 +248,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 117.0,
+      "traceGeneratedPerSecond": 1170.0,
       "milestones": [
         {
           "level": 10,
@@ -282,7 +282,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 248.0,
+      "traceGeneratedPerSecond": 2480.0,
       "milestones": [
         {
           "level": 10,
@@ -316,7 +316,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 586.0,
+      "traceGeneratedPerSecond": 5860.0,
       "milestones": [
         {
           "level": 10,
@@ -350,7 +350,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 1180.0,
+      "traceGeneratedPerSecond": 11800.0,
       "milestones": [
         {
           "level": 10,
@@ -384,7 +384,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 2010.0,
+      "traceGeneratedPerSecond": 20100.0,
       "milestones": [
         {
           "level": 10,
@@ -418,7 +418,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 4750.0,
+      "traceGeneratedPerSecond": 47500.0,
       "milestones": [
         {
           "level": 10,
@@ -452,7 +452,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 7990.0,
+      "traceGeneratedPerSecond": 79900.0,
       "milestones": [
         {
           "level": 10,
@@ -486,7 +486,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 19670.0,
+      "traceGeneratedPerSecond": 196700.0,
       "milestones": [
         {
           "level": 10,
