@@ -696,6 +696,18 @@ Le plafond à 90 % n'est pas dans la spécification du GD : sans lui, le septiè
 immobiliserait 100 % du parc, donc plus aucune dissipation ni compression de cycle. Le bouton
 deviendrait un suicide pur, ce qui n'est pas un choix mais un piège.
 
+**Mesuré le 2026-09-15 — la fenêtre d'usage fait toute la valeur du bouton.** Déclenché à 85 % de
+jauge, dos au mur, il est franchement NUISIBLE : la posture agressive tombait à 18 runs et mourait
+83 % du temps. Déclenché à 60 %, la même posture tient 95 runs et ne meurt plus que 16 % du temps,
+son arbre passant de 64 à 92 %. Le GDD le disait déjà — « bénéfique en principe, risqué en fin de
+run » — mais l'écart est bien plus violent que la formule ne le laissait entendre.
+
+⚠️ **Le bénéfice est un POURCENTAGE de jauge, le contrecoup un coût FIXE en secondes.** Sur une run
+de 1200 s, 20 points valent 240 secondes gagnées contre 60 secondes de production diminuée. Sur une
+run de 200 s, ils n'en valent plus que 40. Ces constantes ont été calibrées pour des runs de vingt
+à trente minutes : si la durée des runs rebaisse, le bouton redeviendra un piège — et le délai de
+cinq minutes entre deux usages dépasse déjà la durée d'une run de campagne.
+
 Le contrecoup ET le délai sont **sauvegardés** (`SaveData` v5), contrairement à l'Overdrive du
 Ghost Cache. L'asymétrie est volontaire : là-bas, sauvegarder aurait permis de mettre en PAUSE un
 bonus ; ici, ne pas sauvegarder permettrait d'ÉCHAPPER à une pénalité en fermant la fenêtre.

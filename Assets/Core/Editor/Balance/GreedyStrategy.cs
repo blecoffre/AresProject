@@ -124,7 +124,7 @@ namespace Core.Editor.Balance
                               HashSet<PrestigeBonusType> ignoredBonuses = null,
                               float clicksPerSecond = 8f, float clickDutyCycle = 0.62f,
                               float targetReduction = 0.5f,
-                              float emergencyThreshold = 0.85f, float exploitCeiling = 0.55f)
+                              float emergencyThreshold = 0.60f, float exploitCeiling = 0.55f)
         {
             _emergencyThreshold = emergencyThreshold;
             _exploitCeiling = exploitCeiling;
@@ -266,9 +266,21 @@ namespace Core.Editor.Balance
         /// <summary>
         /// Le Data Wiper, déclenché quand la jauge devient menaçante.
         ///
-        /// Il efface une part de la Trace au prix d'une tranche de TFlops immobilisée : c'est un
-        /// achat de TEMPS payé en production, donc il n'a de sens que dos au mur. Le déclencher
-        /// tôt gaspillerait la charge sur une jauge qui ne menaçait rien.
+        /// Il efface 20 points ABSOLUS de jauge au prix d'une tranche de TFlops immobilisée
+        /// pendant 60 secondes : un achat de TEMPS payé en production.
+        ///
+        /// Déclenché à MI-RUN, et surtout pas dos au mur. Le GDD est formel — « bénéfique en
+        /// principe, risqué en fin de run », le contrecoup s'alourdissant de dix points par
+        /// usage. Le modèle le lançait à 85 % de jauge, soit exactement dans la fenêtre où la
+        /// mécanique est conçue pour être mauvaise, et la posture qui l'utilisait passait de 2 à
+        /// 15 saisies.
+        ///
+        /// ⚠️ Le bénéfice est un POURCENTAGE de jauge, le contrecoup un coût FIXE en secondes.
+        /// Sur une run de 1200 s, 20 points valent 240 s gagnées contre 60 s de production
+        /// diminuée. Sur une run de 200 s, ils n'en valent plus que 40. La mécanique a été
+        /// calibrée pour des runs de vingt à trente minutes et ne survit pas à leur
+        /// effondrement — le délai de cinq minutes entre deux usages dépasse d'ailleurs la durée
+        /// d'une run de campagne.
         /// </summary>
         private void UseEmergencyIfCornered(SimulationHarness h)
         {
