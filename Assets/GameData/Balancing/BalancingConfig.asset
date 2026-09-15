@@ -17,9 +17,9 @@ MonoBehaviour:
   _dissipationHalfPointRatio: 0.3
   _traceYieldExponent: 0.6
   _passiveTraceFillMinutes: 6
-  _ghostCacheReductionThreshold: 0.75
+  _ghostCacheReductionThreshold: 0.7
   _traceReadoutMinInterval: 0.5
-  _traceReadoutMaxInterval: 120
+  _traceReadoutMaxInterval: 25
   _traceReadoutReferenceFillRate: 0.001
   _traceReadoutPessimism: 3
   _tflopsTimeCompression: 0.05
@@ -39,7 +39,7 @@ MonoBehaviour:
   - _traceThreshold: 0.9
     _bonus: 0.5
   _overclockWarpSeconds: 0.5
-  _ghostCacheCapacitySeconds: 300
+  _ghostCacheCapacitySeconds: 90
   _overdriveDurationSeconds: 30
   _overdriveYieldMultiplier: 50
   _overdriveTraceMultiplier: 10
