@@ -214,7 +214,8 @@ namespace Core.Editor.Balance
             }
 
             sb.AppendLine($"  {label,-9} : {campaign.Runs.Count,3} runs, {campaign.TotalSeconds / 3600d:0.00} h, "
-                          + $"{seized} saisie(s), {(campaign.Victory ? "VICTOIRE" : "JAMAIS FINI")}, arbre "
+                          + $"{seized} saisie(s), "
+                          + $"{(campaign.Victory ? "VICTOIRE" : campaign.OutOfComputeBudget ? "MESURE TRONQUÉE" : "JAMAIS FINI")}, arbre "
                           + $"{(campaign.TreeComplete ? "complet" : $"{campaign.TreeProgress * 100f:0.0} %")}");
             sb.AppendLine($"              Datas cumulées {datas:0.000e+00}, sortie à "
                           + $"{(counted > 0 ? (sumExit / counted * 100f).ToString("0.0") : "—")} % de jauge");

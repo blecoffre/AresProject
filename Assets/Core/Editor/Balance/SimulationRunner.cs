@@ -20,6 +20,18 @@ namespace Core.Editor.Balance
 
         public int MaxRuns = 300;
 
+        /// <summary>
+        /// Budget de CALCUL réel, en secondes d'horloge. Aucun rapport avec le temps de jeu.
+        ///
+        /// Garde-fou indispensable : une campagne tourne en synchrone sur le thread principal de
+        /// l'éditeur et n'a aucun point d'annulation. Le jour où les runs ont cessé de
+        /// s'effondrer, le budget de 300 runs est passé de 2 heures à 40 heures de temps de jeu
+        /// à simuler — Unity est resté figé vingt minutes, inutilisable, sans moyen d'arrêter.
+        ///
+        /// Un outil de mesure doit TOUJOURS rendre la main.
+        /// </summary>
+        public double MaxComputeSeconds = 45d;
+
         /// <summary>Instant où l'on relève les Datas, pour surveiller l'explosion du début.</summary>
         public float ProbeSeconds = 300f;
 
@@ -124,6 +136,12 @@ namespace Core.Editor.Balance
 
         /// <summary>La machine finale a-t-elle été construite. C'est la vraie fin de partie.</summary>
         public bool Victory;
+
+        /// <summary>
+        /// La campagne a été coupée par le budget de CALCUL, pas par une fin de jeu. Ses chiffres
+        /// sont donc une mesure incomplète, et le dire évite de les lire comme un verdict.
+        /// </summary>
+        public bool OutOfComputeBudget;
     }
 
     /// <summary>
@@ -286,8 +304,11 @@ namespace Core.Editor.Balance
             double lastBanked = 0d;
             int stalledRuns = 0;
 
+            var computeWatch = System.Diagnostics.Stopwatch.StartNew();
+
             while (campaign.TotalSeconds < budget
                    && campaign.Runs.Count < options.MaxRuns
+                   && computeWatch.Elapsed.TotalSeconds < options.MaxComputeSeconds
                    && !IsVictory(h, campaign))
             {
                 RunResult run = RunOnce(h, strategy, options);
@@ -321,6 +342,7 @@ namespace Core.Editor.Balance
                 if (stalledRuns >= MaxStalledRuns) break;
             }
 
+            campaign.OutOfComputeBudget = computeWatch.Elapsed.TotalSeconds >= options.MaxComputeSeconds;
             campaign.FinalCleanExitBonus = h.Prestige.CleanExitBonusMultiplier.CurrentValue;
             campaign.Victory = IsVictory(h, campaign);
             campaign.TreeComplete = IsTreeComplete(h);
