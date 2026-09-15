@@ -38,6 +38,13 @@ namespace Core.Editor.Balance
         private const double PlateauGrowth = 1.6d;
 
         private readonly float _safetySeconds;
+
+        /// <summary>
+        /// Fraction de Trace que ce joueur veut voir dissipée en permanence, de 0 à l'asymptote.
+        /// C'est SA posture défensive, et le seul paramètre qui décrit honnêtement le troisième
+        /// pilier : les Proxies ne s'achètent pas en urgence, ils se maintiennent.
+        /// </summary>
+        private readonly float _targetReduction;
         private readonly float _exitTraceFraction;
         private readonly float _reactionSeconds;
 
@@ -109,8 +116,10 @@ namespace Core.Editor.Balance
                               bool trustsDisplayedNumber = false, bool scriptsOnly = false,
                               bool runsUntilSeized = false,
                               HashSet<PrestigeBonusType> ignoredBonuses = null,
-                              float clicksPerSecond = 8f, float clickDutyCycle = 0.62f)
+                              float clicksPerSecond = 8f, float clickDutyCycle = 0.62f,
+                              float targetReduction = 0.5f)
         {
+            _targetReduction = targetReduction;
             _clicksPerSecond = clicksPerSecond;
             _clickDutyCycle = clickDutyCycle;
             _ignoredBonuses = ignoredBonuses;
@@ -126,9 +135,9 @@ namespace Core.Editor.Balance
         public string Name { get; }
 
         /// <summary>Les trois postures qui ont servi à trancher l'arbitrage défensif.</summary>
-        public static GreedyStrategy NoDefense() => new GreedyStrategy("aucun Proxy", 0f);
-        public static GreedyStrategy Balanced() => new GreedyStrategy("défense modérée", 120f);
-        public static GreedyStrategy HeavyDefense() => new GreedyStrategy("défense lourde", 900f);
+        public static GreedyStrategy NoDefense() => new GreedyStrategy("aucun Proxy", 0f, targetReduction: 0f);
+        public static GreedyStrategy Balanced() => new GreedyStrategy("défense modérée", 120f, targetReduction: 0.5f);
+        public static GreedyStrategy HeavyDefense() => new GreedyStrategy("défense lourde", 900f, targetReduction: 0.8f);
 
         /// <summary>
         /// Un joueur humain : il se défend raisonnablement, pousse sa chance plus loin (90 % de
@@ -165,13 +174,14 @@ namespace Core.Editor.Balance
         /// vont au Game Over. L'écart entre elles chiffre exactement ce que la défense achète.
         /// </summary>
         public static GreedyStrategy UntilSeizedAcquisitionOnly() =>
-            new GreedyStrategy("acquisition seule", 0f, scriptsOnly: true, runsUntilSeized: true);
+            new GreedyStrategy("acquisition seule", 0f, scriptsOnly: true, runsUntilSeized: true,
+                               targetReduction: 0f);
 
         public static GreedyStrategy UntilSeizedBalanced() =>
-            new GreedyStrategy("défense modérée", 120f, runsUntilSeized: true);
+            new GreedyStrategy("défense modérée", 120f, runsUntilSeized: true, targetReduction: 0.5f);
 
         public static GreedyStrategy UntilSeizedHeavy() =>
-            new GreedyStrategy("défense lourde", 900f, runsUntilSeized: true);
+            new GreedyStrategy("défense lourde", 900f, runsUntilSeized: true, targetReduction: 0.8f);
 
         /// <summary>Le joueur qui ne mise que sur l'acquisition. Reproduit une vraie partie de découverte.</summary>
         public static GreedyStrategy AcquisitionOnly() =>
@@ -249,13 +259,25 @@ namespace Core.Editor.Balance
             // latence humaine : un joueur ne relance pas quinze Scripts dans la même frame.
             RestartIdleScripts(h);
 
-            // La défense passe EN PREMIER quand la mort approche : ce qu'elle consomme n'ira pas
-            // aux Scripts, et c'est exactement le coût d'opportunité qu'on cherche à mesurer.
-            if (!_scriptsOnly)
+            // La défense passe EN PREMIER : ce qu'elle consomme n'ira pas aux Scripts, et c'est
+            // exactement le coût d'opportunité qu'on cherche à mesurer.
+            //
+            // Le critère est une POSTURE À MAINTENIR — « garder au moins tant de réduction » — et
+            // non plus « acheter quand il me reste moins de N secondes à vivre ».
+            //
+            // L'ancienne règle faisait jouer le modèle à DEUX PILIERS SUR TROIS, ce qui invalidait
+            // toute mesure : à 120 s de seuil et des runs de 174 s, le joueur commençait au-dessus
+            // du seuil, n'achetait rien, et ne touchait aux Proxies qu'en urgence — trop tard, la
+            // Trace déjà haute. Relevé : 16 % de réduction pour une asymptote à 85 %.
+            //
+            // Une posture est aussi la seule formulation qui capture la dilution : la dissipation
+            // se dévalue toute seule à mesure que l'économie grossit, donc tenir un niveau exige
+            // de réinvestir en permanence. C'est précisément l'arbitrage du pilier.
+            if (!_scriptsOnly && _targetReduction > 0f)
             {
                 for (int i = 0; i < MaxPurchasesPerDecision; i++)
                 {
-                    if (SurvivalSeconds(h) >= _safetySeconds) break;
+                    if (h.Ticker.CurrentTraceReduction >= _targetReduction) break;
                     if (!BuyBestProxy(h)) break;
                 }
             }

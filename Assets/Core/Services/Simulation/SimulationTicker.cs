@@ -36,6 +36,18 @@ namespace Core.Services.Simulation
         private readonly BalancingConfigSO _balancing;
         private readonly ITimeSource _time;
 
+        /// <summary>
+        /// Fraction de Trace effectivement dissipée par les Proxies à la dernière frame, de 0 à
+        /// l'asymptote <c>MaxTraceReduction</c>.
+        ///
+        /// Exposée plutôt que gardée locale parce que c'est la seule lecture honnête de la POSTURE
+        /// DÉFENSIVE du joueur : la puissance de dissipation brute ne veut rien dire seule, elle
+        /// n'a de sens que rapportée à la Trace générée, et ce rapport se dilue tout seul à mesure
+        /// que l'économie grossit. Quiconque veut savoir « ma défense tient-elle encore ? » doit
+        /// lire ceci, et surtout pas recopier la formule.
+        /// </summary>
+        public float CurrentTraceReduction { get; private set; }
+
         public SimulationTicker(
             UpgradeManager upgradeManager,
             ScriptCycleRunner cycleRunner,
@@ -151,6 +163,8 @@ namespace Core.Services.Simulation
                               * dissipationPower / (dissipationPower + halfPoint);
                 }
             }
+
+            CurrentTraceReduction = reduction;
 
             // Charge du Ghost Cache. L'ancienne condition — « la dissipation dépasse la
             // génération » — n'a plus d'objet : avec une réduction asymptotique il n'existe plus

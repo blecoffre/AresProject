@@ -230,6 +230,31 @@ namespace Core.Editor.Balance
                               + $" (×{(first > 0d ? last / first : 0d):0.0}), "
                               + $"bonus Extraction ×{campaign.FinalCleanExitBonus:0.00}");
 
+                // DURÉE des runs au fil de la campagne, et marge après le dernier palier.
+                //
+                // Teste une hypothèse structurelle : la jauge est alimentée par TOUTE la
+                // production, mais son plafond ne grandit qu'avec le Hardware. Si c'est le cas,
+                // plus le joueur devient puissant, plus ses runs raccourcissent — jusqu'à ce que
+                // la fin de jauge ne dure plus que quelques secondes, ce qui expliquerait d'un
+                // coup le dernier palier injouable, le plafond de contenu et les points qui se
+                // tarissent.
+                AppendRunDurations(sb, campaign);
+
+                // Réduction réellement maintenue par les Proxies. Sans cette ligne, le troisième
+                // pilier est invisible dans toutes les mesures — et il l'a été : le modèle
+                // n'achetait de la défense qu'en urgence et tenait 16 % pour une asymptote à 85 %,
+                // soit deux piliers sur trois.
+                float peak = 0f;
+                float sumPeak = 0f;
+                for (int i = 0; i < campaign.Runs.Count; i++)
+                {
+                    sumPeak += campaign.Runs[i].PeakReduction;
+                    if (campaign.Runs[i].PeakReduction > peak) peak = campaign.Runs[i].PeakReduction;
+                }
+
+                sb.AppendLine($"              dissipation : {sumPeak / campaign.Runs.Count * 100f:0.0} % en moyenne, "
+                              + $"{peak * 100f:0.0} % au mieux");
+
                 // Jusqu'où le joueur monte dans les générateurs. Sert à savoir si un palier de
                 // CONTENU — « débloquer SCR_15 » — est un objectif atteignable, donc utilisable
                 // comme vraie fin de partie à la place de la complétion de l'arbre.
@@ -490,6 +515,67 @@ namespace Core.Editor.Balance
         {
             return new SimulationOptions { MaxRuns = 15, MaxCampaignHours = 100f };
         }
+
+        /// <summary>
+        /// Durée des runs au fil de la campagne, et temps restant après le DERNIER palier
+        /// d'extraction.
+        ///
+        /// Cette seconde colonne est la mesure décisive : si elle tombe à quelques secondes en
+        /// fin de campagne, aucun réglage de brouillard ne peut rendre le dernier palier jouable,
+        /// puisqu'il n'y a tout simplement plus de temps pour réagir.
+        /// </summary>
+        private static void AppendRunDurations(StringBuilder sb, CampaignResult campaign)
+        {
+            int count = campaign.Runs.Count;
+            if (count == 0) return;
+
+            var line = new StringBuilder(160);
+            int[] marks = count >= 4
+                ? new[] { 0, count / 3, 2 * count / 3, count - 1 }
+                : new[] { 0, count - 1 };
+
+            float highestTier = ResolveHighestTier();
+
+            for (int i = 0; i < marks.Length; i++)
+            {
+                RunResult r = campaign.Runs[marks[i]];
+                if (line.Length > 0) line.Append("  →  ");
+                line.Append($"run {marks[i] + 1} : {r.DurationSeconds / 60f:0.0} min");
+
+                // Secondes entre le franchissement du dernier palier et la fin de la run.
+                float lastTier = TimeAtFraction(r, highestTier);
+                if (lastTier >= 0f)
+                {
+                    line.Append($" (marge {r.DurationSeconds - lastTier:0} s)");
+                }
+            }
+
+            sb.AppendLine($"              durée des runs : {line}");
+        }
+
+        /// <summary>
+        /// Seuil du plus haut palier d'extraction, résolu UNE fois et mémorisé.
+        ///
+        /// Construire un harnais par run pour lire un réglage chargerait les catalogues des
+        /// centaines de fois : la mesure coûterait plus cher que la simulation qu'elle décrit.
+        /// </summary>
+        private static float ResolveHighestTier()
+        {
+            if (_cachedHighestTier > 0f) return _cachedHighestTier;
+
+            using var harness = new SimulationHarness();
+            IReadOnlyList<CleanExitTier> tiers = harness.Balancing.CleanExitTiers;
+            if (tiers == null || tiers.Count == 0) return 1f;
+
+            for (int i = 0; i < tiers.Count; i++)
+            {
+                if (tiers[i].TraceThreshold > _cachedHighestTier) _cachedHighestTier = tiers[i].TraceThreshold;
+            }
+
+            return _cachedHighestTier;
+        }
+
+        private static float _cachedHighestTier;
 
         private static string DescribeOutcome(RunResult run)
         {
