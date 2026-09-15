@@ -33,8 +33,12 @@ namespace Core.Services.Security
         // Événement déclenché quand la jauge atteint 100%
         public Subject<Unit> OnCriticalLockdown { get; }
 
+        /// <summary>Conservé : le plafond dynamique se relit à chaque frame, pas au démarrage.</summary>
+        private readonly BalancingConfigSO _balancing;
+
         public ThreatManager(BalancingConfigSO balancing)
         {
+            _balancing = balancing;
             _baseCap = Mathf.Max(1f, balancing.BaseTraceCap);
             TraceCap = _baseCap;
 
@@ -47,11 +51,22 @@ namespace Core.Services.Security
         /// Déclare la capacité apportée par le Hardware. Poussée plutôt qu'observée : ce
         /// gestionnaire ne dépend d'aucun autre service, et c'est ce qui le garde testable.
         /// </summary>
-        public void SetCapacity(float hardwareBonus, float prestigeMultiplier)
+        public void SetCapacity(float hardwareBonus, float prestigeMultiplier, float powerFactor = 0f)
         {
             // Le multiplicateur de Blindage porte sur le TOTAL, plafond de base compris : il est
             // donc utile dès la première run, avant que le moindre Hardware ne soit acheté.
-            float cap = (_baseCap + Mathf.Max(0f, hardwareBonus)) * Mathf.Max(1f, prestigeMultiplier);
+            //
+            // Le PLAFOND DYNAMIQUE remplace la contribution du parc Hardware par un facteur tiré
+            // de la puissance du joueur. Sans lui, la Trace est alimentée par toute la production
+            // alors que le plafond ne grandit qu'avec une statistique secondaire du Hardware :
+            // acheter des Scripts fait monter le numérateur sans le dénominateur, et la durée de
+            // run s'effondre à mesure qu'on progresse. Mesuré : de vingt minutes à trois, puis
+            // figée sur un point fixe.
+            float extra = _balancing.DynamicTraceCap
+                ? _baseCap * Mathf.Max(0f, powerFactor)
+                : Mathf.Max(0f, hardwareBonus);
+
+            float cap = (_baseCap + extra) * Mathf.Max(1f, prestigeMultiplier);
             if (Mathf.Approximately(cap, TraceCap)) return;
 
             TraceCap = cap;

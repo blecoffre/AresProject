@@ -59,6 +59,38 @@ namespace Core.Models.Economy
                  "que par 1,52.")]
         [SerializeField, Range(0f, 1f)] private float _traceYieldExponent = 0.6f;
 
+        [Tooltip("Puissance de calcul à atteindre pour GAGNER la partie — la clé USB du lore.\n\n" +
+                 "Posée à 1e12 le 2026-09-15. C'est environ quatre fois le pic d'une campagne " +
+                 "mesurée, et grosso modo le dernier Hardware poussé au niveau 100 : débloquer " +
+                 "la dernière machine NE SUFFIT PAS, il faut revenir la faire grandir. Le joueur " +
+                 "devra dépenser ses derniers points de prestige et refaire une run ou deux — " +
+                 "c'est la « semi-douleur » voulue par le GD.\n\n" +
+                 "Monter à 1e13 rendrait la fin nettement plus longue : 43 fois le pic mesuré.")]
+        [SerializeField, Min(1f)] private double _victoryTFlops = 1e12d;
+
+        [Tooltip("Le plafond de jauge suit-il la PUISSANCE du joueur, ou le seul parc Hardware ?\n\n" +
+                 "⚠️ RÉGLAGE STRUCTURANT — il décide si les runs raccourcissent en progressant.\n\n" +
+                 "Décoché, le plafond vient de traceCapIncrease, une statistique portée par les " +
+                 "objets Hardware. Mais la Trace, elle, est alimentée par TOUTE la production : " +
+                 "acheter des Scripts fait monter le numérateur sans le dénominateur. Mesuré, la " +
+                 "durée de run s'effondre de 20 minutes à 3, puis se fige — chaque gain de " +
+                 "puissance est reconverti en run plus courte, jusqu'à un point fixe.\n\n" +
+                 "Coché, le plafond dérive du MÊME agrégat que la Trace et avec le même exposant, " +
+                 "donc la durée de run devient invariante à la puissance. Il ne reste alors que " +
+                 "deux leviers pour tenir plus longtemps : la Furtivité, qui multiplie la durée " +
+                 "par 1/(1−réduction) jusqu'à x6,67 à l'asymptote, et le Blindage.\n\n" +
+                 "La Furtivité NE PEUT PAS y suppléer seule : son asymptote à 85 % laisse passer " +
+                 "15 % du brut quoi qu'il arrive, et ce brut croît sans borne.")]
+        [SerializeField] private bool _dynamicTraceCap = true;
+
+        [Tooltip("Rendement par seconde auquel le plafond dynamique DOUBLE le plafond de base.\n\n" +
+                 "C'est l'ancrage de l'échelle, et il est indispensable : sans lui le facteur de " +
+                 "puissance multiplie un plafond de base déjà à sept chiffres, ce qui a rendu le " +
+                 "joueur littéralement immortel — cent cinquante minutes de run, le plafond de " +
+                 "mesure, sur les quatre postures. L'exposant était bon, la constante fausse de " +
+                 "six ordres de grandeur.")]
+        [SerializeField, Min(1f)] private double _dynamicCapReferenceYield = 1e6d;
+
         [Tooltip("Minutes que met l'A.M.I., À ELLE SEULE, pour remplir une jauge de base non " +
                  "défendue. 0 désactive la traque passive.\n\n" +
                  "⚠️ RÉGLAGE STRUCTURANT — c'est ce qui fait du temps un coût.\n\n" +
@@ -280,6 +312,9 @@ namespace Core.Models.Economy
 
         /// <summary>Exposant liant la Trace d'un générateur à son rendement. Strictement entre 0 et 1.</summary>
         public float TraceYieldExponent => _traceYieldExponent;
+        public double VictoryTFlops => _victoryTFlops;
+        public bool DynamicTraceCap => _dynamicTraceCap;
+        public double DynamicCapReferenceYield => _dynamicCapReferenceYield;
 
         /// <summary>
         /// Trace par seconde générée par la seule traque de l'A.M.I., avant dissipation.

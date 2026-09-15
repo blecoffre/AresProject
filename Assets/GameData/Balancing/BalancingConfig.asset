@@ -14,8 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Core.Models.Economy.BalancingConfigSO
   _baseTraceCap: 5000000
   _maxTraceReduction: 0.85
+  _dynamicTraceCap: 1
+  _dynamicCapReferenceYield: 1e+06
   _dissipationHalfPointRatio: 0.3
   _traceYieldExponent: 0.6
+  _victoryTFlops: 1e+12
   _passiveTraceFillMinutes: 6
   _ghostCacheReductionThreshold: 0.7
   _traceReadoutMinInterval: 0.5

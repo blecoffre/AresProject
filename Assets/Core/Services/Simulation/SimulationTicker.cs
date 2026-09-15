@@ -73,9 +73,21 @@ namespace Core.Services.Simulation
             // Le plafond suit le parc Hardware. Poussé AVANT toute sortie anticipée : une run
             // stabilisée n'appelle jamais AddThreat, et le plafond resterait alors figé sur sa
             // valeur d'avant l'achat — la jauge afficherait un pourcentage périmé.
+            // Le facteur de puissance emploie le MÊME agrégat et le MÊME exposant que la Trace
+            // générée : c'est ce qui rend la durée de run invariante à la puissance, au lieu de
+            // la laisser fondre à chaque achat de Script.
+            // RAPPORT à un rendement de référence, jamais valeur absolue : le facteur doit valoir
+            // 1 quelque part, sinon il multiplie un plafond de base déjà énorme et le joueur
+            // devient immortel.
+            float powerFactor = (float)System.Math.Pow(
+                (1d + _upgradeManager.TotalMoneyYieldPerSecond.CurrentValue)
+                    / _balancing.DynamicCapReferenceYield,
+                _balancing.TraceYieldExponent);
+
             _threatManager.SetCapacity(
                 _upgradeManager.TraceCapacityBonus.CurrentValue,
-                _prestigeManager.TraceCapacityMultiplier.CurrentValue);
+                _prestigeManager.TraceCapacityMultiplier.CurrentValue,
+                powerFactor);
 
             if (!_sessionManager.IsGameActive.Value) return;
 

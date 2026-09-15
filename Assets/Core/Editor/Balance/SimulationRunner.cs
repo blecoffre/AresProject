@@ -422,11 +422,18 @@ namespace Core.Editor.Balance
         /// </summary>
         private static bool IsVictory(SimulationHarness h, CampaignResult campaign)
         {
-            int final = ResolveTopOrderInCatalog(h, UpgradeType.Hardware);
+            // La victoire se mesure en PUISSANCE DE CALCUL, pas en nombre de machines possédées.
+            //
+            // Elle s'est d'abord jugée sur « le dernier Hardware est débloqué », ce qui tombait
+            // au premier exemplaire acheté — donc au moment où le joueur découvre la machine, et
+            // pas au moment où il en a fait quelque chose. Le lore demande l'inverse : la clé USB
+            // est une capacité atteinte, et il faut revenir faire grandir la machine finale pour
+            // y arriver.
+            double target = h.Balancing.VictoryTFlops;
 
             for (int i = 0; i < campaign.Runs.Count; i++)
             {
-                if (campaign.Runs[i].TopHardwareOrder >= final) return true;
+                if (campaign.Runs[i].PeakTFlops >= target) return true;
             }
             return false;
         }
