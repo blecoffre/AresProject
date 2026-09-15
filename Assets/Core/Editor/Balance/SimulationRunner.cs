@@ -55,6 +55,16 @@ namespace Core.Editor.Balance
         public float DurationSeconds;
         public double RunMoney;
         public double CpuCyclesEarned;
+
+        /// <summary>
+        /// Combien de fois le joueur a déclenché le Data Wiper et le Zéro-Day Exploit sur la run.
+        ///
+        /// Sans ces deux compteurs, une mécanique que le modèle n'utilise jamais reste invisible
+        /// dans toutes les mesures — c'est exactement ce qui s'est passé pour les Proxies, tenus
+        /// à 16 % de leur asymptote pendant des jours sans que rien ne le signale.
+        /// </summary>
+        public int EmergencyUses;
+        public int OverdriveTriggers;
         public bool CleanExit;
         public float PeakTraceFraction;
         public float PeakReduction;
@@ -162,7 +172,13 @@ namespace Core.Editor.Balance
 
                 // Le clic passe AVANT le pas : il avance les cycles en cours, et les faire
                 // tourner d'abord reviendrait à cliquer sur l'état de la frame précédente.
+                bool wasOverdrive = h.GhostCache.IsOverdriveActive.CurrentValue;
+
                 strategy.OnTick(h, step);
+
+                // Compté sur le FRONT MONTANT : l'Overdrive dure trente secondes, donc lire son
+                // état à chaque pas compterait un même déclenchement des dizaines de fois.
+                if (!wasOverdrive && h.GhostCache.IsOverdriveActive.CurrentValue) result.OverdriveTriggers++;
 
                 h.Tick(step);
                 elapsed = h.Session.RunElapsedSeconds - startElapsed;
@@ -249,6 +265,10 @@ namespace Core.Editor.Balance
                 double tflops = h.Upgrades.TotalTFlops.CurrentValue;
                 if (tflops > result.PeakTFlops) result.PeakTFlops = tflops;
             }
+
+            // Lu depuis le RÉSUMÉ de fin de run : ResolveRunEnd appelle WipeRun(), qui remet le
+            // compteur d'urgence à zéro. Interrogé après coup, il vaudrait toujours zéro.
+            result.EmergencyUses = hasSummary ? captured.EmergencyUses : h.Emergency.UsesInCurrentRun;
 
             result.DurationSeconds = hasSummary ? captured.ElapsedSeconds : h.Session.RunElapsedSeconds;
             result.RunMoney = hasSummary ? captured.DataGenerated : h.Currencies.RunMoneyGenerated.CurrentValue;

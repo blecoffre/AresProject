@@ -255,6 +255,19 @@ namespace Core.Editor.Balance
                 sb.AppendLine($"              dissipation : {sumPeak / campaign.Runs.Count * 100f:0.0} % en moyenne, "
                               + $"{peak * 100f:0.0} % au mieux");
 
+                // Usage des deux mécaniques actives. Un zéro ici signale une mécanique que le
+                // modèle n'exploite pas — donc une mesure incomplète, pas un réglage à corriger.
+                int wipers = 0;
+                int exploits = 0;
+                for (int i = 0; i < campaign.Runs.Count; i++)
+                {
+                    wipers += campaign.Runs[i].EmergencyUses;
+                    exploits += campaign.Runs[i].OverdriveTriggers;
+                }
+
+                sb.AppendLine($"              mécaniques actives : Data Wiper {wipers} fois, "
+                              + $"Zéro-Day {exploits} fois (sur {campaign.Runs.Count} runs)");
+
                 // Jusqu'où le joueur monte dans les générateurs. Sert à savoir si un palier de
                 // CONTENU — « débloquer SCR_15 » — est un objectif atteignable, donc utilisable
                 // comme vraie fin de partie à la place de la complétion de l'arbre.

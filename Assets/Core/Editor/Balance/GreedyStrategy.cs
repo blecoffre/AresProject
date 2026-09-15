@@ -76,6 +76,12 @@ namespace Core.Editor.Balance
         /// <summary>Reliquat fractionnaire de clics, reporté d'un pas de simulation au suivant.</summary>
         private float _pendingClicks;
 
+        /// <summary>Fraction de jauge au-delà de laquelle le joueur déclenche le Data Wiper.</summary>
+        private readonly float _emergencyThreshold;
+
+        /// <summary>Fraction de jauge au-DESSOUS de laquelle il ose lancer le Zéro-Day Exploit.</summary>
+        private readonly float _exploitCeiling;
+
         /// <summary>
         /// Le joueur ne sort JAMAIS de lui-même : il joue jusqu'à la saisie fédérale.
         ///
@@ -117,8 +123,11 @@ namespace Core.Editor.Balance
                               bool runsUntilSeized = false,
                               HashSet<PrestigeBonusType> ignoredBonuses = null,
                               float clicksPerSecond = 8f, float clickDutyCycle = 0.62f,
-                              float targetReduction = 0.5f)
+                              float targetReduction = 0.5f,
+                              float emergencyThreshold = 0.85f, float exploitCeiling = 0.55f)
         {
+            _emergencyThreshold = emergencyThreshold;
+            _exploitCeiling = exploitCeiling;
             _targetReduction = targetReduction;
             _clicksPerSecond = clicksPerSecond;
             _clickDutyCycle = clickDutyCycle;
@@ -224,7 +233,12 @@ namespace Core.Editor.Balance
         /// </summary>
         public void OnTick(SimulationHarness h, float deltaTime)
         {
-            if (_clicksPerSecond <= 0f || deltaTime <= 0f) return;
+            if (deltaTime <= 0f) return;
+
+            UseEmergencyIfCornered(h);
+            UseExploitIfSafe(h);
+
+            if (_clicksPerSecond <= 0f) return;
 
             // La fatigue ronge le temps effectivement passé à cliquer, jamais la vitesse : un
             // joueur fatigué ne clique pas plus lentement, il clique moins souvent.
@@ -247,6 +261,37 @@ namespace Core.Editor.Balance
             {
                 h.Overclock.TriggerManualOverclock();
             }
+        }
+
+        /// <summary>
+        /// Le Data Wiper, déclenché quand la jauge devient menaçante.
+        ///
+        /// Il efface une part de la Trace au prix d'une tranche de TFlops immobilisée : c'est un
+        /// achat de TEMPS payé en production, donc il n'a de sens que dos au mur. Le déclencher
+        /// tôt gaspillerait la charge sur une jauge qui ne menaçait rien.
+        /// </summary>
+        private void UseEmergencyIfCornered(SimulationHarness h)
+        {
+            if (h.Threat.NormalizedThreat.CurrentValue < _emergencyThreshold) return;
+            if (!h.Emergency.IsUnlocked || h.Emergency.IsOnCooldown || !h.Emergency.HasEnoughPower) return;
+
+            h.Emergency.TryTriggerEmergency();
+        }
+
+        /// <summary>
+        /// Le Zéro-Day Exploit, déclenché quand il reste de la MARGE pour l'encaisser.
+        ///
+        /// Pendant les trente secondes d'Overdrive les Proxies sont hors ligne et la Trace brute
+        /// est multipliée : le lancer sur une jauge déjà haute revient à se suicider pour un
+        /// bonus qu'on n'aura pas le temps d'encaisser. Le joueur attend donc d'avoir de la place,
+        /// ce qui en fait un pari sur la suite de la run et non un bouton gratuit.
+        /// </summary>
+        private void UseExploitIfSafe(SimulationHarness h)
+        {
+            if (!h.GhostCache.IsUnlocked || !h.GhostCache.IsReady) return;
+            if (h.Threat.NormalizedThreat.CurrentValue > _exploitCeiling) return;
+
+            h.GhostCache.TryTriggerOverdrive();
         }
 
         public void OnDecisionPoint(SimulationHarness h)
