@@ -147,6 +147,7 @@ namespace Core.Services.Economy
             // Lue une fois hors de la boucle : la valeur est la même pour les quarante-cinq
             // modèles, c'est précisément ce qui la distingue des bonus ciblés.
             float globalCostReduction = _prestigeManager.CostMultiplierReduction.CurrentValue;
+            float globalAutomation = _prestigeManager.GlobalAutomationReduction.CurrentValue;
 
             foreach (var kvp in _activeUpgrades)
             {
@@ -156,6 +157,7 @@ namespace Core.Services.Economy
                 // au seul calcul d'achat. Tant qu'elle restait un argument, la vue l'oubliait et
                 // affichait un prix plus élevé que celui réellement débité.
                 kvp.Value.SetGlobalCostMultiplierReduction(globalCostReduction);
+                kvp.Value.SetGlobalAutomationReduction(globalAutomation);
             }
 
             RecalculateTotals();

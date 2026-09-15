@@ -72,6 +72,12 @@ namespace Core.Services.Economy
         public ReactiveProperty<float> CleanExitBonusMultiplier { get; } = new(1f);
 
         /// <summary>
+        /// Niveaux retirés au palier d'automatisation de TOUS les Scripts. Remplace quinze
+        /// nœuds ciblés qui éparpillaient le même effet.
+        /// </summary>
+        public ReactiveProperty<float> GlobalAutomationReduction { get; } = new(0f);
+
+        /// <summary>
         /// Multiplicateur du PLAFOND de la jauge de Trace, apporté par la branche Blindage.
         /// Vaut 1 sans aucun nœud acheté.
         ///
@@ -260,6 +266,7 @@ namespace Core.Services.Economy
             float traceCapacityBonus = 0f;
             float proxyEfficiencyBonus = 0f;
             float cleanExitBonus = 0f;
+            float automationReduction = 0f;
             bool emergencyUnlocked = false;
             int exploitCharges = 0;
             double exploitYieldBoost = 0d;
@@ -294,6 +301,10 @@ namespace Core.Services.Economy
 
                     case PrestigeBonusType.CleanExitBonusMultiplier:
                         cleanExitBonus += totalBonus;
+                        break;
+
+                    case PrestigeBonusType.GlobalAutomationReduction:
+                        automationReduction += totalBonus;
                         break;
 
                     case PrestigeBonusType.ClickPowerMultiplier:
@@ -367,6 +378,7 @@ namespace Core.Services.Economy
             // Proxies moins efficaces qu'à l'origine.
             ProxyEfficiencyMultiplier.Value = UnityEngine.Mathf.Max(1f, 1f + proxyEfficiencyBonus);
             CleanExitBonusMultiplier.Value = UnityEngine.Mathf.Max(1f, 1f + cleanExitBonus);
+            GlobalAutomationReduction.Value = UnityEngine.Mathf.Max(0f, automationReduction);
             ClickPowerMultiplier.Value = 1f + clickBonus;
             CostMultiplierReduction.Value = costReduction;
             StartingMoney.Value = startingFunds;
@@ -448,6 +460,7 @@ namespace Core.Services.Economy
             TraceCapacityMultiplier.Dispose();
             ProxyEfficiencyMultiplier.Dispose();
             CleanExitBonusMultiplier.Dispose();
+            GlobalAutomationReduction.Dispose();
             ClickPowerMultiplier.Dispose();
             CostMultiplierReduction.Dispose();
             StartingMoney.Dispose();

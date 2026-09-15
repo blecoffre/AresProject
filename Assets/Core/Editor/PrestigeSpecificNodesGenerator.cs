@@ -21,12 +21,6 @@ namespace Core.Economy.Tools
         /// <summary>Écartement des arêtes pour les branches à deux ramifications.</summary>
         private const int DefaultColumnStep = 2;
 
-        /// <summary>
-        /// Écartement des arêtes de la branche Scripts, qui en porte trois. La troisième part en
-        /// diagonale : sans cette case supplémentaire, sa ligne passerait au ras du nœud TEMPS.
-        /// </summary>
-        private const int ScriptColumnStep = 3;
-
         [MenuItem("Tools/Core/Générer JSON (Grille - Arête de poisson Corrigée)")]
         public static void ShowWindow()
         {
@@ -49,6 +43,19 @@ namespace Core.Economy.Tools
             {
                 GenerateGridJson();
             }
+        }
+
+        /// <summary>
+        /// Génère le fichier avec les réglages par défaut, sans ouvrir la fenêtre.
+        ///
+        /// La génération n'était accessible que par un bouton, donc impossible à déclencher
+        /// autrement qu'à la main — et ce fichier étant une SORTIE, toute retouche de son JSON
+        /// était condamnée au prochain passage. Le piège avait déjà coûté deux sessions.
+        /// </summary>
+        [MenuItem("Tools/Core/Générer les nœuds ciblés (04_SpecificUpgrades)")]
+        public static void GenerateFromMenu()
+        {
+            CreateInstance<PrestigeSpecificNodesGenerator>().GenerateGridJson();
         }
 
         private void GenerateGridJson()
@@ -83,14 +90,11 @@ namespace Core.Economy.Tools
 
             PrestigeJsonDatabase database = new PrestigeJsonDatabase { items = new List<PrestigeItemData>() };
 
-            // On génère les 3 branches en s'assurant de passer la bonne racine de référence.
-            //
-            // Les Scripts avancent de TROIS cases par arête, les deux autres de deux. Eux seuls
-            // portent quatre nœuds : la quatrième ramification part en diagonale, et à deux cases
-            // d'écart sa ligne de liaison frôlerait le nœud TEMPS à cinquante pixels. La branche
-            // Scripts est donc plus longue que les deux autres — c'est le prix d'un lien lisible.
+            // Les trois branches avancent au même pas depuis que chaque générateur ne porte
+            // plus que DEUX nœuds. Les Scripts avaient besoin d'une case de plus tant qu'ils en
+            // portaient quatre, la ramification diagonale frôlant sinon le nœud voisin.
             CreateFishboneBranch(database, allUpgrades.Where(u => u.Type == UpgradeType.Script).OrderBy(u => u.Order).ToList(),
-                new Vector2Int(-4, 6), _scriptBranchRootId, ScriptColumnStep);
+                new Vector2Int(-4, 6), _scriptBranchRootId, DefaultColumnStep);
 
             CreateFishboneBranch(database, allUpgrades.Where(u => u.Type == UpgradeType.Hardware).OrderBy(u => u.Order).ToList(),
                 new Vector2Int(-4, 0), _hardwareBranchRootId, DefaultColumnStep);
@@ -138,33 +142,22 @@ namespace Core.Economy.Tools
                 Vector2Int prodPos = currentPos + new Vector2Int(0, 1);
                 db.items.Add(CreateGridItem(prodId, target, "SpecificUpgradeYieldBoost", mainCostId, prodPos));
 
-                // --- 3. RAMIFICATION BAS : RÉDUCTION DE TEMPS, SCRIPTS UNIQUEMENT ---
-                // Seuls les Scripts ont un cycle. Générer ce nœud pour un Hardware ou un Proxy
-                // (baseCycleDuration = 0) produisait un piège à débutant : un nœud achetable,
-                // payé en CPU Cycles, et sans le moindre effet.
-                if (target.Type == UpgradeType.Script)
-                {
-                    string timeId = $"P_UPG_{target.Id}_TIME";
-                    Vector2Int timePos = currentPos + new Vector2Int(0, -1);
-                    db.items.Add(CreateGridItem(timeId, target, "SpecificUpgradeTimeReduction", mainCostId, timePos));
-
-                    // --- 4. RAMIFICATION DIAGONALE : PALIER D'AUTOMATISATION, SCRIPTS UNIQUEMENT ---
-                    // Eux seuls relancent des cycles, donc eux seuls ont quelque chose à automatiser.
-                    //
-                    // Le prérequis est le nœud COST, comme les deux autres ramifications : les
-                    // trois rayonnent depuis la même arête, et c'est ce qui doit se LIRE. La
-                    // position part en diagonale parce que la dorsale occupe déjà la gauche et la
-                    // droite du nœud principal, PROD le haut et TEMPS le bas — il ne reste que
-                    // les diagonales pour un quatrième lien qui ne traverse rien.
-                    //
-                    // Le bonus vaut 5 : c'est un NOMBRE DE NIVEAUX retirés au palier, pas une
-                    // fraction. Seul nœud du jeu dans ce cas, d'où le paramètre explicite — et
-                    // comme les autres, il porte d'un coup ce que ses cinq rangs apportaient.
-                    string autoId = $"P_UPG_{target.Id}_AUTO";
-                    Vector2Int autoPos = currentPos + new Vector2Int(-1, -1);
-                    db.items.Add(CreateGridItem(
-                        autoId, target, "SpecificUpgradeAutomationTresholdReduction", mainCostId, autoPos, 5f));
-                }
+                // --- DEUX NŒUDS PAR GÉNÉRATEUR, ET PAS QUATRE ---
+                //
+                // Les Scripts en avaient deux de plus : réduction de DURÉE et abaissement du
+                // palier d'AUTOMATISATION. Tous deux supprimés le 2026-09-15, pour rendre les
+                // nœuds restants significatifs plutôt que d'éparpiller le même budget sur quatre.
+                //
+                // La DURÉE faisait doublon : c'est le rôle du Hardware, via la compression par
+                // TFlops, et la ladder de paliers des Scripts en donne déjà à 10, 50 et 150. On
+                // venait de passer des semaines à séparer les rôles des trois piliers ; ce nœud
+                // les remélangeait. Son apport est reversé dans le RENDEMENT, qui double
+                // désormais au lieu de majorer de moitié.
+                //
+                // L'AUTOMATISATION devient un nœud GLOBAL unique, écrit à la main. Mesuré avant
+                // la fusion, sa famille pesait NÉGATIVEMENT sur la puissance d'une campagne : elle
+                // ne porte pas de production, elle porte un objectif — celui d'arrêter de cliquer.
+                // Un objectif se donne une fois, pas quinze.
 
                 // --- MISE À JOUR POUR LE PROCHAIN TOUR ---
                 // On mémorise le nœud COST actuel pour qu'il devienne le parent du suivant
@@ -186,7 +179,7 @@ namespace Core.Economy.Tools
         /// −10 % de coût, +10 % de rendement, −10 % de durée. Un NOMBRE DE NIVEAUX pour le nœud
         /// d'automatisation, qui déplace un palier et non un pourcentage.
         /// </param>
-        private PrestigeItemData CreateGridItem(string id, UpgradeConfigSO target, string bonusType, string prereqId, Vector2Int pos, float bonus = 0.5f)
+        private PrestigeItemData CreateGridItem(string id, UpgradeConfigSO target, string bonusType, string prereqId, Vector2Int pos, float bonus = 1.0f)
         {
             return new PrestigeItemData
             {

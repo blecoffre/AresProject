@@ -99,6 +99,12 @@ namespace Core.Models.Economy
         /// </summary>
         private float _globalCostMultiplierReduction;
 
+        /// <summary>
+        /// Niveaux retirés au palier d'automatisation par la méta-progression GLOBALE,
+        /// en plus du bonus ciblé. Un seul nœud d'arbre les donne à tous les Scripts.
+        /// </summary>
+        private float _globalAutomationReduction;
+
 
         public UpgradeModel(UpgradeConfigSO config, BalancingConfigSO balancing, int savedLevel = 0)
         {
@@ -124,7 +130,8 @@ namespace Core.Models.Economy
                 // Arrondi et non troncature : un bonus de 1 par rang stocké en float peut valoir
                 // 0,99999994, et (int)(0,99999994 × 3) rendrait 2 niveaux au lieu de 3. Même
                 // piège que celui déjà rencontré sur les charges du Ghost Cache.
-                int reduction = UnityEngine.Mathf.RoundToInt(_bonuses.AutomationThresholdReduction);
+                int reduction = UnityEngine.Mathf.RoundToInt(
+                    _bonuses.AutomationThresholdReduction + _globalAutomationReduction);
                 if (reduction < 0) reduction = 0;
 
                 return Math.Max(1, Config.AutomationLevel - reduction);
@@ -168,6 +175,15 @@ namespace Core.Models.Economy
         /// SetTFlops : la valeur est poussée à tous les modèles à chaque recalcul des bonus,
         /// alors qu'elle ne bouge qu'à l'achat d'un nœud de prestige.
         /// </summary>
+        /// <summary>
+        /// Abaissement GLOBAL du palier d'automatisation. Ne touche pas au cache : le palier
+        /// se recalcule à la lecture, il n'entre dans aucune formule mise en cache.
+        /// </summary>
+        public void SetGlobalAutomationReduction(float reduction)
+        {
+            _globalAutomationReduction = reduction < 0f ? 0f : reduction;
+        }
+
         public void SetGlobalCostMultiplierReduction(float reduction)
         {
             float safe = reduction < 0f ? 0f : reduction;

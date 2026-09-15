@@ -68,6 +68,18 @@
       "posY": 5.0,
       "prerequisiteId": "P_OVERCLOCK_POWER_3",
       "requiredLevel": 0
+    },
+    {
+      "id": "P_AUTO_GLOBAL",
+      "bonusType": "GlobalAutomationReduction",
+      "maxLevel": 1,
+      "baseCost": 1.0,
+      "costMult": 1.0,
+      "bonus": 5.0,
+      "posX": 7.0,
+      "posY": 5.0,
+      "prerequisiteId": "P_OVERCLOCK_AWAKE",
+      "requiredLevel": 0
     }
   ]
 }

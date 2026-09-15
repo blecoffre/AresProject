@@ -104,6 +104,10 @@ namespace Core.UI.Prestige
                 case PrestigeBonusType.CleanExitBonusMultiplier:
                     return loc.GetText("UI_PRESTIGE_EFFECT_CLEAN_EXIT", AsPercent(perLevel));
 
+                // Un NOMBRE DE NIVEAUX, pas un pourcentage : pas d'AsPercent ici.
+                case PrestigeBonusType.GlobalAutomationReduction:
+                    return loc.GetText("UI_PRESTIGE_EFFECT_AUTOMATION_GLOBAL", perLevel);
+
                 case PrestigeBonusType.ExploitYieldBoost:
                     return loc.GetText("UI_PRESTIGE_EFFECT_EXPLOIT_YIELD", AsPercent(perLevel));
 

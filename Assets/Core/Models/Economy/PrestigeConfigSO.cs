@@ -64,7 +64,17 @@ namespace Core.Models.Economy
         // Les paliers valent +15/+30/+50 % nus ; cette branche les fait monter, donc plus le
         // joueur investit ici, plus il a de raisons d'aller chercher le palier suivant — et
         // plus une saisie lui coûte cher. Elle achète de l'appât, pas de la sécurité.
-        CleanExitBonusMultiplier
+        CleanExitBonusMultiplier,
+
+        /// Automatisation GLOBALE — abaisse le palier d'auto-relance de TOUS les Scripts d'un
+        /// coup. Ajouté le 2026-09-15, appendé en fin comme tous les autres : l'index est
+        /// sérialisé.
+        ///
+        /// Remplace quinze nœuds ciblés, un par Script, qui éparpillaient le même effet. Mesuré
+        /// avant la fusion : la famille d'automatisation pesait NÉGATIVEMENT sur la puissance
+        /// d'une campagne — elle ne porte pas de production, elle porte un objectif, celui
+        /// d'arrêter de cliquer. Un objectif se donne une fois, pas quinze.
+        GlobalAutomationReduction
     }
 
     [CreateAssetMenu(fileName = "NewPrestigeConfig", menuName = "Core/Economy/Prestige Config")]

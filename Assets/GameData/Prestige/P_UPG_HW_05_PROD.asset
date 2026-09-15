@@ -19,7 +19,7 @@ MonoBehaviour:
   _maxLevel: 1
   _baseCost: 1
   _costMultiplier: 1.4
-  _bonusPerLevel: 0.5
+  _bonusPerLevel: 1
   _uiPosition: {x: -12, y: 1}
   _requirement:
     _node: {fileID: 11400000, guid: 18ce100e09ab72d4e8e9493b2298f47b, type: 2}
