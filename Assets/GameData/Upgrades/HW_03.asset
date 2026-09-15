@@ -17,11 +17,11 @@ MonoBehaviour:
   _displayDescriptionKey: UPG_HW_03_DESC
   _type: 1
   _order: 3
-  _baseCost: 389.613
-  _costMultiplier: 1.26
-  _baseProductionYield: 50
-  _traceGeneratedPerSecond: 9.288
-  _traceCapIncrease: 262000
+  _baseCost: 879.787
+  _costMultiplier: 1.254
+  _baseProductionYield: 17.1889
+  _traceGeneratedPerSecond: 2.6496
+  _traceCapIncrease: 93502.4
   _baseCycleDuration: 1
   _minCycleDuration: 0.1
   _durationReductionPerLevel: 0

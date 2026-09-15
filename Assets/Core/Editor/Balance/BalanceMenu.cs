@@ -285,8 +285,14 @@ namespace Core.Editor.Balance
                     if (campaign.Runs[i].PeakTFlops > peakTFlops) peakTFlops = campaign.Runs[i].PeakTFlops;
                 }
 
-                sb.AppendLine($"              contenu atteint : SCR_{topEver:00} / 15, "
-                              + $"HW_{topHw:00} / 15, pic {peakTFlops:0.000e+00} TFlops");
+                // Bornes LUES dans le catalogue. Codées en dur à 15, elles ont survécu au
+                // passage à 25 Scripts et 20 Hardware en affichant « SCR_18 / 15 ».
+                using var probe = new SimulationHarness();
+                int lastScript = SimulationRunner.ResolveTopOrderInCatalog(probe, UpgradeType.Script);
+                int lastHardware = SimulationRunner.ResolveTopOrderInCatalog(probe, UpgradeType.Hardware);
+
+                sb.AppendLine($"              contenu atteint : SCR_{topEver:00} / {lastScript}, "
+                              + $"HW_{topHw:00} / {lastHardware}, pic {peakTFlops:0.000e+00} TFlops");
             }
         }
 

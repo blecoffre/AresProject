@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1759b2500d90c2c4db746c32d6bb882f, type: 3}
+  m_Name: SCR_19
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Models.Economy.UpgradeConfigSO
+  _id: SCR_19
+  _displayNameKey: UPG_SCR_19_NAME
+  _displayDescriptionKey: UPG_SCR_19_DESC
+  _type: 0
+  _order: 19
+  _baseCost: 184543000000
+  _costMultiplier: 1.285
+  _baseProductionYield: 150424000
+  _traceGeneratedPerSecond: 12553.4
+  _traceCapIncrease: 0
+  _baseCycleDuration: 514.339
+  _minCycleDuration: 48.2057
+  _durationReductionPerLevel: 5.94604
+  _automationLevel: 10
+  _milestones:
+  - Level: 10
+    Effect: 1
+    Factor: 0.8
+  - Level: 25
+    Effect: 0
+    Factor: 1.5
+  - Level: 50
+    Effect: 1
+    Factor: 0.8
+  - Level: 100
+    Effect: 0
+    Factor: 1.5
+  - Level: 150
+    Effect: 1
+    Factor: 0.8
+  - Level: 250
+    Effect: 0
+    Factor: 1.5

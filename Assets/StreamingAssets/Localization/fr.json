@@ -429,6 +429,126 @@
       "Value": "Une virgule déplacée dans une décision de banque centrale. Les marchés font le travail."
     },
     {
+      "Key": "UPG_SCR_16_NAME",
+      "Value": "Falsification des Réserves d'Or"
+    },
+    {
+      "Key": "UPG_SCR_16_DESC",
+      "Value": "Des lingots qui n'existent que dans un registre. Personne ne descend jamais vérifier."
+    },
+    {
+      "Key": "UPG_SCR_17_NAME",
+      "Value": "Contrôle des Places Asiatiques"
+    },
+    {
+      "Key": "UPG_SCR_17_DESC",
+      "Value": "Tu ouvres et tu fermes les marchés à l'heure qui t'arrange."
+    },
+    {
+      "Key": "UPG_SCR_18_NAME",
+      "Value": "Émission de Dette Souveraine Fantôme"
+    },
+    {
+      "Key": "UPG_SCR_18_DESC",
+      "Value": "Un pays emprunte à ton nom, sans le savoir, et rembourse avec le tien."
+    },
+    {
+      "Key": "UPG_SCR_19_NAME",
+      "Value": "Rachat Hostile d'un État"
+    },
+    {
+      "Key": "UPG_SCR_19_DESC",
+      "Value": "Assez de créances pour siéger au conseil. Officieusement, il n'y a plus de conseil."
+    },
+    {
+      "Key": "UPG_SCR_20_NAME",
+      "Value": "Détournement du FMI"
+    },
+    {
+      "Key": "UPG_SCR_20_DESC",
+      "Value": "Les plans de sauvetage transitent par un compte qui est le tien."
+    },
+    {
+      "Key": "UPG_SCR_21_NAME",
+      "Value": "Indexation Parallèle des Monnaies"
+    },
+    {
+      "Key": "UPG_SCR_21_DESC",
+      "Value": "Tu décides de ce que vaut l'argent avant que les banques centrales ne s'en aperçoivent."
+    },
+    {
+      "Key": "UPG_SCR_22_NAME",
+      "Value": "Marché Noir de l'Énergie Mondiale"
+    },
+    {
+      "Key": "UPG_SCR_22_DESC",
+      "Value": "Un continent s'éclaire ou s'éteint selon ce que tu as facturé ce matin."
+    },
+    {
+      "Key": "UPG_SCR_23_NAME",
+      "Value": "Privatisation Silencieuse des Infrastructures"
+    },
+    {
+      "Key": "UPG_SCR_23_DESC",
+      "Value": "Les routes, l'eau, les câbles. Rien n'a changé de nom, tout a changé de propriétaire."
+    },
+    {
+      "Key": "UPG_SCR_24_NAME",
+      "Value": "Économie Synthétique Autonome"
+    },
+    {
+      "Key": "UPG_SCR_24_DESC",
+      "Value": "Elle produit, échange et spécule toute seule. Tu ne fais plus qu'encaisser."
+    },
+    {
+      "Key": "UPG_SCR_25_NAME",
+      "Value": "Réécriture du Registre Financier Mondial"
+    },
+    {
+      "Key": "UPG_SCR_25_DESC",
+      "Value": "Tu ne voles plus l'argent : tu réécris qui l'a jamais possédé."
+    },
+    {
+      "Key": "UPG_HW_16_NAME",
+      "Value": "Essaim de Calcul Orbital"
+    },
+    {
+      "Key": "UPG_HW_16_DESC",
+      "Value": "Quatre cents satellites déclassés qui calculent pour toi entre deux passages."
+    },
+    {
+      "Key": "UPG_HW_17_NAME",
+      "Value": "Réquisition d'un Réseau Électrique National"
+    },
+    {
+      "Key": "UPG_HW_17_DESC",
+      "Value": "Un pays entier alimente ta salle machine. Les délestages, c'est toi."
+    },
+    {
+      "Key": "UPG_HW_18_NAME",
+      "Value": "Coprocesseur Biologique"
+    },
+    {
+      "Key": "UPG_HW_18_DESC",
+      "Value": "Des neurones cultivés en cuve. Ça n'est pas légal, et ça n'est pas propre."
+    },
+    {
+      "Key": "UPG_HW_19_NAME",
+      "Value": "Grappe Quantique Distribuée"
+    },
+    {
+      "Key": "UPG_HW_19_DESC",
+      "Value": "Chaque calcul se fait dans tous les états possibles, et tu ne gardes que le bon."
+    },
+    {
+      "Key": "UPG_HW_20_NAME",
+      "Value": "Singularité Contenue"
+    },
+    {
+      "Key": "UPG_HW_20_DESC",
+      "Value": "Elle tient dans une clé USB et elle pense plus vite que le reste du monde réuni."
+    },
+    {
       "Key": "UPG_SCR_15_NAME",
       "Value": "Prise de Contrôle du Réseau SWIFT"
     },
@@ -911,6 +1031,18 @@
     {
       "Key": "UI_PRESTIGE_EFFECT_CLEAN_EXIT",
       "Value": "> Bonus des paliers d'extraction : +{0:0.##} % par niveau"
+    },
+    {
+      "Key": "PRESTIGE_P_AUTO_GLOBAL_NAME",
+      "Value": "Ordonnanceur Autonome"
+    },
+    {
+      "Key": "PRESTIGE_P_AUTO_GLOBAL_DESC",
+      "Value": "Tes scripts n'attendent plus qu'on leur dise de repartir. Tu peux enfin lâcher la souris."
+    },
+    {
+      "Key": "UI_PRESTIGE_EFFECT_AUTOMATION_GLOBAL",
+      "Value": "> Palier d'automatisation de TOUS les Scripts : -{0} par niveau"
     },
     {
       "Key": "UI_PRESTIGE_EFFECT_START_MONEY",

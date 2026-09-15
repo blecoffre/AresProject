@@ -17,11 +17,11 @@ MonoBehaviour:
   _displayDescriptionKey: UPG_HW_08_DESC
   _type: 1
   _order: 8
-  _baseCost: 6510680
-  _costMultiplier: 1.34
-  _baseProductionYield: 25000
-  _traceGeneratedPerSecond: 372.6
-  _traceCapIncrease: 10900000
+  _baseCost: 1142610
+  _costMultiplier: 1.315
+  _baseProductionYield: 3722.11
+  _traceGeneratedPerSecond: 51.2769
+  _traceCapIncrease: 1791330
   _baseCycleDuration: 1
   _minCycleDuration: 0.1
   _durationReductionPerLevel: 0

@@ -288,7 +288,7 @@ namespace Core.Editor.Balance
 
             while (campaign.TotalSeconds < budget
                    && campaign.Runs.Count < options.MaxRuns
-                   && !IsVictory(campaign))
+                   && !IsVictory(h, campaign))
             {
                 RunResult run = RunOnce(h, strategy, options);
                 campaign.TotalSeconds += run.DurationSeconds;
@@ -322,7 +322,7 @@ namespace Core.Editor.Balance
             }
 
             campaign.FinalCleanExitBonus = h.Prestige.CleanExitBonusMultiplier.CurrentValue;
-            campaign.Victory = IsVictory(campaign);
+            campaign.Victory = IsVictory(h, campaign);
             campaign.TreeComplete = IsTreeComplete(h);
             campaign.TreeProgress = ResolveTreeProgress(h);
             return campaign;
@@ -420,17 +420,34 @@ namespace Core.Editor.Balance
         /// l'ancien critère, la campagne s'arrêtait à SCR_07 sur 15 — elle finissait à
         /// mi-parcours du contenu réel, et toute calibration faite dessus mesurait un autre jeu.
         /// </summary>
-        private static bool IsVictory(CampaignResult campaign)
+        private static bool IsVictory(SimulationHarness h, CampaignResult campaign)
         {
+            int final = ResolveTopOrderInCatalog(h, UpgradeType.Hardware);
+
             for (int i = 0; i < campaign.Runs.Count; i++)
             {
-                if (campaign.Runs[i].TopHardwareOrder >= FinalHardwareOrder) return true;
+                if (campaign.Runs[i].TopHardwareOrder >= final) return true;
             }
             return false;
         }
 
-        /// <summary>Rang du dernier Hardware, « Architecture IA Non Alignée ».</summary>
-        private const int FinalHardwareOrder = 15;
+        /// <summary>
+        /// Rang du DERNIER Hardware du catalogue, lu et non codé en dur.
+        ///
+        /// Il valait 15 en constante, et le jour où l'échelle est passée à vingt paliers la
+        /// victoire s'est mise à se déclencher aux trois quarts du contenu — en annonçant
+        /// « VICTOIRE » sur des campagnes qui n'avaient rien fini.
+        /// </summary>
+        public static int ResolveTopOrderInCatalog(SimulationHarness h, UpgradeType type)
+        {
+            IReadOnlyList<UpgradeModel> all = h.Upgrades.GetUpgradesOfType(type);
+            int top = 0;
+            for (int i = 0; i < all.Count; i++)
+            {
+                if (all[i].Config.Order > top) top = all[i].Config.Order;
+            }
+            return top;
+        }
 
         /// <summary>
         /// Runs consécutives sans progression du cumul avant de déclarer la campagne bloquée.

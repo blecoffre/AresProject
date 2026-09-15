@@ -17,14 +17,14 @@ MonoBehaviour:
   _displayDescriptionKey: UPG_SCR_11_DESC
   _type: 0
   _order: 11
-  _baseCost: 28880200000
-  _costMultiplier: 1.29
-  _baseProductionYield: 35000000
-  _traceGeneratedPerSecond: 12528
+  _baseCost: 5051120
+  _costMultiplier: 1.225
+  _baseProductionYield: 34910.3
+  _traceGeneratedPerSecond: 294.311
   _traceCapIncrease: 0
-  _baseCycleDuration: 120
-  _minCycleDuration: 15
-  _durationReductionPerLevel: 2
+  _baseCycleDuration: 38.416
+  _minCycleDuration: 4.21116
+  _durationReductionPerLevel: 0.347726
   _automationLevel: 10
   _milestones:
   - Level: 10
