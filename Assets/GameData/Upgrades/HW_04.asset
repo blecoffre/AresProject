@@ -17,7 +17,7 @@ MonoBehaviour:
   _displayDescriptionKey: UPG_HW_04_DESC
   _type: 1
   _order: 4
-  _baseCost: 18000
+  _baseCost: 2382.79
   _costMultiplier: 1.28
   _baseProductionYield: 120
   _traceGeneratedPerSecond: 19.62

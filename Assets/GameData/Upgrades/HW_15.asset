@@ -17,7 +17,7 @@ MonoBehaviour:
   _displayDescriptionKey: UPG_HW_15_DESC
   _type: 1
   _order: 15
-  _baseCost: 4.251528e+17
+  _baseCost: 33911200000000
   _costMultiplier: 1.46
   _baseProductionYield: 1500000000
   _traceGeneratedPerSecond: 62820

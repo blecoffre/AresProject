@@ -17,7 +17,7 @@ MonoBehaviour:
   _displayDescriptionKey: UPG_SCR_12_DESC
   _type: 0
   _order: 12
-  _baseCost: 688905000000000
+  _baseCost: 336991000000
   _costMultiplier: 1.3
   _baseProductionYield: 200000000
   _traceGeneratedPerSecond: 21420
