@@ -15,7 +15,7 @@ MonoBehaviour:
   _baseTraceCap: 5000000
   _maxTraceReduction: 0.85
   _dynamicTraceCap: 1
-  _dynamicCapReferenceYield: 1e+06
+  _dynamicCapReferenceYield: 3e+05
   _dissipationHalfPointRatio: 0.3
   _traceYieldExponent: 0.6
   _victoryTFlops: 1e+12
