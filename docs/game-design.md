@@ -239,6 +239,65 @@ la fois le Hardware et le Blindage.
 La cible de 10 heures est désormais atteinte par un **style de jeu**, pas par une constante à
 caler : le prudent fait une campagne longue, le téméraire une campagne courte.
 
+### Le PLAFOND suit la puissance, et la Furtivité décide de la durée (tranché le 2026-09-15)
+
+Le plafond de jauge dérive du même agrégat que la Trace, et avec le même exposant. La durée d'une
+run devient donc **invariante à la puissance**.
+
+**Le défaut corrigé.** La Trace est alimentée par TOUTE la production, mais le plafond ne venait
+que de `traceCapIncrease`, une statistique secondaire portée par les objets Hardware. Acheter des
+Scripts faisait monter le numérateur sans le dénominateur. Mesuré : la durée de run s'effondrait de
+vingt minutes à trois, puis se figeait — chaque gain de puissance était immédiatement reconverti en
+run plus courte, jusqu'à un point fixe. Les 10 derniers pour-cent de jauge finissaient par passer en
+deux secondes, rendant le dernier palier d'extraction arithmétiquement injouable.
+
+| | Plafond statique | Plafond dynamique |
+|---|---|---|
+| Durée des runs, sur 202 runs | 20 min → 3 min, puis figée | **3,4 → 3,4 → 3,4 → 3,8** |
+| Marge après le palier 90 % | 2 s | 10 s à 1,2 min |
+| Saisies, posture agressive | 15 | **1** |
+
+**La Furtivité devient le seul levier de durée**, et c'est visible dans les chiffres :
+
+| Dissipation tenue | Durée de run |
+|---|---|
+| 23,0 % | 3,4 min |
+| 51,5 % | 5,6 min |
+| 61,1 % | 7,0 min |
+
+C'est la relation `1/(1−R)`, bornée à ×6,67 par l'asymptote. **La Furtivité ne pouvait PAS suppléer
+au plafond statique** : son asymptote laisse passer 15 % du brut quoi qu'il arrive, alors que le
+brut croît sans borne. Mais une fois le plafond rendu dynamique, elle hérite du rôle entier.
+
+⚠️ **Le facteur se calcule en RAPPORT à un rendement de référence**, jamais en valeur absolue.
+Sans cette normalisation il multiplie un plafond de base à sept chiffres : mesuré, cent cinquante
+minutes de run sur les quatre postures, le joueur littéralement immortel. L'exposant était bon, la
+constante fausse de six ordres de grandeur.
+
+**Ce que le Hardware perd, et ce qu'il garde.** Il perd `traceCapIncrease`, une statistique
+secondaire. Il garde l'intégralité de son rôle : les TFlops n'alimentent QUE les Scripts, en
+majorant leur rendement et en raccourcissant leurs cycles. Vérifié dans le code avant de trancher.
+Les rôles en ressortent plus nets qu'avant — Scripts : ce que tu gagnes. Hardware : la vitesse et
+la force avec lesquelles tu le gagnes. Furtivité : combien de temps tu tiens.
+
+Le réglage reste **basculable** (`DynamicTraceCap`), pour pouvoir mesurer les deux sans toucher au
+code.
+
+## La VICTOIRE — atteindre 1e12 TFlops (tranché le 2026-09-15)
+
+Le lore est le hack d'une clé USB surpuissante : la fin se mesure en **capacité de calcul**.
+
+Le critère s'est d'abord jugé sur « le dernier Hardware est débloqué », ce qui tombait au premier
+exemplaire acheté — au moment où le joueur DÉCOUVRE la machine, pas au moment où il en a fait
+quelque chose.
+
+**Seuil : 1e12 TFlops.** C'est environ quatre fois le pic d'une campagne mesurée, et grosso modo le
+dernier Hardware poussé au niveau 100. Débloquer la machine finale ne suffit pas : il faut revenir
+la faire grandir, donc dépenser ses derniers points de prestige et refaire une run ou deux.
+
+⚠️ **Aucun écran de victoire n'existe dans le jeu.** Le seuil n'est câblé que dans le harnais de
+mesure. C'est une fonctionnalité à écrire.
+
 ### La trace suit le rendement, à un exposant strictement entre 0 et 1
 
 **Tranché le 2026-08-31, annule et remplace le « coût de surface » du 30/08.**
