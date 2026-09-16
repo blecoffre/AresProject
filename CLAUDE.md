@@ -78,6 +78,7 @@ Bertrand travaille **thème par thème, au fil de l'eau**. Il relit et vérifie 
 | `docs/architecture.md` | Avant toute modification structurelle : scopes VContainer, flux R3, cycle de vie. |
 | `docs/persistence.md` | Avant d'ajouter ou de modifier un champ sauvegardé. Contient la règle d'or du `GameStateGateway`. |
 | `docs/cycles.md` | Avant de toucher à la production, aux paliers ou aux données d'upgrades (schéma JSON inclus). |
+| `docs/etat-des-lieux.md` | **À lire en premier pour toute reprise d'équilibrage.** Où on en est, ce qui reste, et les pièges à connaître avant de toucher un réglage. |
 | `docs/backlog.md` | Ce qui reste de l'audit : bugs connus, dette assumée, TODO manuels en attente. |
 
 ## Pipeline de données
