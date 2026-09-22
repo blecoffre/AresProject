@@ -34,6 +34,7 @@ namespace Core.Services.Persistence
         private readonly GhostCacheSystem _ghostCache;
         private readonly GameSessionManager _sessionManager;
         private readonly BuyQuantitySelector _buyQuantity;
+        private readonly VictorySystem _victory;
 
         // Instance et tampons réutilisés d'une capture à l'autre : un autosave ne doit rien allouer
         // en dehors de la chaîne JSON elle-même.
@@ -56,7 +57,8 @@ namespace Core.Services.Persistence
             EmergencyProtocolSystem emergencyProtocol,
             GhostCacheSystem ghostCache,
             GameSessionManager sessionManager,
-            BuyQuantitySelector buyQuantity)
+            BuyQuantitySelector buyQuantity,
+            VictorySystem victory)
         {
             _currencies = currencies;
             _upgradeManager = upgradeManager;
@@ -67,6 +69,7 @@ namespace Core.Services.Persistence
             _ghostCache = ghostCache;
             _sessionManager = sessionManager;
             _buyQuantity = buyQuantity;
+            _victory = victory;
         }
 
         /// <summary>
@@ -89,6 +92,13 @@ namespace Core.Services.Persistence
             // aux Game Over, et sans lui une sauvegarde rechargée réattribuerait les paliers
             // déjà encaissés.
             _currencies.RestoreCampaignProgress(data.CampaignDatasBanked, data.CpuCyclesAwarded);
+
+            // ⚠️ La victoire se restaure ICI, AVANT les générateurs de l'étape 2 — et l'ordre est
+            // la seule chose qui empêche le bug. InitializeFromSave recalcule les totaux, donc
+            // pousse une valeur dans TotalTFlops, que le VictorySystem observe : sur une partie
+            // déjà gagnée, poser le drapeau après rejouerait la séquence de victoire à chaque
+            // ouverture du jeu.
+            _victory.Restore(data.HasWon);
 
             // 2. Générateurs de la run
             FillLevels(data.Upgrades, _upgradeLevels);
@@ -146,6 +156,7 @@ namespace Core.Services.Persistence
             _buffer.TotalCpuCycles = _currencies.TotalCpuCyclesGenerated.CurrentValue;
             _buffer.CampaignDatasBanked = _currencies.CampaignDatasBanked.CurrentValue;
             _buffer.CpuCyclesAwarded = _currencies.CpuCyclesAwarded.CurrentValue;
+            _buffer.HasWon = _victory.Capture();
             _buffer.TotalDetections = _currencies.TotalNumberOfDetections.CurrentValue;
 
             _buffer.CurrentTrace = _threatManager.CurrentTrace.CurrentValue;

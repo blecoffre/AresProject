@@ -34,7 +34,7 @@ namespace Core.Models
         /// correspondant dans Migrate(). Sans ça, le premier changement post-lancement casse
         /// silencieusement les sauvegardes des joueurs.
         /// </summary>
-        public const int CurrentVersion = 9;
+        public const int CurrentVersion = 10;
 
         /// <summary>
         /// Le plafond de Trace tel qu'il était FIGÉ jusqu'en v6. Sert uniquement à convertir
@@ -76,6 +76,15 @@ namespace Core.Models
         /// dépensé lui rendrait tous les paliers déjà encaissés.
         /// </summary>
         public double CpuCyclesAwarded;
+
+        /// <summary>
+        /// Le seuil de victoire en TFlops a été atteint au moins une fois.
+        ///
+        /// De la MÉTA-progression, donc insensible au wipe : la victoire est un fait acquis de la
+        /// campagne, pas un état de run. Elle n'est sauvegardée que pour ne pas rejouer sa mise en
+        /// scène à chaque ouverture du jeu — la partie, elle, continue normalement après.
+        /// </summary>
+        public bool HasWon;
 
         // ---------------------------------------------------------------------
         // Run en cours : remise à zéro au wipe.
@@ -323,6 +332,16 @@ namespace Core.Models
                     goto case 9;
 
                 case 9:
+                    // v9 -> v10 : la victoire existe enfin dans le jeu, et pas seulement dans le
+                    // harnais de mesure. Une sauvegarde antérieure n'a jamais pu la déclencher,
+                    // donc elle part à FAUX même si son parc dépasse déjà le seuil : le joueur
+                    // verra sa séquence au prochain recalcul des totaux, ce qui est exactement ce
+                    // qu'on veut — il l'a méritée, il ne l'avait simplement jamais reçue.
+                    data.HasWon = false;
+                    data.Version = 10;
+                    goto case 10;
+
+                case 10:
                     // Format courant : rien à faire.
                     break;
 

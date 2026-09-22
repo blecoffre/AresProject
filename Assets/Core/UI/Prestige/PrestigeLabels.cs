@@ -143,6 +143,9 @@ namespace Core.UI.Prestige
                 case PrestigeBonusType.OverclockWakesScripts:
                     return loc.GetText("UI_PRESTIGE_EFFECT_OVERCLOCK_WAKE");
 
+                case PrestigeBonusType.UnlockHighRiskExtraction:
+                    return loc.GetText("UI_PRESTIGE_EFFECT_UNLOCK_HIGHRISK");
+
                 default:
                     // Un type de bonus ajouté à l'enum sans gabarit ici afficherait du vide dans
                     // l'inspecteur, sans rien casser : on le dit au développeur, pas au joueur.

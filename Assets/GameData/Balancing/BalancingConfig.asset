@@ -14,17 +14,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Core.Models.Economy.BalancingConfigSO
   _baseTraceCap: 5000000
   _maxTraceReduction: 0.85
-  _dynamicTraceCap: 1
-  _dynamicCapReferenceYield: 3e+05
   _dissipationHalfPointRatio: 0.3
   _traceYieldExponent: 0.6
-  _victoryTFlops: 1e+12
+  _victoryTFlops: 500000000000
+  _dynamicTraceCap: 1
+  _dynamicCapReferenceYield: 300000
   _passiveTraceFillMinutes: 6
-  _ghostCacheReductionThreshold: 0.7
   _traceReadoutMinInterval: 0.5
-  _traceReadoutMaxInterval: 25
+  _traceReadoutMaxInterval: 60
   _traceReadoutReferenceFillRate: 0.001
   _traceReadoutPessimism: 3
+  _traceReadoutSensorPower: 1
+  _traceReadoutSensorReferenceTFlops: 1000
+  _ghostCacheReductionThreshold: 0.7
   _tflopsTimeCompression: 0.05
   _tflopsCompressionExponent: 0.25
   _tflopsYieldExponent: 0.15
@@ -32,15 +34,18 @@ MonoBehaviour:
   _maxTargetedReduction: 0.95
   _baseStartingMoney: 10
   _exfiltrationUnlockDatas: 400000
-  _prestigeFirstThresholdDatas: 100000000
+  _prestigeFirstThresholdDatas: 5000000
   _prestigeThresholdGrowth: 1.12
   _cleanExitTiers:
   - _traceThreshold: 0.5
     _bonus: 0.15
+    _requiresUnlock: 0
   - _traceThreshold: 0.75
     _bonus: 0.3
+    _requiresUnlock: 0
   - _traceThreshold: 0.9
     _bonus: 0.5
+    _requiresUnlock: 1
   _overclockWarpSeconds: 0.5
   _ghostCacheCapacitySeconds: 90
   _overdriveDurationSeconds: 30

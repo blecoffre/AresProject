@@ -27,13 +27,28 @@ namespace Core.Models.Economy
         [Tooltip("Bonus de CPU Cycles, en fraction. 0,15 = +15 %. Avant multiplicateur de prestige.")]
         [SerializeField, Min(0f)] private double _bonus;
 
+        [Tooltip("Ce palier exige le nœud de prestige « Extraction Haut Risque ». Tant qu'il n'est " +
+                 "pas acheté, le palier ne verse RIEN : le joueur retombe sur le meilleur palier " +
+                 "libre qu'il a franchi.\n\n" +
+                 "Existe pour le palier à 90 %, qui était proposé dès la première run alors que le " +
+                 "joueur n'a encore aucun capteur et pilote à l'aveugle. Il invitait sans être " +
+                 "tenable — mesuré, la posture qui le visait mourait 15 fois sur 18.")]
+        [SerializeField] private bool _requiresUnlock;
+
         public float TraceThreshold => _traceThreshold;
         public double Bonus => _bonus;
 
-        public CleanExitTier(float traceThreshold, double bonus)
+        /// <summary>
+        /// Vrai si ce palier attend le nœud de prestige « Extraction Haut Risque ». Voir
+        /// <c>GameSessionManager.ResolveCleanExitMultiplier</c>, seul endroit où la règle s'applique.
+        /// </summary>
+        public bool RequiresUnlock => _requiresUnlock;
+
+        public CleanExitTier(float traceThreshold, double bonus, bool requiresUnlock = false)
         {
             _traceThreshold = traceThreshold;
             _bonus = bonus;
+            _requiresUnlock = requiresUnlock;
         }
     }
 }

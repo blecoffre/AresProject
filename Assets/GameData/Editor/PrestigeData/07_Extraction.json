@@ -34,6 +34,17 @@
       "posY": -3.0,
       "prerequisiteId": "P_EXTRACT_2",
       "requiredLevel": 3
+    },
+    {
+      "id": "P_EXTRACT_HIGHRISK",
+      "bonusType": "UnlockHighRiskExtraction",
+      "maxLevel": 1,
+      "baseCost": 1.0,
+      "costMult": 1.5,
+      "bonus": 1.0,
+      "posX": 2.0,
+      "posY": -4.0,
+      "prerequisiteId": "P_EXTRACT_3"
     }
   ]
 }

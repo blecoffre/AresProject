@@ -35,6 +35,8 @@ namespace Core.UI.Game
         private readonly ExfiltrationSystem _exfiltration;
         private readonly ConsolePresenter _console;
         private readonly ILocalizationService _loc;
+        private readonly GameSessionManager _session;
+        private readonly Core.Services.Security.TraceReadout _readout;
 
         private DisposableBag _disposables;
         private CancellationTokenSource _cts;
@@ -46,12 +48,16 @@ namespace Core.UI.Game
             ExfiltrationView view,
             ExfiltrationSystem exfiltration,
             ConsolePresenter console,
-            ILocalizationService loc)
+            ILocalizationService loc,
+            GameSessionManager session,
+            Core.Services.Security.TraceReadout readout)
         {
             _view = view;
             _exfiltration = exfiltration;
             _console = console;
             _loc = loc;
+            _session = session;
+            _readout = readout;
         }
 
         public void Start()
@@ -79,6 +85,16 @@ namespace Core.UI.Game
 
             _exfiltration.ProgressToFirstCycle
                 .Select(p => Mathf.RoundToInt(p * 100f))
+                .DistinctUntilChanged()
+                .Subscribe(_ => Refresh())
+                .AddTo(ref _disposables);
+
+            // Quatrième source : le palier franchi. On filtre sur le MULTIPLICATEUR et non sur le
+            // relevé — il ne change qu'aux instants qui comptent, c'est-à-dire quand le joueur
+            // traverse un marqueur de la jauge. S'abonner au relevé brut recomposerait le libellé
+            // à chaque échantillon sans que le chiffre ne bouge.
+            _readout.LastKnownFraction
+                .Select(f => _session.ResolveCleanExitMultiplierFor(f))
                 .DistinctUntilChanged()
                 .Subscribe(_ => Refresh())
                 .AddTo(ref _disposables);
@@ -111,7 +127,19 @@ namespace Core.UI.Game
                 return;
             }
 
-            double cycles = _exfiltration.PendingCycles.CurrentValue;
+            // Le gain annoncé PORTE le bonus du palier franchi : sans lui, traverser un cran de la
+            // jauge ne changeait rien à l'écran, et l'appât restait invisible. C'est ce nombre qui
+            // doit sauter quand le joueur passe un marqueur — c'est là que naît « je pousse ou je
+            // sors ».
+            //
+            // ⚠️ Résolu sur le dernier relevé CONNU, jamais sur la vérité. Utiliser la jauge réelle
+            // ferait de ce chiffre une fenêtre sur la position exacte du joueur, et le brouillard
+            // ne vaudrait plus rien. Le joueur décide donc contre ce qu'il a lu, pas contre ce qui
+            // est — et c'est exactement le pari qu'on lui demande de prendre.
+            double multiplier = _session.ResolveCleanExitMultiplierFor(
+                _readout.LastKnownFraction.CurrentValue);
+
+            double cycles = _exfiltration.PendingCycles.CurrentValue * multiplier;
 
             _view.ApplyState(
                 _loc.GetText(

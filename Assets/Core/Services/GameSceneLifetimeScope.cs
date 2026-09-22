@@ -31,6 +31,10 @@ namespace Core.Boot
         [Tooltip("Bouton d'Urgence / Data Wiper. Vue autonome, comme les deux précédentes.")]
         [SerializeField] private EmergencyView _emergencyView;
 
+        [Tooltip("Écran de victoire. Vue autonome qui possède sa propre racine : elle ne partage " +
+                 "rien avec l'écran de fin de run, la victoire n'arrêtant pas la partie.")]
+        [SerializeField] private VictoryView _victoryView;
+
         protected override void Configure(IContainerBuilder builder)
         {
             // Services locaux à la scène.
@@ -92,12 +96,31 @@ namespace Core.Boot
                     "déclencher.");
             }
 
+            // Même traitement conditionnel. La conséquence est ici plus douce que pour les trois
+            // vues ci-dessus : sans écran, la victoire se raconte quand même dans la console, le
+            // VictoryPresenter étant enregistré séparément et sans vue.
+            if (_victoryView != null)
+            {
+                builder.RegisterComponent(_victoryView);
+                builder.Register<VictoryScreenPresenter>(Lifetime.Scoped).AsImplementedInterfaces().AsSelf();
+            }
+            else
+            {
+                Debug.LogWarning(
+                    "[SCENE] Aucune VictoryView assignée sur le GameSceneLifetimeScope : la " +
+                    "victoire ne s'annoncera que dans la console, sans écran.");
+            }
+
             // Presenters (MVP)
             builder.Register<ConsolePresenter>(Lifetime.Scoped).AsImplementedInterfaces().AsSelf();
             builder.Register<ClickerPresenter>(Lifetime.Scoped).AsSelf();
             builder.Register<HeaderPresenter>(Lifetime.Scoped).AsImplementedInterfaces().AsSelf();
             builder.Register<UpgradePanelPresenter>(Lifetime.Scoped).AsImplementedInterfaces().AsSelf();
             builder.Register<GameOverPresenter>(Lifetime.Scoped).AsImplementedInterfaces().AsSelf();
+
+            // N'a AUCUNE vue : il ne fait que raconter la victoire dans la console, donc rien à
+            // câbler dans la scène. L'écran dédié viendra s'ajouter ici quand il existera.
+            builder.Register<VictoryPresenter>(Lifetime.Scoped).AsImplementedInterfaces().AsSelf();
             builder.Register<PrestigePanelPresenter>(Lifetime.Scoped).AsImplementedInterfaces().AsSelf();
 
             // Points de démarrage

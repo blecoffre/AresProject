@@ -120,6 +120,13 @@ namespace Core.Services.Economy
         /// </summary>
         public ReactiveProperty<bool> OverclockWakesScripts { get; } = new(false);
 
+        /// <summary>
+        /// Les paliers d'extraction marqués « sous condition » — aujourd'hui le seul palier à
+        /// 90 % — versent-ils leur bonus. Faux par défaut : le palier le plus dangereux était
+        /// proposé dès la première run, alors que le joueur pilote encore à l'aveugle.
+        /// </summary>
+        public ReactiveProperty<bool> IsHighRiskExtractionUnlocked { get; } = new(false);
+
         public PrestigeManager(PrestigeCatalogSO catalog, UserCurrencies currencies)
         {
             _catalog = catalog;
@@ -272,6 +279,7 @@ namespace Core.Services.Economy
             double exploitYieldBoost = 0d;
             float exploitTraceRelief = 0f;
             bool overclockWakes = false;
+            bool highRiskExtraction = false;
 
             foreach (var kvp in _prestigeLevels)
             {
@@ -347,6 +355,12 @@ namespace Core.Services.Economy
                         if (currentLevel > 0) overclockWakes = true;
                         break;
 
+                    // Déblocage booléen, comme les deux précédents : seul le fait de posséder le
+                    // nœud compte, la magnitude n'aurait aucun sens.
+                    case PrestigeBonusType.UnlockHighRiskExtraction:
+                        if (currentLevel > 0) highRiskExtraction = true;
+                        break;
+
                     case PrestigeBonusType.SpecificUpgradeCostReduction:
                         AccumulateSpecific(config.TargetUpgradeId, totalBonus, UpgradePrestigeNodeBonusType.Cost);
                         break;
@@ -388,6 +402,7 @@ namespace Core.Services.Economy
             ExploitYieldBoost.Value = exploitYieldBoost < 0d ? 0d : exploitYieldBoost;
             ExploitTracePenaltyReduction.Value = exploitTraceRelief < 0f ? 0f : exploitTraceRelief;
             OverclockWakesScripts.Value = overclockWakes;
+            IsHighRiskExtractionUnlocked.Value = highRiskExtraction;
 
             // Émis EN DERNIER, une fois la table et les scalaires cohérents. C'est ce signal qui
             // pousse les bonus ciblés dans les UpgradeModel : sans lui, ils seraient ignorés au
@@ -470,6 +485,7 @@ namespace Core.Services.Economy
             ExploitYieldBoost.Dispose();
             ExploitTracePenaltyReduction.Dispose();
             OverclockWakesScripts.Dispose();
+            IsHighRiskExtractionUnlocked.Dispose();
         }
     }
 }

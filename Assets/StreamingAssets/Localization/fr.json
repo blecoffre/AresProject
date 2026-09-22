@@ -10,11 +10,11 @@
     },
     {
       "Key": "UI_TRACE_READOUT",
-      "Value": ": {0:F1} %  ·  relevé il y a {1:F0} s"
+      "Value": "{0:F1} %  ·  relevé il y a {1:F0} s"
     },
     {
       "Key": "UI_TRACE_READOUT_LIVE",
-      "Value": ": {0:F1} %"
+      "Value": "{0:F1} %"
     },
     {
       "Key": "CYCLES",
@@ -1095,6 +1095,70 @@
     {
       "Key": "LOG_UPGRADE_PURCHASED_BULK",
       "Value": "Matériel {0} amélioré de {1} niveaux — niveau {2} atteint"
+    },
+    {
+      "Key": "LOG_VICTORY_1",
+      "Value": "> Puissance de calcul suffisante. Attaque du chiffrement..."
+    },
+    {
+      "Key": "LOG_VICTORY_2",
+      "Value": "> Clé USB déverrouillée après 2 048 tentatives."
+    },
+    {
+      "Key": "LOG_VICTORY_3",
+      "Value": "> Lecture de /media/usb/PRIVE/DSC_0042.jpg"
+    },
+    {
+      "Key": "LOG_VICTORY_4",
+      "Value": "> Rendu de l'image... 100%"
+    },
+    {
+      "Key": "LOG_VICTORY_5",
+      "Value": "> C'est un chat."
+    },
+    {
+      "Key": "LOG_VICTORY_6",
+      "Value": "> Il en valait la peine."
+    },
+    {
+      "Key": "UI_VICTORY_TITLE",
+      "Value": "ACCÈS TOTAL"
+    },
+    {
+      "Key": "UI_VICTORY_BODY",
+      "Value": "{0} TFlops. Le chiffrement de la clé n'a pas tenu.\n\nLe fichier était une photo de chat. Tu le savais déjà.\n\nL'A.M.I., elle, te cherche toujours. La partie continue."
+    },
+    {
+      "Key": "UI_VICTORY_CLOSE",
+      "Value": "Reprendre"
+    },
+    {
+      "Key": "PRESTIGE_P_EXTRACT_HIGHRISK_NAME",
+      "Value": "Extraction Haut Risque"
+    },
+    {
+      "Key": "PRESTIGE_P_EXTRACT_HIGHRISK_DESC",
+      "Value": "Le dernier palier — 90 % de jauge — ne verse rien tant que ce module n'est pas installé. Sans lui, pousser jusque-là revient à jouer sa run pour le prix d'une sortie à 75 %."
+    },
+    {
+      "Key": "UI_PRESTIGE_EFFECT_UNLOCK_HIGHRISK",
+      "Value": "> Débloque le palier d'extraction à 90 %"
+    },
+    {
+      "Key": "UI_TRACE_TIER",
+      "Value": "+{0:F0} %"
+    },
+    {
+      "Key": "UI_TRACE_TIER_LOCKED",
+      "Value": "[VERROUILLÉ]"
+    },
+    {
+      "Key": "UI_UNIT_TFLOPS",
+      "Value": "TFlops"
+    },
+    {
+      "Key": "UI_YIELD_PER_SECOND",
+      "Value": "+{0}/s"
     }
   ]
 }

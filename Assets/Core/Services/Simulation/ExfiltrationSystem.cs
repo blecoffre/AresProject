@@ -86,12 +86,26 @@ namespace Core.Services.Simulation
                 .DistinctUntilChanged()
                 .ToReadOnlyReactiveProperty();
 
-            // Le déverrouillage ne dépend PLUS du gain de points, mais d'un seuil de Datas sur la
-            // run. Les deux étaient la même valeur, donc raréfier les points rendait mécaniquement
-            // l'exfiltration inatteignable — et une run tardive, qui part avec un cumul déjà
-            // fourni, aurait ouvert le bouton dès la première seconde.
-            _isUnlocked = _currencies.RunMoneyGenerated
-                .Select(money => money >= balancing.ExfiltrationUnlockDatas)
+            // Le bouton s'ouvre quand la run rapporte AU MOINS UN POINT — la condition que le GDD
+            // énonce depuis le 2026-08-26, « avoir de quoi gagner au moins 1 CPU Cycle ».
+            //
+            // <b>Elle a été un seuil de Datas pendant un temps, et c'était un contournement.</b>
+            // Les points se calculaient alors sur l'argent de la seule run, donc déblocage et gain
+            // partageaient la même valeur : raréfier les points rendait mécaniquement la sortie
+            // inatteignable. Un seuil séparé cassait ce couplage — au prix d'un mensonge, puisque
+            // le bouton s'annonçait « [VERROUILLÉ] Compilation du 1er Cycle CPU » tout en
+            // s'ouvrant sur un critère qui n'avait plus rien à voir avec ce cycle.
+            //
+            // Constaté en jeu le 2026-09-16 : une run de 7 min 38 pouvait s'exfiltrer en ne
+            // rapportant ZÉRO point. Le joueur sortait sur la promesse d'un cycle qu'il n'obtenait
+            // pas.
+            //
+            // Le couplage d'origine ne revient pas pour autant : depuis que les points se
+            // décrochent sur un CUMUL DE CAMPAGNE, la condition porte sur ce que rapporte CETTE
+            // run, cumul déjà acquis déduit. Une run tardive n'ouvre donc pas le bouton à la
+            // première seconde — il lui faut d'abord franchir son propre palier.
+            _isUnlocked = _pendingCycles
+                .Select(points => points >= 1d)
                 .DistinctUntilChanged()
                 .ToReadOnlyReactiveProperty();
 
@@ -101,7 +115,7 @@ namespace Core.Services.Simulation
                 .ToReadOnlyReactiveProperty();
 
             _progressToFirstCycle = _currencies.RunMoneyGenerated
-                .Select(money => (float)Math.Min(1d, money / balancing.ExfiltrationUnlockDatas))
+                .Select(ResolveProgressToFirstCycle)
                 .ToReadOnlyReactiveProperty();
         }
 
@@ -109,6 +123,36 @@ namespace Core.Services.Simulation
         /// Datas à générer sur la run pour décrocher le cycle SUIVANT. Sert le « Prochain à
         /// X Datas » du bouton, qui donne un objectif au joueur qui hésite à continuer.
         /// </summary>
+        /// <summary>
+        /// Datas à générer sur CETTE run pour décrocher son PREMIER point — donc pour ouvrir le
+        /// bouton. Rend 0 quand le cumul de campagne suffit déjà à lui seul.
+        ///
+        /// Le palier du point n° <c>awarded + 1</c> vaut <c>premier × croissance^awarded</c> de
+        /// cumul ; ce qui manque se prend sur la run en cours.
+        /// </summary>
+        public double GetFirstCycleRunThreshold()
+        {
+            double awarded = _currencies.CpuCyclesAwarded.CurrentValue;
+            double growth = Math.Max(1.0001d, _balancing.PrestigeThresholdGrowth);
+            double bankedForFirst = _balancing.PrestigeFirstThresholdDatas * Math.Pow(growth, awarded);
+
+            double missing = bankedForFirst - _currencies.CampaignDatasBanked.CurrentValue;
+            return missing < 0d ? 0d : missing;
+        }
+
+        /// <summary>
+        /// Avancement vers le premier point de la run, pour la jauge du bouton verrouillé. Le
+        /// dénominateur n'est plus une constante : il dépend du cumul déjà acquis, donc il change
+        /// d'une run à l'autre.
+        /// </summary>
+        private float ResolveProgressToFirstCycle(double runMoney)
+        {
+            double required = GetFirstCycleRunThreshold();
+            if (required <= 0d) return 1f;
+
+            return (float)Math.Min(1d, runMoney / required);
+        }
+
         public double GetNextCycleThreshold()
         {
             // Le palier vise le CUMUL de campagne, pas la run : on rend donc ce qu'il reste à

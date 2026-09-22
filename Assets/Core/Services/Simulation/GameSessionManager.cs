@@ -157,9 +157,21 @@ namespace Core.Services.Simulation
         /// à un bonus qu'on a passé toute la run à faire grossir.
         /// </summary>
         private double ResolveCleanExitMultiplier()
-        {
-            float fraction = _threatManager.NormalizedThreat.CurrentValue;
+            => ResolveCleanExitMultiplierFor(_threatManager.NormalizedThreat.CurrentValue);
 
+        /// <summary>
+        /// Le multiplicateur qu'une sortie rapporterait à la fraction de jauge donnée.
+        ///
+        /// Public pour que l'interface puisse ANNONCER le gain sans dupliquer la règle des
+        /// paliers — une seconde implémentation finirait par diverger de celle-ci, et le joueur
+        /// verrait un chiffre que la fin de run ne tiendrait pas.
+        ///
+        /// ⚠️ L'appelant choisit la fraction, et ce choix est un choix de DESIGN. La fin de run
+        /// passe la vérité ; l'affichage doit passer le dernier relevé CONNU, sinon le gain
+        /// annoncé trahirait la position exacte du joueur et viderait le brouillard de son sens.
+        /// </summary>
+        public double ResolveCleanExitMultiplierFor(float fraction)
+        {
             IReadOnlyList<CleanExitTier> tiers = _balancing.CleanExitTiers;
             if (tiers == null) return 1d;
 
@@ -169,11 +181,23 @@ namespace Core.Services.Simulation
             double bonus = 0d;
             float bestThreshold = -1f;
 
+            bool highRiskUnlocked = _prestigeManager.IsHighRiskExtractionUnlocked.CurrentValue;
+
             for (int i = 0; i < tiers.Count; i++)
             {
                 CleanExitTier tier = tiers[i];
                 if (fraction < tier.TraceThreshold) continue;
                 if (tier.TraceThreshold <= bestThreshold) continue;
+
+                // Palier sous condition non débloqué : on ne s'arrête PAS, on l'ignore. Le joueur
+                // retombe ainsi sur le meilleur palier libre qu'il a franchi — pousser jusqu'à
+                // 90 % sans le nœud rapporte donc ce que rapportent 75 %, jamais rien.
+                //
+                // Le palier à 90 % était proposé dès la première run, quand le joueur n'a encore
+                // aucun capteur et pilote à l'aveugle : il invitait sans être tenable. Mesuré sans
+                // capteur, la posture qui le visait mourait 15 fois sur 18 et plafonnait à 2,7 %
+                // de l'arbre.
+                if (tier.RequiresUnlock && !highRiskUnlocked) continue;
 
                 bestThreshold = tier.TraceThreshold;
                 bonus = tier.Bonus;

@@ -5,6 +5,7 @@ using Core.Services.Security;
 using Core.Utils;
 using R3;
 using System;
+using System.Collections.Generic;
 using VContainer.Unity;
 
 namespace Core.UI.Header
@@ -16,24 +17,37 @@ namespace Core.UI.Header
         private readonly UpgradeManager _upgradeManager;
         private readonly TraceReadout _traceReadout;
         private readonly ILocalizationService _loc;
+        private readonly BalancingConfigSO _balancing;
+        private readonly PrestigeManager _prestige;
 
         private DisposableBag _disposables;
 
+        // Tampons réutilisés : le nombre de paliers est un réglage, il ne bouge pas en cours de
+        // partie. Les recomposer à chaque achat de prestige suffit largement.
+        private float[] _tierThresholds;
+        private string[] _tierLabels;
+        private bool[] _tierLocked;
+
         public HeaderPresenter(UserCurrencies userCurrencies, HeaderView view, UpgradeManager upgradeManager,
-                               TraceReadout traceReadout, ILocalizationService loc)
+                               TraceReadout traceReadout, ILocalizationService loc,
+                               BalancingConfigSO balancing, PrestigeManager prestige)
         {
             _userCurrencies = userCurrencies;
             _view = view;
             _upgradeManager = upgradeManager;
             _traceReadout = traceReadout;
             _loc = loc;
+            _balancing = balancing;
+            _prestige = prestige;
 
             _disposables = new DisposableBag();
 
+            // Le « + … /s » se compose ICI, pas dans la vue : c'est le presenter qui tient la
+            // localisation. La vue n'a plus qu'à poser la chaîne.
             _upgradeManager.TotalMoneyYieldPerSecond.Subscribe(yield =>
             {
                 string formattedYield = CurrencyFormatter.Format(yield);
-                _view.UpdateMoneyYieldDisplay(formattedYield);
+                _view.UpdateMoneyYieldDisplay(_loc.GetText("UI_YIELD_PER_SECOND", formattedYield));
             })
             .AddTo(ref _disposables);
 
@@ -60,7 +74,76 @@ namespace Core.UI.Header
 
         public void Start()
         {
+            // L'unité est un texte statique : une seule écriture, pas un LocalizedText de plus
+            // à ne pas oublier dans autoInjectGameObjects.
+            _view.SetComputerPowerUnit(_loc.GetText("UI_UNIT_TFLOPS"));
+            _view.SetCpuCyclesUnit(_loc.GetText("CYCLES"));
+
             BindEconomyToView();
+
+            // Les paliers se recomposent à l'achat d'un nœud de prestige, jamais par frame : leurs
+            // libellés allouent des chaînes, et ni le multiplicateur d'Extraction ni le déblocage
+            // du palier haut ne bougent pendant une run.
+            _prestige.CleanExitBonusMultiplier
+                     .Subscribe(_ => RebuildTierDisplay())
+                     .AddTo(ref _disposables);
+
+            _prestige.IsHighRiskExtractionUnlocked
+                     .Subscribe(_ => RebuildTierDisplay())
+                     .AddTo(ref _disposables);
+        }
+
+        /// <summary>
+        /// Compose les paliers affichés sur la jauge.
+        ///
+        /// <b>Le bonus annoncé est l'EFFECTIF, pas le nominal.</b> La branche Extraction multiplie
+        /// les paliers jusqu'à ×7 : afficher « +15 % » à un joueur qui en touche 105 lui cacherait
+        /// sa propre progression, et c'est précisément ce multiplicateur qui rend la branche
+        /// désirable. Il doit donc se lire sur la jauge.
+        /// </summary>
+        private void RebuildTierDisplay()
+        {
+            IReadOnlyList<CleanExitTier> tiers = _balancing.CleanExitTiers;
+            if (tiers == null || tiers.Count == 0) return;
+
+            if (_tierThresholds == null || _tierThresholds.Length != tiers.Count)
+            {
+                _tierThresholds = new float[tiers.Count];
+                _tierLabels = new string[tiers.Count];
+                _tierLocked = new bool[tiers.Count];
+            }
+
+            float multiplier = _prestige.CleanExitBonusMultiplier.CurrentValue;
+            bool highRiskUnlocked = _prestige.IsHighRiskExtractionUnlocked.CurrentValue;
+
+            for (int i = 0; i < tiers.Count; i++)
+            {
+                CleanExitTier tier = tiers[i];
+                bool locked = tier.RequiresUnlock && !highRiskUnlocked;
+
+                _tierThresholds[i] = tier.TraceThreshold;
+                _tierLocked[i] = locked;
+
+                // Le SEUIL n'est plus écrit : il est dit par la position du trait sur la jauge,
+                // et le répéter sous chaque trait faisait déborder les libellés les uns sur les
+                // autres — 75 % et 90 % ne sont séparés que d'une centaine de pixels. Ne reste
+                // que ce que la position ne peut pas dire : ce que le palier rapporte.
+                //
+                // Un palier VERROUILLÉ n'annonce aucun gain : il n'en verse aucun tant que son
+                // nœud n'est pas installé, et afficher le montant — même grisé — se lirait comme
+                // une promesse. Il porte le marqueur d'état du jeu, « [VERROUILLÉ] », le même que
+                // le Ghost Cache, le Data Wiper et l'Exfiltration.
+                //
+                // Le nœud qui l'ouvre est nommé dans l'ARBRE, pas ici : ces libellés-là le font
+                // en toutes lettres, mais un libellé de trait dispose de 130 px entre son voisin
+                // de 75 % et le bout de la jauge — « [VERROUILLÉ] Extraction Haut Risque » en
+                // demande 250.
+                _tierLabels[i] = locked
+                    ? _loc.GetText("UI_TRACE_TIER_LOCKED")
+                    : _loc.GetText("UI_TRACE_TIER", tier.Bonus * multiplier * 100d);
+            }
+
+            _view.ConfigureTraceTiers(_tierThresholds, _tierLabels, _tierLocked);
         }
 
         private void BindEconomyToView()

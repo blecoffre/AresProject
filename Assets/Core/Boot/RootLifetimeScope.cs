@@ -96,6 +96,11 @@ namespace Core.Infrastructure
             // GameScene : scope racine, comme le reste de la simulation.
             builder.Register<GhostCacheSystem>(Lifetime.Singleton);
 
+            // La victoire est un fait de CAMPAGNE : elle survit au wipe, elle est sauvegardée, et
+            // elle doit être armée avant que le gateway ne restaure la partie. AsImplementedInterfaces
+            // pour son IStartable, AsSelf pour que le gateway et le presenter puissent l'injecter.
+            builder.Register<VictorySystem>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
+
             // 7. Points d'entrée
             // Enregistré en premier : il plafonne la cadence avant que quoi que ce soit ne
             // s'affiche, plutôt que de laisser le jeu tourner libre le temps du chargement.

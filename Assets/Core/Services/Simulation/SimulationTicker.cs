@@ -27,6 +27,7 @@ namespace Core.Services.Simulation
     /// </summary>
     public class SimulationTicker : ITickable
     {
+        private readonly UserCurrencies _currencies;
         private readonly UpgradeManager _upgradeManager;
         private readonly ScriptCycleRunner _cycleRunner;
         private readonly PrestigeManager _prestigeManager;
@@ -49,6 +50,7 @@ namespace Core.Services.Simulation
         public float CurrentTraceReduction { get; private set; }
 
         public SimulationTicker(
+            UserCurrencies currencies,
             UpgradeManager upgradeManager,
             ScriptCycleRunner cycleRunner,
             PrestigeManager prestigeManager,
@@ -58,6 +60,7 @@ namespace Core.Services.Simulation
             BalancingConfigSO balancing,
             ITimeSource time)
         {
+            _currencies = currencies;
             _upgradeManager = upgradeManager;
             _cycleRunner = cycleRunner;
             _prestigeManager = prestigeManager;
@@ -112,9 +115,27 @@ namespace Core.Services.Simulation
             // 92,7 minutes de run et 6,3 % de jauge à la vingtième minute. Aucune pression
             // absolue n'existait dans le jeu, le seul chronomètre était celui que le joueur
             // remontait lui-même.
+            // ⚠️ La traque ne démarre QUE lorsque le joueur s'est manifesté (corrigé le
+            // 2026-09-21, sur retour de jeu).
+            //
+            // Elle s'appliquait dès la première frame de la run, avant tout achat : le joueur
+            // regardait sa jauge monter sans avoir encore rien fait, et se faisait punir d'une
+            // partie qu'il n'avait pas commencée. C'est absurde côté règles, et ça contredit le
+            // lore — l'A.M.I. cherche un intrus, pas une machine éteinte.
+            //
+            // Deux manifestations possibles, et l'une suffit : avoir volé sa première Data, ou
+            // faire tourner du Hardware, qui chauffe en permanence dès l'achat. Aucune des deux
+            // ne redescend pendant une run, donc la traque ne CLIGNOTE pas — un simple test sur
+            // le débit des Scripts l'aurait allumée et éteinte entre deux cycles manuels.
+            //
+            // Ne crée aucune faille : ne rien faire ne rapporte rien, et le seul moyen de
+            // retarder la traque est de ne pas jouer.
+            bool isHunted = _currencies.RunMoneyGenerated.CurrentValue > 0d
+                         || _upgradeManager.HardwareTracePerSecond.CurrentValue > 0f;
+
             float generated = _cycleRunner.ActiveScriptTracePerSecond
                             + _upgradeManager.HardwareTracePerSecond.CurrentValue
-                            + _balancing.PassiveTracePerSecond;
+                            + (isHunted ? _balancing.PassiveTracePerSecond : 0f);
 
             float brute = generated * _prestigeManager.TraceReductionMultiplier.CurrentValue;
 

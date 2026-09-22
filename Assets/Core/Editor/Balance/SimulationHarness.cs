@@ -104,13 +104,15 @@ namespace Core.Editor.Balance
             Prestige = new PrestigeManager(prestigeCatalog, Currencies);
             Upgrades = new UpgradeManager(upgradeCatalog, Currencies, Prestige, Balancing);
             Threat = new ThreatManager(Balancing);
-            Readout = new TraceReadout(Threat, Balancing, _time);
+            // Le Readout dépend désormais des TFlops : il se construit APRÈS les Upgrades, comme
+            // le conteneur le résoudrait. L'ordre ci-dessus le garantit déjà.
+            Readout = new TraceReadout(Threat, Balancing, _time, Upgrades);
             Emergency = new EmergencyProtocolSystem(Threat, Upgrades, Prestige, Balancing, _time);
             GhostCache = new GhostCacheSystem(Upgrades, Prestige, Balancing);
             Session = new GameSessionManager(Currencies, Threat, Upgrades, Prestige,
                                              Emergency, GhostCache, Balancing, _time);
             CycleRunner = new ScriptCycleRunner(Currencies, Upgrades, Session, _time);
-            Ticker = new SimulationTicker(Upgrades, CycleRunner, Prestige, Threat,
+            Ticker = new SimulationTicker(Currencies, Upgrades, CycleRunner, Prestige, Threat,
                                           Session, GhostCache, Balancing, _time);
             Exfiltration = new ExfiltrationSystem(Currencies, Session, Balancing);
             Overclock = new OverclockSystem(CycleRunner, Prestige, Balancing);

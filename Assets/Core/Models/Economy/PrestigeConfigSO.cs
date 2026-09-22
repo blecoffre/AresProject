@@ -74,7 +74,20 @@ namespace Core.Models.Economy
         /// avant la fusion : la famille d'automatisation pesait NÉGATIVEMENT sur la puissance
         /// d'une campagne — elle ne porte pas de production, elle porte un objectif, celui
         /// d'arrêter de cliquer. Un objectif se donne une fois, pas quinze.
-        GlobalAutomationReduction
+        GlobalAutomationReduction,
+
+        /// Extraction Haut Risque — ouvre les paliers d'extraction marqués « sous condition »,
+        /// aujourd'hui le seul palier à 90 %. Ajouté le 2026-09-16, appendé en fin comme tous les
+        /// autres : l'index est sérialisé dans les .asset générés.
+        ///
+        /// Le palier le plus dangereux était proposé dès la première run, alors que le joueur n'a
+        /// encore aucun capteur et pilote à l'aveugle : il invitait sans être tenable. Mesuré sans
+        /// capteur, la posture qui le visait mourait 15 fois sur 18 et plafonnait à 2,7 % de
+        /// l'arbre. Le réserver à qui s'est équipé transforme un piège en pari.
+        ///
+        /// Déblocage booléen : comme UnlockEmergencyButton, seul le fait de posséder le nœud
+        /// compte, sa magnitude n'a aucun sens.
+        UnlockHighRiskExtraction
     }
 
     [CreateAssetMenu(fileName = "NewPrestigeConfig", menuName = "Core/Economy/Prestige Config")]

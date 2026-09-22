@@ -140,6 +140,35 @@ namespace Core.Models.Economy
                  "run supplémentaire — le choix redevient un choix.")]
         [SerializeField, Range(1f, 4f)] private float _traceReadoutPessimism = 3f;
 
+        [Tooltip("Puissance du CAPTEUR : ce que la capacité de calcul achète en visibilité. Le " +
+                 "diviseur de brouillard vaut 1 + puissance × log10(1 + TFlops). Il RACCOURCIT " +
+                 "l'intervalle entre deux relevés et RAPPROCHE le pessimisme de 1, les deux " +
+                 "versants du brouillard à la fois.\n\n" +
+                 "À 1 : zéro TFlop ne divise rien — run 1 se joue à l'aveugle, exactement comme " +
+                 "aujourd'hui — 99 TFlops divisent par 3, 1e12 par 13. Le logarithme est là pour " +
+                 "que l'effet s'adoucisse en fin de partie, où les TFlops montent à douze " +
+                 "chiffres ; une proportionnalité directe rendrait le capteur parfait dès le " +
+                 "premier Hardware sérieux.\n\n" +
+                 "MONTER cette valeur rend le Hardware plus payant en lisibilité, donc les " +
+                 "derniers pour-cent de jauge plus jouables. À 0 la mécanique est DÉSACTIVÉE et " +
+                 "le brouillard redevient fonction de la seule vitesse de remplissage : c'est le " +
+                 "réglage qui permet de comparer les deux modèles en jouant, sans toucher au " +
+                 "code — même intention que DynamicTraceCap.")]
+        [SerializeField, Range(0f, 3f)] private float _traceReadoutSensorPower = 1f;
+
+        [Tooltip("ÉCHELLE du capteur, en TFlops : la capacité en dessous de laquelle acheter du " +
+                 "Hardware n'achète PAS de visibilité. Le diviseur vaut " +
+                 "1 + puissance × log10(1 + TFlops / échelle).\n\n" +
+                 "Sans elle, le logarithme concentrait tout l'effet sur les premiers TFlops : " +
+                 "mesuré le 2026-09-16, quatre Hardware de niveau 5 (377 TFlops) ramenaient déjà " +
+                 "le brouillard de 60 s à 16,8 s, soit l'essentiel du rachat consommé en quelques " +
+                 "minutes. L'écart entre la vérité et le relevé tombait à 0,6-3 points de jauge — " +
+                 "six pixels — et le joueur ne voyait plus rien du brouillard. C'est l'inverse de " +
+                 "l'intention : run 1 doit se jouer à l'aveugle.\n\n" +
+                 "À 1000, la même run garde 52,6 s de brouillard, et la clarté s'achète vraiment " +
+                 "en milieu de partie. MONTER cette valeur repousse le rachat plus tard encore.")]
+        [SerializeField, Min(1f)] private float _traceReadoutSensorReferenceTFlops = 1000f;
+
         [Tooltip("Fraction de l'asymptote au-delà de laquelle le Ghost Cache se charge.\n\n" +
                  "Remplace l'ancienne condition « la dissipation dépasse la génération », qui " +
                  "n'a plus de sens : avec une réduction asymptotique il n'existe plus d'excédent. " +
@@ -189,10 +218,14 @@ namespace Core.Models.Economy
         [Tooltip("Argent de départ d'une run neuve, AVANT le bonus de prestige qui s'y ajoute.")]
         [SerializeField, Min(0f)] private double _baseStartingMoney = 10d;
 
-        [Tooltip("Datas à générer SUR LA RUN pour déverrouiller l'exfiltration.\n\n" +
-                 "Découplé du gain de points depuis le 2026-09-12. C'était la même valeur, et " +
-                 "elle ne pouvait donc pas bouger : raréfier les points rendait l'exfiltration " +
-                 "inatteignable, et l'assouplir inondait le joueur de points.")]
+        [Tooltip("⚠️ CE RÉGLAGE N'EST PLUS LU — abandonné le 2026-09-16.\n\n" +
+                 "Il portait le seuil de Datas qui déverrouillait l'exfiltration. L'exfiltration " +
+                 "s'ouvre désormais sur la condition que le GDD énonce depuis l'origine : la run " +
+                 "rapporte AU MOINS UN POINT de prestige. Constaté en jeu, une run de 7 min 38 " +
+                 "pouvait sortir en n'en rapportant aucun, alors que le bouton s'annonçait " +
+                 "« Compilation du 1er Cycle CPU ».\n\n" +
+                 "Le champ survit pour ne pas perdre la valeur déjà écrite, comme " +
+                 "minCycleDuration et durationReductionPerLevel. Le régler n'a aucun effet.")]
         [SerializeField, Min(1f)] private double _exfiltrationUnlockDatas = 400000d;
 
         [Tooltip("Datas CUMULÉES sur la campagne pour décrocher le PREMIER point de prestige.\n\n" +
@@ -233,7 +266,8 @@ namespace Core.Models.Economy
         {
             new CleanExitTier(0.50f, 0.15d),
             new CleanExitTier(0.75f, 0.30d),
-            new CleanExitTier(0.90f, 0.50d)
+            // Le dernier palier attend le nœud « Extraction Haut Risque ».
+            new CleanExitTier(0.90f, 0.50d, requiresUnlock: true)
         };
 
         [Tooltip("Secondes de progression offertes par clic d'Overclock, avant bonus de prestige.")]
@@ -327,6 +361,18 @@ namespace Core.Models.Economy
         public float TraceReadoutMaxInterval => _traceReadoutMaxInterval;
         public float TraceReadoutReferenceFillRate => _traceReadoutReferenceFillRate;
         public float TraceReadoutPessimism => _traceReadoutPessimism;
+
+        /// <summary>
+        /// Puissance du capteur : le brouillard est divisé par
+        /// <c>1 + TraceReadoutSensorPower × log10(1 + TFlops)</c>. À 0, la mécanique est éteinte.
+        /// </summary>
+        public float TraceReadoutSensorPower => _traceReadoutSensorPower;
+
+        /// <summary>
+        /// Échelle du capteur, en TFlops. En dessous, le Hardware n'achète pas de visibilité.
+        /// Sans elle, le logarithme donnait l'essentiel du rachat aux tout premiers TFlops.
+        /// </summary>
+        public float TraceReadoutSensorReferenceTFlops => _traceReadoutSensorReferenceTFlops;
 
         /// <summary>Fraction de l'asymptote au-delà de laquelle le Ghost Cache se charge.</summary>
         public float GhostCacheReductionThreshold => _ghostCacheReductionThreshold;

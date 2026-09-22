@@ -1,0 +1,43 @@
+# Périmètre du graphe de connaissances (graphify)
+#
+# Le graphe ne doit contenir que ce qui porte du SENS sur le projet :
+# le code de jeu, les sources de données d'équilibrage, les docs et l'outillage.
+# Sémantique gitignore ; ce fichier ne peut qu'exclure davantage, jamais réinclure.
+#
+# Sans lui, `graphify --update` resurface à chaque passage une soixantaine de
+# fichiers sans intérêt (sprites, licences NuGet, ressources TextMesh Pro) et
+# les injecte dans la détection de communautés, où ils diluent les vrais thèmes.
+
+# --- Dépendances tierces ---
+Assets/Packages/
+Assets/TextMesh Pro/
+Assets/Plugins/
+
+# --- Ressources binaires : aucune structure à extraire ---
+Assets/Data/Sprites/
+Assets/Data/Fonts/
+*.png
+*.jpg
+*.psd
+*.ttf
+*.otf
+*.wav
+*.mp3
+*.ogg
+
+# --- Sorties de générateurs (voir docs/etat-des-lieux.md) ---
+# Les .asset sont écrasés par leurs générateurs : les sources sont
+# Assets/GameData/Editor/** et PrestigeSpecificNodesGenerator.cs.
+Assets/GameData/Upgrades/
+Assets/GameData/Prestige/
+Assets/GameData/Catalogs/
+
+# --- Bruit d'outillage et de plateforme ---
+ProjectSettings/
+steam_appid.txt
+__pycache__/
+*.pyc
+graphify-out/
+
+# --- Métadonnées Unity ---
+*.meta
