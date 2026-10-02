@@ -20,8 +20,9 @@ namespace Core.Services.Persistence
     ///     aussi d'annuler un Game Over en tuant le processus.
     ///  3. Fermeture — croix, Alt+F4, quit. Ne couvre ni un kill process, ni une coupure de
     ///     courant, ni un crash du moteur : aucun jeu ne le peut, c'est le rôle de l'autosave.
+    ///  4. À la demande (<see cref="ISaveRequester"/>) — retour au menu principal.
     /// </summary>
-    public class SaveScheduler : IAsyncStartable, IDisposable
+    public class SaveScheduler : IAsyncStartable, ISaveRequester, IDisposable
     {
         private static readonly TimeSpan AutoSaveInterval = TimeSpan.FromMinutes(5d);
 
@@ -96,6 +97,16 @@ namespace Core.Services.Persistence
             {
                 // Destruction du scope : sortie normale, rien à signaler.
             }
+        }
+
+        /// <summary>
+        /// Ignorée avant le démarrage du planificateur : sans jeton, rien ne garantit que la
+        /// restauration a eu lieu — et WriteAsync refuserait de toute façon.
+        /// </summary>
+        public void RequestSave(string reason)
+        {
+            if (_linkedCts == null) return;
+            RequestSave(reason, _linkedCts.Token);
         }
 
         private void RequestSave(string reason, CancellationToken ct)

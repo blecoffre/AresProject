@@ -2,6 +2,7 @@ using Core.Models.Console;
 using Core.Services.Economy;
 using Core.Services.Localization;
 using Core.Services.Simulation;
+using Core.UI.Theme;
 using R3;
 using System;
 using UnityEngine;
@@ -23,6 +24,7 @@ namespace Core.UI.Game
         private readonly PrestigeManager _prestige;
         private readonly ConsolePresenter _console;
         private readonly ILocalizationService _loc;
+        private readonly IPaletteService _palette;
 
         private DisposableBag _disposables;
 
@@ -31,13 +33,15 @@ namespace Core.UI.Game
             GhostCacheSystem ghostCache,
             PrestigeManager prestige,
             ConsolePresenter console,
-            ILocalizationService loc)
+            ILocalizationService loc,
+            IPaletteService palette)
         {
             _view = view;
             _ghostCache = ghostCache;
             _prestige = prestige;
             _console = console;
             _loc = loc;
+            _palette = palette;
         }
 
         public void Start()
@@ -76,6 +80,19 @@ namespace Core.UI.Game
                 .Subscribe(HandleOverdriveToggled)
                 .AddTo(ref _disposables);
 
+            // Mode daltonien changé à chaud : la jauge se repeint.
+            _palette.Current
+                .Skip(1)
+                .Subscribe(_ => Refresh())
+                .AddTo(ref _disposables);
+
+            // Langue changée à chaud : le libellé se recompose dans la nouvelle langue. Skip(1) :
+            // le Refresh() ci-dessous fait déjà le premier rendu.
+            _loc.CurrentLanguage
+                .Skip(1)
+                .Subscribe(_ => Refresh())
+                .AddTo(ref _disposables);
+
             Refresh();
         }
 
@@ -98,7 +115,7 @@ namespace Core.UI.Game
                     _loc.GetText("UI_GHOSTCACHE_ACTIVE", Mathf.CeilToInt(remaining)),
                     interactable: false,
                     fillAmount: remaining / _ghostCache.OverdriveDurationSeconds,
-                    fillColor: _view.OverdriveColor);
+                    fillColor: _palette.Current.CurrentValue.GhostOverdrive);
 
                 return;
             }
@@ -112,7 +129,7 @@ namespace Core.UI.Game
                     _loc.GetText("UI_GHOSTCACHE_LOCKED"),
                     interactable: false,
                     fillAmount: 0f,
-                    fillColor: _view.ChargingColor);
+                    fillColor: _palette.Current.CurrentValue.GhostCharging);
 
                 return;
             }
@@ -136,7 +153,7 @@ namespace Core.UI.Game
                     // « armé », la barre reste libre de montrer ce qui se recharge derrière.
                     // Elle atteint 1 d'elle-même quand toutes les charges sont pleines.
                     fillAmount: _ghostCache.NormalizedCharge,
-                    fillColor: _view.ReadyColor);
+                    fillColor: _palette.Current.CurrentValue.GhostReady);
 
                 return;
             }
@@ -147,7 +164,7 @@ namespace Core.UI.Game
                 _loc.GetText("UI_GHOSTCACHE_CHARGING", Mathf.RoundToInt(normalized * 100f)),
                 interactable: false,
                 fillAmount: normalized,
-                fillColor: _view.ChargingColor);
+                fillColor: _palette.Current.CurrentValue.GhostCharging);
         }
 
         private void HandleClicked()

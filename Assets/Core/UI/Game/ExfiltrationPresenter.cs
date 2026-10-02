@@ -99,6 +99,13 @@ namespace Core.UI.Game
                 .Subscribe(_ => Refresh())
                 .AddTo(ref _disposables);
 
+            // Langue changée à chaud : le libellé se recompose dans la nouvelle langue. Skip(1) :
+            // le Refresh() ci-dessous fait déjà le premier rendu.
+            _loc.CurrentLanguage
+                .Skip(1)
+                .Subscribe(_ => Refresh())
+                .AddTo(ref _disposables);
+
             Refresh();
         }
 

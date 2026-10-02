@@ -1,4 +1,4 @@
-﻿using Core.Models.Console;
+using Core.Models.Console;
 using Core.Services.Console;
 using TMPro;
 using UnityEngine;
@@ -22,6 +22,10 @@ namespace Core.UI.Game
             _pool = new LogObjectPool(_logPrefab, _logContainer, _maxPoolSize);
         }
 
+        private string _successPrefix = string.Empty;
+        private string _narrativePrefix = string.Empty;
+        private string _standardPrefix = string.Empty;
+
         public void AppendLog(string message, ConsoleLogType type)
         {
             // On récupère une ligne propre depuis le pool (zéro instanciation)
@@ -34,13 +38,24 @@ namespace Core.UI.Game
             logItem.transform.SetAsLastSibling();
         }
 
+        /// <summary>
+        /// Les étiquettes de début de ligne, déjà colorées et localisées par le presenter. Les
+        /// lignes déjà affichées gardent les leurs : c'est un historique.
+        /// </summary>
+        public void SetTagPrefixes(string success, string narrative, string standard)
+        {
+            _successPrefix = success;
+            _narrativePrefix = narrative;
+            _standardPrefix = standard;
+        }
+
         private string FormatMessage(string message, ConsoleLogType type)
         {
             return type switch
             {
-                ConsoleLogType.Success => $"<color=#00FF00>[OK]</color> {message}",
-                ConsoleLogType.Narrative => $"<color=#FF00FF>[SYSTEM_WARN]</color> {message}",
-                _ => $"<color=#CCCCCC>[INFO]</color> {message}"
+                ConsoleLogType.Success => _successPrefix + message,
+                ConsoleLogType.Narrative => _narrativePrefix + message,
+                _ => _standardPrefix + message
             };
         }
     }

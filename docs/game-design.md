@@ -1248,6 +1248,7 @@ L'objectif ultime du joueur est de récupérer **une photo de chat sur une clé 
 - **`runInBackground` est à `true`** (tranché le 2026-08-26). « Hors-ligne » veut dire *jeu fermé*, pas *fenêtre en arrière-plan* : le joueur peut laisser tourner Ares pendant qu'il fait autre chose, et l'A.M.I. continue de le traquer. Le mettre à `false` offrirait une planque parfaite et gratuite — il suffirait d'alt-tab pour geler la Trace.
   *Note pour les tests : ce réglage ne s'applique qu'au build. Dans l'éditeur, le player loop reste figé tant que la fenêtre Unity n'a pas le focus (`Time.frameCount` ne bouge pas). Pour vérifier un `ITickable` sans focus, appeler `Tick()` à la main plutôt que d'attendre des frames.*
 - Fichier en JSON lisible et éditable à la main — choix assumé jusqu'à la sortie Steam.
+- **Le menu principal et le menu de pause figent la simulation** (tranché le 2026-10-01). C'est une planque assumée, la seule : on ne punit pas le joueur qui règle ses options. Elle reste coûteuse en pratique, puisque rien ne progresse pendant qu'il est dessus — ce n'est pas une planque *productive*, contrairement à ce qu'aurait été l'alt-tab. L'arbre de prestige, lui, **ne** met **pas** en pause.
 
 ## Steam
 

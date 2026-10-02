@@ -1171,6 +1171,238 @@
     {
       "Key": "PRESTIGE_P_OVERCLOCK_SPACEBAR_DESC",
       "Value": "Du nouveau matériel te permet de pousser l’overclock encore plus loin"
+    },
+    {
+      "Key": "MENU_TITLE",
+      "Value": "ARES"
+    },
+    {
+      "Key": "MENU_SUBTITLE",
+      "Value": "TERMINAL D'INTRUSION — SESSION EN ATTENTE"
+    },
+    {
+      "Key": "MENU_CONTINUE",
+      "Value": "[ CONTINUER ]"
+    },
+    {
+      "Key": "MENU_OPTIONS",
+      "Value": "[ OPTIONS ]"
+    },
+    {
+      "Key": "MENU_QUIT",
+      "Value": "[ QUITTER ]"
+    },
+    {
+      "Key": "OPTIONS_TITLE",
+      "Value": "CONFIGURATION DU TERMINAL"
+    },
+    {
+      "Key": "OPTIONS_BACK",
+      "Value": "[ RETOUR ]"
+    },
+    {
+      "Key": "OPTIONS_DISPLAY_MODE",
+      "Value": "Mode d'affichage"
+    },
+    {
+      "Key": "OPTIONS_DISPLAY_WINDOWED",
+      "Value": "Fenêtré"
+    },
+    {
+      "Key": "OPTIONS_DISPLAY_FULLSCREEN",
+      "Value": "Plein écran"
+    },
+    {
+      "Key": "OPTIONS_RESOLUTION",
+      "Value": "Résolution (fenêtré)"
+    },
+    {
+      "Key": "OPTIONS_RESOLUTION_VALUE",
+      "Value": "{0} × {1}"
+    },
+    {
+      "Key": "OPTIONS_VSYNC",
+      "Value": "Synchronisation verticale"
+    },
+    {
+      "Key": "OPTIONS_ON",
+      "Value": "Activée"
+    },
+    {
+      "Key": "OPTIONS_OFF",
+      "Value": "Désactivée"
+    },
+    {
+      "Key": "OPTIONS_FRAME_RATE",
+      "Value": "Images par seconde (max.)"
+    },
+    {
+      "Key": "OPTIONS_FRAME_RATE_VALUE",
+      "Value": "{0}"
+    },
+    {
+      "Key": "OPTIONS_UI_SCALE",
+      "Value": "Taille de l'interface"
+    },
+    {
+      "Key": "OPTIONS_UI_SCALE_VALUE",
+      "Value": "{0} %"
+    },
+    {
+      "Key": "UI_SELECTOR_PREV",
+      "Value": "<"
+    },
+    {
+      "Key": "UI_SELECTOR_NEXT",
+      "Value": ">"
+    },
+    {
+      "Key": "OPTIONS_LANGUAGE",
+      "Value": "Langue"
+    },
+    {
+      "Key": "LANGUAGE_NAME_FR",
+      "Value": "Français"
+    },
+    {
+      "Key": "LANGUAGE_NAME_EN",
+      "Value": "English"
+    },
+    {
+      "Key": "LANGUAGE_NAME_ES",
+      "Value": "Español"
+    },
+    {
+      "Key": "LANGUAGE_PICKER_TITLE",
+      "Value": "CHOISIS TA LANGUE"
+    },
+    {
+      "Key": "LANGUAGE_PICKER_HINT",
+      "Value": "Tu pourras la changer à tout moment dans les options."
+    },
+    {
+      "Key": "LANGUAGE_PICKER_CONFIRM",
+      "Value": "[ CONFIRMER ]"
+    },
+    {
+      "Key": "LANGUAGE_PICKER_SELECTED",
+      "Value": "> {0} <"
+    },
+    {
+      "Key": "UI_TAB_SCRIPT",
+      "Value": "Acquisition"
+    },
+    {
+      "Key": "UI_TAB_HARDWARE",
+      "Value": "Hardware"
+    },
+    {
+      "Key": "UI_TAB_PROXY",
+      "Value": "Furtivité"
+    },
+    {
+      "Key": "UI_RUN_END_RESTART",
+      "Value": "[ NOUVELLE INTRUSION ]"
+    },
+    {
+      "Key": "PAUSE_TITLE",
+      "Value": "// SESSION SUSPENDUE //"
+    },
+    {
+      "Key": "PAUSE_RESUME",
+      "Value": "[ REPRENDRE ]"
+    },
+    {
+      "Key": "PAUSE_OPTIONS",
+      "Value": "[ OPTIONS ]"
+    },
+    {
+      "Key": "PAUSE_MAIN_MENU",
+      "Value": "[ MENU PRINCIPAL ]"
+    },
+    {
+      "Key": "PAUSE_QUIT",
+      "Value": "[ QUITTER LE JEU ]"
+    },
+    {
+      "Key": "OPTIONS_COLOR_VISION",
+      "Value": "Mode daltonien"
+    },
+    {
+      "Key": "OPTIONS_COLOR_VISION_STANDARD",
+      "Value": "Désactivé"
+    },
+    {
+      "Key": "OPTIONS_COLOR_VISION_PROTANOPIA",
+      "Value": "Protanopie (rouge)"
+    },
+    {
+      "Key": "OPTIONS_COLOR_VISION_DEUTERANOPIA",
+      "Value": "Deutéranopie (vert)"
+    },
+    {
+      "Key": "OPTIONS_COLOR_VISION_TRITANOPIA",
+      "Value": "Tritanopie (bleu)"
+    },
+    {
+      "Key": "CONSOLE_TAG_SUCCESS",
+      "Value": "[OK]"
+    },
+    {
+      "Key": "CONSOLE_TAG_NARRATIVE",
+      "Value": "[SYSTEM_WARN]"
+    },
+    {
+      "Key": "CONSOLE_TAG_STANDARD",
+      "Value": "[INFO]"
+    },
+    {
+      "Key": "OPTIONS_TAB_DISPLAY",
+      "Value": "Affichage"
+    },
+    {
+      "Key": "OPTIONS_TAB_AUDIO",
+      "Value": "Audio"
+    },
+    {
+      "Key": "OPTIONS_TAB_ACCESSIBILITY",
+      "Value": "Accessibilité"
+    },
+    {
+      "Key": "OPTIONS_MUSIC_VOLUME",
+      "Value": "Volume de la musique"
+    },
+    {
+      "Key": "OPTIONS_MUSIC_MUTE",
+      "Value": "Couper la musique"
+    },
+    {
+      "Key": "OPTIONS_SFX_VOLUME",
+      "Value": "Volume des effets"
+    },
+    {
+      "Key": "OPTIONS_SFX_MUTE",
+      "Value": "Couper les effets"
+    },
+    {
+      "Key": "OPTIONS_VOLUME_VALUE",
+      "Value": "{0} %"
+    },
+    {
+      "Key": "OPTIONS_YES",
+      "Value": "Oui"
+    },
+    {
+      "Key": "OPTIONS_NO",
+      "Value": "Non"
+    },
+    {
+      "Key": "OPTIONS_MASTER_MUTE",
+      "Value": "Couper tout le son"
+    },
+    {
+      "Key": "OPTIONS_AUDIO_IN_BACKGROUND",
+      "Value": "Son en arrière-plan"
     }
   ]
 }

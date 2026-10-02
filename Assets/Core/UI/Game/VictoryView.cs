@@ -34,6 +34,7 @@ namespace Core.UI.Game
 
         [Tooltip("Referme l'écran et rend la main. La partie n'a jamais cessé de tourner derrière.")]
         [SerializeField] private Button _closeButton;
+        [SerializeField] private TextMeshProUGUI _closeLabel;
 
         public event Action OnCloseClicked;
 
@@ -58,6 +59,11 @@ namespace Core.UI.Game
         /// Écrit les textes PUIS allume le panneau. Jamais l'inverse : le joueur verrait une frame
         /// du contenu précédent — ici, celui d'une victoire vide.
         /// </summary>
+        public void SetCloseLabel(string label)
+        {
+            if (_closeLabel != null) _closeLabel.text = label;
+        }
+
         public void Show(string title, string body)
         {
             if (_titleText != null) _titleText.text = title;

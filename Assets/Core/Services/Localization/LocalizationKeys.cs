@@ -22,6 +22,13 @@ namespace Core.Services.Localization
         public static string PrestigeDescription(string prestigeId) => "PRESTIGE_" + prestigeId + "_DESC";
 
         /// <summary>
+        /// Nom d'une langue, écrit DANS cette langue (« Español », jamais « Espagnol ») et présent
+        /// à l'identique dans chaque fichier : un joueur doit reconnaître sa langue quelle que
+        /// soit celle qui est affichée.
+        /// </summary>
+        public static string LanguageName(string languageCode) => "LANGUAGE_NAME_" + languageCode.ToUpperInvariant();
+
+        /// <summary>
         /// Gabarits des nœuds de prestige « spécifiques ». Ces nœuds n'ont pas de nom propre :
         /// leur libellé se compose d'un gabarit et du nom de l'upgrade ciblée, ce qui remplace
         /// 324 entrées de traduction quasi identiques par ces six-là. Le {0} reçoit le nom résolu

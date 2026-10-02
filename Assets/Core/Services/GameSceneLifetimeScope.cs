@@ -2,9 +2,13 @@ using Core.Services.Economy;
 using Core.Services.Simulation;
 using Core.UI.Game;
 using Core.UI.Header;
+using Core.UI.Options;
+using Core.UI.Pause;
 using Core.UI.Prestige;
+using Core.UI.Theme;
 using Core.UI.Upgrades;
 using UnityEngine;
+using UnityEngine.UI;
 using VContainer;
 using VContainer.Unity;
 
@@ -34,6 +38,16 @@ namespace Core.Boot
         [Tooltip("Écran de victoire. Vue autonome qui possède sa propre racine : elle ne partage " +
                  "rien avec l'écran de fin de run, la victoire n'arrêtant pas la partie.")]
         [SerializeField] private VictoryView _victoryView;
+
+        [Header("Pause et options")]
+        [Tooltip("Menu de pause (Échap). Instance du prefab PauseMenu.")]
+        [SerializeField] private PauseMenuView _pauseMenuView;
+
+        [Tooltip("Panneau d'options ouvert depuis la pause. Instance du prefab OptionsPanel, le même que sur l'écran titre.")]
+        [SerializeField] private OptionsPanelView _optionsPanelView;
+
+        [Tooltip("Le CanvasScaler de la scène, sur lequel s'applique l'échelle d'interface.")]
+        [SerializeField] private CanvasScaler _canvasScaler;
 
         protected override void Configure(IContainerBuilder builder)
         {
@@ -126,6 +140,16 @@ namespace Core.Boot
             // Points de démarrage
             builder.RegisterEntryPoint<GameSceneBootstrapper>();
             builder.RegisterEntryPoint<SimulationTicker>();
+
+            // Menu de pause et options : le même panneau d'options que sur l'écran titre.
+            builder.RegisterComponent(_pauseMenuView);
+            builder.RegisterComponent(_optionsPanelView);
+            builder.Register<OptionsPanelPresenter>(Lifetime.Scoped).AsImplementedInterfaces().AsSelf();
+            builder.Register<PauseMenuPresenter>(Lifetime.Scoped).AsImplementedInterfaces().AsSelf();
+
+            // L'échelle d'interface choisie dans les options.
+            builder.RegisterComponent(_canvasScaler);
+            builder.RegisterEntryPoint<UiScalePresenter>();
         }
     }
 }

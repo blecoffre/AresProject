@@ -1,5 +1,6 @@
 using System;
 using TMPro;
+using Core.UI.Theme;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -38,15 +39,10 @@ namespace Core.UI.Prestige
         [SerializeField] private Button _buyButton;
         [SerializeField] private TextMeshProUGUI _buyLabel;
 
-        [Header("Couleurs d'état")]
-        [Tooltip("Même code que les nœuds de l'arbre, tenu à part volontairement : l'inspecteur " +
-                 "est du texte sur fond sombre, un nœud est une pastille — la teinte lisible " +
-                 "n'est pas forcément la même, et il faut pouvoir les régler séparément.")]
-        [SerializeField] private Color _lockedColor = new Color(0.200f, 0.333f, 0.200f, 1f);
-        [SerializeField] private Color _tooExpensiveColor = new Color(1f, 0.200f, 0.200f, 1f);
-        [SerializeField] private Color _affordableColor = new Color(1f, 0.600f, 0f, 1f);
-        [SerializeField] private Color _inProgressColor = new Color(0.290f, 0.965f, 0.149f, 1f);
-        [SerializeField] private Color _maxedColor = new Color(0.290f, 0.965f, 0.149f, 1f);
+        // Couleurs d'état : champs Inspector* de la palette, tenus à part de ceux des nœuds —
+        // l'inspecteur est du texte sur fond sombre, un nœud est une pastille, la teinte lisible
+        // n'est pas forcément la même (voir SetPalette).
+        private UiPaletteSO _palette;
 
         public event Action OnBuyClicked;
 
@@ -72,6 +68,12 @@ namespace Core.UI.Prestige
 
         // Méthode nommée plutôt qu'une lambda : un retrait de lambda ne désabonne rien.
         private void RaiseBuy() => OnBuyClicked?.Invoke();
+
+        /// <summary>
+        /// Couleurs d'état du mode de vision courant (daltonisme). Posée par le presenter AVANT
+        /// le premier rendu, puis à chaque changement d'option — suivi d'un nouveau rendu.
+        /// </summary>
+        public void SetPalette(UiPaletteSO palette) => _palette = palette;
 
         public void Hide()
         {
@@ -132,11 +134,11 @@ namespace Core.UI.Prestige
         {
             switch (state)
             {
-                case PrestigeNodeState.Locked: return _lockedColor;
-                case PrestigeNodeState.TooExpensive: return _tooExpensiveColor;
-                case PrestigeNodeState.Affordable: return _affordableColor;
-                case PrestigeNodeState.InProgress: return _inProgressColor;
-                default: return _maxedColor;
+                case PrestigeNodeState.Locked: return _palette.InspectorLocked;
+                case PrestigeNodeState.TooExpensive: return _palette.InspectorTooExpensive;
+                case PrestigeNodeState.Affordable: return _palette.InspectorAffordable;
+                case PrestigeNodeState.InProgress: return _palette.InspectorInProgress;
+                default: return _palette.InspectorMaxed;
             }
         }
     }

@@ -2,6 +2,7 @@ using Core.Models.Economy;
 using Core.Services.Economy;
 using Core.Services.Localization;
 using Core.Utils;
+using Core.UI.Theme;
 using System;
 
 namespace Core.UI.Prestige
@@ -38,13 +39,23 @@ namespace Core.UI.Prestige
             _loc = loc;
             _onSelected = onSelected;
 
-            // Initialisation statique. Le nom ne change jamais : il est résolu ici, une seule
-            // fois, et jamais depuis Refresh() qui tourne pour chacun des 116 nœuds à chaque
-            // variation de CPU Cycles.
+            // Initialisation statique. Le nom ne change qu'avec la langue : il est résolu ici et
+            // dans RefreshLocalizedTexts(), jamais depuis Refresh() qui tourne pour chacun des
+            // 116 nœuds à chaque variation de CPU Cycles.
             _view.InitializeStaticData(PrestigeLabels.ResolveName(config, loc));
 
             _view.OnNodeClicked += HandleClicked;
 
+            Refresh();
+        }
+
+        /// <summary>Changement de palette (daltonisme) : la vue la garde, le panneau repeindra.</summary>
+        public void SetPalette(UiPaletteSO palette) => _view.SetPalette(palette);
+
+        /// <summary>Changement de langue à chaud : le nom, puis l'état dans la nouvelle langue.</summary>
+        public void RefreshLocalizedTexts()
+        {
+            _view.InitializeStaticData(PrestigeLabels.ResolveName(Config, _loc));
             Refresh();
         }
 

@@ -23,18 +23,9 @@ namespace Core.UI.Game
         [SerializeField] private TextMeshProUGUI _bilanText;
 
         [SerializeField] private Button _restartButton;
-
-        [Header("Couleurs du titre")]
-        [Tooltip("Saisie Fédérale — le joueur s'est fait prendre.")]
-        [SerializeField] private Color _seizedColor = new Color(1f, 0.2f, 0.2f, 1f);
-
-        [Tooltip("Effacement Propre — il est sorti de lui-même, avec le bonus.")]
-        [SerializeField] private Color _cleanExitColor = new Color(0.29f, 0.96f, 0.15f, 1f);
+        [SerializeField] private TextMeshProUGUI _restartLabel;
 
         public event Action OnRestartClicked;
-
-        public Color SeizedColor => _seizedColor;
-        public Color CleanExitColor => _cleanExitColor;
 
         private void Awake()
         {
@@ -58,6 +49,11 @@ namespace Core.UI.Game
         /// juste après. Écrire d'abord, montrer ensuite, jamais l'inverse — sinon le joueur voit
         /// une frame du bilan précédent.
         /// </summary>
+        public void SetRestartLabel(string label)
+        {
+            if (_restartLabel != null) _restartLabel.text = label;
+        }
+
         public void ShowGameOver(string narrativeMessage, string bilanMessage, Color titleColor)
         {
             if (_narrativeText != null)

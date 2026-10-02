@@ -63,11 +63,11 @@ namespace Core.UI.Prestige
         public event Action OnOpenClicked;
         public event Action OnCloseClicked;
 
-        /// <summary>L'écran est-il affiché. Sert au presenter pour basculer sur Échap.</summary>
+        /// <summary>L'écran est-il affiché. Sert au presenter pour basculer sur P et fermer sur Échap.</summary>
         public bool IsVisible => _screenRoot != null && _screenRoot.activeSelf;
 
         /// <summary>
-        /// L'écran est-il affiché en mode fin de run. Échap ne doit pas pouvoir l'escamoter :
+        /// L'écran est-il affiché en mode fin de run. Ni P ni Échap ne doivent pouvoir l'escamoter :
         /// la run est terminée, il n'y a rien derrière à quoi revenir.
         /// </summary>
         public bool IsRunEndMode { get; private set; }

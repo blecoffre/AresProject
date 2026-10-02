@@ -2,6 +2,7 @@ using Core.Models.Economy;
 using Core.Services.Economy;
 using Core.Services.Localization;
 using Core.Services.Security;
+using Core.UI.Theme;
 using Core.Utils;
 using R3;
 using System;
@@ -17,6 +18,7 @@ namespace Core.UI.Header
         private readonly UpgradeManager _upgradeManager;
         private readonly TraceReadout _traceReadout;
         private readonly ILocalizationService _loc;
+        private readonly IPaletteService _palette;
         private readonly BalancingConfigSO _balancing;
         private readonly PrestigeManager _prestige;
 
@@ -30,6 +32,7 @@ namespace Core.UI.Header
 
         public HeaderPresenter(UserCurrencies userCurrencies, HeaderView view, UpgradeManager upgradeManager,
                                TraceReadout traceReadout, ILocalizationService loc,
+            IPaletteService palette,
                                BalancingConfigSO balancing, PrestigeManager prestige)
         {
             _userCurrencies = userCurrencies;
@@ -37,6 +40,7 @@ namespace Core.UI.Header
             _upgradeManager = upgradeManager;
             _traceReadout = traceReadout;
             _loc = loc;
+            _palette = palette;
             _balancing = balancing;
             _prestige = prestige;
 
@@ -44,11 +48,7 @@ namespace Core.UI.Header
 
             // Le « + … /s » se compose ICI, pas dans la vue : c'est le presenter qui tient la
             // localisation. La vue n'a plus qu'à poser la chaîne.
-            _upgradeManager.TotalMoneyYieldPerSecond.Subscribe(yield =>
-            {
-                string formattedYield = CurrencyFormatter.Format(yield);
-                _view.UpdateMoneyYieldDisplay(_loc.GetText("UI_YIELD_PER_SECOND", formattedYield));
-            })
+            _upgradeManager.TotalMoneyYieldPerSecond.Subscribe(RenderYield)
             .AddTo(ref _disposables);
 
             // Capacité de calcul dérivée, et non plus une monnaie accumulée.
@@ -74,10 +74,9 @@ namespace Core.UI.Header
 
         public void Start()
         {
-            // L'unité est un texte statique : une seule écriture, pas un LocalizedText de plus
-            // à ne pas oublier dans autoInjectGameObjects.
-            _view.SetComputerPowerUnit(_loc.GetText("UI_UNIT_TFLOPS"));
-            _view.SetCpuCyclesUnit(_loc.GetText("CYCLES"));
+            // L'unité est un texte statique : écrite ici, pas par un LocalizedText de plus à ne
+            // pas oublier dans autoInjectGameObjects.
+            RenderUnits();
 
             BindEconomyToView();
 
@@ -91,6 +90,38 @@ namespace Core.UI.Header
             _prestige.IsHighRiskExtractionUnlocked
                      .Subscribe(_ => RebuildTierDisplay())
                      .AddTo(ref _disposables);
+
+            // Palette du mode de vision : couleurs des paliers, à chaud.
+            _palette.Current
+                .Subscribe(p => _view.SetTierColors(p.TierReached, p.TierUncertain, p.TierUpcoming, p.TierLocked))
+                .AddTo(ref _disposables);
+
+            // Langue changée à chaud : tous les libellés du header se recomposent. Skip(1) : le
+            // premier rendu est fait par les abonnements ci-dessus.
+            _loc.CurrentLanguage
+                .Skip(1)
+                .Subscribe(_ => RefreshLocalizedTexts())
+                .AddTo(ref _disposables);
+        }
+
+        private void RefreshLocalizedTexts()
+        {
+            RenderUnits();
+            RenderYield(_upgradeManager.TotalMoneyYieldPerSecond.CurrentValue);
+            RebuildTierDisplay();
+            RenderReadout(_traceReadout.LastKnownFraction.CurrentValue);
+        }
+
+        private void RenderUnits()
+        {
+            _view.SetComputerPowerUnit(_loc.GetText("UI_UNIT_TFLOPS"));
+            _view.SetCpuCyclesUnit(_loc.GetText("CYCLES"));
+        }
+
+        private void RenderYield(double yieldPerSecond)
+        {
+            string formattedYield = CurrencyFormatter.Format(yieldPerSecond);
+            _view.UpdateMoneyYieldDisplay(_loc.GetText("UI_YIELD_PER_SECOND", formattedYield));
         }
 
         /// <summary>

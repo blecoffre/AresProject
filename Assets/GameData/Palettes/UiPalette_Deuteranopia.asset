@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 677c51f163d4bf5418b75f7756a77052, type: 3}
+  m_Name: UiPalette_Deuteranopia
+  m_EditorClassIdentifier: Assembly-CSharp::Core.UI.Theme.UiPaletteSO
+  NodeLocked: {r: 0.36862746, g: 0.5411765, b: 0.36862746, a: 1}
+  NodeTooExpensive: {r: 0.60784316, g: 0.41960785, b: 1, a: 1}
+  NodeAffordable: {r: 1, g: 1, b: 1, a: 1}
+  NodeInProgress: {r: 0.29, g: 0.965, b: 0.149, a: 1}
+  NodeMaxed: {r: 0.29, g: 0.965, b: 0.149, a: 1}
+  InspectorLocked: {r: 0.36862746, g: 0.5411765, b: 0.36862746, a: 1}
+  InspectorTooExpensive: {r: 0.60784316, g: 0.41960785, b: 1, a: 1}
+  InspectorAffordable: {r: 1, g: 1, b: 1, a: 1}
+  InspectorInProgress: {r: 0.29, g: 0.965, b: 0.149, a: 1}
+  InspectorMaxed: {r: 0.29, g: 0.965, b: 0.149, a: 1}
+  LinkLocked: {r: 0.2, g: 0.2, b: 0.2, a: 0.5}
+  LinkUnlocked: {r: 0.7882353, g: 0.627451, b: 1, a: 1}
+  LinkCompleted: {r: 0.28627452, g: 0.95686275, b: 0.14901961, a: 1}
+  TierReached: {r: 0.29, g: 0.96, b: 0.15, a: 1}
+  TierUncertain: {r: 1, g: 1, b: 1, a: 1}
+  TierUpcoming: {r: 0.24, g: 0.35, b: 0.24, a: 1}
+  TierLocked: {r: 0.6, g: 0.6, b: 0.6, a: 1}
+  RunEndSeized: {r: 1, g: 0.18039216, b: 0.53333336, a: 1}
+  RunEndCleanExit: {r: 0.29, g: 0.96, b: 0.15, a: 1}
+  GhostCharging: {r: 0.3019608, g: 0.3019608, b: 0.6, a: 1}
+  GhostReady: {r: 0.7882353, g: 0.627451, b: 1, a: 1}
+  GhostOverdrive: {r: 1, g: 0.18039216, b: 0.53333336, a: 1}
+  EmergencyUnavailable: {r: 0.34901962, g: 0.34901962, b: 0.4, a: 1}
+  EmergencyReady: {r: 1, g: 1, b: 1, a: 1}
+  EmergencyBlocked: {r: 1, g: 0.18039216, b: 0.53333336, a: 1}
+  ConsoleSuccess: {r: 0.28627452, g: 0.95686275, b: 0.14901961, a: 1}
+  ConsoleNarrative: {r: 0.7882353, g: 0.627451, b: 1, a: 1}
+  ConsoleStandard: {r: 0.8, g: 0.8, b: 0.8, a: 1}

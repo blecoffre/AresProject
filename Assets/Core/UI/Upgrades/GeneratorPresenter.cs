@@ -72,6 +72,26 @@ namespace Core.UI.Upgrades
             BindLevel();
             BindPurchaseState();
             BindCycle();
+
+            // Langue changée à chaud. Skip(1) : tout vient d'être rendu dans la langue courante.
+            _loc.CurrentLanguage
+                .Skip(1)
+                .Subscribe(_ => RefreshLocalizedTexts())
+                .AddTo(_disposables);
+        }
+
+        private void RefreshLocalizedTexts()
+        {
+            _view.InitializeStaticData(
+                _loc.GetText(_model.Config.DisplayNameKey),
+                _loc.GetText(_model.Config.DisplayDescriptionKey),
+                BuildStatsText());
+            _view.UpdateLevel(_loc.GetText("UI_GENERATOR_LEVEL", _model.CurrentLevel.CurrentValue));
+
+            // Le filtre d'achat ne réécrit rien tant que rien n'a bougé : on l'invalide pour que
+            // le coût et le libellé d'achat repassent par la nouvelle langue.
+            _lastAffordableLevels = -1;
+            RefreshPurchaseState();
         }
 
         private void BindLevel()

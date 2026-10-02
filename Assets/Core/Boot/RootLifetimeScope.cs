@@ -2,6 +2,7 @@ using Core.Boot;
 using Core.Economy.Data;
 using Core.Models;
 using Core.Models.Economy;
+using Core.Services.Audio;
 using Core.Services.Economy;
 using Core.Services.Localization;
 using Core.Services.Persistence;
@@ -9,8 +10,11 @@ using Core.Services.Platform;
 using Core.Services.Save;
 using Core.Services.Scene;
 using Core.Services.Security;
+using Core.Services.Settings;
 using Core.Services.Simulation;
+using Core.UI.Theme;
 using UnityEngine;
+using UnityEngine.Audio;
 using VContainer;
 using VContainer.Unity;
 
@@ -26,15 +30,25 @@ namespace Core.Infrastructure
                  "systèmes lisent les valeurs à l'usage, pas au démarrage.")]
         [SerializeField] private BalancingConfigSO _balancingConfig;
 
+        [Tooltip("Les palettes de couleurs d'état, une par mode de vision (daltonisme).")]
+        [SerializeField] private UiPaletteCatalogSO _paletteCatalog;
+
+        [Tooltip("Le mixer du jeu. Ses paramètres exposés MusicVolume et SfxVolume suivent les " +
+                 "volumes des options.")]
+        [SerializeField] private AudioMixer _audioMixer;
+
         protected override void Configure(IContainerBuilder builder)
         {
             // 1. Données statiques (catalogues glissés dans l'inspecteur)
             builder.RegisterInstance(_upgradeCatalog);
             builder.RegisterInstance(_prestigeCatalog);
             builder.RegisterInstance(_balancingConfig);
+            builder.RegisterInstance(_paletteCatalog);
 
-            // 2. Localisation — AsSelf pour que le bootstrapper puisse appeler LoadLanguageAsync
-            builder.Register<JsonLocalizationService>(Lifetime.Singleton).As<ILocalizationService>().AsSelf();
+            // 2. Localisation. Le changement de langue passe par l'interface (LoadLanguageAsync,
+            //    CurrentLanguage) : le chargement à chaud se fait depuis les options et l'écran de
+            //    premier lancement, qui ne doivent pas dépendre de l'implémentation JSON.
+            builder.Register<JsonLocalizationService>(Lifetime.Singleton).As<ILocalizationService>();
 
             // 3. Persistance
             //    Le disque local fait autorité tant qu'il n'y a pas d'AppId Steam. C'est aussi ce
@@ -54,11 +68,38 @@ namespace Core.Infrastructure
             // aussi par le SimulationTicker qui vit dans le scope de scène — un scope enfant lit
             // les enregistrements de son parent.
             //
-            // En production elle rend exactement Time.deltaTime : ce n'est pas un point
-            // d'extension théorique, c'est ce qui permet au harnais d'équilibrage de dérouler une
-            // campagne de dix heures en quelques secondes, hors Play Mode, sur CE code plutôt que
-            // sur une réplique qui en dérive.
-            builder.Register<UnityTimeSource>(Lifetime.Singleton).As<ITimeSource>();
+            // En production elle rend Time.deltaTime, ou zéro quand la partie est retenue (menu
+            // principal, menu de pause). Ce n'est pas un point d'extension théorique : c'est ce
+            // qui permet au harnais d'équilibrage de dérouler une campagne de dix heures en
+            // quelques secondes, hors Play Mode, sur CE code plutôt que sur une réplique.
+            // ISimulationClock à part : lire le temps et le suspendre sont deux droits distincts.
+            builder.Register<SimulationClock>(Lifetime.Singleton).As<ITimeSource>().As<ISimulationClock>();
+
+            // Réglages du joueur (settings.json, hors sauvegarde). Lus dès la construction : le
+            // FrameRateGovernor et les CanvasScaler doivent trouver les valeurs du joueur à leur
+            // premier abonnement. AsImplementedInterfaces pour l'IStartable qui applique l'affichage.
+            builder.Register<SettingsStore>(Lifetime.Singleton);
+            builder.Register<SettingsService>(Lifetime.Singleton).AsImplementedInterfaces();
+
+            // La palette du mode de vision choisi, suivie à chaud par tous les presenters d'état.
+            builder.Register<PaletteService>(Lifetime.Singleton).As<IPaletteService>();
+
+            // Volumes des options appliqués au mixer. Conditionnel, comme les vues facultatives de
+            // la GameScene : RegisterInstance(null) ferait échouer tout le conteneur pour un son
+            // qui n'existe pas encore.
+            if (_audioMixer != null)
+            {
+                builder.RegisterInstance(_audioMixer);
+                builder.RegisterEntryPoint<AudioVolumeApplier>();
+            }
+            else
+            {
+                Debug.LogWarning("[AUDIO] Aucun AudioMixer sur le RootLifetimeScope : les volumes des options sont sans effet.");
+            }
+
+            // Quitter l'application : derrière une interface pour garder Application.Quit (et son
+            // équivalent d'éditeur) hors des presenters.
+            builder.Register<ApplicationQuitter>(Lifetime.Singleton).As<IApplicationQuitter>();
 
             // 4. Modèles de données
             builder.Register<UserCurrencies>(Lifetime.Singleton);

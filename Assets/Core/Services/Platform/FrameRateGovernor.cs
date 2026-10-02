@@ -1,3 +1,5 @@
+using Core.Services.Settings;
+using R3;
 using System;
 using UnityEngine;
 using VContainer.Unity;
@@ -13,12 +15,13 @@ namespace Core.Services.Platform
     /// batterie qui fond, et sur Steam Deck une autonomie divisée. C'est un motif d'évaluation
     /// négative classique sur les jeux incrémentaux.
     ///
-    /// La VSync est coupée, et ce n'est PAS une négligence : tant que
+    /// La V-Sync et le plafond viennent des options du joueur (<see cref="ISettingsService"/>),
+    /// et CE service est le seul à les écrire dans Unity. Les deux s'excluent : tant que
     /// <see cref="QualitySettings.vSyncCount"/> est non nul, <see cref="Application.targetFrameRate"/>
-    /// est purement ignoré sur desktop, et la cadence reste collée au taux de rafraîchissement
-    /// de l'écran. Les deux réglages s'excluent — la documentation de Unity l'impose dans son
-    /// propre exemple. Sur une interface 2D, l'absence de VSync ne produit aucun déchirement
-    /// perceptible : il n'y a pas de mouvement de caméra pour le révéler.
+    /// est purement ignoré sur desktop et la cadence reste collée au taux de rafraîchissement de
+    /// l'écran — la documentation de Unity l'impose dans son propre exemple. Par défaut la V-Sync
+    /// est coupée et le plafond à 60 : sur une interface 2D, l'absence de V-Sync ne produit aucun
+    /// déchirement perceptible, il n'y a pas de mouvement de caméra pour le révéler.
     ///
     /// Hors focus, la SIMULATION continue de tourner — c'est <c>runInBackground</c>, réglé côté
     /// Player Settings, qui le garantit, et la Trace continue donc de monter pendant qu'on
@@ -27,9 +30,6 @@ namespace Core.Services.Platform
     /// </summary>
     public class FrameRateGovernor : IStartable, IDisposable
     {
-        /// <summary>Cadence fenêtre active. 60 suffit très largement pour de l'interface.</summary>
-        private const int FocusedFrameRate = 60;
-
         /// <summary>
         /// Cadence fenêtre inactive. Assez bas pour rendre la main au système, assez haut pour
         /// que le retour à la fenêtre soit instantané plutôt que saccadé.
@@ -39,8 +39,17 @@ namespace Core.Services.Platform
         /// <summary>Aucune limite : la valeur de repos de Unity, restaurée à la destruction.</summary>
         private const int UnlimitedFrameRate = -1;
 
+        private readonly ISettingsService _settings;
+
         private int _previousVSyncCount;
         private bool _isHooked;
+        private bool _hasFocus = true;
+        private DisposableBag _disposables;
+
+        public FrameRateGovernor(ISettingsService settings)
+        {
+            _settings = settings;
+        }
 
         public void Start()
         {
@@ -49,10 +58,6 @@ namespace Core.Services.Platform
             // sont statiques et survivent au scope, elles ne s'oublient pas toutes seules.
             _previousVSyncCount = QualitySettings.vSyncCount;
 
-            // Forcé ici plutôt que laissé au seul QualitySettings : le niveau de qualité peut
-            // être changé au runtime, et il réimposerait alors sa propre VSync.
-            QualitySettings.vSyncCount = 0;
-
             // Cadence pleine au démarrage, SANS consulter Application.isFocused — et c'est
             // délibéré. Au premier frame le focus n'est pas encore établi et isFocused peut
             // répondre false alors que la fenêtre s'apprête à le prendre : partir sur la valeur
@@ -60,28 +65,57 @@ namespace Core.Services.Platform
             // viendrait le rattraper puisqu'il n'y aurait, du point de vue de Unity, aucun
             // CHANGEMENT à signaler. Le défaut symétrique — un jeu lancé en arrière-plan qui
             // tourne à 60 jusqu'au premier basculement — ne coûte que quelques secondes de
-            // rendu inutile. On préfère ce défaut-là.
-            Application.targetFrameRate = FocusedFrameRate;
+            // rendu inutile. On préfère ce défaut-là. (_hasFocus démarre donc à true.)
+            //
+            // Les deux abonnements émettent leur valeur courante dès la souscription : c'est ce
+            // premier passage qui applique les réglages du joueur au démarrage. Écrire dans
+            // QualitySettings ici plutôt que s'en remettre au niveau de qualité : celui-ci peut
+            // changer au runtime et réimposerait sa propre V-Sync.
+            _disposables = new DisposableBag();
+            _settings.VSync.Subscribe(_ => Apply()).AddTo(ref _disposables);
+            _settings.FrameRateCap.Subscribe(_ => Apply()).AddTo(ref _disposables);
 
             Application.focusChanged += HandleFocusChanged;
             _isHooked = true;
         }
 
         /// <summary>
-        /// Une simple affectation d'entier statique : ni allocation, ni boxing, ni closure.
+        /// Deux affectations d'entiers statiques : ni allocation, ni boxing, ni closure.
         /// L'abonnement lui-même n'alloue son délégué qu'une fois, au démarrage.
         /// </summary>
         private void HandleFocusChanged(bool hasFocus)
         {
-            Application.targetFrameRate = hasFocus ? FocusedFrameRate : UnfocusedFrameRate;
+            _hasFocus = hasFocus;
+            Apply();
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             Debug.Log($"[PERF] Fenêtre {(hasFocus ? "active" : "inactive")} — cadence plafonnée à {Application.targetFrameRate} FPS.");
 #endif
         }
 
+        /// <summary>
+        /// Hors focus, la V-Sync est coupée même si le joueur l'a demandée : elle rendrait le
+        /// plafond de 10 FPS inopérant, et c'est lui qui rend la main au système. Elle revient
+        /// au retour du focus.
+        /// </summary>
+        private void Apply()
+        {
+            if (!_hasFocus)
+            {
+                QualitySettings.vSyncCount = 0;
+                Application.targetFrameRate = UnfocusedFrameRate;
+                return;
+            }
+
+            bool vSync = _settings.VSync.CurrentValue;
+            QualitySettings.vSyncCount = vSync ? 1 : 0;
+            Application.targetFrameRate = vSync ? UnlimitedFrameRate : _settings.FrameRateCap.CurrentValue;
+        }
+
         public void Dispose()
         {
+            _disposables.Dispose();
+
             // Se désabonner d'un événement statique de Unity est impératif : il survit au scope,
             // et un handler oublié maintiendrait en vie l'instance entière. Même règle que le
             // Application.quitting du SaveScheduler.

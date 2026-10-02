@@ -3,6 +3,7 @@ using Core.Services.Economy;
 using Core.Services.Localization;
 using Core.Services.Security;
 using Core.Utils;
+using Core.UI.Theme;
 using R3;
 using System;
 using UnityEngine;
@@ -26,6 +27,7 @@ namespace Core.UI.Game
         private readonly PrestigeManager _prestige;
         private readonly ConsolePresenter _console;
         private readonly ILocalizationService _loc;
+        private readonly IPaletteService _palette;
 
         private DisposableBag _disposables;
 
@@ -35,7 +37,8 @@ namespace Core.UI.Game
             UpgradeManager upgradeManager,
             PrestigeManager prestige,
             ConsolePresenter console,
-            ILocalizationService loc)
+            ILocalizationService loc,
+            IPaletteService palette)
         {
             _view = view;
             _emergency = emergency;
@@ -43,6 +46,7 @@ namespace Core.UI.Game
             _prestige = prestige;
             _console = console;
             _loc = loc;
+            _palette = palette;
         }
 
         public void Start()
@@ -84,6 +88,19 @@ namespace Core.UI.Game
                 .Subscribe(_ => Refresh())
                 .AddTo(ref _disposables);
 
+            // Mode daltonien changé à chaud : la jauge se repeint.
+            _palette.Current
+                .Skip(1)
+                .Subscribe(_ => Refresh())
+                .AddTo(ref _disposables);
+
+            // Langue changée à chaud : le libellé se recompose dans la nouvelle langue. Skip(1) :
+            // le Refresh() ci-dessous fait déjà le premier rendu.
+            _loc.CurrentLanguage
+                .Skip(1)
+                .Subscribe(_ => Refresh())
+                .AddTo(ref _disposables);
+
             Refresh();
         }
 
@@ -95,7 +112,7 @@ namespace Core.UI.Game
                     _loc.GetText("UI_EMERGENCY_LOCKED"),
                     interactable: false,
                     fillAmount: 0f,
-                    fillColor: _view.UnavailableColor);
+                    fillColor: _palette.Current.CurrentValue.EmergencyUnavailable);
 
                 return;
             }
@@ -111,7 +128,7 @@ namespace Core.UI.Game
                     _loc.GetText("UI_EMERGENCY_COOLDOWN", Mathf.CeilToInt(remaining)),
                     interactable: false,
                     fillAmount: 1f - remaining / _emergency.TotalCooldownSeconds,
-                    fillColor: blockRemaining > 0f ? _view.BlockedColor : _view.UnavailableColor);
+                    fillColor: blockRemaining > 0f ? _palette.Current.CurrentValue.EmergencyBlocked : _palette.Current.CurrentValue.EmergencyUnavailable);
 
                 return;
             }
@@ -126,7 +143,7 @@ namespace Core.UI.Game
                     interactable: false,
                     fillAmount: (float)(_upgradeManager.TotalTFlops.CurrentValue
                                         / _emergency.RequiredTFlops),
-                    fillColor: _view.UnavailableColor);
+                    fillColor: _palette.Current.CurrentValue.EmergencyUnavailable);
 
                 return;
             }
@@ -141,7 +158,7 @@ namespace Core.UI.Game
                     Mathf.RoundToInt(_emergency.BlockDuration)),
                 interactable: true,
                 fillAmount: 1f,
-                fillColor: _view.ReadyColor);
+                fillColor: _palette.Current.CurrentValue.EmergencyReady);
         }
 
         private void HandleClicked()

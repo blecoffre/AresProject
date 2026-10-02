@@ -1,7 +1,30 @@
-﻿namespace Core.Services.Localization
+using Cysharp.Threading.Tasks;
+using R3;
+using System.Collections.Generic;
+using System.Threading;
+
+namespace Core.Services.Localization
 {
     public interface ILocalizationService
     {
+        /// <summary>
+        /// Code de la langue chargée (« fr », « en »…). Émet à CHAQUE changement de langue, une
+        /// fois le nouveau dictionnaire en place : toute vue qui affiche du texte s'y abonne pour
+        /// se réécrire à chaud. Émet aussi sa valeur courante à l'abonnement, comme toute
+        /// ReactiveProperty — l'abonnement peut donc servir de premier rendu.
+        /// </summary>
+        ReadOnlyReactiveProperty<string> CurrentLanguage { get; }
+
+        /// <summary>Codes des langues dont un fichier existe, triés.</summary>
+        IReadOnlyList<string> AvailableLanguages { get; }
+
+        bool IsAvailable(string languageCode);
+
+        /// <summary>La langue du système si le jeu la parle, sinon l'anglais, sinon la première.</summary>
+        string ResolveSystemLanguage();
+
+        UniTask LoadLanguageAsync(string languageCode, CancellationToken ct);
+
         /// <summary>
         /// Retourne le texte brut associé à la clé.
         /// </summary>

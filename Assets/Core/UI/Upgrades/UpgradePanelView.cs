@@ -188,6 +188,13 @@ namespace Core.UI.Upgrades
         /// comme pour les onglets.
         /// </summary>
         /// <summary>Libellés des sélecteurs de quantité, résolus par le presenter.</summary>
+        public void SetTabLabels(string script, string hardware, string proxy)
+        {
+            if (_scriptTabVisual != null) _scriptTabVisual.SetLabel(script);
+            if (_hardwareTabVisual != null) _hardwareTabVisual.SetLabel(hardware);
+            if (_proxyTabVisual != null) _proxyTabVisual.SetLabel(proxy);
+        }
+
         public void SetBuyQuantityLabels(string x1, string x10, string x100, string max)
         {
             if (_buyX1Visual != null) _buyX1Visual.SetLabel(x1);

@@ -43,6 +43,15 @@ SaveScheduler (IAsyncStartable + IDisposable, EntryPoint du Root)
 
 Emplacement du fichier : `%userprofile%\AppData\LocalLow\<Company>\<Product>\savegame.json`
 
+## Réglages du joueur — `settings.json` (hors sauvegarde)
+
+Les options (langue, affichage, V-Sync, plafond de FPS, échelle d'interface, mode daltonien, volumes et coupures audio) vivent dans `settings.json`, **à côté** de `savegame.json` mais **jamais dedans** : elles décrivent une machine, pas une progression. Elles ne passent donc ni par `SaveData` ni par le `GameStateGateway`, et ne voyageront pas avec Steam Cloud.
+
+- Modèle : `Core.Models.Settings.GameSettings` (champs publics `JsonUtility`, valeurs par défaut à l'initialisation → un champ ajouté ne casse pas un fichier existant).
+- Lecture/écriture : `SettingsStore`, synchrone et atomique (temporaire puis remplacement).
+- Source de vérité : `SettingsService` (Root), qui valide (`Sanitize`), publie en `ReactiveProperty` et écrit à **chaque** changement.
+- Appliqués par : `SettingsService` (mode d'affichage, résolution), `FrameRateGovernor` (V-Sync, FPS), `UiScalePresenter` (échelle, un par scène), `PaletteService` (mode daltonien), `AudioVolumeApplier` (volumes, via le mixer), `ILocalizationService` (langue, chargée par le `GameBootstrapper` et les options).
+
 ## Points de conception à ne pas défaire
 
 - **`MaxRestorableThreat = 0.99f`** — on ne restaure jamais une jauge pleine, sinon la partie reprend en Game Over avant que l'UI ne soit abonnée. `ThreatManager.RestoreThreat()` ne déclenche **jamais** le lockdown : c'est le rôle exclusif d'`AddThreat`.

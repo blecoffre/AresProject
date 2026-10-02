@@ -1,5 +1,6 @@
 using System;
 using TMPro;
+using Core.UI.Theme;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -39,12 +40,7 @@ namespace Core.UI.Prestige
                  "branche est fermée fait partie de la planification.")]
         [SerializeField] private Button _interactionButton;
 
-        [Header("Couleurs d'état")]
-        [SerializeField] private Color _lockedColor = new Color(0.200f, 0.333f, 0.200f, 1f);
-        [SerializeField] private Color _tooExpensiveColor = new Color(1f, 0.200f, 0.200f, 1f);
-        [SerializeField] private Color _affordableColor = new Color(1f, 0.600f, 0f, 1f);
-        [SerializeField] private Color _inProgressColor = new Color(0.290f, 0.965f, 0.149f, 1f);
-        [SerializeField] private Color _maxedColor = new Color(0.290f, 0.965f, 0.149f, 1f);
+        // Les couleurs d'état viennent de la palette du mode de vision (voir SetPalette).
 
         [Tooltip("Couleur des textes quand le nœud est au maximum : le fond devient plein, il " +
                  "faut écrire dessus en négatif.")]
@@ -82,6 +78,7 @@ namespace Core.UI.Prestige
 
         /// <summary>Couleur de l'état courant. Sert de base à la pulsation et au voile de sélection.</summary>
         private Color _stateColor;
+        private UiPaletteSO _palette;
 
         private bool _isSelected;
 
@@ -150,6 +147,12 @@ namespace Core.UI.Prestige
             _borderImage.color = border;
         }
 
+        /// <summary>
+        /// Couleurs d'état du mode de vision courant (daltonisme). Posée par le presenter AVANT
+        /// le premier rendu, puis à chaque changement d'option — suivi d'un nouveau rendu.
+        /// </summary>
+        public void SetPalette(UiPaletteSO palette) => _palette = palette;
+
         public void InitializeStaticData(string name)
         {
             if (_nameText != null) _nameText.text = name;
@@ -217,11 +220,11 @@ namespace Core.UI.Prestige
         {
             switch (state)
             {
-                case PrestigeNodeState.Locked: return _lockedColor;
-                case PrestigeNodeState.TooExpensive: return _tooExpensiveColor;
-                case PrestigeNodeState.Affordable: return _affordableColor;
-                case PrestigeNodeState.InProgress: return _inProgressColor;
-                default: return _maxedColor;
+                case PrestigeNodeState.Locked: return _palette.NodeLocked;
+                case PrestigeNodeState.TooExpensive: return _palette.NodeTooExpensive;
+                case PrestigeNodeState.Affordable: return _palette.NodeAffordable;
+                case PrestigeNodeState.InProgress: return _palette.NodeInProgress;
+                default: return _palette.NodeMaxed;
             }
         }
 

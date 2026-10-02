@@ -25,21 +25,9 @@ namespace Core.UI.Game
                  "restant pendant l'Exploit — d'où la couleur distincte ci-dessous.")]
         [SerializeField] private Image _fill;
 
-        [Header("Couleurs")]
-        [Tooltip("Jauge pendant l'accumulation de la charge.")]
-        [SerializeField] private Color _chargingColor = new Color(0.25f, 0.65f, 0.45f, 1f);
-
-        [Tooltip("Jauge une fois la charge pleine et le bouton actionnable.")]
-        [SerializeField] private Color _readyColor = new Color(0.35f, 0.85f, 0.95f, 1f);
-
-        [Tooltip("Jauge pendant l'Exploit : elle se VIDE, et le joueur est à découvert.")]
-        [SerializeField] private Color _overdriveColor = new Color(0.95f, 0.3f, 0.2f, 1f);
+        // Les couleurs de la jauge viennent de la palette du mode de vision (GhostCachePresenter).
 
         public event Action OnOverdriveClicked;
-
-        public Color ChargingColor => _chargingColor;
-        public Color ReadyColor => _readyColor;
-        public Color OverdriveColor => _overdriveColor;
 
         private void Awake()
         {

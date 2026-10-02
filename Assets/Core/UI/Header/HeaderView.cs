@@ -98,18 +98,14 @@ namespace Core.UI.Header
                  "qu'aucun n'est câblé, la jauge se comporte comme avant.")]
         [SerializeField] private TraceTierMarker[] _traceTierMarkers;
 
-        [Tooltip("Palier FRANCHI : le relevé confirmé l'a dépassé, le bonus est acquis.")]
-        [SerializeField] private Color _tierReachedColor = new Color(0.29f, 0.96f, 0.15f, 1f);
-
-        [Tooltip("Palier INCERTAIN : la zone d'incertitude l'enjambe. Le joueur ne sait pas de " +
-                 "quel côté il se trouve — c'est là que se joue « je tente ou pas ».")]
-        [SerializeField] private Color _tierUncertainColor = new Color(0.94f, 0.63f, 0.15f, 1f);
-
-        [Tooltip("Palier À VENIR : hors de portée du relevé comme de la fourchette.")]
-        [SerializeField] private Color _tierUpcomingColor = new Color(0.24f, 0.35f, 0.24f, 1f);
-
-        [Tooltip("Palier VERROUILLÉ : il attend son nœud de prestige.")]
-        [SerializeField] private Color _tierLockedColor = new Color(0.60f, 0.60f, 0.60f, 1f);
+        // Couleurs des paliers : posées par le presenter depuis la palette du mode de vision
+        // (SetTierColors). Franchi = bonus acquis ; incertain = la fourchette l'enjambe, c'est là
+        // que se joue « je tente ou pas » ; à venir = hors de portée ; verrouillé = attend son
+        // nœud de prestige. Valeurs initiales = palette Standard, pour la frame d'avant l'abonnement.
+        private Color _tierReachedColor = new Color(0.29f, 0.96f, 0.15f, 1f);
+        private Color _tierUncertainColor = new Color(0.94f, 0.63f, 0.15f, 1f);
+        private Color _tierUpcomingColor = new Color(0.24f, 0.35f, 0.24f, 1f);
+        private Color _tierLockedColor = new Color(0.60f, 0.60f, 0.60f, 1f);
 
         [Header("Layout Reference")]
         [SerializeField] private RectTransform _headerContainer; // Le RectTransform parent qui contient le Layout Group
@@ -210,6 +206,17 @@ namespace Core.UI.Header
         /// Les marqueurs en trop sont éteints plutôt que détruits : le nombre de paliers est un
         /// réglage, et il peut redescendre.
         /// </summary>
+        /// <summary>Change de palette (mode daltonien) : les marqueurs se repeignent aussitôt.</summary>
+        public void SetTierColors(Color reached, Color uncertain, Color upcoming, Color locked)
+        {
+            _tierReachedColor = reached;
+            _tierUncertainColor = uncertain;
+            _tierUpcomingColor = upcoming;
+            _tierLockedColor = locked;
+
+            RefreshTierMarkers();
+        }
+
         public void ConfigureTraceTiers(float[] thresholds, string[] labels, bool[] locked)
         {
             if (_traceTierMarkers == null || _traceTierMarkers.Length == 0) return;

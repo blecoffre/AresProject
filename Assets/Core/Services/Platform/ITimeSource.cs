@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace Core.Services.Platform
 {
     /// <summary>
@@ -16,8 +14,8 @@ namespace Core.Services.Platform
     /// Ensuite, Unity gèle sa boucle quand sa fenêtre perd le focus : toute mesure exigeait de ne
     /// pas toucher à la machine pendant qu'elle tournait.
     ///
-    /// L'abstraction lève les deux : en production <see cref="UnityTimeSource"/> rend exactement
-    /// <c>Time.deltaTime</c> — aucun changement de comportement — et un harnais d'éditeur peut
+    /// L'abstraction lève les deux : en production <see cref="SimulationClock"/> rend
+    /// <c>Time.deltaTime</c> (ou zéro quand la partie est retenue) et un harnais d'éditeur peut
     /// substituer une source virtuelle pour dérouler une campagne entière en quelques secondes,
     /// sans scène, sans UI et de façon déterministe. Les quatre systèmes deviennent au passage
     /// testables unitairement.
@@ -26,17 +24,5 @@ namespace Core.Services.Platform
     {
         /// <summary>Secondes écoulées depuis le pas précédent.</summary>
         float DeltaTime { get; }
-    }
-
-    /// <summary>
-    /// La source de production : le temps d'Unity, sans interprétation.
-    ///
-    /// <c>Time.deltaTime</c> et non <c>unscaledDeltaTime</c>, à dessein : la simulation doit suivre
-    /// <c>Time.timeScale</c>, ce qui laisse la porte ouverte à une pause ou à un mode accéléré
-    /// observable en Play Mode.
-    /// </summary>
-    public sealed class UnityTimeSource : ITimeSource
-    {
-        public float DeltaTime => Time.deltaTime;
     }
 }

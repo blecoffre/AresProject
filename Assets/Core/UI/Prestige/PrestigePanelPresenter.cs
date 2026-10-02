@@ -2,6 +2,7 @@ using Core.Economy.Data;
 using Core.Models.Economy;
 using Core.Services.Economy;
 using Core.Services.Localization;
+using Core.UI.Theme;
 using Core.Utils;
 using R3;
 using System;
@@ -26,8 +27,10 @@ namespace Core.UI.Prestige
         private readonly PrestigeManager _prestigeManager;
         private readonly UserCurrencies _currencies;
         private readonly ILocalizationService _loc;
+        private readonly IPaletteService _palette;
 
         private readonly List<PrestigeItemPresenter> _childPresenters = new();
+        private readonly List<UILineConnection> _lines = new();
         private readonly CompositeDisposable _disposables = new();
 
         private PrestigeDetailsPresenter _details;
@@ -45,13 +48,15 @@ namespace Core.UI.Prestige
             PrestigeCatalogSO catalog,
             PrestigeManager prestigeManager,
             UserCurrencies currencies,
-            ILocalizationService loc)
+            ILocalizationService loc,
+            IPaletteService palette)
         {
             _view = view;
             _catalog = catalog;
             _prestigeManager = prestigeManager;
             _currencies = currencies;
             _loc = loc;
+            _palette = palette;
         }
 
         public void Start()
@@ -62,6 +67,10 @@ namespace Core.UI.Prestige
             // instancie déjà ~116 nœuds, inutile d'y ajouter des redimensionnements de listes.
             _childPresenters.Capacity = configs.Count;
             _nodePositions = new Dictionary<string, Vector2>(configs.Count);
+
+            // La palette AVANT toute construction : nœuds, liens et inspecteur se peignent dès
+            // leur création.
+            _view.Details.SetPalette(_palette.Current.CurrentValue);
 
             _details = new PrestigeDetailsPresenter(_view.Details, _prestigeManager, _currencies, _loc);
 
@@ -94,10 +103,51 @@ namespace Core.UI.Prestige
             _prestigeManager.ArePurchasesAllowed
                 .Subscribe(_ => RefreshAll())
                 .AddTo(_disposables);
+
+            // Mode daltonien changé à chaud : les 116 nœuds, leurs liens et l'inspecteur se
+            // repeignent. Rare, donc une passe complète.
+            _palette.Current
+                .Skip(1)
+                .Subscribe(ApplyPalette)
+                .AddTo(_disposables);
+
+            // Langue changée à chaud : les 116 noms de nœuds, le budget et l'inspecteur. Une
+            // passe complète, mais un changement de langue n'arrive presque jamais.
+            _loc.CurrentLanguage
+                .Skip(1)
+                .Subscribe(_ => RefreshLocalizedTexts())
+                .AddTo(_disposables);
+        }
+
+        private void ApplyPalette(UiPaletteSO palette)
+        {
+            _view.Details.SetPalette(palette);
+
+            for (int i = 0; i < _childPresenters.Count; i++)
+            {
+                _childPresenters[i].SetPalette(palette);
+            }
+
+            for (int i = 0; i < _lines.Count; i++)
+            {
+                _lines[i].SetPalette(palette);
+            }
+
+            RefreshAll();
+        }
+
+        private void RefreshLocalizedTexts()
+        {
+            for (int i = 0; i < _childPresenters.Count; i++)
+            {
+                _childPresenters[i].RefreshLocalizedTexts();
+            }
+
+            HandleCyclesChanged();
         }
 
         /// <summary>
-        /// Bascule l'arbre sur Échap. Appelé par le bootstrapper de scène, seul à avoir un
+        /// Bascule l'arbre sur P. Appelé par le bootstrapper de scène, seul à avoir un
         /// Update — un presenter POCO n'en a pas, et lui en donner un pour une touche serait
         /// disproportionné.
         /// </summary>
@@ -109,6 +159,23 @@ namespace Core.UI.Prestige
 
             if (_view.IsVisible) HandleClose();
             else HandleOpen();
+        }
+
+        /// <summary>
+        /// Referme l'arbre sur Échap. Rend vrai si la touche a été CONSOMMÉE, c'est-à-dire si
+        /// l'arbre a été fermé : l'appelant ne doit alors rien faire d'autre de cette pression.
+        ///
+        /// L'écran de fin de run ne se ferme pas — il n'y a rien derrière à quoi revenir — et
+        /// rend donc faux : Échap y ouvre le menu de pause, seul moyen de rejoindre le menu
+        /// principal ou les options depuis cet écran.
+        /// </summary>
+        public bool CloseFromKeyboard()
+        {
+            if (!_view.IsVisible) return false;
+            if (_view.IsRunEndMode) return false;
+
+            HandleClose();
+            return true;
         }
 
         /// <summary>
@@ -208,6 +275,7 @@ namespace Core.UI.Prestige
                 Vector2 pixelPosition = _view.GridToPixels(config.UiPosition);
 
                 PrestigeItemView node = _view.SpawnNode(pixelPosition);
+                node.SetPalette(_palette.Current.CurrentValue);
                 _nodePositions[config.Id] = pixelPosition;
 
                 _childPresenters.Add(new PrestigeItemPresenter(
@@ -243,6 +311,8 @@ namespace Core.UI.Prestige
                 if (!_nodePositions.TryGetValue(config.Id, out Vector2 childPosition)) continue;
 
                 UILineConnection line = _view.SpawnLine();
+                line.SetPalette(_palette.Current.CurrentValue);
+                _lines.Add(line);
                 line.DrawLine(parentPosition, childPosition);
 
                 line.BindState(
@@ -266,6 +336,7 @@ namespace Core.UI.Prestige
             }
 
             _childPresenters.Clear();
+            _lines.Clear();
             _nodePositions?.Clear();
 
             _details?.Dispose();

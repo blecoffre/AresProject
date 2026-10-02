@@ -1,4 +1,5 @@
 using R3;
+using Core.UI.Theme;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -38,10 +39,9 @@ namespace Core.UI.Prestige
                  "répété le long de la ligne quelle que soit sa longueur.")]
         [SerializeField] private Sprite _dashedSprite;
 
-        [Header("États Visuels")]
-        [SerializeField] private Color _lockedColor = new Color(0.2f, 0.2f, 0.2f, 0.5f);
-        [SerializeField] private Color _unlockedColor = Color.cyan;
-        [SerializeField] private Color _completedColor = Color.green;
+        // Les couleurs d'état viennent de la palette du mode de vision (voir SetPalette).
+        private UiPaletteSO _palette;
+        private bool _isBound;
 
         [Header("Épaisseurs")]
         [Tooltip("Les trois valeurs doivent rester nettement différentes : c'est le second canal " +
@@ -122,9 +122,20 @@ namespace Core.UI.Prestige
         /// Peint l'état : motif, couleur, épaisseur. La géométrie est refaite parce que
         /// l'épaisseur en fait partie — c'est la hauteur du rectangle.
         /// </summary>
+        /// <summary>
+        /// Couleurs du mode de vision courant. Posée AVANT <see cref="BindState"/>, qui peint
+        /// aussitôt ; rappelée à chaque changement d'option, elle repeint l'état courant.
+        /// </summary>
+        public void SetPalette(UiPaletteSO palette)
+        {
+            _palette = palette;
+            if (_isBound) Render(_state);
+        }
+
         private void Render(LinkState state)
         {
             _state = state;
+            _isBound = true;
 
             bool isLocked = state == LinkState.Locked;
 
@@ -153,9 +164,9 @@ namespace Core.UI.Prestige
         {
             switch (state)
             {
-                case LinkState.Locked: return _lockedColor;
-                case LinkState.Completed: return _completedColor;
-                default: return _unlockedColor;
+                case LinkState.Locked: return _palette.LinkLocked;
+                case LinkState.Completed: return _palette.LinkCompleted;
+                default: return _palette.LinkUnlocked;
             }
         }
 

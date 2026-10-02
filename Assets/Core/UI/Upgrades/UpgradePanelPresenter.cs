@@ -72,13 +72,26 @@ namespace Core.UI.Upgrades
                 .Subscribe(_panelView.ShowBuyQuantity)
                 .AddTo(_disposables);
 
+            // Émet la langue courante dès l'abonnement (premier rendu), puis à chaque changement.
+            _loc.CurrentLanguage
+                .Subscribe(_ => RenderLabels())
+                .AddTo(_disposables);
+
+            InitializePanel();
+        }
+
+        private void RenderLabels()
+        {
+            _panelView.SetTabLabels(
+                _loc.GetText("UI_TAB_SCRIPT"),
+                _loc.GetText("UI_TAB_HARDWARE"),
+                _loc.GetText("UI_TAB_PROXY"));
+
             _panelView.SetBuyQuantityLabels(
                 _loc.GetText("UI_BUY_QTY_X1"),
                 _loc.GetText("UI_BUY_QTY_X10"),
                 _loc.GetText("UI_BUY_QTY_X100"),
                 _loc.GetText("UI_BUY_QTY_MAX"));
-
-            InitializePanel();
         }
 
         private void HandleTabClicked(UpgradeType tab)

@@ -4,6 +4,7 @@ using Core.Services.Scene;
 using Core.Services.Simulation;
 using Core.UI.Prestige;
 using Core.Utils;
+using Core.UI.Theme;
 using R3;
 using System;
 using System.Text;
@@ -26,8 +27,13 @@ namespace Core.UI.Game
         private readonly PrestigePanelPresenter _prestigePanel;
         private readonly ISceneLoader _sceneLoader;
         private readonly ILocalizationService _loc;
+        private readonly IPaletteService _palette;
 
         private readonly CompositeDisposable _disposables;
+
+        // Le dernier bilan, pour le réécrire si la langue change pendant l'écran de fin.
+        private RunSummary _lastSummary;
+        private bool _hasSummary;
 
         /// <summary>
         /// Réutilisé d'une fin de run à l'autre. Une fin de run est rare, mais le tampon coûte
@@ -40,13 +46,15 @@ namespace Core.UI.Game
             GameSessionManager sessionManager,
             PrestigePanelPresenter prestigePanel,
             ISceneLoader sceneLoader,
-            ILocalizationService loc)
+            ILocalizationService loc,
+            IPaletteService palette)
         {
             _view = view;
             _sessionManager = sessionManager;
             _prestigePanel = prestigePanel;
             _sceneLoader = sceneLoader;
             _loc = loc;
+            _palette = palette;
 
             _disposables = new CompositeDisposable();
         }
@@ -58,9 +66,41 @@ namespace Core.UI.Game
                 .AddTo(_disposables);
 
             _view.OnRestartClicked += HandleRestart;
+
+            // Premier rendu du bouton, puis réécriture à chaque changement de langue — bilan
+            // compris. ShowGameOver n'allume rien, il ne fait qu'écrire : sans danger même si
+            // l'écran est caché.
+            _loc.CurrentLanguage
+                .Subscribe(_ => RenderLocalizedTexts())
+                .AddTo(_disposables);
+
+            // Mode daltonien changé pendant l'écran de fin : le titre se repeint.
+            _palette.Current
+                .Skip(1)
+                .Subscribe(_ => RenderLocalizedTexts())
+                .AddTo(_disposables);
         }
 
         private void Show(RunSummary summary)
+        {
+            _lastSummary = summary;
+            _hasSummary = true;
+
+            Render(summary);
+
+            // L'écran appartient au panneau de prestige, qui l'ouvre avec l'arbre : la fin d'une
+            // run est le seul moment où l'on peut dépenser, il serait absurde d'obliger le joueur
+            // à un clic de plus pour y accéder.
+            _prestigePanel.ShowRunEnd();
+        }
+
+        private void RenderLocalizedTexts()
+        {
+            _view.SetRestartLabel(_loc.GetText("UI_RUN_END_RESTART"));
+            if (_hasSummary) Render(_lastSummary);
+        }
+
+        private void Render(RunSummary summary)
         {
             bool isCleanExit = summary.Reason == RunEndReason.CleanExit;
 
@@ -71,12 +111,7 @@ namespace Core.UI.Game
             _view.ShowGameOver(
                 narrative,
                 BuildBilan(summary, isCleanExit),
-                isCleanExit ? _view.CleanExitColor : _view.SeizedColor);
-
-            // L'écran appartient au panneau de prestige, qui l'ouvre avec l'arbre : la fin d'une
-            // run est le seul moment où l'on peut dépenser, il serait absurde d'obliger le joueur
-            // à un clic de plus pour y accéder.
-            _prestigePanel.ShowRunEnd();
+                isCleanExit ? _palette.Current.CurrentValue.RunEndCleanExit : _palette.Current.CurrentValue.RunEndSeized);
         }
 
         /// <summary>

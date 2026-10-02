@@ -26,22 +26,9 @@ namespace Core.UI.Game
                  "une fois le bouton disponible.")]
         [SerializeField] private Image _fill;
 
-        [Header("Couleurs")]
-        [Tooltip("Jauge quand le bouton est indisponible : verrouillé, en recharge, ou puissance " +
-                 "de calcul insuffisante.")]
-        [SerializeField] private Color _unavailableColor = new Color(0.35f, 0.35f, 0.40f, 1f);
-
-        [Tooltip("Jauge quand la purge est déclenchable.")]
-        [SerializeField] private Color _readyColor = new Color(0.95f, 0.75f, 0.20f, 1f);
-
-        [Tooltip("Jauge tant que les TFlops restent immobilisées par le contrecoup.")]
-        [SerializeField] private Color _blockedColor = new Color(0.85f, 0.35f, 0.55f, 1f);
+        // Les couleurs de la jauge viennent de la palette du mode de vision (EmergencyPresenter).
 
         public event Action OnEmergencyClicked;
-
-        public Color UnavailableColor => _unavailableColor;
-        public Color ReadyColor => _readyColor;
-        public Color BlockedColor => _blockedColor;
 
         private void Awake()
         {
