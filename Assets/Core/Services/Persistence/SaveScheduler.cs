@@ -130,8 +130,9 @@ namespace Core.Services.Persistence
         {
             // Verrou de démarrage : tant que la restauration n'a pas eu lieu, l'état vivant est
             // vide. Écrire maintenant remplacerait la sauvegarde du joueur par une partie neuve —
-            // ce qui arriverait pour de vrai s'il ferme le jeu pendant le chargement.
-            if (!_gateway.HasRestored) return;
+            // ce qui arriverait pour de vrai s'il ferme le jeu pendant le chargement. CanWrite
+            // couvre aussi la partie neuve jamais jouée, qu'il est inutile d'écrire.
+            if (!_gateway.CanWrite) return;
 
             if (_isWriting)
             {
@@ -190,7 +191,8 @@ namespace Core.Services.Persistence
 
         private void HandleApplicationQuitting()
         {
-            if (!_gateway.HasRestored) return;
+            // Même verrou : fermer le jeu depuis le menu sans avoir joué ne crée pas de sauvegarde.
+            if (!_gateway.CanWrite) return;
 
             // Chemin synchrone obligatoire : la boucle de jeu s'arrête ici, plus rien n'est repris
             // après un await.

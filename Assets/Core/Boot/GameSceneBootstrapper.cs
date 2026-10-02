@@ -1,5 +1,6 @@
 using Core.Models.Console;
 using Core.Services.Localization;
+using Core.Services.Persistence;
 using Core.Services.Platform;
 using System;
 using Core.UI.Game;
@@ -22,6 +23,7 @@ namespace Core.Boot
         private readonly ISimulationClock _clock;
         private readonly PauseMenuPresenter _pauseMenu;
         private readonly OptionsPanelPresenter _options;
+        private readonly GameStateGateway _gateway;
 
         public GameSceneBootstrapper(
             ClickerView clickerView,
@@ -31,7 +33,8 @@ namespace Core.Boot
             ILocalizationService loc,
             ISimulationClock clock,
             PauseMenuPresenter pauseMenu,
-            OptionsPanelPresenter options)
+            OptionsPanelPresenter options,
+            GameStateGateway gateway)
         {
             _clickerView = clickerView;
             _clickerPresenter = clickerPresenter;
@@ -41,6 +44,7 @@ namespace Core.Boot
             _clock = clock;
             _pauseMenu = pauseMenu;
             _options = options;
+            _gateway = gateway;
         }
 
         /// <summary>
@@ -135,6 +139,9 @@ namespace Core.Boot
             // La partie est sous les yeux du joueur : la simulation peut tourner. C'est le SEUL
             // endroit qui lève cette retenue, et Dispose() la repose au déchargement de la scène.
             _clock.Release(SimulationHold.OutOfGame);
+
+            // Le joueur est en jeu : la partie mérite désormais d'être sauvegardée, même neuve.
+            _gateway.MarkGameStarted();
 
             _clickerView.Construct(_clickerPresenter);
 

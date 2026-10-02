@@ -47,6 +47,8 @@ Emplacement du fichier : `%userprofile%\AppData\LocalLow\<Company>\<Product>\sav
 
 `SaveData.IsFresh` (`[NonSerialized]`, jamais écrit) vaut vrai pour une partie créée faute de sauvegarde. `GameStateGateway.HasSavedGame` en dérive : vrai si la partie a été restaurée d'un fichier, ou dès qu'une capture est écrite. Le menu principal s'en sert pour dire « Commencer » plutôt que « Continuer » au premier lancement. Ne pas en faire un champ sérialisé : une sauvegarde relue doit toujours valoir « existante ».
 
+**Une partie neuve n'est écrite qu'une fois entamée.** `GameStateGateway.CanWrite` = restauré ET (partie sur disque OU `HasGameStarted`, posé par le `GameSceneBootstrapper` à l'entrée en jeu). L'autosave et la sauvegarde de fermeture le respectent : ouvrir puis fermer le jeu depuis le menu sans jouer ne crée aucun fichier, et le menu dit encore « Commencer » au lancement suivant. Il n'y a rien à perdre — la partie neuve est recréée à l'identique.
+
 ## Réglages du joueur — `settings.json` (hors sauvegarde)
 
 Les options (langue, affichage, V-Sync, plafond de FPS, échelle d'interface, mode daltonien, volumes et coupures audio) vivent dans `settings.json`, **à côté** de `savegame.json` mais **jamais dedans** : elles décrivent une machine, pas une progression. Elles ne passent donc ni par `SaveData` ni par le `GameStateGateway`, et ne voyageront pas avec Steam Cloud.

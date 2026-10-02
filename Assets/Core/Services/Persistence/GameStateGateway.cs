@@ -56,6 +56,24 @@ namespace Core.Services.Persistence
         /// </summary>
         public bool HasSavedGame { get; private set; }
 
+        /// <summary>
+        /// Le joueur est-il entré en jeu au moins une fois pendant cette session. Posé par la
+        /// GameScene à son démarrage.
+        /// </summary>
+        public bool HasGameStarted { get; private set; }
+
+        /// <summary>
+        /// Une écriture a-t-elle un sens. Il faut que l'état soit restauré (sinon on écraserait
+        /// la sauvegarde par un état vide) ET qu'une partie existe : sur disque, ou entamée dans
+        /// cette session. Une partie neuve jamais jouée n'est pas écrite — il n'y a rien à perdre,
+        /// elle sera recréée à l'identique, et l'écrire ferait dire « Continuer » au menu à qui
+        /// a seulement ouvert puis fermé le jeu.
+        /// </summary>
+        public bool CanWrite => HasRestored && (HasSavedGame || HasGameStarted);
+
+        /// <summary>Appelé à l'entrée en jeu : à partir d'ici, la partie mérite d'être sauvegardée.</summary>
+        public void MarkGameStarted() => HasGameStarted = true;
+
         public GameStateGateway(
             UserCurrencies currencies,
             UpgradeManager upgradeManager,
