@@ -48,6 +48,14 @@ namespace Core.Services.Persistence
         /// </summary>
         public bool HasRestored { get; private set; }
 
+        /// <summary>
+        /// Une partie existe-t-elle sur disque : restaurée d'un vrai fichier, ou écrite depuis
+        /// (le premier autosave, le retour au menu, la fin de run). Faux au tout premier
+        /// lancement, jusqu'à la première écriture — c'est ce qui fait dire « Commencer » au
+        /// menu principal plutôt que « Continuer ».
+        /// </summary>
+        public bool HasSavedGame { get; private set; }
+
         public GameStateGateway(
             UserCurrencies currencies,
             UpgradeManager upgradeManager,
@@ -137,6 +145,7 @@ namespace Core.Services.Persistence
             _buyQuantity.Restore(data.BuyQuantityMode);
 
             HasRestored = true;
+            HasSavedGame = !data.IsFresh;
         }
 
         /// <summary>
@@ -146,6 +155,10 @@ namespace Core.Services.Persistence
         /// </summary>
         public SaveData Capture()
         {
+            // Tout appelant de Capture écrit le résultat sur disque : à partir d'ici, une
+            // partie existe, et le menu principal dira « Continuer ».
+            HasSavedGame = true;
+
             // Les TFlops ne sont pas capturées : elles se recalculent depuis les niveaux
             // d'Upgrades, qui le sont. Les écrire créerait une seconde source de vérité.
             _buffer.Money = _currencies.Money.Amount.CurrentValue;

@@ -1411,6 +1411,10 @@
     {
       "Key": "OPTIONS_RESET_CONFIRM",
       "Value": "[ CONFIRMER ? ]"
+    },
+    {
+      "Key": "MENU_START",
+      "Value": "[ COMMENCER ]"
     }
   ]
 }

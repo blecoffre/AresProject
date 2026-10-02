@@ -1,4 +1,5 @@
 using Core.Services.Localization;
+using Core.Services.Persistence;
 using Core.Services.Platform;
 using Core.Services.Scene;
 using Core.UI.Options;
@@ -28,6 +29,7 @@ namespace Core.UI.MainMenu
         private readonly IApplicationQuitter _quitter;
         private readonly ILocalizationService _loc;
         private readonly OptionsPanelPresenter _options;
+        private readonly GameStateGateway _gateway;
 
         private bool _isLeaving;
         private IDisposable _languageSubscription;
@@ -37,13 +39,15 @@ namespace Core.UI.MainMenu
             ISceneLoader sceneLoader,
             IApplicationQuitter quitter,
             ILocalizationService loc,
-            OptionsPanelPresenter options)
+            OptionsPanelPresenter options,
+            GameStateGateway gateway)
         {
             _view = view;
             _sceneLoader = sceneLoader;
             _quitter = quitter;
             _loc = loc;
             _options = options;
+            _gateway = gateway;
         }
 
         public void Start()
@@ -62,7 +66,10 @@ namespace Core.UI.MainMenu
             _view.SetTexts(
                 _loc.GetText("MENU_TITLE"),
                 _loc.GetText("MENU_SUBTITLE"),
-                _loc.GetText("MENU_CONTINUE"),
+                // « Commencer » tant qu'aucune partie n'existe sur disque : dire « Continuer » à qui
+                // lance le jeu pour la première fois serait étrange. Relu à chaque rendu, donc
+                // juste aussi après une première session suivie d'un retour au menu.
+                _loc.GetText(_gateway.HasSavedGame ? "MENU_CONTINUE" : "MENU_START"),
                 _loc.GetText("MENU_OPTIONS"),
                 _loc.GetText("MENU_QUIT"));
         }

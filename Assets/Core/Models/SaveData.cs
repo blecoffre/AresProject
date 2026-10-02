@@ -171,8 +171,17 @@ namespace Core.Models
         /// </summary>
         public long SavedAtUnixSeconds;
 
+        /// <summary>
+        /// Vrai pour une partie créée faute de sauvegarde (premier lancement, ou fichiers
+        /// illisibles). JAMAIS écrit sur disque : une SaveData relue d'un fichier vaut toujours
+        /// faux, puisque JsonUtility ignore ce champ. Sert au menu principal, qui dit
+        /// « Commencer » plutôt que « Continuer » à qui n'a encore rien joué.
+        /// </summary>
+        [NonSerialized] public bool IsFresh;
+
         public static SaveData CreateNew() => new SaveData
         {
+            IsFresh = true,
             Version = CurrentVersion,
 
             CpuCycles = 0d,
