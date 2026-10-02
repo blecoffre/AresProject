@@ -7686,7 +7686,6 @@ GameObject:
   - component: {fileID: 1266021683}
   - component: {fileID: 1266021684}
   - component: {fileID: 1266021685}
-  - component: {fileID: 1266021686}
   m_Layer: 0
   m_Name: UI
   m_TagString: Untagged
@@ -7923,23 +7922,6 @@ MonoBehaviour:
   _button: {fileID: 782827657}
   _label: {fileID: 485688526}
   _fill: {fileID: 2092844578}
---- !u!114 &1266021686
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1266021675}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8ad7958278eb86d4db2290a06c8ead53, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Core.UI.Game.VictoryView
-  _panelRoot: {fileID: 1545629609}
-  _titleText: {fileID: 2080165053}
-  _bodyText: {fileID: 2054810683}
-  _closeButton: {fileID: 1477566568}
-  _closeLabel: {fileID: 945938103}
 --- !u!1 &1274789223
 GameObject:
   m_ObjectHideFlags: 0
