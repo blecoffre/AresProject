@@ -350,7 +350,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.101960786, g: 0.3019608, b: 0.101960786, a: 1}
+  m_Color: {r: 0.18039216, g: 0.41960785, b: 0.18039216, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -427,6 +427,6 @@ MonoBehaviour:
   _highlightBar: {fileID: 1925442426432329173}
   _label: {fileID: 5773109056351859313}
   _activeColor: {r: 0.29, g: 0.96, b: 0.15, a: 1}
-  _inactiveColor: {r: 0.1, g: 0.3, b: 0.1, a: 1}
+  _inactiveColor: {r: 0.36862746, g: 0.5411765, b: 0.36862746, a: 1}
   _activeMaterial: {fileID: 2100000, guid: 1faeec32aa416294f96a3b903fe55738, type: 2}
   _inactiveMaterial: {fileID: -257383487370615842, guid: 0b8283310e3fe024f8e1e33f34041f7b, type: 2}
