@@ -151,7 +151,7 @@ GameObject:
   - component: {fileID: 8211712031205268232}
   - component: {fileID: 1424997338531184327}
   m_Layer: 5
-  m_Name: StartTaslButton
+  m_Name: StartTaskButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
