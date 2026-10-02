@@ -45,7 +45,16 @@ namespace Core.Services.Simulation
         private readonly ReadOnlyReactiveProperty<float> _progressToFirstCycle;
 
         /// <summary>
-        /// CPU Cycles que rapporterait une sortie maintenant, bonus Clean Exit inclus.
+        /// CPU Cycles que rapporterait une sortie maintenant, <b>SANS</b> le bonus de palier.
+        ///
+        /// Sert de garde pour <see cref="IsUnlocked"/>, et rien d'autre : c'est délibérément la
+        /// valeur BASSE, celle qui ne peut que sous-promettre. Adosser le déverrouillage au bonus
+        /// le ferait osciller au rythme du relevé brouillé de la Trace, puisque le palier retenu
+        /// dépend de ce que le joueur a CRU lire.
+        ///
+        /// Pour le chiffre annoncé au joueur, utiliser <see cref="PreviewCyclesAt"/>. Ce
+        /// commentaire annonçait « bonus Clean Exit inclus », ce qui était faux — et c'est ce
+        /// contresens qui a fait multiplier les points au lieu de la contribution dans la vue.
         ///
         /// `DistinctUntilChanged` est indispensable, pas cosmétique : l'argent de la run bouge à
         /// chaque cycle de Script, plusieurs fois par seconde, alors que ce nombre entier ne
@@ -133,8 +142,7 @@ namespace Core.Services.Simulation
         public double GetFirstCycleRunThreshold()
         {
             double awarded = _currencies.CpuCyclesAwarded.CurrentValue;
-            double growth = Math.Max(1.0001d, _balancing.PrestigeThresholdGrowth);
-            double bankedForFirst = _balancing.PrestigeFirstThresholdDatas * Math.Pow(growth, awarded);
+            double bankedForFirst = _currencies.CumulativeForPoints(awarded + 1d);
 
             double missing = bankedForFirst - _currencies.CampaignDatasBanked.CurrentValue;
             return missing < 0d ? 0d : missing;
@@ -153,19 +161,45 @@ namespace Core.Services.Simulation
             return (float)Math.Min(1d, runMoney / required);
         }
 
-        public double GetNextCycleThreshold()
+        /// <summary>
+        /// Points que rapporterait une sortie au multiplicateur donné — le nombre que la fin de
+        /// run créditera réellement.
+        ///
+        /// ⚠️ Le multiplicateur porte sur la CONTRIBUTION, jamais sur les points, exactement comme
+        /// dans <c>GameSessionManager.ResolveRunEnd</c>. Majorer des points entiers produit des
+        /// demi-cycles et un chiffre que la fin de run ne tient pas : mesuré sur une sauvegarde
+        /// réelle, une sortie au palier 75 % annonçait <b>6,5 cycles pour 6 crédités</b>.
+        /// </summary>
+        public double PreviewCyclesAt(double cleanExitMultiplier)
         {
-            // Le palier vise le CUMUL de campagne, pas la run : on rend donc ce qu'il reste à
-            // voler SUR CETTE RUN, cumul déjà acquis déduit. Sans cette soustraction le bouton
-            // afficherait un objectif que le joueur a en réalité déjà à moitié atteint.
-            double awarded = _currencies.CpuCyclesAwarded.CurrentValue;
-            double pointsAfterExit = awarded + _pendingCycles.CurrentValue;
+            double money = _currencies.RunMoneyGenerated.CurrentValue;
+            return _currencies.PreviewPointsForContribution(money * cleanExitMultiplier);
+        }
 
-            double growth = Math.Max(1.0001d, _balancing.PrestigeThresholdGrowth);
-            double bankedForNext = _balancing.PrestigeFirstThresholdDatas * Math.Pow(growth, pointsAfterExit);
+        /// <summary>
+        /// Datas qu'il reste à voler SUR CETTE RUN pour décrocher le point SUIVANT, une fois
+        /// encaissés ceux qu'une sortie immédiate rapporterait.
+        ///
+        /// Le palier vise le CUMUL de campagne : on déduit donc ce qui est déjà acquis, sans quoi
+        /// le bouton afficherait un objectif que le joueur a en réalité déjà à moitié atteint.
+        ///
+        /// ⚠️ Le résultat est ramené en Datas BRUTES de run, en divisant par le multiplicateur :
+        /// le cumul reçoit la contribution majorée, alors que le compteur que le joueur regarde
+        /// monter, lui, est brut. Sans cette division, l'objectif annoncé serait toujours trop
+        /// haut pour un joueur qui sort sur un palier.
+        /// </summary>
+        public double GetNextCycleThreshold(double cleanExitMultiplier)
+        {
+            double awarded = _currencies.CpuCyclesAwarded.CurrentValue;
+            double pointsAfterExit = awarded + PreviewCyclesAt(cleanExitMultiplier);
+
+            double bankedForNext = _currencies.CumulativeForPoints(pointsAfterExit + 1d);
 
             double missing = bankedForNext - _currencies.CampaignDatasBanked.CurrentValue;
-            return missing < 0d ? 0d : missing;
+            if (missing < 0d) return 0d;
+
+            double multiplier = cleanExitMultiplier < 1d ? 1d : cleanExitMultiplier;
+            return missing / multiplier;
         }
 
         /// <summary>

@@ -102,11 +102,38 @@ namespace Core.Models.Economy
         }
 
         /// <summary>
-        /// Points de prestige auxquels donne droit un cumul de Datas exfiltrées.
+        /// Datas cumulées à exfiltrer sur la campagne pour détenir <paramref name="points"/>
+        /// points de prestige.
         ///
-        /// Le Nième point demande <c>PremierPalier × Croissance^(N−1)</c> de Datas cumulées :
-        /// chaque point suivant coûte exponentiellement plus cher, et le compteur monte donc de
-        /// moins en moins vite à mesure que la campagne avance.
+        /// <b>Modèle des BOÎTES.</b> Chaque point est une boîte à remplir entièrement, et son prix
+        /// vaut <c>PremierPalier × Croissance^(N−1)</c>. Le cumul demandé pour N points est donc la
+        /// SOMME des N boîtes, pas le prix de la dernière — à 1 M et ×1,5 : première boîte 1 M,
+        /// deuxième 1,5 M, et il faut donc <b>2,5 M</b> de cumul pour détenir deux points.
+        ///
+        /// ⚠️ Ce n'était PAS le modèle jusqu'au 2026-09-25. Le cumul était comparé au seul prix de
+        /// la dernière boîte, si bien que 2,5 M rendaient trois points au lieu de deux : chaque
+        /// point ne coûtait en réalité que l'ÉCART avec le précédent, soit 12 % du palier. Le
+        /// malentendu était consigné à l'identique dans le code, le GDD et le harnais.
+        ///
+        /// Somme géométrique : <c>premier × (croissance^N − 1) / (croissance − 1)</c>.
+        /// </summary>
+        public double CumulativeForPoints(double points)
+        {
+            if (points <= 0d) return 0d;
+
+            double first = _balancing.PrestigeFirstThresholdDatas;
+            double growth = Math.Max(1.0001d, _balancing.PrestigeThresholdGrowth);
+
+            return first * (Math.Pow(growth, points) - 1d) / (growth - 1d);
+        }
+
+        /// <summary>
+        /// Points de prestige auxquels donne droit un cumul de Datas exfiltrées — l'inverse de
+        /// <see cref="CumulativeForPoints"/>.
+        ///
+        /// Les boîtes déjà remplies restent acquises et le reliquat travaille pour la suivante :
+        /// c'est le cumul qui est sauvegardé, donc une run qui n'achève pas sa boîte n'est jamais
+        /// perdue, et le prix de la prochaine ne retombe pas entre deux runs.
         ///
         /// Remplace la conversion appliquée à l'argent de la SEULE run, qui rendait vingt-huit
         /// points dès la première partie et forçait à choisir entre raréfier les points et
@@ -119,7 +146,7 @@ namespace Core.Models.Economy
 
             double growth = Math.Max(1.0001d, _balancing.PrestigeThresholdGrowth);
 
-            return Math.Floor(1d + Math.Log(bankedDatas / first, growth));
+            return Math.Floor(Math.Log(1d + bankedDatas * (growth - 1d) / first, growth));
         }
 
         /// <summary>

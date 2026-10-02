@@ -16,9 +16,9 @@ MonoBehaviour:
   _displayNameKey: PRESTIGE_P_STEALTH_NAME
   _displayDescriptionKey: PRESTIGE_P_STEALTH_DESC
   _bonusType: 1
-  _maxLevel: 1
+  _maxLevel: 10
   _baseCost: 1
-  _costMultiplier: 1.6
+  _costMultiplier: 1
   _bonusPerLevel: 0.25
   _uiPosition: {x: 0, y: -1}
   _requirement:

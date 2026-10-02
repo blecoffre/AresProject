@@ -35,8 +35,9 @@ namespace Core.Models.Simulation
         public readonly double CpuCyclesEarned;
 
         /// <summary>
-        /// Ce que la run aurait rapporté sans le bonus. Sert à afficher l'écart — un joueur qui
-        /// ne voit que le total ne mesure pas ce que l'Effacement Propre lui a valu.
+        /// Ce que la run aurait rapporté à valeur PLEINE, sans bonus ni retenue. Sert à afficher
+        /// l'écart dans les deux sens — ce que l'Effacement Propre a valu en plus, et ce que la
+        /// saisie a emporté. Un joueur qui ne voit que le total ne mesure ni l'un ni l'autre.
         /// </summary>
         public readonly double CpuCyclesBeforeBonus;
 
@@ -80,5 +81,15 @@ namespace Core.Models.Simulation
         /// <summary>Le bonus Clean Exit a-t-il réellement rapporté quelque chose à afficher.</summary>
         public bool HasCleanExitBonus =>
             Reason == RunEndReason.CleanExit && CpuCyclesEarned > CpuCyclesBeforeBonus;
+
+        /// <summary>
+        /// La saisie a-t-elle coûté des points, par rapport à une sortie à valeur pleine.
+        ///
+        /// Le symétrique de <see cref="HasCleanExitBonus"/>, et il porte la leçon : depuis qu'une
+        /// saisie verse une fraction au lieu de rien, l'écran doit dire ce qui est gardé ET ce qui
+        /// est parti, sinon le joueur ne voit qu'un gain et n'apprend jamais à sortir.
+        /// </summary>
+        public bool HasSeizedLoss =>
+            Reason == RunEndReason.Seized && CpuCyclesBeforeBonus > CpuCyclesEarned;
     }
 }

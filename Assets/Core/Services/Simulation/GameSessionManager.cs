@@ -248,12 +248,23 @@ namespace Core.Services.Simulation
             // points : majorer directement des points entiers produirait des demi-paliers et
             // rouvrirait exactement le même décalage.
             double baseCycles = _userCurrencies.PreviewPointsForContribution(dataGenerated);
-            double pendingPrestige = 0d;
 
-            if (reason == RunEndReason.CleanExit)
-            {
-                pendingPrestige = _userCurrencies.BankRunContribution(dataGenerated * prestigeMultiplier);
-            }
+            // Une saisie ne verse plus RIEN : elle verse une fraction. Le reste du raisonnement
+            // ci-dessus tient toujours — les deux restent résolus au même instant, donc se faire
+            // prendre exprès n'encaisse jamais un palier sans faire monter le seuil suivant.
+            //
+            // Ce qui a changé, c'est le constat : rien dans le jeu ne capitalisait une run perdue.
+            // Mesuré sur une partie réelle le 2026-09-22 — 294 M de Datas générées sur deux morts,
+            // zéro banquée, arbre vide. Le joueur restait à distance CONSTANTE de son premier
+            // point quelle que soit sa performance.
+            //
+            // La saisie reste nettement moins rentable qu'une sortie : celle-ci verse la totalité
+            // ET le bonus de palier par-dessus.
+            double contributionRatio = reason == RunEndReason.CleanExit
+                ? prestigeMultiplier
+                : _balancing.SeizedContributionRatio;
+
+            double pendingPrestige = _userCurrencies.BankRunContribution(dataGenerated * contributionRatio);
 
             // La run est effacée ICI, en entier, et AVANT la notification.
             //

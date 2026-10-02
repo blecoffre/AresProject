@@ -139,13 +139,17 @@ namespace Core.UI.Game
             double multiplier = _session.ResolveCleanExitMultiplierFor(
                 _readout.LastKnownFraction.CurrentValue);
 
-            double cycles = _exfiltration.PendingCycles.CurrentValue * multiplier;
+            // ⚠️ Le multiplicateur porte sur la CONTRIBUTION, pas sur les points. Cette ligne
+            // faisait `PendingCycles × multiplier`, soit l'inverse exact de ce que crédite
+            // ResolveRunEnd : le bouton annonçait 6,5 cycles là où la fin de run en versait 6 —
+            // une sur-promesse, et un demi-cycle pour une monnaie entière.
+            double cycles = _exfiltration.PreviewCyclesAt(multiplier);
 
             _view.ApplyState(
                 _loc.GetText(
                     "UI_EXFIL_READY",
                     CurrencyFormatter.Format(cycles),
-                    CurrencyFormatter.FormatCost(_exfiltration.GetNextCycleThreshold())),
+                    CurrencyFormatter.FormatCost(_exfiltration.GetNextCycleThreshold(multiplier))),
                 interactable: clickable,
                 showProgress: false,
                 progress: 1f);

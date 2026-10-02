@@ -905,6 +905,10 @@
       "Value": "  dont bonus Clean Exit .... +{0}"
     },
     {
+      "Key": "UI_RUN_END_STAT_SEIZED_LOSS",
+      "Value": "  perdu à la saisie ........ -{0}"
+    },
+    {
       "Key": "UI_RUN_END_PRESTIGE_BUTTON",
       "Value": "[ DÉPENSER — NOYAU IA ]"
     },
@@ -1159,6 +1163,14 @@
     {
       "Key": "UI_YIELD_PER_SECOND",
       "Value": "+{0}/s"
+    },
+    {
+      "Key": "PRESTIGE_P_OVERCLOCK_SPACEBAR_NAME",
+      "Value": "Accélérateur Manuel"
+    },
+    {
+      "Key": "PRESTIGE_P_OVERCLOCK_SPACEBAR_DESC",
+      "Value": "Du nouveau matériel te permet de pousser l’overclock encore plus loin"
     }
   ]
 }

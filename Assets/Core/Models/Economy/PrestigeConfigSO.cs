@@ -87,7 +87,31 @@ namespace Core.Models.Economy
         ///
         /// Déblocage booléen : comme UnlockEmergencyButton, seul le fait de posséder le nœud
         /// compte, sa magnitude n'a aucun sens.
-        UnlockHighRiskExtraction
+        UnlockHighRiskExtraction,
+
+        /// <summary>
+        /// La racine de l'arbre, et rien d'autre. Aucun effet, aucune magnitude.
+        ///
+        /// Existe parce que P_ROOT portait jusqu'ici StartingMoney : la racine, que tout joueur
+        /// possède d'office, offrait donc discrètement des fonds de départ. Le rôle structurel et
+        /// le bonus étaient confondus dans un seul nœud.
+        ///
+        /// Appendé en fin, comme tous les autres : l'index est sérialisé dans les .asset générés.
+        /// </summary>
+        Root,
+
+        /// <summary>
+        /// Rend l'Overclock manuel — la barre d'espace — disponible.
+        ///
+        /// Déblocage booléen. Le clic manuel cesse d'être acquis d'emblée pour devenir une
+        /// récompense tardive : il triplait la cadence des Scripts dès la première seconde, et
+        /// tout l'équilibrage mesuré à ce jour le suppose martelé à cinq coups par seconde.
+        ///
+        /// ⚠️ Le verrou n'est PAS encore branché : ce nœud expose son booléen, mais l'Overclock
+        /// reste libre. Le brancher retirerait le clic à toute sauvegarde ne possédant pas le
+        /// nœud — donc à toutes celles qui existent aujourd'hui.
+        /// </summary>
+        UnlockSpacebarAction
     }
 
     [CreateAssetMenu(fileName = "NewPrestigeConfig", menuName = "Core/Economy/Prestige Config")]

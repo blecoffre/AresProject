@@ -130,6 +130,15 @@ namespace Core.UI.Game
                     CurrencyFormatter.Format(summary.CpuCyclesEarned - summary.CpuCyclesBeforeBonus)));
             }
 
+            // Le symétrique, sur une saisie. Même règle que ci-dessus : rien à annoncer quand
+            // l'écart est nul, sinon l'écran reprocherait au joueur une perte qui n'a pas eu lieu.
+            else if (summary.HasSeizedLoss)
+            {
+                _bilan.Append(_loc.GetText(
+                    "UI_RUN_END_STAT_SEIZED_LOSS",
+                    CurrencyFormatter.Format(summary.CpuCyclesBeforeBonus - summary.CpuCyclesEarned)));
+            }
+
             return _bilan.ToString();
         }
 

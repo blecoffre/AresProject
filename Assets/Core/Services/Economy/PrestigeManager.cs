@@ -127,6 +127,15 @@ namespace Core.Services.Economy
         /// </summary>
         public ReactiveProperty<bool> IsHighRiskExtractionUnlocked { get; } = new(false);
 
+        /// <summary>
+        /// L'Overclock manuel — la barre d'espace — est-il débloqué.
+        ///
+        /// ⚠️ Exposé mais PAS encore consommé : personne ne lit cette propriété pour l'instant, et
+        /// le clic reste libre. La brancher retirerait l'Overclock à toute sauvegarde ne possédant
+        /// pas le nœud, c'est-à-dire à toutes celles qui existent.
+        /// </summary>
+        public ReactiveProperty<bool> IsSpacebarUnlocked { get; } = new(false);
+
         public PrestigeManager(PrestigeCatalogSO catalog, UserCurrencies currencies)
         {
             _catalog = catalog;
@@ -280,6 +289,7 @@ namespace Core.Services.Economy
             float exploitTraceRelief = 0f;
             bool overclockWakes = false;
             bool highRiskExtraction = false;
+            bool spacebar = false;
 
             foreach (var kvp in _prestigeLevels)
             {
@@ -361,6 +371,16 @@ namespace Core.Services.Economy
                         if (currentLevel > 0) highRiskExtraction = true;
                         break;
 
+                    case PrestigeBonusType.UnlockSpacebarAction:
+                        if (currentLevel > 0) spacebar = true;
+                        break;
+
+                    // La racine n'a aucun effet : elle ne sert qu'à ancrer l'arbre. Le cas est
+                    // écrit explicitement pour que le switch reste exhaustif et qu'un futur type
+                    // oublié se remarque, plutôt que de tomber dans un default silencieux.
+                    case PrestigeBonusType.Root:
+                        break;
+
                     case PrestigeBonusType.SpecificUpgradeCostReduction:
                         AccumulateSpecific(config.TargetUpgradeId, totalBonus, UpgradePrestigeNodeBonusType.Cost);
                         break;
@@ -403,6 +423,7 @@ namespace Core.Services.Economy
             ExploitTracePenaltyReduction.Value = exploitTraceRelief < 0f ? 0f : exploitTraceRelief;
             OverclockWakesScripts.Value = overclockWakes;
             IsHighRiskExtractionUnlocked.Value = highRiskExtraction;
+            IsSpacebarUnlocked.Value = spacebar;
 
             // Émis EN DERNIER, une fois la table et les scalaires cohérents. C'est ce signal qui
             // pousse les bonus ciblés dans les UpgradeModel : sans lui, ils seraient ignorés au
@@ -486,6 +507,7 @@ namespace Core.Services.Economy
             ExploitTracePenaltyReduction.Dispose();
             OverclockWakesScripts.Dispose();
             IsHighRiskExtractionUnlocked.Dispose();
+            IsSpacebarUnlocked.Dispose();
         }
     }
 }

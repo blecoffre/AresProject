@@ -34,8 +34,9 @@ MonoBehaviour:
   _maxTargetedReduction: 0.95
   _baseStartingMoney: 10
   _exfiltrationUnlockDatas: 400000
-  _prestigeFirstThresholdDatas: 5000000
+  _prestigeFirstThresholdDatas: 2000000
   _prestigeThresholdGrowth: 1.12
+  _seizedContributionRatio: 0.3
   _cleanExitTiers:
   - _traceThreshold: 0.5
     _bonus: 0.15

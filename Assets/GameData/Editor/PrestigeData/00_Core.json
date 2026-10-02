@@ -2,7 +2,7 @@
   "items": [
     {
       "id": "P_ROOT",
-      "bonusType": "StartingMoney",
+      "bonusType": "Root",
       "maxLevel": 1,
       "baseCost": 0.0,
       "costMult": 1.0,

@@ -3,9 +3,9 @@
     {
       "id": "P_STEALTH",
       "bonusType": "TraceReduction",
-      "maxLevel": 1,
+      "maxLevel": 10,
       "baseCost": 1.0,
-      "costMult": 1.6,
+      "costMult": 1.0,
       "bonus": 0.25,
       "posX": 0.0,
       "posY": -1.0,

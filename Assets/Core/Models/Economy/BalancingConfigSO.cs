@@ -228,23 +228,42 @@ namespace Core.Models.Economy
                  "minCycleDuration et durationReductionPerLevel. Le régler n'a aucun effet.")]
         [SerializeField, Min(1f)] private double _exfiltrationUnlockDatas = 400000d;
 
-        [Tooltip("Datas CUMULÉES sur la campagne pour décrocher le PREMIER point de prestige.\n\n" +
+        [Tooltip("Prix de la PREMIÈRE boîte, en Datas. C'est ce qu'il faut exfiltrer pour décrocher " +
+                 "le premier point de prestige.\n\n" +
                  "⚠️ RÉGLAGE STRUCTURANT, avec la croissance ci-dessous.\n\n" +
-                 "Le compteur ne retombe jamais à zéro entre deux runs : une run qui n'atteint " +
-                 "pas le palier suivant n'est plus perdue, tout ce qu'elle a volé compte encore. " +
-                 "Seule une SAISIE annule la contribution de la run — c'est là que vit la " +
-                 "punition désormais.")]
+                 "MODÈLE DES BOÎTES : chaque point est une boîte à remplir ENTIÈREMENT, et le cumul " +
+                 "demandé pour N points est la SOMME des N boîtes. À 1 M et ×1,5 : première boîte " +
+                 "1 M, deuxième 1,5 M, donc 2,5 M de cumul pour détenir deux points.\n\n" +
+                 "Le compteur ne retombe jamais à zéro entre deux runs : les boîtes remplies restent " +
+                 "acquises, le reliquat travaille pour la suivante, et une run qui n'achève pas sa " +
+                 "boîte n'est jamais perdue. Une SAISIE ne verse plus qu'une fraction de la run — " +
+                 "voir le ratio ci-dessous.")]
         [SerializeField, Min(1f)] private double _prestigeFirstThresholdDatas = 400000d;
 
-        [Tooltip("Facteur multiplicatif entre deux paliers de points. À 1,5, le deuxième point " +
-                 "demande 1,5 fois plus de Datas cumulées que le premier, le troisième 1,5 fois " +
-                 "plus encore.\n\n" +
+        [Tooltip("Facteur multiplicatif entre le PRIX de deux boîtes consécutives. À 1,5, la " +
+                 "deuxième boîte coûte 1,5 fois la première, la troisième 1,5 fois la deuxième.\n\n" +
+                 "⚠️ Il porte sur le prix d'UNE boîte, pas sur le cumul : le cumul, lui, croît " +
+                 "comme la somme, donc bien plus vite. C'est exactement ce qui était confondu " +
+                 "avant le 2026-09-25.\n\n" +
                  "C'est le bouton de DURÉE de campagne. Le rapport coût/rendement des échelles " +
                  "de générateurs, lui, ne règle que l'ATTEIGNABILITÉ du contenu : mesuré le " +
                  "2026-09-12, il fait passer la partie de « jamais finie en 16 h » à « finie en " +
                  "17 minutes » sans jamais offrir de valeur intermédiaire. Les deux sont " +
                  "orthogonaux, ne pas les confondre.")]
         [SerializeField, Range(1.05f, 4f)] private double _prestigeThresholdGrowth = 1.5d;
+
+        [Tooltip("Part des Datas de la run versée au cumul de campagne quand le joueur se fait " +
+                 "SAISIR. 0,30 = il garde 30 %. À 0, une saisie ne rapporte rien — l'ancien " +
+                 "comportement.\n\n" +
+                 "Existe parce que la saisie ne versait RIEN, et que rien dans le jeu ne " +
+                 "capitalisait une run perdue. Constaté sur une partie réelle le 2026-09-22 : " +
+                 "294 M de Datas générées sur deux morts, zéro banquée, zéro point, arbre vide. " +
+                 "Le joueur restait à distance constante de son premier point quelle que soit " +
+                 "sa performance — « le seuil monte » et « je n'avance jamais » sont la même " +
+                 "sensation vues du fauteuil.\n\n" +
+                 "⚠️ Doit rester NETTEMENT sous 1 : l'exfiltration verse 100 % ET le bonus de " +
+                 "palier par-dessus. Au-delà, se faire prendre exprès deviendrait jouable.")]
+        [SerializeField, Range(0f, 0.9f)] private double _seizedContributionRatio = 0.30d;
 
         [Tooltip("Paliers d'extraction : à ranger du MOINS au PLUS exigeant. Le joueur empoche le " +
                  "bonus du plus haut palier dont il a atteint le seuil de Trace, et rien du tout " +
@@ -387,6 +406,7 @@ namespace Core.Models.Economy
         public double ExfiltrationUnlockDatas => _exfiltrationUnlockDatas;
         public double PrestigeFirstThresholdDatas => _prestigeFirstThresholdDatas;
         public double PrestigeThresholdGrowth => _prestigeThresholdGrowth;
+        public double SeizedContributionRatio => _seizedContributionRatio;
         public IReadOnlyList<CleanExitTier> CleanExitTiers => _cleanExitTiers;
         public float OverclockWarpSeconds => _overclockWarpSeconds;
 
