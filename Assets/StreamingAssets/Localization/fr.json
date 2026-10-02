@@ -1403,6 +1403,14 @@
     {
       "Key": "OPTIONS_AUDIO_IN_BACKGROUND",
       "Value": "Son en arrière-plan"
+    },
+    {
+      "Key": "OPTIONS_RESET",
+      "Value": "[ PAR DÉFAUT ]"
+    },
+    {
+      "Key": "OPTIONS_RESET_CONFIRM",
+      "Value": "[ CONFIRMER ? ]"
     }
   ]
 }

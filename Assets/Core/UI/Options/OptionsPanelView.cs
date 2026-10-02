@@ -47,7 +47,13 @@ namespace Core.UI.Options
         [SerializeField] private Button _backButton;
         [SerializeField] private TextMeshProUGUI _backLabel;
 
+        [Header("Valeurs par défaut")]
+        [Tooltip("Rétablit les valeurs par défaut de l'onglet affiché, après confirmation.")]
+        [SerializeField] private Button _resetButton;
+        [SerializeField] private TextMeshProUGUI _resetLabel;
+
         public event Action OnBackClicked;
+        public event Action OnResetClicked;
         public event Action<int> OnTabClicked;
 
         public OptionSelectorView Language => _language;
@@ -71,6 +77,7 @@ namespace Core.UI.Options
         private void Awake()
         {
             _backButton.onClick.AddListener(RaiseBack);
+            _resetButton.onClick.AddListener(RaiseReset);
 
             // Une closure par onglet, allouée une fois à l'initialisation : l'index doit voyager
             // avec le clic, et trois délégués pour toute la vie du panneau ne coûtent rien.
@@ -84,6 +91,7 @@ namespace Core.UI.Options
         private void OnDestroy()
         {
             _backButton.onClick.RemoveListener(RaiseBack);
+            _resetButton.onClick.RemoveListener(RaiseReset);
 
             // Les boutons d'onglet appartiennent à cette vue : rien d'autre ne s'y abonne.
             for (int i = 0; i < _tabButtons.Length; i++)
@@ -106,6 +114,9 @@ namespace Core.UI.Options
         }
 
         private void RaiseBack() => OnBackClicked?.Invoke();
+        private void RaiseReset() => OnResetClicked?.Invoke();
+
+        public void SetResetLabel(string label) => _resetLabel.text = label;
 
         public void SetTexts(string title, string back)
         {

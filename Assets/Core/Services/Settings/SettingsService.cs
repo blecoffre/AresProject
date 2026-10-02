@@ -56,6 +56,18 @@ namespace Core.Services.Settings
 
         void SetColorVision(ColorVisionMode mode);
 
+        /// <summary>Remet l'onglet Affichage aux valeurs du premier lancement.</summary>
+        void ResetDisplay();
+
+        /// <summary>Remet l'onglet Audio aux valeurs du premier lancement.</summary>
+        void ResetAudio();
+
+        /// <summary>
+        /// Remet le mode daltonien à Standard. La langue n'est jamais réinitialisée : c'est un
+        /// choix explicite du joueur, fait à l'écran de premier lancement.
+        /// </summary>
+        void ResetAccessibility();
+
         void SetMasterMuted(bool muted);
         void SetAudioInBackground(bool enabled);
         void SetMusicVolumePercent(int percent);
@@ -268,6 +280,39 @@ namespace Core.Services.Settings
             _settings.SfxMuted = muted;
             _sfxMuted.Value = muted;
             _store.Save(_settings);
+        }
+
+        // Les remises à zéro passent par les setters publics, un réglage à la fois : chacun publie
+        // son changement (donc s'applique : résolution, cadence, mixer…) et écrit le fichier.
+        // Quatre ou cinq écritures de quelques centaines d'octets, sur un clic confirmé : le prix
+        // d'un seul chemin d'application plutôt que deux.
+
+        public void ResetDisplay()
+        {
+            GameSettings defaults = CreateFirstLaunchDefaults();
+
+            SetDisplayMode(defaults.DisplayMode);
+            SetResolution(new Vector2Int(defaults.ResolutionWidth, defaults.ResolutionHeight));
+            SetVSync(defaults.VSync);
+            SetFrameRateCap(defaults.FrameRateCap);
+            SetUiScalePercent(defaults.UiScalePercent);
+        }
+
+        public void ResetAudio()
+        {
+            var defaults = new GameSettings();
+
+            SetMasterMuted(defaults.MasterMuted);
+            SetAudioInBackground(defaults.AudioInBackground);
+            SetMusicVolumePercent(defaults.MusicVolumePercent);
+            SetMusicMuted(defaults.MusicMuted);
+            SetSfxVolumePercent(defaults.SfxVolumePercent);
+            SetSfxMuted(defaults.SfxMuted);
+        }
+
+        public void ResetAccessibility()
+        {
+            SetColorVision(new GameSettings().ColorVision);
         }
 
         public void SetColorVision(ColorVisionMode mode)

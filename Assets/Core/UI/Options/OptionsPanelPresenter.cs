@@ -32,8 +32,16 @@ namespace Core.UI.Options
         private const int AudioTab = 1;
         private const int AccessibilityTab = 2;
 
+        /// <summary>Délai pendant lequel « [ CONFIRMER ? ] » attend le second clic.</summary>
+        private static readonly TimeSpan ResetConfirmWindow = TimeSpan.FromSeconds(3);
+
         private DisposableBag _disposables;
         private int _currentTab = DisplayTab;
+
+        // Remise à zéro en deux temps : le premier clic arme, le second applique. Le jeton
+        // annule le retour automatique à l'état désarmé.
+        private bool _isResetArmed;
+        private CancellationTokenSource _resetArmCts;
         private CancellationTokenSource _cts;
         private bool _isSwitchingLanguage;
 
@@ -52,6 +60,7 @@ namespace Core.UI.Options
             _cts = new CancellationTokenSource();
 
             _view.OnBackClicked += Close;
+            _view.OnResetClicked += HandleResetClicked;
             _view.OnTabClicked += ShowTab;
             _view.ShowTab(_currentTab);
 
@@ -110,7 +119,11 @@ namespace Core.UI.Options
 
         public void Open() => _view.Show();
 
-        public void Close() => _view.Hide();
+        public void Close()
+        {
+            DisarmReset();
+            _view.Hide();
+        }
 
         private void RenderAll()
         {
@@ -131,6 +144,9 @@ namespace Core.UI.Options
         {
             if (index < 0 || index >= _view.TabCount) return;
 
+            // Un « [ CONFIRMER ? ] » armé sur l'Audio ne doit pas remettre à zéro l'Affichage.
+            DisarmReset();
+
             _currentTab = index;
             _view.ShowTab(index);
         }
@@ -138,6 +154,7 @@ namespace Core.UI.Options
         private void RenderStaticTexts()
         {
             _view.SetTexts(_loc.GetText("OPTIONS_TITLE"), _loc.GetText("OPTIONS_BACK"));
+            RenderResetButton();
 
             string previous = _loc.GetText("UI_SELECTOR_PREV");
             string next = _loc.GetText("UI_SELECTOR_NEXT");
@@ -265,7 +282,81 @@ namespace Core.UI.Options
             _view.ColorVision.SetArrows(true, true);
         }
 
+        private void RenderResetButton() =>
+            _view.SetResetLabel(_loc.GetText(_isResetArmed ? "OPTIONS_RESET_CONFIRM" : "OPTIONS_RESET"));
+
         // ---------- Actions ----------
+
+        /// <summary>
+        /// Premier clic : arme, et le bouton demande confirmation pendant quelques secondes.
+        /// Second clic dans ce délai : rétablit les valeurs par défaut de l'onglet affiché.
+        /// Pas de fenêtre modale : le même bouton se pilote tel quel au clavier ou à la manette.
+        /// </summary>
+        private void HandleResetClicked()
+        {
+            if (!_isResetArmed)
+            {
+                ArmReset();
+                return;
+            }
+
+            DisarmReset();
+            ResetCurrentTab();
+        }
+
+        private void ArmReset()
+        {
+            _isResetArmed = true;
+            RenderResetButton();
+
+            _resetArmCts = new CancellationTokenSource();
+            DisarmLaterAsync(_resetArmCts.Token).Forget();
+        }
+
+        /// <summary>
+        /// Temps NON échelonné : le panneau s'ouvre aussi depuis la pause, et l'horloge doit
+        /// tourner même si un jour Time.timeScale venait à changer.
+        /// </summary>
+        private async UniTaskVoid DisarmLaterAsync(CancellationToken ct)
+        {
+            bool cancelled = await UniTask.Delay(ResetConfirmWindow, DelayType.UnscaledDeltaTime, cancellationToken: ct)
+                                          .SuppressCancellationThrow();
+            if (cancelled) return;
+
+            DisarmReset();
+        }
+
+        private void DisarmReset()
+        {
+            _resetArmCts?.Cancel();
+            _resetArmCts?.Dispose();
+            _resetArmCts = null;
+
+            if (!_isResetArmed) return;
+            _isResetArmed = false;
+            RenderResetButton();
+        }
+
+        private void ResetCurrentTab()
+        {
+            switch (_currentTab)
+            {
+                case DisplayTab:
+                    _settings.ResetDisplay();
+                    break;
+
+                case AudioTab:
+                    _settings.ResetAudio();
+                    break;
+
+                // La langue n'est JAMAIS remise à zéro (décision de Bertrand, 2026-10-02) : c'est
+                // un choix explicite du joueur, fait à l'écran de premier lancement, et la perdre
+                // sur un clic destiné au mode daltonien serait une mauvaise surprise.
+                case AccessibilityTab:
+                    _settings.ResetAccessibility();
+                    break;
+            }
+        }
 
         private void ToggleMasterMute() => _settings.SetMasterMuted(!_settings.MasterMuted.CurrentValue);
 
@@ -402,7 +493,10 @@ namespace Core.UI.Options
             _cts?.Dispose();
             _disposables.Dispose();
 
+            DisarmReset();
+
             _view.OnBackClicked -= Close;
+            _view.OnResetClicked -= HandleResetClicked;
             _view.OnTabClicked -= ShowTab;
 
             _view.MasterMute.OnPrevious -= ToggleMasterMute;
