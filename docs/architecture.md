@@ -61,12 +61,58 @@ La langue change en cours de partie, sans recharger de scène. `ILocalizationSer
 
 Les langues proposées sont les fichiers présents dans `StreamingAssets/Localization`. Chaque fichier porte les clés `LANGUAGE_NAME_<CODE>` de **toutes** les langues, écrites dans leur propre langue (« Español »). La langue choisie est mémorisée dans `settings.json` ; vide, elle déclenche l'écran de choix du premier lancement (`LanguagePickerPresenter`, langue du système présélectionnée).
 
-## Audio (terrain préparé, aucun son encore)
+## Audio
+
+**Volumes**
 
 - `Data/Audio/GameMixer.mixer` : groupes **Master → Music, SFX**, paramètres exposés **`MasterVolume`**, **`MusicVolume`** et **`SfxVolume`** (volume de chaque groupe).
 - Le Master ne fait que couper ou laisser passer : « Couper tout le son », ou fenêtre inactive quand « Son en arrière-plan » est sur Non (`Application.focusChanged`, même parti pris que le `FrameRateGovernor` : focus supposé acquis au démarrage).
 - `AudioVolumeApplier` (Root) est le **seul** à écrire ces volumes, depuis les 6 réglages audio de `settings.json` (volume 0-100 % par pas de 10, et une coupure indépendante par canal). Conversion logarithmique : 50 % = -6 dB, 0 % ou coupé = -80 dB.
-- **Pour le futur système audio** : router chaque `AudioSource` vers le groupe `Music` ou `SFX` du mixer (`outputAudioMixerGroup`), et ne JAMAIS lire ni écrire les volumes lui-même. Renommer un paramètre exposé casse le lien en silence (un avertissement est loggé une fois).
+- Toute `AudioSource` est routée vers `Music` ou `SFX` (`outputAudioMixerGroup`) et ne lit ni n'écrit JAMAIS les volumes du mixer. Renommer un paramètre exposé casse le lien en silence (un avertissement est loggé une fois).
+
+**Contenu** — `Data/Audio/AudioLibrary.asset` (`AudioLibrarySO`, sur le `RootLifetimeScope`) : les deux groupes de sortie, la musique du menu, celle de la partie, la durée du fondu, la famille de clics par défaut. Un clip vide n'est pas une erreur : le son correspondant se tait. Les licences des sons sont tenues dans `docs/audio-licences.md`.
+
+**Familles de sons** — `SoundSetSO` (`Data/Audio/SoundSets/`), pour les clics comme pour les événements : une liste de variantes, une variation de hauteur (±5 % par défaut) et un volume. Parti pris (2026-10-12) : **le clavier partout**, l'unité sonore d'un hacker qui tape ; les boutons se distinguent par la famille (touches ordinaires = `KeyPress`, par défaut : 36 frappes de `Button/Typing/`, les 14 frappes MacBook d'origine étant archivées dans `Button/_Archive/MacBook/`, hors de toute famille ; plus tard une famille « Validation » en Entrée/Espace pour les actions qui engagent), jamais par des sons d'une autre origine.
+
+Familles branchées (2026-10-12) — une famille de BOUTON vide retombe sur `KeyPress` : un bouton préparé garde sa frappe en attendant son son. Le refus et les événements, eux, n'ont pas de repli : vides, ils se taisent (un refus qui sonnerait comme une frappe dirait « c'est fait »).
+
+| Famille | Hauteur | Boutons | Où |
+|---|---|---|---|
+| `KeyPress` | ±5 % | tous les autres (défaut) | `AudioLibrary` |
+| `Validation` | ±5 % | Continuer/Commencer, Recommencer (fin de run), confirmation de langue | MainMenuScene, GameScene, `LanguagePicker.prefab` |
+| `PrestigePurchase` | fixe | achat d'un nœud de prestige (`BuyButton`) | GameScene |
+| `Exfiltration` | fixe | « Terre Brûlée » (objet nommé `PrestigeButton`, nom hérité) | GameScene |
+| `DataWiper` | fixe | Bouton d'Urgence (`PanicButton`) | GameScene |
+| `ZeroDayExploit` | fixe | Ghost Cache (`GhostCacheButton`) | GameScene |
+
+Les familles « signature » ont une hauteur fixe : un son qu'on doit reconnaître ne varie pas. Chaque bouton se grise quand l'action est impossible, donc son son ne part que sur une vraie action. Les overrides vivent sur les instances de scène (et dans `LanguagePicker.prefab`) : un bouton recréé ailleurs devra être rebranché à la main.
+
+**Réglages d'import** — `AudioImportRules` (éditeur) les impose par dossier, et écrase toute retouche manuelle :
+- `Data/Audio/Button/` : DecompressOnLoad, ADPCM, mono (sons courts joués en rafale).
+- `Data/Audio/Events/` : DecompressOnLoad, **PCM**, mono (sons synthétiques : l'ADPCM y ajouterait un souffle).
+- `Data/Audio/Music/` : Streaming, Vorbis 0,7 (les musiques vont dans ce dossier).
+
+**Sons générés** — `tools/audio/` (Python standard, sans dépendance) : `synth_sfx.py` (les 11 sons d'événements, un réglage par son en tête de fonction, graine fixe), `synth_music.py` (deux boucles bouche-trou sans couture : fréquences quantifiées sur la durée de boucle, notes repliées, bruit fondu sur lui-même), `extract_keys.py` / `clean_keys.py` (découpe et nettoyage de prises de frappe), `make_validation.py` (famille Validation). Les volumes se règlent sur le **niveau moyen (RMS)**, pas sur le pic : `KeyPress` ≈ -30 dB, refus -31, paliers -18 à -16, moments forts -17 à -15. Régénérer, puis recopier dans `Data/Audio/` : les noms de fichiers étant stables, les familles suivent.
+
+**Lecteurs (Root)**
+
+- `AudioHost` porte toutes les sources sous `[Audio]`, enfant du `RootLifetimeScope` — donc dans la RootScene, qui ne se décharge jamais — ainsi que **l'unique `AudioListener`**. Les caméras des scènes n'en ont plus : `SceneLoader` décharge avant de charger, une transition sans écouteur ferait sauter la musique. **Ne pas en remettre sur une caméra** (Unity signalerait deux écouteurs).
+- `MusicPlayer` (`IMusicPlayer`) : deux sources en alternance, fondu enchaîné sur le volume des **sources** (le mixer reste à l'`AudioVolumeApplier`). Une piste déjà en cours n'est pas relancée : le rechargement de la GameScene en fin de run ne remet pas la musique au début. La pause ne touche pas à la musique (décision du 2026-10-02).
+- `SceneMusic` : chaque scope de scène l'enregistre avec sa piste (`WithParameter(MusicTrack.MainMenu / Game)`). Le lecteur ne connaît ni les scènes ni le `SceneLoader`.
+- `SoundSetVoices` : un petit groupe de sources en rotation (la hauteur se règle par source : la changer sous un son en cours le déformerait), qui tire une variante au hasard sans jamais rejouer la précédente. Chaque lecteur a le sien : une rafale de clics ne coupe pas une alerte. Aucune allocation à la lecture.
+- `UiSoundPlayer` : 4 voix SFX, priorité 128. Clic (famille du bouton ou `KeyPress`) et refus (`Refusal`).
+- `GameEventSounds` : 2 voix SFX, priorité 64 (devant les clics). Écoute en lecture seule `ThreatManager.OnCriticalLockdown` (`Seizure`), `VictorySystem.OnVictory` (`Victory`) et les paliers d'extraction (`TraceTier1..3`, un par palier de `CleanExitTiers`, le dernier resservant s'il en manque).
+  - **Les paliers s'écoutent sur `TraceReadout.LastKnownFraction`, jamais sur la vraie Trace** : une alerte sur la vérité trahirait le brouillard du capteur. Elle sonne quand le palier s'allume à l'écran.
+  - Pas d'alerte quand la simulation est retenue (`ITimeSource.DeltaTime` nul) : le recalage du relevé à la restauration d'une sauvegarde n'est pas un franchissement.
+  - Plusieurs paliers d'un coup → seul le plus haut sonne ; à 100 % la saisie parle seule ; un palier verrouillé (Extraction Haut Risque non achetée) ne s'annonce pas ; un palier refranchi après une baisse (Data Wiper, nouvelle run) se signale à nouveau.
+- Sans `AudioLibrary` ou `UiSoundChannel` sur le Root, le jeu démarre muet (`SilentMusicPlayer`) avec un avertissement.
+
+**Clic des boutons** — `UiClickSound` (`UI/Theme`) sur chaque `Button`, branché sur `onClick` : le son suit l'action (souris, clavier, manette), jamais un bouton désactivé. Il passe par un **asset canal**, `Data/Audio/UiSoundChannel.asset` (`UiSoundChannelSO`), et non par l'injection : les prefabs de boutons sont hors de portée fiable de VContainer (cf. `autoInjectGameObjects`). Un champ `_soundSetOverride` permet de donner une autre famille à un bouton.
+
+**Refus** — le même composant joue `Refusal` quand on clique un bouton grisé (`IsInteractable`, donc CanvasGroup parent compris). L'état est relevé à l'**appui** : un bouton qui se grise en réponse à son propre clic ne joue que son clic. Souris uniquement (la navigation clavier/manette saute les boutons grisés). Case `_refusalSound` pour l'exclure bouton par bouton.
+
+- **Tout nouveau bouton** : relancer `Tools/Core/Audio/Équiper les boutons du son de clic` (idempotent : prefabs de `Assets/Data`, puis scènes du Build Settings ; un objet issu d'un prefab est traité dans son prefab). `Vérifier le son de clic des boutons` fait le même parcours sans rien modifier.
+- Les toggles et sliders n'existent pas dans le projet : onglets et sélecteurs d'options sont des `Button`. Un futur `Toggle` ou `Slider` demandera d'étendre le composant.
 
 ## Palettes (daltonisme)
 
