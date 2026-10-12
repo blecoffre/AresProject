@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdfd6007b127d0b4899d779e1f49dadc, type: 3}
+  m_Name: AudioLibrary
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Services.Audio.AudioLibrarySO
+  _musicGroup: {fileID: 7374580731818860654, guid: 4823ee7e6343a4f42a8b71f81afb3d57, type: 2}
+  _sfxGroup: {fileID: 5571810929597220601, guid: 4823ee7e6343a4f42a8b71f81afb3d57, type: 2}
+  _mainMenuMusic: {fileID: 8300000, guid: 376fdbd9d88077c40a833ae3779d4921, type: 3}
+  _gameMusic: {fileID: 8300000, guid: 0b976221d5b27d9439fd85bd7e669d8a, type: 3}
+  _musicCrossfadeSeconds: 1.5
+  _defaultClickSet: {fileID: 11400000, guid: 8549414707321404ca89513a2605043c, type: 2}
+  _refusalSet: {fileID: 11400000, guid: a639e06d5ab920e45b472e6c5e101702, type: 2}
+  _seizureSet: {fileID: 11400000, guid: d80d4e74b0375424eafff5d6eeb79c27, type: 2}
+  _victorySet: {fileID: 11400000, guid: 6bf0bb4f96e2a8d4b99ba3242a85d33e, type: 2}
+  _traceTierSets:
+  - {fileID: 11400000, guid: 47177a1dd9971c142845001d921a88d2, type: 2}
+  - {fileID: 11400000, guid: 535935305049c0e4fb8dd72e75844ed8, type: 2}
+  - {fileID: 11400000, guid: 008938e062692024a91700b0cded5400, type: 2}

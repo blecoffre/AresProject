@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09037d6a877e4e7428cad3f830f497c6, type: 3}
+  m_Name: Validation
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Services.Audio.SoundSetSO
+  _clips:
+  - {fileID: 8300000, guid: af905f30854105143bfe76e1749db4d7, type: 3}
+  - {fileID: 8300000, guid: 4c4144f55cb27af47825ef4e3084ebd7, type: 3}
+  - {fileID: 8300000, guid: 33f9252af8e31354f955c229c887a1c9, type: 3}
+  - {fileID: 8300000, guid: 278d8da21f2935e48b8415cc36b96234, type: 3}
+  - {fileID: 8300000, guid: a83d69afee16c1048a4d6e9f93e3849b, type: 3}
+  _pitchVariation: 0.05
+  _volume: 1
