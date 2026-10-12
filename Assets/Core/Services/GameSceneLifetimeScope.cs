@@ -1,3 +1,4 @@
+using Core.Services.Audio;
 using Core.Services.Economy;
 using Core.Services.Simulation;
 using Core.UI.Game;
@@ -140,6 +141,10 @@ namespace Core.Boot
             // Points de démarrage
             builder.RegisterEntryPoint<GameSceneBootstrapper>();
             builder.RegisterEntryPoint<SimulationTicker>();
+
+            // L'ambiance musicale de la partie. Un rechargement de fin de run la redemande : le
+            // lecteur ignore une piste qui joue déjà, la musique continue sans reprendre au début.
+            builder.RegisterEntryPoint<SceneMusic>().WithParameter(MusicTrack.Game);
 
             // Menu de pause et options : le même panneau d'options que sur l'écran titre.
             builder.RegisterComponent(_pauseMenuView);

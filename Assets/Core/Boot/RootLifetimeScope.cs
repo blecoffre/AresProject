@@ -37,6 +37,12 @@ namespace Core.Infrastructure
                  "volumes des options.")]
         [SerializeField] private AudioMixer _audioMixer;
 
+        [Tooltip("Musiques, son de clic et groupes de sortie du mixer.")]
+        [SerializeField] private AudioLibrarySO _audioLibrary;
+
+        [Tooltip("Le canal par lequel les boutons (UiClickSound) demandent leur son.")]
+        [SerializeField] private UiSoundChannelSO _uiSoundChannel;
+
         protected override void Configure(IContainerBuilder builder)
         {
             // 1. Données statiques (catalogues glissés dans l'inspecteur)
@@ -95,6 +101,25 @@ namespace Core.Infrastructure
             else
             {
                 Debug.LogWarning("[AUDIO] Aucun AudioMixer sur le RootLifetimeScope : les volumes des options sont sans effet.");
+            }
+
+            // Lecteurs audio. Même parti pris conditionnel : sans bibliothèque, le jeu reste muet
+            // au lieu de refuser de démarrer. Les scopes de scène dépendent d'IMusicPlayer, d'où
+            // un lecteur silencieux de repli plutôt qu'une absence d'enregistrement.
+            if (_audioLibrary != null && _uiSoundChannel != null)
+            {
+                builder.RegisterInstance(_audioLibrary);
+                builder.RegisterInstance(_uiSoundChannel);
+                builder.Register<AudioHost>(Lifetime.Singleton);
+                builder.Register<MusicPlayer>(Lifetime.Singleton).AsImplementedInterfaces();
+                builder.RegisterEntryPoint<UiSoundPlayer>();
+                // Saisie, victoire, paliers de Trace : écoute les systèmes du Root en lecture seule.
+                builder.RegisterEntryPoint<GameEventSounds>();
+            }
+            else
+            {
+                Debug.LogWarning("[AUDIO] AudioLibrary ou UiSoundChannel manquant sur le RootLifetimeScope : le jeu est muet.");
+                builder.Register<SilentMusicPlayer>(Lifetime.Singleton).As<IMusicPlayer>();
             }
 
             // Quitter l'application : derrière une interface pour garder Application.Quit (et son

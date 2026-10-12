@@ -1,3 +1,4 @@
+using Core.Services.Audio;
 using Core.UI.MainMenu;
 using Core.UI.Options;
 using Core.UI.Theme;
@@ -35,6 +36,7 @@ namespace Core.Boot
             builder.Register<LanguagePickerPresenter>(Lifetime.Scoped).AsImplementedInterfaces().AsSelf();
             builder.RegisterEntryPoint<UiScalePresenter>();
             builder.RegisterEntryPoint<MainMenuPresenter>();
+            builder.RegisterEntryPoint<SceneMusic>().WithParameter(MusicTrack.MainMenu);
         }
     }
 }
