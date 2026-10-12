@@ -201,6 +201,8 @@ MonoBehaviour:
   _balancingConfig: {fileID: 11400000, guid: a7a3b5e518c56da4786f1e62516bdcfd, type: 2}
   _paletteCatalog: {fileID: 11400000, guid: 77f1405a82670274490711c88ad96557, type: 2}
   _audioMixer: {fileID: 24100000, guid: 4823ee7e6343a4f42a8b71f81afb3d57, type: 2}
+  _audioLibrary: {fileID: 11400000, guid: 91688831887fda44b8e08b14ec35c22f, type: 2}
+  _uiSoundChannel: {fileID: 11400000, guid: 5671b6ce40361394da07437e70578ba0, type: 2}
 --- !u!4 &819093951
 Transform:
   m_ObjectHideFlags: 0

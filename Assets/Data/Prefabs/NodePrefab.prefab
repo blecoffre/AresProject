@@ -60,17 +60,14 @@ MonoBehaviour:
   _fillImage: {fileID: 4860463716560547469}
   _selectionOverlay: {fileID: 7280315220499747567}
   _interactionButton: {fileID: 5431694379184561282}
-  _lockedColor: {r: 0.2, g: 0.333, b: 0.2, a: 1}
-  _tooExpensiveColor: {r: 1, g: 0.2, b: 0.2, a: 1}
-  _affordableColor: {r: 1, g: 0.6, b: 0, a: 1}
-  _inProgressColor: {r: 0.29, g: 0.965, b: 0.149, a: 1}
-  _maxedColor: {r: 0.29, g: 0.965, b: 0.149, a: 1}
   _maxedTextColor: {r: 0.012, g: 0.027, b: 0.012, a: 1}
   _nodeBackgroundColor: {r: 0.012, g: 0.027, b: 0.012, a: 1}
   _subtleTintAmount: 0.12
   _selectionAlpha: 0.18
   _pulseSpeed: 3
   _pulseMinAlpha: 0.35
+  _idlePulseSpeed: 1.2
+  _idlePulseMinAlpha: 0.7
 --- !u!1 &4689220949133413356
 GameObject:
   m_ObjectHideFlags: 0
@@ -507,6 +504,7 @@ GameObject:
   - component: {fileID: 9187303514458710501}
   - component: {fileID: 7280315220499747567}
   - component: {fileID: 5431694379184561282}
+  - component: {fileID: 2524740839608215572}
   m_Layer: 5
   m_Name: UnlockOrDetailsButton
   m_TagString: Untagged
@@ -615,3 +613,17 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &2524740839608215572
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8112691002855632964}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 843aaa9ae39bd72439e9eb7b08f45c28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.UI.Theme.UiClickSound
+  _channel: {fileID: 11400000, guid: 5671b6ce40361394da07437e70578ba0, type: 2}
+  _soundSetOverride: {fileID: 0}

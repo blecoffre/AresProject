@@ -654,6 +654,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: ConfirmButton
       objectReference: {fileID: 0}
+    - target: {fileID: 7248027003555029047, guid: d72ddb93c5672334c818fb9f1366ca19, type: 3}
+      propertyPath: _soundSetOverride
+      value: 
+      objectReference: {fileID: 11400000, guid: ab7e1cb83647e2b499e9edbecada62b7, type: 2}
     - target: {fileID: 9010054432819027913, guid: d72ddb93c5672334c818fb9f1366ca19, type: 3}
       propertyPath: m_text
       value: '[LANGUAGE_PICKER_CONFIRM]'

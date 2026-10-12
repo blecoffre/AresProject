@@ -225,6 +225,7 @@ GameObject:
   - component: {fileID: 2490302873418424698}
   - component: {fileID: 5239699281368152140}
   - component: {fileID: 7182167214497768633}
+  - component: {fileID: 7248027003555029047}
   m_Layer: 0
   m_Name: TerminalButton
   m_TagString: Untagged
@@ -350,3 +351,17 @@ MonoBehaviour:
   _border: {fileID: 2490302873418424698}
   _background: {fileID: 2993694117133269857}
   _borderGlowMaterial: {fileID: 2100000, guid: 7dfa7739f55a1dd499fb2339e402ebd1, type: 2}
+--- !u!114 &7248027003555029047
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5613702579784548777}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 843aaa9ae39bd72439e9eb7b08f45c28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.UI.Theme.UiClickSound
+  _channel: {fileID: 11400000, guid: 5671b6ce40361394da07437e70578ba0, type: 2}
+  _soundSetOverride: {fileID: 0}

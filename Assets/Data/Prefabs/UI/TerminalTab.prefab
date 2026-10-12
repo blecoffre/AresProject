@@ -300,6 +300,7 @@ GameObject:
   - component: {fileID: 4301300669410271880}
   - component: {fileID: 82085591906423899}
   - component: {fileID: 221626611596595186}
+  - component: {fileID: 3573609506435654637}
   m_Layer: 5
   m_Name: TerminalTab
   m_TagString: Untagged
@@ -430,3 +431,17 @@ MonoBehaviour:
   _inactiveColor: {r: 0.36862746, g: 0.5411765, b: 0.36862746, a: 1}
   _activeMaterial: {fileID: 2100000, guid: 1faeec32aa416294f96a3b903fe55738, type: 2}
   _inactiveMaterial: {fileID: -257383487370615842, guid: 0b8283310e3fe024f8e1e33f34041f7b, type: 2}
+--- !u!114 &3573609506435654637
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8999218043581243496}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 843aaa9ae39bd72439e9eb7b08f45c28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.UI.Theme.UiClickSound
+  _channel: {fileID: 11400000, guid: 5671b6ce40361394da07437e70578ba0, type: 2}
+  _soundSetOverride: {fileID: 0}

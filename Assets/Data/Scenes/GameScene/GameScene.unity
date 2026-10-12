@@ -1974,6 +1974,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: BuyButton
       objectReference: {fileID: 0}
+    - target: {fileID: 7248027003555029047, guid: d72ddb93c5672334c818fb9f1366ca19, type: 3}
+      propertyPath: _soundSetOverride
+      value: 
+      objectReference: {fileID: 11400000, guid: c56b682cc8fa36d4caa15f6c5e0172f7, type: 2}
     - target: {fileID: 9010054432819027913, guid: d72ddb93c5672334c818fb9f1366ca19, type: 3}
       propertyPath: m_text
       value: '[UI_PRESTIGE_TREE_CLOSE]'
@@ -3123,7 +3127,6 @@ GameObject:
   m_Component:
   - component: {fileID: 519420032}
   - component: {fileID: 519420031}
-  - component: {fileID: 519420029}
   - component: {fileID: 519420030}
   m_Layer: 0
   m_Name: Main Camera
@@ -3132,14 +3135,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &519420029
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 519420028}
-  m_Enabled: 1
 --- !u!114 &519420030
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3342,6 +3337,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: StartNewRunButton
       objectReference: {fileID: 0}
+    - target: {fileID: 7248027003555029047, guid: d72ddb93c5672334c818fb9f1366ca19, type: 3}
+      propertyPath: _soundSetOverride
+      value: 
+      objectReference: {fileID: 11400000, guid: ab7e1cb83647e2b499e9edbecada62b7, type: 2}
     - target: {fileID: 9010054432819027913, guid: d72ddb93c5672334c818fb9f1366ca19, type: 3}
       propertyPath: m_text
       value: '[UI_RUN_END_RESTART]'
@@ -3893,6 +3892,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5234834333619584357, guid: 369cdd6bf120f554db9408d033b7587f, type: 3}
+      propertyPath: _soundSetOverride
+      value: 
+      objectReference: {fileID: 11400000, guid: c4e74363886c6624398f38a6c00c2e4e, type: 2}
     - target: {fileID: 5852938970809451163, guid: 369cdd6bf120f554db9408d033b7587f, type: 3}
       propertyPath: m_text
       value: Button
@@ -5724,6 +5727,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5257899533845567602, guid: 4f1d8fb78fc673e4d89b12e37328af57, type: 3}
+      propertyPath: _soundSetOverride
+      value: 
+      objectReference: {fileID: 11400000, guid: 17c3e4e7acc972846a889faaa570af3e, type: 2}
     - target: {fileID: 5866995318159320972, guid: 4f1d8fb78fc673e4d89b12e37328af57, type: 3}
       propertyPath: m_text
       value: Button
@@ -6469,6 +6476,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5234834333619584357, guid: 369cdd6bf120f554db9408d033b7587f, type: 3}
+      propertyPath: _soundSetOverride
+      value: 
+      objectReference: {fileID: 11400000, guid: eb29a7331b1eecd46b02e3fde0f75773, type: 2}
     - target: {fileID: 5852938970809451163, guid: 369cdd6bf120f554db9408d033b7587f, type: 3}
       propertyPath: m_text
       value: Button
