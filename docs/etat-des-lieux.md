@@ -36,9 +36,9 @@ l'arbre de prestige** et ce qu'elle attend, l'**épreuve en jeu** de toute la fi
 | Zéro-Day Exploit / Ghost Cache | **Ne se déclenche plus** ; refonte tranchée, pas commencée | — |
 | Data Wiper | Livré | Oui (août), valeurs provisoires |
 | Victoire — 1e12 TFlops | Livrée le 2026-09-16, **seuil provisoire à 5e11** | **Non** |
-| Sauvegarde — `SaveData` v10, écriture atomique, autosave, fermeture | Livrée | Oui (MCP) ; fermeture par Alt+F4 : dans un build seulement |
-| Menu principal, options en trois onglets, pause, langue à chaud | Livré le 2026-10-02 | Oui, par clics simulés ; touches et plein écran jamais à la main |
-| Daltonisme — quatre palettes | Livré le 2026-10-02 | Oui (outil de contrôle + Play Mode) |
+| Sauvegarde — `SaveData` v10, écriture atomique, autosave, fermeture | Livrée | Oui — croix et Alt+F4 vus en build le 2026-10-13 |
+| Menu principal, options en trois onglets, pause, langue à chaud | Livré le 2026-10-02 | Oui — touches et build vus le 2026-10-13. Langue à chaud invérifiable avant les traductions ; **panneau d'options qui se chevauche** au-delà de 100 % de taille d'interface |
+| Daltonisme — quatre palettes | Livré le 2026-10-02 | Oui (outil de contrôle + Play Mode, 2026-10-02) ; à revoir à l'œil avec le protocole corrigé |
 | Audio — musiques, clics, événements | Livré le 2026-10-12, jugé suffisant pour une démo | Oui (GD) |
 | Traductions EN / ES | Reportées à la fin du contenu | — |
 | Steam — AppID, cloud, Steam Input — et Steam Deck — manette, 1280×800 | **Rien** | — |
@@ -54,7 +54,7 @@ test, et chacun se mène sur sa propre branche (`chantier/…`).
 | # | Lot | Contenu | Dépend de | Statut |
 |---|---|---|---|---|
 | 0 | **Remise à plat du suivi** | Ce document, `backlog.md`, `a-tester.md`, `historique.md` ; corrections du GDD et des docs techniques | — | ✅ 2026-10-13 |
-| 1 | **Session de jeu « ressenti et bugs »** | `a-tester.md` § 1 et 2 : fin de partie, capteur, paliers, victoire, touches | — | à faire — **le GD** |
+| 1 | **Session de jeu « ressenti et bugs »** | `a-tester.md` § 1 et 2 : fin de partie, capteur, paliers, victoire, touches | — | **en cours** — touches, build et constats d'août passés le 2026-10-13 ; reste le § 1, le cœur du lot — **le GD** |
 | 2 | **Socle de la refonte de l'arbre** | Prérequis « X points dépensés » · suppression de l'automatisation au niveau 10 · verrou de la barre d'espace · Zéro-Day → Baroud d'Honneur (`SaveData` v11) · données `P_STEALTH` et `P_HARDEN` | 1, souhaitable | à faire |
 | 3 | **Refonte de l'arbre, puis rééquilibrage** | Design du GD sur le socle · mesure au harnais · session de jeu « chiffres » · victoire remise à 1e12 | 2 | à faire |
 | 4 | **Dette technique groupée** | `backlog.md` § 4 à 7 | — (à intercaler entre deux gros lots) | à faire |

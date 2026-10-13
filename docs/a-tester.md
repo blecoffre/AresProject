@@ -53,46 +53,25 @@ refonte de l'arbre.
 | 1.13 | **Victoire : fermeture** | Cliquer « Reprendre ». | L'écran se ferme, la partie continue où elle en était. |
 | 1.14 | **Victoire : jamais deux fois** | Remettre `_victoryTFlops`, sauvegarder (retour au menu), relancer le jeu, revenir en jeu. | Aucune séquence ni écran de victoire au rechargement. (Vérifié hors Play Mode sur le code ; jamais sur le chemin complet.) |
 
-## 2. Contrôles et réglages — vérifiés par clics simulés seulement
+## 2. Contrôles et réglages
 
-Le chantier menu & options a été vérifié en Play Mode via MCP, par **clics simulés** : les touches
-n'ont jamais été pressées par une main.
+Les touches, la pause et l'audio ont été éprouvés à la main le 2026-10-13 (`historique.md`).
+Restent :
 
 | # | Quoi | Comment | Ce qu'on doit voir |
 |---|---|---|---|
-| 2.1 | **Échap referme du plus haut au plus bas** | En jeu, ouvrir l'arbre (P), puis la pause (Échap), puis les options. Presser Échap trois fois. | Options, puis pause, puis arbre se ferment dans cet ordre. Échap avec rien d'ouvert ouvre la pause. Sur l'écran de fin de run, Échap ouvre la pause. |
-| 2.2 | **P et Espace ignorés en pause** | Ouvrir la pause, presser P et Espace. | Rien ne se passe. |
-| 2.3 | **Espace = un Overclock par appui** | Garder Espace enfoncé ; puis cliquer « Acheter » sur un générateur et presser Espace. | Un seul Overclock par appui, aucune répétition au maintien. Après le clic sur « Acheter », Espace **ne rachète pas** l'upgrade. |
-| 2.4 | **La pause fige la simulation** | Noter la jauge, ouvrir la pause 30 s, refermer. | Jauge et cycles n'ont pas bougé. L'arbre de prestige, lui, ne met **pas** en pause. |
-| 2.5 | **Langue à chaud** | Seul `fr.json` existe. Créer un `zz.json` temporaire (chaque valeur de `fr.json` préfixée « ZZ· »), basculer en jeu, parcourir tous les écrans. | Tout texte visible porte « ZZ· ». Un texte sans le préfixe est écrit en dur. **Supprimer `zz.json` et sa `.meta` après.** |
-| 2.6 | **Mode daltonien à chaud** | Basculer les quatre modes, en jeu, arbre ouvert. | Nœuds, liens, paliers de la jauge, console et boutons d'action se repeignent sans recharger. |
-| 2.7 | **Audio** | Couper chaque canal, varier les volumes ; finir une run. | Les coupures sont indépendantes. La musique ne redémarre pas au rechargement de fin de run, et la pause n'y touche pas. |
+| 2.6 | **Mode daltonien à chaud** | Choisir **Deutéranopie** dans Options > Accessibilité, refermer les options **et la pause**, puis ouvrir l'arbre (P) — ou attendre l'écran de fin de run. ⚠️ Les options ne s'ouvrent que depuis la pause, et Échap referme l'arbre avant d'ouvrir la pause : on ne peut **pas** regarder l'arbre en changeant de mode. Le premier protocole le demandait, et c'est pour ça que le test du 13/10 n'a rien montré. | Sur l'écran de jeu principal, presque rien ne change : le vert terminal reste le « positif » dans tous les modes (option B). Dans l'arbre : nœuds **abordables** blancs au lieu d'orange, nœuds **trop chers** violets au lieu de rouges, liens **ouverts** lilas au lieu de cyan. Sur la jauge, le palier **incertain** blanc au lieu d'ambre. Ghost Cache et Data Wiper, une fois débloqués, changent aussi. Revenir en Standard : tout reprend ses couleurs d'origine. |
+| 2.8 | **Taille d'interface au-dessus de 100 %** | Options > Affichage > Taille d'interface à 110 %, puis 150 %. Parcourir le menu, les options, la pause, l'écran de jeu, l'arbre, l'écran de fin. | Rien ne se chevauche, rien ne sort de l'écran. ⚠️ Le panneau d'options se chevauche par construction dès 110 % (`backlog.md` § 4) ; les autres écrans n'ont jamais été regardés au-delà de 100 %. |
 
 ## 3. Uniquement dans un build
 
-Ce que l'éditeur ne peut pas montrer. À faire sur un build **de production** (pas « Development
-Build »), avec une copie de sauvegarde de côté.
+Tout ce bloc a été validé en build le 2026-10-13 (`historique.md`). Une ligne y reviendra si un
+lot touche au démarrage, à la sauvegarde ou à l'affichage.
 
-| # | Quoi | Comment | Ce qu'on doit voir |
-|---|---|---|---|
-| 3.1 | **Premier lancement** | Supprimer `settings.json` et `savegame.json`, lancer. | Écran de choix de langue (un seul bouton tant que seul `fr.json` existe). Menu : « Commencer ». Quitter depuis le menu sans jouer : aucune sauvegarde n'est créée, et le bouton dit encore « Commencer » au lancement suivant. |
-| 3.2 | **Verrou de l'exfiltration** | Début de run, avant le premier point. | Le bouton est **grisé** : « [VERROUILLÉ] Compilation du 1er Cycle CPU : N % ». Il s'ouvre au moment où la run rapporterait un point. |
-| 3.3 | **Hors focus** | Alt-Tab pendant une run, attendre une minute, revenir. | La simulation a continué (la Trace a monté), le rendu est tombé à 10 FPS. Avec « Son en arrière-plan : Non », le son se coupe hors focus. |
-| 3.4 | **Sauvegarde de fermeture** | En pleine run, fermer par la croix, puis par Alt+F4. Relancer. | La run reprend où elle était (Trace et compteurs du Data Wiper compris). |
-| 3.5 | **Affichage** | Plein écran, fenêtré, changement de résolution, V-Sync, plafond de FPS, taille d'interface. | Chaque réglage s'applique et survit au redémarrage. |
-| 3.6 | **Instance unique** | Lancer le jeu deux fois. | Une seule fenêtre. |
+## 4. À confirmer à l'œil
 
-## 4. À confirmer à l'œil — constats d'août jamais revérifiés
-
-Ils figurent au backlog (§ 4). Un coup d'œil suffit à les solder ou à les confirmer.
-
-| # | Quoi | Où regarder |
-|---|---|---|
-| 4.1 | Chevauchement des textes de l'inspecteur de nœud | Arbre de prestige, sélectionner un nœud à longue description. |
-| 4.2 | Nom tronqué sur la pastille (« Surcadencemen ») | Arbre, nœuds de la branche Overclock. |
-| 4.3 | Console lisible à travers l'écran méta (fond à 98 %) | Ouvrir l'arbre pendant une run, regarder les zones de texte vif. |
-| 4.4 | Halo de contour du shader `UI_HDR_Glow` | Survoler les boutons : le halo épouse-t-il le contour, ou remplit-il tout le rectangle d'un aplat ? (Corrigé dans le graphe le 2026-08-30, jamais vu à l'écran.) |
-| 4.5 | `GameOverPanel/PrestigeButton` désactivé existe-t-il encore ? | Hiérarchie de la GameScene. |
+Passé en revue le 2026-10-13 : les constats confirmés sont au backlog (§ 4), les autres sont
+soldés dans `historique.md`. Rien en attente.
 
 ## 5. Plus tard — à tester quand le lot concerné sera livré
 
@@ -101,3 +80,4 @@ Ils figurent au backlog (§ 4). Un coup d'œil suffit à les solder ou à les co
 | Lot 2 (socle de la refonte) | Migration `SaveData` v10 → v11 sur une **copie** de sauvegarde réelle, charge du Ghost Cache en cours comprise. Verrou de la barre d'espace sur une sauvegarde existante. Prérequis « X points dépensés » : ouverture du nœud et libellé du prérequis manquant. Baroud d'Honneur : N usages, durée, malus. |
 | Lot 3 (refonte de l'arbre) | Session de jeu « chiffres » sur une campagne : durée des runs, points par run, part de l'arbre achetée à la victoire. Victoire remise à 1e12. |
 | Lot 5 (Steam) | Lisibilité sur un écran 1280×800. Navigation complète à la manette, sans souris. Overlay Steam. Synchronisation cloud entre deux machines. |
+| Lot 6 (traductions) | **Langue à chaud** (ex-2.5) : basculer de langue en pleine partie, parcourir tous les écrans ; aucun texte ne doit rester dans l'ancienne langue, hors lignes déjà écrites dans la console. **Premier lancement** : l'écran de choix propose toutes les langues, celle du système présélectionnée. D'ici là, la technique du `zz.json` (chaque valeur de `fr.json` préfixée « ZZ· ») permet de traquer les textes en dur ; supprimer le fichier et sa `.meta` après. |

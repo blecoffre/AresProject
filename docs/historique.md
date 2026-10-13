@@ -11,6 +11,51 @@
 
 ---
 
+## Session de test du GD — 2026-10-13
+
+Première passe sur `a-tester.md`, jouée à la main par Bertrand.
+
+**Vu fonctionner, en éditeur (Play Mode, touches pressées à la main)** — le chantier menu & options
+n'avait été vérifié que par clics simulés via MCP :
+
+- 2.1 — Échap referme options, puis pause, puis arbre, et n'ouvre la pause que si rien ne l'était ;
+  sur l'écran de fin, il ouvre la pause.
+- 2.2 — P et Espace sont ignorés pendant la pause.
+- 2.3 — Espace donne un Overclock par appui, sans répétition au maintien, et ne rachète pas
+  l'upgrade après un clic sur « Acheter ».
+- 2.4 — La pause fige jauge et cycles ; l'arbre de prestige, non.
+- 2.7 — Coupures audio indépendantes ; la musique ne redémarre ni en fin de run ni à la pause.
+
+**Vu fonctionner, dans un build de production** :
+
+- 3.1 — Premier lancement : écran de langue, « Commencer », aucune sauvegarde créée sans jouer.
+- 3.2 — Exfiltration verrouillée tant que la run ne rapporte pas un point.
+- 3.3 — Hors focus : la simulation continue, rendu à 10 FPS, son coupé si demandé.
+- 3.4 — Sauvegarde de fermeture, par la croix comme par Alt+F4.
+- 3.5 — Plein écran, fenêtré, résolutions, V-Sync, plafond de FPS, taille d'interface.
+- 3.6 — Instance unique.
+
+**Soldés sans correction** (constats d'août revus à l'œil) :
+
+- **Nom tronqué sur la pastille d'un nœud** (« Surcadencemen », 2026-08-30) : non reproduit.
+- **Fond de l'écran méta à 98 %** : la console se lit bien à travers l'arbre, et c'est **voulu**
+  (décision de Bertrand). Ne pas le passer à 100 %.
+- **Halo du shader `UI_HDR_Glow`** : au survol, il remplit le bouton d'un aplat lumineux au lieu
+  d'épouser son contour. Le rendu plaît : **conservé tel quel** (décision de Bertrand). Ne pas
+  « corriger » le shader vers un halo de contour.
+
+**Écartés ou reportés** :
+
+- 2.5, langue à chaud : invérifiable tant que seul `fr.json` existe. Reporté après le lot 6
+  (`a-tester.md` § 5).
+- 2.6, mode daltonien : « aucune différence à l'écran ». Le code et le câblage des palettes sont
+  corrects (relus le 2026-10-13, vérifiés en Play Mode le 2026-10-02) ; c'est le **protocole qui
+  était faux** — il demandait de regarder l'arbre en changeant de mode, ce qu'Échap rend
+  impossible. Protocole réécrit, ligne maintenue dans `a-tester.md`.
+
+**Trouvés pendant la session**, portés au backlog : chevauchement des boutons du panneau
+d'options (§ 4) ; l'inspecteur de nœud qui se chevauche, reconfirmé (§ 4).
+
 ## Soldé à la révision du 2026-10-13
 
 Entrées de l'audit du 2026-08-27 retrouvées réglées en relisant le code de `main` (`7b95a5a`).

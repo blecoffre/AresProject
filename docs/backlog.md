@@ -152,23 +152,41 @@ Le détail chiffré et les chantiers d'équilibrage sont dans `etat-des-lieux.md
   `PRESTIGE_P_POWER_START_NAME/_DESC` (nœuds retirés). Les `LANGUAGE_NAME_*` ne sont pas
   orphelines : elles se construisent depuis le code de langue (`LocalizationKeys.LanguageName`).
 
-**Constatés en août, non revérifiés depuis — il faut l'œil** (protocoles dans `a-tester.md` § 4) :
-
-- 🔬 **L'inspecteur de nœud se chevauche** : auto-sizing et `ContentSizeFitter` s'annulent.
-  `Name_Desc_Effects` et `Prerequisite` ont un `ContentSizeFitter` en *PreferredSize* mais un
-  `VerticalLayoutGroup` à `childControlHeight = false` : le groupe additionne des hauteurs figées
-  à 50 px alors que la description en demande 500. ⚠️ **Basculer `childControlHeight` à true ne
-  suffit PAS — essayé le 2026-08-30, c'est pire** : les six textes ont `enableAutoSizing`, et la
-  boucle fitter/auto-size part en fonte géante. Il faut d'abord désactiver l'auto-sizing et fixer
-  une taille.
-- 🔬 **Le nom des nœuds déborde de la pastille** (« Surcadencemen », 2026-08-30).
-- 🔬 **Le fond de l'écran méta est à 98 % d'opacité** : les 2 % laissent lire la console derrière
-  l'arbre. Une valeur d'alpha, si la transparence n'est pas voulue.
+- 🔬 **Les boutons du bas du panneau d'options chevauchent les réglages** — « [ PAR DÉFAUT ] » et
+  « [ RETOUR ] ». Constaté par Bertrand le 2026-10-13, en build, en 3840×2160 plein écran.
+  📖 **Cause probable, lue dans `OptionsPanel.prefab`** : le panneau mélange des ancrages
+  proportionnels et des tailles fixes. `Pages` est ancré à 64 % de la hauteur avec une hauteur
+  fixe de 460 (l'onglet Audio la remplit exactement : 6 lignes de 60 + 5 espaces de 20) ; les deux
+  boutons sont ancrés à 15 %, hauteur 60. L'écart vaut `0,49 × H − 490` unités : **39 à 100 %**,
+  et le chevauchement commence dès que la hauteur virtuelle du canvas passe sous 1000.
+  Or la résolution ne la change pas — à 16:9 elle vaut toujours 1080, en 1080p comme en 4K —
+  mais la **taille d'interface**, si : `UiScalePresenter` divise la résolution de référence, donc
+  `H = 1080 / échelle`. Calculé : les boutons mordent sur la dernière ligne de l'onglet **Audio**
+  dès **110 %**, sur celle de l'onglet **Affichage** (5 lignes) dès **130 %** ; l'onglet
+  Accessibilité (2 lignes) ne chevauche jamais.
+  ⚖️ À confirmer : la taille d'interface était-elle au-dessus de 100 % lors du constat ? Si non, la
+  cause est ailleurs. **Le remède n'est pas qu'une question d'ancrage** : à 150 %, le canvas ne
+  fait plus que 720 unités de haut, et le contenu du panneau (titre, onglets, 460 de réglages,
+  boutons) n'y tient pas même parfaitement empilé. Il faudra choisir : panneau compact, défilement,
+  ou plafond plus bas pour la taille d'interface. Et les autres écrans n'ont jamais été regardés
+  au-delà de 100 % (`a-tester.md` 2.8).
+- 🔬 **L'inspecteur de nœud se chevauche** — reconfirmé par Bertrand le 2026-10-13. Auto-sizing et
+  `ContentSizeFitter` s'annulent : `Name_Desc_Effects` et `Prerequisite` ont un `ContentSizeFitter`
+  en *PreferredSize* mais un `VerticalLayoutGroup` à `childControlHeight = false`, donc le groupe
+  additionne des hauteurs figées à 50 px alors que la description en demande 500. ⚠️ **Basculer
+  `childControlHeight` à true ne suffit PAS — essayé le 2026-08-30, c'est pire** : les six textes
+  ont `enableAutoSizing`, et la boucle fitter/auto-size part en fonte géante. Il faut d'abord
+  désactiver l'auto-sizing et fixer une taille.
 - 🔬 **Le trait des nœuds verrouillés n'est pas pointillé** comme sur la maquette (le sprite du
-  cadre est plein). Les liens, eux, le sont depuis le 2026-08-30.
-- 🔬 **`GameOverPanel/PrestigeButton`, désactivé le 2026-08-29, restait à supprimer** avec sa clé
-  `UI_RUN_END_PRESTIGE_BUTTON`. ⚠️ Ne pas le confondre avec le bouton « Terre Brûlée » du Header,
-  qui s'appelle lui aussi `PrestigeButton` (nom hérité) et sert bien.
+  cadre est plein ; constat du 2026-08-30). Les liens, eux, le sont depuis le 2026-08-30.
+- 📖 **Un bouton mort traîne dans l'écran de fin : `GameOverPanel/PrestigeButton`.** C'était le
+  « [ DÉPENSER — NOYAU IA ] » qui ouvrait l'arbre depuis l'écran de fin, quand l'arbre vivait
+  encore à part. Depuis que l'arbre est DANS cet écran, il ne sert plus : son handler a été retiré
+  et l'objet désactivé le 2026-08-29, sans être supprimé. Relu dans la scène le 2026-10-13 : il est
+  toujours là, inactif, avec un `LocalizedText` qui porte la clé `UI_RUN_END_PRESTIGE_BUTTON`.
+  À supprimer dans Unity (pas dans le YAML), puis retirer la clé de `fr.json`. ⚠️ Ne pas le
+  confondre avec le bouton « Terre Brûlée » du panneau de la console (`ConsoleLogs`), qui
+  s'appelle lui aussi `PrestigeButton` — nom hérité — et sert bien.
 
 ## 5. Architecture et cycle de vie
 
@@ -237,6 +255,12 @@ Le jeu tourne sans ralentissement perceptible. Rien ici n'a été profilé.
   d'accessibilité : c'est la **pulsation** qui départage un nœud abordable d'un nœud trop cher
   (`architecture.md` § Palettes), ce qui gêne la sensibilité vestibulaire et la photosensibilité.
   L'option devra rendre un autre canal à ces nœuds, pas simplement tout figer.
+- ⚖️ **Le joueur ne voit pas l'effet du mode daltonien au moment de le choisir.** Les couleurs qui
+  changent n'apparaissent que dans l'arbre, sur la jauge en fin de run, ou sur des boutons encore
+  verrouillés en début de partie — jamais derrière le menu d'options. Le GD lui-même, en testant
+  le 2026-10-13, a conclu à « aucune différence ». Piste : une rangée de pastilles d'aperçu
+  (abordable, trop cher, lien ouvert, palier incertain) dans l'onglet Accessibilité, repeinte à
+  chaque changement de mode.
 
 ## 9. Décisions de game design en attente
 
@@ -251,6 +275,7 @@ Pas des bugs : des arbitrages que seul le GD peut rendre. Les trancher débloque
 | L'écran méta masque la jauge de Trace pendant une run : ajouter un rappel de Trace dans son header ? | — |
 | Brouillard sur les nœuds verrouillés : le nom reste visible (choix de Bertrand, pour planifier). À rediscuter si le GD tient au mystère. | — |
 | Branche de prestige dédiée aux capteurs : la visibilité ne s'achète aujourd'hui qu'en Hardware (GDD, § Capteur). | — |
+| Taille d'interface : jusqu'où la proposer ? Aujourd'hui 80 à 150 % ; à 150 % le canvas ne fait plus que 720 unités de haut, et le panneau d'options n'y tient pas. | § 4 |
 
 ---
 
