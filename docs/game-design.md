@@ -117,6 +117,11 @@ Le niveau augmente **toujours** le versement (`BaseProductionYield × niveau`). 
 
 **Automatisation par seuil, propre à chaque Script.** Sous le seuil, le joueur lance chaque cycle à la main ; au-dessus, il se relance seul. Un nœud de prestige ciblé (`TargetUpgradeId`), achetable par rangs, abaissera ce seuil de quelques niveaux par rang. *(Note technique : s'assurer d'ajouter le champ `TargetUpgradeId` de type `string` dans le modèle de données `PrestigeItemData` du script de désérialisation JSON).*
 
+⚠️ **Appelée à disparaître — intention du GD du 2026-09-25** : l'automatisation au niveau 10 rend
+le jeu trop simple trop vite (voir « Refonte de l'arbre »). État au 2026-10-13 : le seuil existe
+toujours (10, sur les 25 Scripts), mais plus aucun nœud ne l'abaisse depuis le retrait de
+`P_AUTO_GLOBAL` le 2026-10-02.
+
 **La BARRE ESPACE déclenche un Overclock (ajouté le 2026-09-16).** Même action que le clic, même
 message de console, même valeur — seul le geste change. Ajoutée sur retour de jeu : *« le clic
 m'épuise »*.
@@ -143,6 +148,10 @@ où relancer quinze Scripts à la main devient une corvée plutôt qu'un choix.
 
 Le nœud est `P_OVERCLOCK_AWAKE` — « Injecteur Automatique », un seul rang, **5 000 CPU Cycles**,
 branche Automatisation derrière `P_POWER_START`.
+
+*État au 2026-10-13 : depuis l'aplatissement de l'arbre, il coûte **1 point**, derrière
+`P_OVERCLOCK_POWER_3` au maximum ; `P_POWER_START` n'existe plus. La refonte annoncée en fait un
+nœud tardif conditionné par « avoir dépensé X points » (voir « Refonte de l'arbre »).*
 
 *Le paragraphe ci-dessous décrivait le comportement de base envisagé le 26/08. Il décrit
 désormais l'effet du nœud, une fois celui-ci acheté :*
@@ -223,7 +232,8 @@ La réduction de prestige s'applique **avant** la réduction des Proxies.
 ### La TRAQUE PASSIVE — le temps est un coût (tranché le 2026-09-10)
 
 L'A.M.I. te cherche activement. Rester connecté coûte, **indépendamment de ce que tu produis** :
-un débit constant s'ajoute au brut, réglé par `PassiveTraceFillMinutes` (25 min).
+un débit constant s'ajoute au brut, réglé par `PassiveTraceFillMinutes` (25 min à l'origine,
+**6 min depuis le 2026-09-12** — voir « La cible des 30 minutes est abandonnée »).
 
 ### ⚠️ Elle ne démarre QUE lorsque le joueur s'est manifesté (corrigé le 2026-09-21)
 
@@ -581,6 +591,10 @@ palier qu'elle n'atteint presque jamais, et n'encaisse donc que le bonus +15 %. 
 seconde piste du chantier 1 (verrouiller le dernier palier). La **branche de prestige dédiée aux
 capteurs** n'existe pas non plus : la visibilité ne s'achète aujourd'hui qu'en Hardware.
 
+*Au 2026-10-13 : le dernier palier est verrouillé depuis le 2026-09-16 (voir « Le palier 90 % est
+VERROUILLÉ »), mais le constat des ~68 % n'a pas été remesuré depuis. La branche capteurs n'existe
+toujours pas.*
+
 ## ⚠️ `04_SpecificUpgrades.json` est une SORTIE, pas une entrée
 
 **Piège constaté le 2026-09-10, après lui avoir coûté deux sessions d'équilibrage.**
@@ -605,6 +619,10 @@ qui contredisait la règle « tout coûte 1 point » énoncée plus bas. Les don
 deuxième rang. Compté sur le catalogue généré : **zéro** nœud où `costMult` peut agir, et un arbre
 complet à **147 CPU Cycles** pour 147 nœuds. Le champ survit dans les données sans être lu, comme
 `minCycleDuration` et `durationReductionPerLevel`.
+
+*Au 2026-10-13 : `costMult` reste inerte — `PrestigeConfigSO.GetCostAtLevel` rend `baseCost`
+quel que soit le rang — mais l'arbre n'est plus entièrement à un rang. Voir « Tout coûte 1
+point ».*
 
 ⚠️ La même prudence vaut pour tout fichier de `GameData/Editor/` : vérifier qu'il n'a pas de
 générateur avant d'y régler quoi que ce soit à la main.
@@ -832,6 +850,32 @@ repris trois fois pendant ce calage (0,3 → 10 → 0,3).
 
 ## Ghost Cache et Zéro-Day Exploit
 
+> ⚠️ **État au 2026-10-13 : la mécanique décrite ci-dessous est en vigueur dans le code, mais ne se
+> déclenche plus** (zéro fois sur 264 runs simulées). Elle est condamnée : sa refonte est tranchée,
+> pas implémentée.
+>
+> **Le BAROUD D'HONNEUR (tranché par le GD le 2026-09-16)** remplace la charge :
+>
+> | | Aujourd'hui | Baroud d'Honneur |
+> |---|---|---|
+> | Accès | Charge de 90 s de posture défensive tenue (`GhostCacheCapacitySeconds`) | **N usages par run**, N donné par `P_EXPLOIT_CHARGES` |
+> | Durée | 30 s | **3 à 5 s** |
+> | Rendement | ×50 sur les Scripts | ×50, inchangé |
+> | Malus de Trace | ×10, dissipation coupée | ×10 conservé |
+> | Sauvegarde | `GhostCacheSeconds` (v4) | Le champ sort du format → `SaveData` v11 |
+>
+> Pourquoi : les conditions d'activation sont devenues inatteignables — la charge exige plus de
+> posture tenue qu'une run de campagne n'en offre. La justification d'origine était double
+> (« la durée n'est jamais tenue » aussi) ; seule la première tient, voir plus bas. Raccourcir à
+> 3-5 s reste un choix de design, plus une réparation.
+>
+> **Question ouverte** : « N = rangs de `P_EXPLOIT_CHARGES` », mais ce nœud n'a plus qu'**un
+> rang**, de bonus 5, depuis l'aplatissement de l'arbre. N vaut-il le bonus ?
+>
+> Valeurs du code à cette date, qui diffèrent des tableaux ci-dessous : capacité **90 s** (et non
+> 300), `P_EXPLOIT_CHARGES` 1 rang de bonus 5, `P_EXPLOIT_MULT` 5 rangs, `P_EXPLOIT_TRACE_REDUC`
+> 3 rangs de 2,5.
+
 Valeurs tranchées par le GD le 2026-08-27. L'excédent de dissipation, jusque-là purement jeté, alimente une charge unique échangeable contre un pic de production.
 
 | Paramètre | Valeur | Raison |
@@ -913,7 +957,7 @@ billets.
 |---|---|
 | **Prérequis** | Posséder un palier de TFlops. Rien n'est dépensé |
 | **Escalade du palier** | ×3 par usage sur la run ⚠️ *valeurs provisoires : 50 TFlops de base, ×3 — non chiffrées par le GD* |
-| **Effet** | −**20 points ABSOLUS** de jauge : à 63 % on tombe à 43 % |
+| **Effet** | ~~−20 points ABSOLUS de jauge~~ → depuis le 2026-08-30 : **−25 % de la Trace accumulée** (proportionnel, `EmergencyTraceReduction` = 0,25). À 60 % de jauge on tombe à 45 %. Un retrait absolu ne pesait plus rien face à un plafond de plusieurs millions |
 | **Contrecoup** | **30 % des TFlops immobilisées pendant 60 s**, +10 points par usage (30, 40, 50…), plafonné à 90 % |
 | **Délai** | **5 minutes** entre deux activations |
 | **Déblocage** | Nœud de prestige `P_EMERG` |
@@ -959,13 +1003,54 @@ la sortie inatteignable. Les deux sont désormais deux réglages distincts,
 qu'elle a rapporté reste au cumul. C'est un gain de ressenti considérable pour un coût nul.
 
 ⚠️ **Une SAISIE n'alimente pas le compteur, et contribution et points sont résolus au MÊME
-instant, à l'exfiltration.** Ce n'est pas un détail d'implémentation, c'est ce qui ferme un
+instant, à l'exfiltration.** *(Première moitié remplacée le 2026-10-02 : une saisie verse
+désormais 30 % — voir « Le modèle des BOÎTES » ci-dessous. La seconde moitié tient toujours.)* Ce n'est pas un détail d'implémentation, c'est ce qui ferme un
 exploit : si les points tombaient pendant la run alors que la saisie annule la contribution, il
 deviendrait rentable de se faire prendre exprès — on encaisserait le palier sans jamais faire
 monter le seuil, et la run suivante le réencaisserait. Le multiplicateur du palier d'extraction
 porte sur la **contribution**, jamais sur les points, pour la même raison.
 
+### Le modèle des BOÎTES, et la saisie qui verse 30 % (2026-10-02)
+
+*Consigné le 2026-10-13 : ces trois changements, livrés dans `a772e67`, n'avaient été écrits nulle
+part dans ce document.*
+
+**1. Chaque point est une boîte à remplir entièrement.** Le Nième point coûte toujours
+`PremierPalier × Croissance^(N−1)`, mais détenir N points exige la **SOMME** des N boîtes :
+
+```
+Cumul(N) = PremierPalier × (Croissance^N − 1) / (Croissance − 1)
+```
+
+Jusqu'ici le cumul n'était comparé qu'au prix de la DERNIÈRE boîte : chaque point ne coûtait en
+réalité que l'écart avec le précédent, soit 12 % du palier, et 2,5 M rendaient trois points au lieu
+de deux. Le malentendu était consigné à l'identique dans le code, ce document et le harnais. Les
+boîtes remplies restent acquises, et le reliquat travaille pour la suivante.
+
+**2. Le premier palier passe de 5e6 à 2e6**, pour compenser une première boîte devenue pleine.
+
+**3. Une saisie verse 30 % de sa contribution** (`SeizedContributionRatio`), au lieu de rien. Le
+constat, sur une partie réelle du 2026-09-22 : **294 M de Datas générées sur deux morts, zéro
+banquée, arbre vide.** Rien dans le jeu ne capitalisait une run perdue ; le joueur restait à
+distance constante de son premier point, quelle que soit sa performance — « le seuil monte » et
+« je n'avance jamais » sont la même sensation vue du fauteuil.
+
+L'exploit que fermait la règle « une saisie ne verse rien » reste fermé : contribution et points
+sont toujours résolus au **même instant**, à la fin de run, donc se faire prendre exprès n'encaisse
+jamais un palier sans faire monter le seuil suivant. Et la saisie reste nettement moins rentable
+qu'une sortie, qui verse 100 % **et** le bonus de palier. ⚠️ Le ratio doit rester nettement sous 1.
+
+⚠️ **Rien de tout cela n'a été mesuré en campagne.** Estimation arithmétique, à cumul égal : les
+boîtes retirent ~19 points, le seuil à 2e6 en rend ~8 — soit ~220 points par campagne au lieu des
+~232 mesurés le 2026-09-16, pour un arbre passé de 147 à **239** rangs dans le même commit. Voir
+`etat-des-lieux.md`, chantier 1.
+
 ### Ce que doit rapporter une première run (tranché le 2026-09-16)
+
+> ⚠️ **Le tableau ci-dessous décrit l'ancien calcul** (seuil 5e6, dernière boîte seule). Avec les
+> boîtes et le seuil à 2e6, le calcul donne pour les mêmes runs, bonus de palier non compris :
+> **5** points pour 15,7 M, **3** pour 7,9 M, **2** pour 5,5 M, **1** pour 3 M. Calculé, pas
+> mesuré.
 
 **Cible en vigueur, et elle annule le « 28 CPU Cycles » cité plus haut**, qui datait d'une formule
 abandonnée le lendemain de sa mesure.
@@ -1019,6 +1104,32 @@ que ses cinq rangs apportaient. Même puissance totale, mais un point achète ci
 
 ⚠️ **Les 120 nœuds ciblés sont une SORTIE de générateur.** `maxLevel` et le bonus se règlent dans
 `PrestigeSpecificNodesGenerator.cs`, jamais dans le JSON.
+
+⚠️ **Plus entièrement vrai depuis le 2026-10-02 (`a772e67`).** Chaque rang coûte toujours 1 point,
+mais quinze nœuds ont repris des rangs : `P_REFAC` et `P_DATAM` 20, `P_STEALTH` 10, `P_CLICK`,
+`P_OVERCLOCK_POWER_1` et `_3`, `P_EXPLOIT_MULT`, les quatre `P_INTERCEPT` et les trois
+`P_EXTRACT` 5, `P_EXPLOIT_TRACE_REDUC` 3. L'arbre compte **146 nœuds pour 239 rangs**, donc 239
+points pour le compléter. ⚠️ Un nœud passé à N rangs multiplie sa puissance par N si son bonus
+n'est pas divisé : c'est arrivé à `P_STEALTH`, qui sature au 4ᵉ rang (`backlog.md` § 2).
+
+## Refonte de l'arbre — intentions du GD (2026-09-25)
+
+Le GD a annoncé une **passe massive** sur l'arbre : 120 des 146 nœuds sont du remplissage généré
+(deux par générateur, tous identiques), et l'ensemble a cessé d'être maîtrisable. Ce qui est tranché :
+
+- **L'arbre pourra être complété, sans que ce soit garanti.** Finir l'histoire n'exige pas l'arbre
+  complet ; selon le style de jeu, certains l'achèveront, d'autres non. ⚠️ Le cumul d'une campagne
+  **n'a donc pas à dépasser** le prix de l'arbre entier : il doit atterrir dans le même voisinage.
+  Un écart de quelques points en fin de campagne est normal, un écart de cinquante ne l'est pas.
+- **La barre d'espace (Overclock au clavier) et le réveil deviennent des nœuds tardifs**,
+  conditionnés par « avoir dépensé X points de prestige ».
+- **L'automatisation des Scripts au niveau 10 disparaît** : elle rend le jeu trop simple trop vite.
+- **Le Data Wiper reste payé en TFlops** : une raison de plus de monter le Hardware.
+
+**Ce qui manque avant de pouvoir dessiner dessus** (lot 2 de la feuille de route) : un prérequis
+« X points dépensés » — `PrestigeRequirement` ne connaît qu'un couple (nœud, niveau) — et le retrait
+de l'automatisation. Les sources de l'arbre sont les JSON de `GameData/Editor/PrestigeData/`,
+`04_SpecificUpgrades.json` excepté (sortie de générateur, voir plus haut).
 
 **Couplage à connaître :** ces deux chantiers ne peuvent pas se calibrer séparément. Avec un arbre
 de 1450 niveaux, 4 points en achètent 4 — la production ne bouge pas, le cumul monte linéairement
@@ -1240,6 +1351,10 @@ L'objectif ultime du joueur est de récupérer **une photo de chat sur une clé 
 
 ≈ 15 améliorations par onglet (45 générateurs) et **≈ 170 nœuds de prestige**. Cette dernière valeur rend le sujet performance et le rendu de l'arbre non négociables : pooling ou virtualisation seront nécessaires.
 
+*Au 2026-10-13 : **60 générateurs** (25 Scripts, 20 Hardware, 15 Proxies) et **146 nœuds** pour
+239 rangs. L'arbre s'affiche sans ralentissement perceptible en éditeur ; pooling et virtualisation
+restent à profiler après la refonte de l'arbre, pas avant.*
+
 ## Sauvegarde
 
 - Autosave toutes les **5 minutes**, plus fin de run et achat de prestige.
@@ -1253,3 +1368,38 @@ L'objectif ultime du joueur est de récupérer **une photo de chat sur une clé 
 ## Steam
 
 Pas de page Steam ni d'AppId pour l'instant. La sauvegarde **locale fait autorité** ; le cloud viendra plus tard et servira de miroir, départagé par horodatage.
+
+### Cible de sortie (tranchée le 2026-08-30)
+
+**Windows 64 bits uniquement, avec l'objectif du badge Steam Deck Verified.** Pas de build Linux
+natif — le Deck fait tourner la version Windows sous Proton —, pas de macOS : la notarisation Apple
+a été jugée non rentable pour une première sortie.
+
+Déjà appliqué dans le projet :
+
+- API graphique épinglée sur **Direct3D 11 seul** (Auto désactivé) : le chemin le plus mature sous
+  Proton/DXVK.
+- Lancement en fenêtré redimensionnable 1280×720, instance unique forcée.
+- IL2CPP, stripping minimal, validé par une vraie build avec aller-retour de sauvegarde.
+- **Cadence bridée** (`FrameRateGovernor`) : 60 FPS par défaut, réglable ; **10 FPS hors focus**,
+  sans jamais mettre la simulation en pause. Un incrémental qui redessine une interface quasi
+  statique à 144 Hz fait tourner les ventilateurs et divise l'autonomie du Deck.
+
+### Ce qui manque pour le Deck
+
+- **La navigation à la manette.** Le jeu est souris et clavier, et la sélection d'interface est
+  vidée à chaque frame (cf. « La BARRE ESPACE »). Inquiétude du GD (2026-10-02) : l'Overclock,
+  martelé en début de partie, serait pénible à aller chercher au pad.
+- **Une configuration Steam Input par défaut**, déclarée côté Steamworks. Sans elle, le Deck est
+  injouable manette en main — motif de refus du badge.
+- **La lisibilité en 1280×800.** Interface pensée en 1920×1080 : le facteur d'échelle tombe à
+  ≈ 0,72 sur Deck, et un texte de 20 px à ~14 px sur un écran de 7 pouces.
+
+### Avant le premier build public
+
+- **Le nom du jeu.** `productName` vaut aujourd'hui `HackTheKey` ; le dossier de sauvegarde en
+  dérive. Le changer après une démo ferait perdre leurs sauvegardes aux joueurs.
+- **La déclaration de contenu créé avec une IA** (sons synthétisés, traductions prévues par IA).
+- **Les crédits** : licence OFL des polices, et les attributions que demanderaient de futurs sons.
+
+Détail et suivi : `backlog.md` § 1.

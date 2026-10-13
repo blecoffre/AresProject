@@ -78,23 +78,32 @@ Bertrand travaille **thème par thème, au fil de l'eau**. Il relit et vérifie 
 | `docs/architecture.md` | Avant toute modification structurelle : scopes VContainer, flux R3, cycle de vie. |
 | `docs/persistence.md` | Avant d'ajouter ou de modifier un champ sauvegardé. Contient la règle d'or du `GameStateGateway`. |
 | `docs/cycles.md` | Avant de toucher à la production, aux paliers ou aux données d'upgrades (schéma JSON inclus). |
-| `docs/etat-des-lieux.md` | **À lire en premier pour toute reprise d'équilibrage.** Où on en est, ce qui reste, et les pièges à connaître avant de toucher un réglage. |
-| `docs/backlog.md` | Ce qui reste de l'audit : bugs connus, dette assumée, TODO manuels en attente. |
+| `docs/etat-des-lieux.md` | **À lire en premier pour toute reprise.** Où en est chaque domaine, la feuille de route (l'ordre des lots), l'état de l'équilibrage et les pièges à connaître avant de toucher un réglage. |
+| `docs/backlog.md` | Les défauts et manques connus, un par un, chacun avec sa nature (🔬 observé / 📖 lu / ⚖️ estimé). Y reporter tout point ouvert le jour où on le trouve. |
+| `docs/a-tester.md` | Ce qui est livré mais jamais vu fonctionner, avec ses protocoles. À compléter à chaque lot livré sans Play Mode ; à purger après chaque session de jeu. |
+| `docs/historique.md` | Archive des entrées soldées. Seulement pour comprendre pourquoi une chose est faite ainsi. |
+
+**Tenue du suivi.** Un lot qui change un comportement ou un réglage met à jour, dans le même
+commit, le GDD (la décision) et `backlog.md` / `a-tester.md` (ce qui reste et ce qui est à
+éprouver). Un point ouvert qui ne vit que dans un message de commit est un point perdu.
 
 ## Pipeline de données
 
 L'équilibrage est **découplé de l'inspecteur Unity** :
 
 ```
-Assets/GameData/Editor/UpgradeData/*.json   →  Tools/Core/Générer Catalogue Upgrades depuis JSON
-Assets/GameData/Editor/PrestigeData/*.json  →  Tools/Core/Générer l'Arbre depuis JSON (Dossier)
-        ↓                                              ↓
-Assets/GameData/Upgrades/*.asset            Assets/GameData/Prestige/*.asset
-        ↓                                              ↓
-Assets/GameData/Catalogs/UpgradeCatalog.asset  /  PrestigeCatalog.asset
+1. Assets/GameData/Editor/UpgradeData/*.json   →  Tools/Core/Générer Catalogue Upgrades depuis JSON
+        ↓
+   Assets/GameData/Upgrades/*.asset  +  Catalogs/UpgradeCatalog.asset
+        ↓
+2. Tools/Core/Générer les nœuds ciblés (04_SpecificUpgrades)
+        ↓  réécrit ENTIÈREMENT PrestigeData/04_SpecificUpgrades.json — une sortie, jamais une source
+3. Assets/GameData/Editor/PrestigeData/*.json  →  Tools/Core/Générer l'Arbre depuis JSON (Dossier)
+        ↓
+   Assets/GameData/Prestige/*.asset  +  Catalogs/PrestigeCatalog.asset
 ```
 
-Modifier un JSON n'a **aucun effet** tant que l'outil d'éditeur n'a pas été relancé. Ne jamais éditer un `.asset` à la main : il sera écrasé.
+Les trois outils se relancent **dans cet ordre**. Modifier un JSON n'a **aucun effet** tant que l'outil d'éditeur n'a pas été relancé. Ne jamais éditer un `.asset` à la main : il sera écrasé. Seul `Assets/GameData/Balancing/BalancingConfig.asset` s'édite à la main (et en Play Mode).
 
 ## Vérification
 

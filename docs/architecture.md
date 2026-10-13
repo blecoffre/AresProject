@@ -6,19 +6,21 @@ Stack : **VContainer** (DI), **R3** (réactif), **UniTask** (async), MVP strict,
 
 **`RootLifetimeScope`** (`Boot/`) — tout le métier, en `Singleton`. Survit au rechargement de la GameScene.
 
-- Catalogues SO (`UpgradeCatalogSO`, `PrestigeCatalogSO`) injectés par l'inspecteur
-- `UserCurrencies`, `UpgradeManager`, `PrestigeManager`, `ThreatManager`, `EmergencyProtocolSystem`, `GameSessionManager`
+- Instances posées dans l'inspecteur : catalogues (`UpgradeCatalogSO`, `PrestigeCatalogSO`), `BalancingConfigSO`, `UiPaletteCatalogSO`, et pour l'audio le mixer, `AudioLibrarySO`, `UiSoundChannelSO`
+- Économie : `UserCurrencies`, `BuyQuantitySelector`, `UpgradeManager`, `PrestigeManager`
+- Trace et run : `ThreatManager`, `TraceReadout` (le relevé imparfait, en lecture seule sur la vérité), `EmergencyProtocolSystem` (Data Wiper), `GameSessionManager`, `ExfiltrationSystem`, `GhostCacheSystem`, `VictorySystem`
 - Persistance : `LocalJsonSaveService` (`ISaveService` + `ISyncSaveService`), `GameStateGateway`
 - `JsonLocalizationService`, `SceneLoader`, `ApplicationQuitter`
 - `SimulationClock` (`ITimeSource` + `ISimulationClock`) — voir « Pause » plus bas
-- `SettingsStore`, `SettingsService` (`ISettingsService`) — réglages du joueur, voir `persistence.md`
-- EntryPoints : `GameBootstrapper` (IAsyncStartable), `SaveScheduler` (IAsyncStartable), `ScriptCycleRunner` (IStartable + ITickable)
+- `SettingsStore`, `SettingsService` (`ISettingsService`) — réglages du joueur, voir `persistence.md` ; `PaletteService` (`IPaletteService`) — voir « Palettes »
+- Audio : `AudioHost`, `MusicPlayer` (ou `SilentMusicPlayer` sans bibliothèque) — voir « Audio »
+- EntryPoints : `GameBootstrapper` (IAsyncStartable), `SaveScheduler` (IAsyncStartable), `ScriptCycleRunner` (IStartable + ITickable), `FrameRateGovernor`, `AudioVolumeApplier`, `UiSoundPlayer`, `GameEventSounds`
 
 **`GameSceneLifetimeScope`** (fichier dans `Services/`, namespace `Core.Boot`) — l'UI, en `Scoped`.
 
 - Views (`RegisterComponent`) + Presenters
 - `OverclockSystem`
-- EntryPoints : `GameSceneBootstrapper`, `SimulationTicker`
+- EntryPoints : `GameSceneBootstrapper` (clavier, Échap, retenue de la simulation), `SimulationTicker`, `SceneMusic`
 
 > **Piège :** un service enregistré en `Lifetime.Scoped` **dans le Root** est ré-instancié dans chaque scope enfant. Le scope de scène manipulerait alors une seconde instance, désynchronisée. Tout ce qui est métier va en `Singleton`.
 
@@ -34,7 +36,7 @@ Le panneau d'options est **un prefab** (`Data/Prefabs/UI/OptionsPanel.prefab`) p
 RootLifetimeScope.Configure
   → ScriptCycleRunner.Start()        (IStartable — emplacements encore vides)
   → GameBootstrapper.StartAsync()    (IAsyncStartable)
-       ├─ JsonLocalizationService.LoadLanguageAsync("fr", ct)
+       ├─ JsonLocalizationService.LoadLanguageAsync(langue des réglages, sinon celle du système, ct)
        ├─ ISaveService.FetchSaveAsync(ct)
        ├─ GameStateGateway.Restore(save)
        │     └─ UpgradeManager.InitializeFromSave → OnUpgradesRebuilt
@@ -140,18 +142,34 @@ Le retour au menu principal demande une sauvegarde via `ISaveRequester` (implém
 
 ## Boucle de jeu
 
+*Réécrite le 2026-10-13 : elle décrivait encore la jauge à 100 points et la conversion en racine
+carrée d'août. Les formules et leurs raisons sont dans `game-design.md` ; ici, qui appelle qui.*
+
 ```
 ScriptCycleRunner (ITickable, Root)
-   → par Script : progression du cycle → versement à échéance → Money
+   → par Script : progression du cycle → versement à échéance → Money (+ cumul de la run)
 
-SimulationTicker (ITickable, Scene)
-   → UpgradeManager.TotalTracePerSecond ÷ 100 × deltaTime → ThreatManager.AddThreat
+SimulationTicker (ITickable, Scene) — si la run est active, au pas de SimulationClock
+   → GhostCacheSystem.TickOverdrive
+   → brut = trace des Scripts actifs + chaleur du Hardware
+            + traque passive (dès la première Data volée ou le premier Hardware)
+            × réduction de prestige (× malus de l'Overdrive s'il tourne)
+   → réduction des Proxies, saturante : Max × D / (D + κ × brut)   (coupée pendant l'Overdrive)
+   → réduction tenue au-dessus du seuil → GhostCacheSystem.Accumulate
+   → ThreatManager.AddThreat (trace ABSOLUE ; le plafond, poussé à chaque tick, suit la puissance)
 
-ThreatManager : jauge à 1 → OnCriticalLockdown
-   → GameSessionManager.HandleGameOver
-        → CPU Cycles = floor(sqrt(TotalMoneyGenerated / 1000))
-        → OnSessionEnded → GameOverPresenter + SaveScheduler
+TraceReadout (Root) — échantillonne la vérité à intervalle variable : ce que l'UI affiche
+
+Fin de run, deux chemins vers GameSessionManager.ResolveRunEnd :
+   ThreatManager à 100 %  → OnCriticalLockdown → HandleGameOver   (saisie : contribution × 30 %)
+   bouton « Terre Brûlée » → ExfiltrationSystem → sortie propre    (contribution × bonus de palier)
+        → UserCurrencies.BankRunContribution → points par le modèle des boîtes
+        → wipe de la run, PUIS OnSessionEnded → GameOverPresenter + SaveScheduler
 ```
+
+Le wipe a lieu **avant** la notification, et ce n'est pas un détail : la sauvegarde de fin de run
+s'écrit sur `OnSessionEnded`. Si le wipe attendait le clic sur « Recommencer », fermer le jeu sur
+l'écran de fin sauvegarderait les générateurs au niveau max avec zéro Trace — une run gratuite.
 
 ## Règles R3
 
@@ -172,6 +190,8 @@ ThreatManager : jauge à 1 → OnCriticalLockdown
 `SimulationTicker` et `ScriptCycleRunner.Tick()` sont les deux boucles de frame. Elles sont écrites sans allocation, sans closure et sans boxing — tableaux de structs parcourus par index, lectures de `CurrentValue`, garde d'entrée sur `IsGameActive`. **C'est le standard à tenir pour tout nouveau code de frame.**
 
 ## Dette structurelle connue
+
+*Le suivi de cette dette, avec le reste, vit dans `backlog.md` §§ 5 et 7.*
 
 - **Aucun `.asmdef`** : tout `Assets/Core` recompile avec le reste du projet, et rien n'empêche une dépendance de `Models` vers `UI`.
 - **Namespaces ≠ dossiers** : `Services/GameSceneLifetimeScope.cs` déclare `Core.Boot` ; `Models/Economy/*CatalogSO.cs` déclarent `Core.Economy.Data` ; `Services/LogObjectPool.cs` déclare `Core.Services.Console` ; `SteamManager` est dans le namespace global. Deux dossiers pour la sauvegarde (`Services/Persistence` et `Services/Save`).
