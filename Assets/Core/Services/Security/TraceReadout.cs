@@ -176,13 +176,13 @@ namespace Core.Services.Security
         /// </summary>
         private float ResolvePrecisionDivisor()
         {
-            // TotalTFlops est la capacité EFFECTIVE : l'UpgradeManager lui a déjà appliqué la
+            // NetTFlops est la capacité EFFECTIVE : l'UpgradeManager lui a déjà appliqué la
             // tranche immobilisée par le Data Wiper. Purger la Trace aveugle donc le capteur
             // pendant tout le contrecoup. Ce n'est pas un effet de bord subi mais le contrecoup
             // qui s'étend à ce que les TFlops alimentent, comme il le fait déjà sur la
             // compression des cycles et sur la dissipation des Proxies — le joueur qui efface
             // ses traces perd la vue au moment précis où il vient de prendre un risque.
-            float tflops = Mathf.Max(0f, (float)_upgrades.TotalTFlops.CurrentValue);
+            float tflops = Mathf.Max(0f, (float)_upgrades.NetTFlops.CurrentValue);
             float reference = Mathf.Max(1f, _balancing.TraceReadoutSensorReferenceTFlops);
 
             return 1f + _balancing.TraceReadoutSensorPower * Mathf.Log10(1f + tflops / reference);

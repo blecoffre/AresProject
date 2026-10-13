@@ -2,6 +2,7 @@ using Core.Models.Console;
 using Core.Models.Economy;
 using Core.Services.Economy;
 using Core.Services.Localization;
+using Core.Services.Security;
 using Core.UI.Game;
 using R3;
 using System;
@@ -18,6 +19,8 @@ namespace Core.UI.Upgrades
         private readonly ScriptCycleRunner _cycleRunner;
         private readonly UserCurrencies _currencies;
         private readonly BuyQuantitySelector _buyQuantity;
+        private readonly PrestigeManager _prestige;
+        private readonly ThreatManager _threat;
         private readonly ConsolePresenter _console;
         private readonly ILocalizationService _loc;
 
@@ -39,6 +42,8 @@ namespace Core.UI.Upgrades
             ScriptCycleRunner cycleRunner,
             UserCurrencies currencies,
             BuyQuantitySelector buyQuantity,
+            PrestigeManager prestige,
+            ThreatManager threat,
             ConsolePresenter console,
             ILocalizationService loc)
         {
@@ -47,6 +52,8 @@ namespace Core.UI.Upgrades
             _cycleRunner = cycleRunner;
             _currencies = currencies;
             _buyQuantity = buyQuantity;
+            _prestige = prestige;
+            _threat = threat;
             _console = console;
             _loc = loc;
 
@@ -138,7 +145,7 @@ namespace Core.UI.Upgrades
             }
 
             var presenter = new GeneratorPresenter(
-                model, viewInstance, _upgradeManager, _cycleRunner, _currencies, _buyQuantity, _console, _loc);
+                model, viewInstance, _upgradeManager, _cycleRunner, _currencies, _buyQuantity, _prestige, _threat, _console, _loc);
 
             _childPresenters.Add(model, presenter);
 

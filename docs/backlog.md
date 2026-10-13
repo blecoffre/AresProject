@@ -1,7 +1,8 @@
 # Backlog — défauts et manques connus
 
-> Révisé entrée par entrée le **2026-10-13**, contre le code de `main` (`7b95a5a`). Les entrées
-> réglées depuis l'audit du 2026-08-27 sont descendues dans `historique.md`.
+> Révisé entrée par entrée le **2026-10-13**, contre le code de `main` (`7b95a5a`), puis mis à jour
+> le même jour par le lot 1 de la refonte « Time Attack ». Les entrées réglées sont descendues dans
+> `historique.md`.
 >
 > | Pour savoir | Lire |
 > |---|---|
@@ -28,11 +29,32 @@ du 13/10 a trouvé des points ouverts consignés seulement dans un message de co
 notes de session : le nœud de la barre d'espace, trois changements d'économie, tout le volet
 Steam Deck.
 
-État de la base au 2026-10-13 : 116 fichiers runtime, 18 fichiers d'éditeur, ~20 500 lignes dans
-`Assets/Core` (le double d'août). `dotnet build` : 0 erreur ; 3 warnings `CS0649` dans le code de
-jeu (voir § 7).
+État de la base au 2026-10-13, après le lot 1 de la refonte : 113 fichiers runtime, 10 fichiers
+d'éditeur (le harnais d'équilibrage est supprimé). `dotnet build` : 0 erreur ; 3 warnings `CS0649`
+dans le code de jeu (voir § 7).
 
 ---
+
+## 0. Refonte « Time Attack » — ce qui reste ouvert
+
+La feuille de route des lots est dans `etat-des-lieux.md`. Ici, les points ouverts.
+
+- 📖 **Les `wipeSeconds` des Proxies sont à refaire par le GD** (2026-10-13). Ce sont les anciennes
+  magnitudes de dissipation, reprises telles quelles : de 2,54 (`PRX_01`) à 196 700 (`PRX_15`).
+  Lues en secondes de survie, face à une jauge qui vaut ~300 s au départ, ~3 300 s Blindage max et
+  ~330 s en fin de partie, **`PRX_07` à `PRX_15` valent chacun plus qu'une jauge entière dès le
+  niveau 1**, sans prestige. ⚖️ Et avec l'Interception au maximum (×102), `PRX_01` niveau 1 rend
+  déjà ~259 s. Le code n'en dépend pas : il suffit de corriger `proxys.json` et de relancer les
+  générateurs.
+- 📖 **Les 15 nœuds « Opti Prod » des Proxies ne font plus rien** (`P_UPG_PRX_xx_PROD`) : le Wipe
+  ignore les bonus ciblés. Ils disparaissent au lot 4 avec les 120 nœuds ciblés.
+- 📖 **`P_EXTRACT_2` et `_3` exigent encore leur parent au niveau 3**, alors que la règle du GD est
+  désormais « parent au maximum ». Passe au lot 4 avec les valeurs d'Extraction.
+- 📖 **Le relevé de Trace est encore à l'ancien réglage** : intervalle de 60 s au départ,
+  dépendant de la vitesse de remplissage. Le lot 3 le passe en UT (un relevé tous les 800 UT
+  remplis, 200 en fin de partie).
+- 📖 **Le Data Wiper est encore à l'ancien modèle** (délai de 5 min, contrecoup de 60 s, −25 % de
+  la Trace courante). Le lot 2 le passe en sacrifice permanent de TFlops, −2 500 UT, trois usages.
 
 ## 1. Bloquant pour une sortie publique
 
@@ -67,34 +89,14 @@ Rien de tout cela n'empêche de jouer aujourd'hui. Aucun build public ne doit pa
   apprécié, cf. `audio-licences.md`).
 - 📖 **Déclaration « contenu créé avec une IA »** au questionnaire Steam, tant que les sons
   synthétisés sont en jeu — et les traductions, si elles sont faites par IA comme prévu.
-- 📖 **Traductions EN et ES.** Seul `fr.json` existe (354 clés). Reportées à la fin du contenu,
+- 📖 **Traductions EN et ES.** Seul `fr.json` existe (333 clés). Reportées à la fin du contenu,
   décision du 2026-10-01 : inutile de traduire un texte qui va encore bouger.
 
 ## 2. Du contenu qui s'achète et ne fait rien
 
 Visible par le joueur : il dépense un point de prestige pour rien.
 
-- 📖 **`P_OVERCLOCK_SPACEBAR` (« Accélérateur manuel ») n'a aucun effet.** Il coûte 1 point, mais
-  `PrestigeManager.IsSpacebarUnlocked` n'a **aucun lecteur** : la barre d'espace marche pour tout
-  le monde, nœud acheté ou non. Laissé débranché exprès dans `a772e67` — brancher le verrou
-  retirerait le clic aux sauvegardes existantes. **À trancher par le GD** : brancher le verrou
-  (et offrir le nœud aux sauvegardes antérieures par migration ?) ou retirer le nœud. À traiter
-  avec la refonte de l'arbre, qui fait de l'espace un nœud tardif (cf. GDD).
-- 📖 **Le Zéro-Day Exploit ne se déclenche plus — mais ses nœuds s'achètent.** Zéro déclenchement
-  sur 264 runs simulées (2026-09-16). C'est la **charge** qui est hors d'atteinte (90 s de posture
-  tenue au-dessus de 59,5 % de réduction), pas l'effet. Les trois nœuds `P_EXPLOIT_CHARGES`,
-  `P_EXPLOIT_MULT` (5 rangs) et `P_EXPLOIT_TRACE_REDUC` (3 rangs) coûtent 9 points. La refonte en
-  **Baroud d'Honneur** est tranchée depuis le 2026-09-16 et pas commencée (spécification dans le
-  GDD, § Ghost Cache). Elle fait sortir `GhostCacheSeconds` de la sauvegarde → `SaveData` v11.
-- 📖 **`P_STEALTH` sature au 4ᵉ de ses 10 rangs.** 0,25 par rang, et
-  `TraceReductionMultiplier = max(0,1 ; 1 − Σ)` touche son plancher dès 4 rangs. Les rangs 5 à 10
-  coûtent 6 points pour rien, et le 4ᵉ retire d'un coup 90 % de la Trace brute. Probable erreur de
-  `a772e67` : le nœud est passé de 1 à 10 rangs sans que son bonus — qui portait jusque-là les
-  cinq anciens rangs d'un coup — soit divisé. ⚖️ Effet sur l'équilibrage non mesuré.
-- 📖 **`P_HARDEN_2` à `_4` exigent leur parent au niveau 3, qui n'a qu'un rang.** Le générateur
-  ramène l'exigence au maximum et avertit à chaque passage : sans conséquence en jeu, mais trois
-  avertissements permanents noient les vrais. Vestige de l'aplatissement du 2026-09-12 : retirer
-  les `requiredLevel` des trois JSON.
+- 📖 **Les 15 nœuds « Opti Prod » des Proxies** — voir § 0.
 
 ## 3. Équilibrage et données
 
@@ -104,16 +106,9 @@ Le détail chiffré et les chantiers d'équilibrage sont dans `etat-des-lieux.md
   — rattrapé dans le GDD le 2026-10-13 : modèle des boîtes pour les points, premier point
   abaissé de 5e6 à 2e6, saisie versant 30 % au lieu de rien. ⚖️ **Aucune campagne n'a été
   remesurée depuis** — voir `etat-des-lieux.md`, chantier 1.
-- 📖 **120 des 146 nœuds sont du remplissage généré.** Deux par générateur (réduction de coût,
-  boost de rendement), tous identiques : 1 rang, coût 1, bonus 1,0. C'est l'objet de la refonte
-  de l'arbre annoncée par le GD le 2026-09-25.
-- 📖 **La refonte de l'arbre attend deux mécaniques qui n'existent pas.**
-  1. Un prérequis **« X points dépensés »** : `PrestigeRequirement` ne connaît qu'un couple (nœud
-     parent, niveau). Le GD en a besoin au moins deux fois (barre d'espace, réveil).
-  2. **La fin de l'automatisation au niveau 10.** Le seuil existe toujours
-     (`UpgradeConfigSO._automationLevel`, 10 par défaut, déclaré sur les 25 Scripts) mais plus aucun
-     nœud ne l'abaisse depuis le retrait de `P_AUTO_GLOBAL` : `GlobalAutomationReduction` et
-     `SpecificUpgradeBonuses.AutomationThresholdReduction` sont du code mort côté données.
+- 📖 **120 des 140 nœuds sont du remplissage généré.** Deux par générateur (réduction de coût,
+  boost de rendement), tous identiques : 1 rang, coût 1, bonus 1,0. Ils disparaissent au lot 4 de
+  la refonte « Time Attack », remplacés par le Noyau Compilé.
 - 📖 **Valeurs provisoires du Data Wiper** : palier de 50 TFlops et escalade ×3 « non chiffrées
   par le GD » (GDD). ⚖️ Et son délai de 5 min **dépasse la durée d'une run** de campagne
   (3,5 à 6,3 min) : le bouton ne sert qu'une fois par run, alors que ses constantes ont été
@@ -129,9 +124,9 @@ Le détail chiffré et les chantiers d'équilibrage sont dans `etat-des-lieux.md
 
 ## 4. Défauts d'affichage et de texte
 
-- 📖 **Faux libellé sur les onglets Hardware et Proxy.** `GeneratorPresenter.BuildStatsText`
-  affiche « Génère X Datas par cycle » (`UI_GENERATES_DATAS`) pour tout ce qui n'est pas un
-  Script, alors qu'un Hardware fournit des TFlops et qu'un Proxy dissipe de la Trace.
+- 📖 **Faux libellé sur l'onglet Hardware.** `GeneratorPresenter.BuildStatsText` affiche « Génère
+  X Datas par cycle » (`UI_GENERATES_DATAS`) pour un Hardware, qui fournit des TFlops. L'onglet
+  Proxy, lui, annonce son répit en secondes depuis le 2026-10-13.
 - 📖 **Le bouton du Data Wiper ment sur son effet.** `UI_EMERGENCY_READY` annonce
   « Trace −**25 pts** » (`EmergencyPresenter.cs:156`), mais le code retire **25 % de la Trace
   courante** (`ThreatManager.ReduceTraceByFraction`) : à 60 % de jauge, le joueur perd 15 points,
@@ -139,9 +134,9 @@ Le détail chiffré et les chantiers d'équilibrage sont dans `etat-des-lieux.md
   tooltip du § 3.
 - 📖 **Pluriel non géré** : `UI_EXFIL_READY` dit « +1 **Cycles** CPU ». Reformuler la clé suffit ;
   une vraie pluralisation demanderait un mécanisme dans `ILocalizationService`.
-- 📖 **Séparateur décimal dépendant de la machine**, trois endroits :
-  `ClickerPresenter.cs:36` et `:44` (`SecondsGained.ToString("0.#")`), `GeneratorPresenter.cs:235`
-  (`GetCurrentCycleDuration().ToString("0.##")`). Ils utilisent `CurrentCulture` — « 1,5 s » ici,
+- 📖 **Séparateur décimal dépendant de la machine**, trois endroits : `ClickerPresenter`
+  (`SecondsGained.ToString("0.#")`), et deux dans `GeneratorPresenter.BuildStatsText`
+  (`GetCurrentCycleDuration().ToString("0.##")`, et les secondes de répit d'un Proxy en `"0.#"`). Ils utilisent `CurrentCulture` — « 1,5 s » ici,
   « 1.5 s » ailleurs — alors que `CurrencyFormatter` force `InvariantCulture`. Trancher une
   politique unique, et la trancher avant les traductions.
 - 🔬📖 **La jauge de l'exfiltration est toujours vide.** `ExfiltrationView._progressFill` vaut
@@ -228,12 +223,12 @@ Le jeu tourne sans ralentissement perceptible. Rien ici n'a été profilé.
   `JsonLocalizationService.cs:128`). → `ZString.Format<T>`, déjà disponible avec UniTask.
 - 📖 **`LogObjectPool`** recycle par `_activeItems.RemoveAt(0)` et teste par un `Contains`
   linéaire. Un tampon circulaire le rendrait O(1).
-- ⚖️ **Repeinte de l'arbre** : 146 nœuds × 3 passes par achat de prestige, chacune avec un
+- ⚖️ **Repeinte de l'arbre** : 140 nœuds × 3 passes par achat de prestige, chacune avec un
   `Math.Pow` et une chaîne par nœud. Jamais mesuré, et probablement sans importance (achat rare,
   écran modal). Le remède, si besoin, est celui de `GeneratorPresenter` : cache et
   `DistinctUntilChanged`.
-- ⚖️ **Pooling ou virtualisation de l'arbre** : le GDD les juge « non négociables » à ≈ 170
-  nœuds. À 146, rien ne ralentit en éditeur. À profiler après la refonte, pas avant.
+- ⚖️ **Pooling ou virtualisation de l'arbre** : la question disparaît au lot 4 de la refonte,
+  qui ramène l'arbre à 21 nœuds.
 
 ## 7. Outillage et qualité
 
@@ -268,10 +263,8 @@ Pas des bugs : des arbitrages que seul le GD peut rendre. Les trancher débloque
 
 | Question | Entrée liée |
 |---|---|
-| Barre d'espace : brancher le verrou (avec quel sort pour les sauvegardes existantes ?) ou retirer le nœud ? | § 2 |
-| Baroud d'Honneur : « N usages par run, N = rangs de `P_EXPLOIT_CHARGES` » — or ce nœud n'a plus qu'**un rang**, de bonus 5. N vaut-il le bonus ? | § 2, GDD |
+| Nouvelles valeurs de base des 15 Proxies (`wipeSeconds`), et Interception à revoir avec | § 0 |
 | Quand remonter la victoire à 1e12 ? | § 1 |
-| Délai du Data Wiper (5 min) plus long qu'une run de campagne : voulu ? | § 3 |
 | L'écran méta masque la jauge de Trace pendant une run : ajouter un rappel de Trace dans son header ? | — |
 | Brouillard sur les nœuds verrouillés : le nom reste visible (choix de Bertrand, pour planifier). À rediscuter si le GD tient au mystère. | — |
 | Branche de prestige dédiée aux capteurs : la visibilité ne s'achète aujourd'hui qu'en Hardware (GDD, § Capteur). | — |
@@ -301,6 +294,8 @@ Pas des bugs : des arbitrages que seul le GD peut rendre. Les trancher débloque
   JSON.** Et avant de conclure qu'un nœud « ne s'affiche pas », compter les entrées du fichier.
 - **Les valeurs de `PrestigeBonusType` s'appendent en FIN d'enum.** L'index est sérialisé dans les
   `.asset` : une insertion au milieu redéfinit silencieusement des nœuds existants. Déjà arrivé.
+  Retirer une valeur n'est permis qu'en relançant **dans la foulée** les trois générateurs, qui
+  réécrivent tous les `.asset` — fait le 2026-10-13 pour la refonte.
 - **Le player loop de l'éditeur est figé tant que la fenêtre Unity n'a pas le focus**
   (`Time.frameCount` ne bouge pas), et `runInBackground` n'y change rien. Le Play Mode reste alors
   bloqué en transition. Pour vérifier un `ITickable` sans focus, appeler `Tick()` à la main ; pour

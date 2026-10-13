@@ -1361,7 +1361,7 @@
             "bonus": 1.0,
             "posX": -4.0,
             "posY": -6.0,
-            "prerequisiteId": "P_STEALTH",
+            "prerequisiteId": "P_ROOT",
             "requiredLevel": 1,
             "targetUpgradeId": "PRX_01"
         },

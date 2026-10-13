@@ -52,7 +52,7 @@ namespace Core.UI.Header
             .AddTo(ref _disposables);
 
             // Capacité de calcul dérivée, et non plus une monnaie accumulée.
-            _upgradeManager.TotalTFlops.Subscribe(val =>
+            _upgradeManager.NetTFlops.Subscribe(val =>
             {
                 _view.UpdateComputerPowerDisplay(CurrencyFormatter.Format(val));
             })
@@ -163,7 +163,7 @@ namespace Core.UI.Header
                 // Un palier VERROUILLÉ n'annonce aucun gain : il n'en verse aucun tant que son
                 // nœud n'est pas installé, et afficher le montant — même grisé — se lirait comme
                 // une promesse. Il porte le marqueur d'état du jeu, « [VERROUILLÉ] », le même que
-                // le Ghost Cache, le Data Wiper et l'Exfiltration.
+                // le Data Wiper et l'Exfiltration.
                 //
                 // Le nœud qui l'ouvre est nommé dans l'ARBRE, pas ici : ces libellés-là le font
                 // en toutes lettres, mais un libellé de trait dispose de 130 px entre son voisin

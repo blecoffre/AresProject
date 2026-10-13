@@ -2,33 +2,34 @@
   "items": [
     {
       "id": "P_CLICK",
-      "bonusType": "ClickPowerMultiplier",
+      "bonusType": "OverclockBonus",
       "maxLevel": 5,
       "baseCost": 1.0,
       "costMult": 1.0,
-      "bonus": 1.0,
+      "bonus": 0.1,
       "posX": 1.0,
       "posY": 1.0,
       "prerequisiteId": "P_ROOT"
     },
     {
       "id": "P_OVERCLOCK_POWER_1",
-      "bonusType": "ClickPowerMultiplier",
+      "bonusType": "OverclockBonus",
       "maxLevel": 5,
       "baseCost": 1.0,
       "costMult": 1.0,
-      "bonus": 2.5,
+      "bonus": 0.3,
       "posX": 3.0,
       "posY": 1.0,
-      "prerequisiteId": "P_CLICK"
+      "prerequisiteId": "P_CLICK",
+      "requiredLevel": 0
     },
     {
       "id": "P_OVERCLOCK_POWER_2",
-      "bonusType": "ClickPowerMultiplier",
-      "maxLevel": 1,
+      "bonusType": "OverclockBonus",
+      "maxLevel": 5,
       "baseCost": 1.0,
       "costMult": 1.0,
-      "bonus": 5.0,
+      "bonus": 1.0,
       "posX": 4.0,
       "posY": 1.0,
       "prerequisiteId": "P_OVERCLOCK_POWER_1",
@@ -36,38 +37,14 @@
     },
     {
       "id": "P_OVERCLOCK_POWER_3",
-      "bonusType": "ClickPowerMultiplier",
+      "bonusType": "OverclockBonus",
       "maxLevel": 5,
       "baseCost": 1.0,
       "costMult": 1.0,
-      "bonus": 10.0,
+      "bonus": 3.0,
       "posX": 5.0,
       "posY": 1.0,
       "prerequisiteId": "P_OVERCLOCK_POWER_2",
-      "requiredLevel": 0
-    },
-    {
-      "id": "P_OVERCLOCK_AWAKE",
-      "bonusType": "OverclockWakesScripts",
-      "maxLevel": 1,
-      "baseCost": 1.0,
-      "costMult": 1.0,
-      "bonus": 1.0,
-      "posX": 6.0,
-      "posY": 5.0,
-      "prerequisiteId": "P_OVERCLOCK_POWER_3",
-      "requiredLevel": 0
-    },
-    {
-      "id": "P_OVERCLOCK_SPACEBAR",
-      "bonusType": "UnlockSpacebarAction",
-      "maxLevel": 1,
-      "baseCost": 1.0,
-      "costMult": 1.0,
-      "bonus": 5.0,
-      "posX": 7.0,
-      "posY": 5.0,
-      "prerequisiteId": "P_OVERCLOCK_AWAKE",
       "requiredLevel": 0
     }
   ]

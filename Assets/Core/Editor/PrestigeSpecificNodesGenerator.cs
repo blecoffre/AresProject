@@ -12,7 +12,7 @@ namespace Core.Economy.Tools
     {
         private string _scriptBranchRootId = "P_REFAC";
         private string _hardwareBranchRootId = "P_CLICK";
-        private string _proxyBranchRootId = "P_STEALTH";
+        private string _proxyBranchRootId = "P_ROOT";
         private string _outputFileName = "04_SpecificUpgrades.json";
 
         /// <summary>Seule source légitime d'upgrades : le dossier que génère UpgradeCatalogGenerator.</summary>

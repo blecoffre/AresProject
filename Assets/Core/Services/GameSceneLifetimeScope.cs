@@ -29,11 +29,7 @@ namespace Core.Boot
                  "n'importe où dans l'écran sans toucher au code.")]
         [SerializeField] private ExfiltrationView _exfiltrationView;
 
-        [Tooltip("Bouton du Ghost Cache / Zéro-Day Exploit. Vue autonome, comme celle du " +
-                 "Protocole Terre Brûlée : elle peut être posée n'importe où dans l'écran.")]
-        [SerializeField] private GhostCacheView _ghostCacheView;
-
-        [Tooltip("Bouton d'Urgence / Data Wiper. Vue autonome, comme les deux précédentes.")]
+        [Tooltip("Bouton d'Urgence / Data Wiper. Vue autonome, comme la précédente.")]
         [SerializeField] private EmergencyView _emergencyView;
 
         [Tooltip("Écran de victoire. Vue autonome qui possède sa propre racine : elle ne partage " +
@@ -82,22 +78,7 @@ namespace Core.Boot
                     "glisse-le dans le champ pour l'activer.");
             }
 
-            // Même traitement conditionnel que ci-dessus, et pour la même raison : la vue est
-            // neuve et pas encore posée dans la scène.
-            if (_ghostCacheView != null)
-            {
-                builder.RegisterComponent(_ghostCacheView);
-                builder.Register<GhostCachePresenter>(Lifetime.Scoped).AsImplementedInterfaces().AsSelf();
-            }
-            else
-            {
-                Debug.LogWarning(
-                    "[SCENE] Aucune GhostCacheView assignée sur le GameSceneLifetimeScope : le " +
-                    "Zéro-Day Exploit est injouable. Le Ghost Cache continue d'accumuler sa " +
-                    "charge en arrière-plan, mais rien ne permet de la dépenser.");
-            }
-
-            // Même traitement conditionnel que les deux vues ci-dessus.
+            // Même traitement conditionnel que la vue ci-dessus.
             if (_emergencyView != null)
             {
                 builder.RegisterComponent(_emergencyView);
@@ -111,7 +92,7 @@ namespace Core.Boot
                     "déclencher.");
             }
 
-            // Même traitement conditionnel. La conséquence est ici plus douce que pour les trois
+            // Même traitement conditionnel. La conséquence est ici plus douce que pour les deux
             // vues ci-dessus : sans écran, la victoire se raconte quand même dans la console, le
             // VictoryPresenter étant enregistré séparément et sans vue.
             if (_victoryView != null)

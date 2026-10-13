@@ -8,7 +8,7 @@ namespace Core.Models.Economy
     ///
     /// Les TFlops n'en font PAS partie, volontairement : ce ne sont pas un stock mais une
     /// capacité dérivée du parc Hardware possédé, recalculée par l'UpgradeManager et exposée
-    /// par sa propriété TotalTFlops. Les garder ici sous forme de Currency alimentée par Add()
+    /// par sa propriété NetTFlops. Les garder ici sous forme de Currency alimentée par Add()
     /// laissait croire à une ressource qu'on accumule et qu'on dépense, ce qu'elles ne sont pas.
     /// </summary>
     public class UserCurrencies : IDisposable

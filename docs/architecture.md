@@ -8,7 +8,7 @@ Stack : **VContainer** (DI), **R3** (réactif), **UniTask** (async), MVP strict,
 
 - Instances posées dans l'inspecteur : catalogues (`UpgradeCatalogSO`, `PrestigeCatalogSO`), `BalancingConfigSO`, `UiPaletteCatalogSO`, et pour l'audio le mixer, `AudioLibrarySO`, `UiSoundChannelSO`
 - Économie : `UserCurrencies`, `BuyQuantitySelector`, `UpgradeManager`, `PrestigeManager`
-- Trace et run : `ThreatManager`, `TraceReadout` (le relevé imparfait, en lecture seule sur la vérité), `EmergencyProtocolSystem` (Data Wiper), `GameSessionManager`, `ExfiltrationSystem`, `GhostCacheSystem`, `VictorySystem`
+- Trace et run : `ThreatManager` (la jauge de l'A.M.I. ; IStartable, seul à la modifier), `TraceReadout` (le relevé imparfait, en lecture seule sur la vérité), `EmergencyProtocolSystem` (Data Wiper), `GameSessionManager`, `ExfiltrationSystem`, `VictorySystem`
 - Persistance : `LocalJsonSaveService` (`ISaveService` + `ISyncSaveService`), `GameStateGateway`
 - `JsonLocalizationService`, `SceneLoader`, `ApplicationQuitter`
 - `SimulationClock` (`ITimeSource` + `ISimulationClock`) — voir « Pause » plus bas
@@ -85,7 +85,6 @@ Familles branchées (2026-10-12) — une famille de BOUTON vide retombe sur `Key
 | `PrestigePurchase` | fixe | achat d'un nœud de prestige (`BuyButton`) | GameScene |
 | `Exfiltration` | fixe | « Terre Brûlée » (objet nommé `PrestigeButton`, nom hérité) | GameScene |
 | `DataWiper` | fixe | Bouton d'Urgence (`PanicButton`) | GameScene |
-| `ZeroDayExploit` | fixe | Ghost Cache (`GhostCacheButton`) | GameScene |
 
 Les familles « signature » ont une hauteur fixe : un son qu'on doit reconnaître ne varie pas. Chaque bouton se grise quand l'action est impossible, donc son son ne part que sur une vraie action. Les overrides vivent sur les instances de scène (et dans `LanguagePicker.prefab`) : un bouton recréé ailleurs devra être rebranché à la main.
 
@@ -94,7 +93,7 @@ Les familles « signature » ont une hauteur fixe : un son qu'on doit reconnaît
 - `Data/Audio/Events/` : DecompressOnLoad, **PCM**, mono (sons synthétiques : l'ADPCM y ajouterait un souffle).
 - `Data/Audio/Music/` : Streaming, Vorbis 0,7 (les musiques vont dans ce dossier).
 
-**Sons générés** — `tools/audio/` (Python standard, sans dépendance) : `synth_sfx.py` (les 11 sons d'événements, un réglage par son en tête de fonction, graine fixe), `synth_music.py` (deux boucles bouche-trou sans couture : fréquences quantifiées sur la durée de boucle, notes repliées, bruit fondu sur lui-même), `extract_keys.py` / `clean_keys.py` (découpe et nettoyage de prises de frappe), `make_validation.py` (famille Validation). Les volumes se règlent sur le **niveau moyen (RMS)**, pas sur le pic : `KeyPress` ≈ -30 dB, refus -31, paliers -18 à -16, moments forts -17 à -15. Régénérer, puis recopier dans `Data/Audio/` : les noms de fichiers étant stables, les familles suivent.
+**Sons générés** — `tools/audio/` (Python standard, sans dépendance) : `synth_sfx.py` (les 10 sons d'événements, un réglage par son en tête de fonction, graine fixe), `synth_music.py` (deux boucles bouche-trou sans couture : fréquences quantifiées sur la durée de boucle, notes repliées, bruit fondu sur lui-même), `extract_keys.py` / `clean_keys.py` (découpe et nettoyage de prises de frappe), `make_validation.py` (famille Validation). Les volumes se règlent sur le **niveau moyen (RMS)**, pas sur le pic : `KeyPress` ≈ -30 dB, refus -31, paliers -18 à -16, moments forts -17 à -15. Régénérer, puis recopier dans `Data/Audio/` : les noms de fichiers étant stables, les familles suivent.
 
 **Lecteurs (Root)**
 
@@ -118,7 +117,7 @@ Les familles « signature » ont une hauteur fixe : un son qu'on doit reconnaît
 
 ## Palettes (daltonisme)
 
-Les couleurs qui **portent un sens** (états des nœuds et des liens, paliers de la jauge, titre de fin de run, Ghost Cache, urgence, étiquettes de la console) viennent de `UiPaletteSO`, une par mode de vision (`GameData/Palettes/` : Standard, Protanopia, Deuteranopia, Tritanopia), réunies dans `UiPaletteCatalogSO` sur le `RootLifetimeScope`. `IPaletteService.Current` suit l'option `ColorVision` de `settings.json` ; les presenters s'y abonnent et repeignent à chaud, comme pour la langue.
+Les couleurs qui **portent un sens** (états des nœuds et des liens, paliers de la jauge, titre de fin de run, urgence, étiquettes de la console) viennent de `UiPaletteSO`, une par mode de vision (`GameData/Palettes/` : Standard, Protanopia, Deuteranopia, Tritanopia), réunies dans `UiPaletteCatalogSO` sur le `RootLifetimeScope`. `IPaletteService.Current` suit l'option `ColorVision` de `settings.json` ; les presenters s'y abonnent et repeignent à chaud, comme pour la langue.
 
 - **Un champ par usage**, pas des rôles génériques : la palette Standard reproduit exactement les teintes d'origine.
 - **Option B (tranchée le 2026-10-01)** : le vert terminal reste le « positif » dans tous les modes ; seuls abordable, danger et spécial changent.
@@ -142,21 +141,25 @@ Le retour au menu principal demande une sauvegarde via `ISaveRequester` (implém
 
 ## Boucle de jeu
 
-*Réécrite le 2026-10-13 : elle décrivait encore la jauge à 100 points et la conversion en racine
-carrée d'août. Les formules et leurs raisons sont dans `game-design.md` ; ici, qui appelle qui.*
+*Réécrite le 2026-10-13 pour la refonte « Time Attack » (jauge fixe à 10 000 UT, plus aucune
+Trace générée par les upgrades). Les formules et leurs raisons sont dans `game-design.md` ; ici,
+qui appelle qui.*
 
 ```
 ScriptCycleRunner (ITickable, Root)
    → par Script : progression du cycle → versement à échéance → Money (+ cumul de la run)
 
-SimulationTicker (ITickable, Scene) — si la run est active, au pas de SimulationClock
-   → GhostCacheSystem.TickOverdrive
-   → brut = trace des Scripts actifs + chaleur du Hardware
-            + traque passive (dès la première Data volée ou le premier Hardware)
-            × réduction de prestige (× malus de l'Overdrive s'il tourne)
-   → réduction des Proxies, saturante : Max × D / (D + κ × brut)   (coupée pendant l'Overdrive)
-   → réduction tenue au-dessus du seuil → GhostCacheSystem.Accumulate
-   → ThreatManager.AddThreat (trace ABSOLUE ; le plafond, poussé à chaque tick, suit la puissance)
+ThreatManager (IStartable, Root) — la vitesse de l'A.M.I., en cache
+   → CombineLatest(TFlops BRUTES, Σ Blindage) → V_AMI = 33 × (1 + 0,05 × brutes)^0,10 ÷ (1 + Σ)
+   → UpgradeManager.OnProxyWipe (secondes) → Wipe = secondes × V_AMI × (1 + Σ Interception)
+
+SimulationTicker (ITickable, Scene) — si la run est active et la traque armée
+                                      (première Data volée, ou Hardware possédé)
+   → ThreatManager.Advance(Δt)                 jauge += V_AMI × Δt, saisie à 10 000 UT
+
+OverclockSystem (Scene) — appui sur Espace ou sur le bouton
+   → ScriptCycleRunner.AdvanceAllActive(0,5 s + Σ Overclock) ; rien ne tourne → ni effet ni coût
+   → ThreatManager.ApplyOverclockPenalty()     jauge += V_AMI × 5 s
 
 TraceReadout (Root) — échantillonne la vérité à intervalle variable : ce que l'UI affiche
 
@@ -187,7 +190,7 @@ l'écran de fin sauvegarderait les générateurs au niveau max avec zéro Trace 
 
 ## Zéro-GC
 
-`SimulationTicker` et `ScriptCycleRunner.Tick()` sont les deux boucles de frame. Elles sont écrites sans allocation, sans closure et sans boxing — tableaux de structs parcourus par index, lectures de `CurrentValue`, garde d'entrée sur `IsGameActive`. **C'est le standard à tenir pour tout nouveau code de frame.**
+`SimulationTicker` et `ScriptCycleRunner.Tick()` sont les deux boucles de frame (le premier n'y fait plus qu'une multiplication et une addition depuis la refonte « Time Attack »). Elles sont écrites sans allocation, sans closure et sans boxing — tableaux de structs parcourus par index, lectures de `CurrentValue`, garde d'entrée sur `IsGameActive`. **C'est le standard à tenir pour tout nouveau code de frame.**
 
 ## Dette structurelle connue
 

@@ -293,39 +293,6 @@ def data_wiper():
     return finish(x, -16, fade_out=0.06)
 
 
-def zero_day_exploit():
-    """Zéro-Day Exploit : une charge électrique qui monte, puis se libère en éclair."""
-    charge_dur = 0.6
-    charge = osc(glide(110, 880, charge_dur), charge_dur, "saw", harmonics=6)
-    trem_rate = glide(8, 40, charge_dur, curve="lin")
-    ph = 0.0
-    for i in range(len(charge)):
-        t = i / SR
-        ph += TAU * trem_rate(t) / SR
-        charge[i] *= (0.15 + 0.85 * t / charge_dur) * (0.6 + 0.4 * math.sin(ph))
-    charge = lowpass(charge, glide(800, 6000, charge_dur))
-    x = []
-    mix(x, charge, 0, 0.7)
-    for _ in range(30):
-        at = charge_dur * math.sqrt(rng.random())  # plus dense vers la fin
-        mix(x, env(highpass(noise(0.002), 5000), attack=0.0002, release=0.0015), at, rng.uniform(0.15, 0.45))
-    # L'éclair : modulation de fréquence qui chute, indice de modulation décroissant.
-    zap_dur = 0.35
-    zap = [0.0] * int(zap_dur * SR)
-    cf = glide(1400, 180, zap_dur)
-    pc = pm = 0.0
-    for i in range(len(zap)):
-        t = i / SR
-        f = cf(t)
-        pm += TAU * f * 1.5 / SR
-        index = 7 * math.exp(-t / 0.08)
-        pc += TAU * f / SR
-        zap[i] = math.sin(pc + index * math.sin(pm))
-    mix(x, env(zap, attack=0.001, decay=0.09, release=0.03), charge_dur, 1.0)
-    mix(x, env(highpass(noise(0.04), 3000), attack=0.0005, decay=0.012, release=0.005), charge_dur, 0.6)
-    return finish(x, -17, fade_out=0.04)
-
-
 SOUNDS = [
     ("sfx_refusal_01", lambda: refusal(196.0, 0.75)),
     ("sfx_refusal_02", lambda: refusal(185.0, 0.7)),
@@ -337,7 +304,6 @@ SOUNDS = [
     ("sfx_prestige_purchase", prestige_purchase),
     ("sfx_exfiltration", exfiltration),
     ("sfx_data_wiper", data_wiper),
-    ("sfx_zero_day_exploit", zero_day_exploit),
 ]
 
 if __name__ == "__main__":

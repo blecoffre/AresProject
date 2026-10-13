@@ -43,9 +43,6 @@ namespace Core.Models.Economy
         public ReadOnlyReactiveProperty<int> CurrentLevel => _currentLevel;
 
         private double _cachedYield;
-        private float _cachedTraceMagnitude;
-        private float _cachedTracePerCycle;
-        private float _cachedTraceCapIncrease;
         private double _cachedCost;
         private float _cachedCycleDuration;
 
@@ -71,20 +68,6 @@ namespace Core.Models.Economy
         /// OnBonusesRecalculated, comme les TFlops — jamais lus dans une boucle chaude.
         /// </summary>
         private SpecificUpgradeBonuses _bonuses = SpecificUpgradeBonuses.None;
-
-        // L'accélération par les Proxies a été retirée le 2026-09-10 : un Proxy dissipe,
-        // il n'accélère plus rien. Voir UpgradeManager.RecalculateTotals.
-
-        /// <summary>
-        /// Multiplicateur temporaire de rendement, poussé par l'UpgradeManager. Sert le Zéro-Day
-        /// Exploit (×50 pendant 30 s) et vaut 1 le reste du temps.
-        ///
-        /// Il n'agit que sur les Scripts, et cette restriction n'est pas cosmétique : chez un
-        /// Hardware, GetCurrentYield() EST sa contribution en TFlops. Le laisser passer
-        /// multiplierait par 50 la capacité de calcul du joueur, donc la compression des cycles
-        /// et le rendement de tous les Scripts — un buff temporaire deviendrait permanent.
-        /// </summary>
-        private double _globalYieldMultiplier = 1d;
 
         /// <summary>
         /// Réduction GLOBALE du multiplicateur de coût, apportée par le prestige. Poussée par
@@ -157,25 +140,6 @@ namespace Core.Models.Economy
 
 
         /// <summary>
-        /// Met à jour le multiplicateur temporaire de rendement. Même garde d'égalité que
-        /// SetTFlops : la valeur est poussée à tous les Scripts à chaque recalcul des totaux,
-        /// alors qu'elle ne bouge qu'aux deux extrémités d'un Overdrive.
-        /// </summary>
-        public void SetGlobalYieldMultiplier(double multiplier)
-        {
-            double safe = multiplier < 1d ? 1d : multiplier;
-            if (safe == _globalYieldMultiplier) return;
-
-            _globalYieldMultiplier = safe;
-            RecalculateCache();
-        }
-
-        /// <summary>
-        /// Met à jour la réduction GLOBALE du multiplicateur de coût. Même garde d'égalité que
-        /// SetTFlops : la valeur est poussée à tous les modèles à chaque recalcul des bonus,
-        /// alors qu'elle ne bouge qu'à l'achat d'un nœud de prestige.
-        /// </summary>
-        /// <summary>
         /// Abaissement GLOBAL du palier d'automatisation. Ne touche pas au cache : le palier
         /// se recalcule à la lecture, il n'entre dans aucune formule mise en cache.
         /// </summary>
@@ -184,6 +148,11 @@ namespace Core.Models.Economy
             _globalAutomationReduction = reduction < 0f ? 0f : reduction;
         }
 
+        /// <summary>
+        /// Met à jour la réduction GLOBALE du multiplicateur de coût. Même garde d'égalité que
+        /// SetTFlops : la valeur est poussée à tous les modèles à chaque recalcul des bonus,
+        /// alors qu'elle ne bouge qu'à l'achat d'un nœud de prestige.
+        /// </summary>
         public void SetGlobalCostMultiplierReduction(float reduction)
         {
             float safe = reduction < 0f ? 0f : reduction;
@@ -294,34 +263,60 @@ namespace Core.Models.Economy
         public float GetCurrentCycleDuration() => _cachedCycleDuration;
 
         /// <summary>
-        /// Magnitude de Trace par seconde, à ce niveau. Le SENS dépend du type du générateur :
-        /// c'est une <b>génération</b> pour un Script ou un Hardware, mais une <b>dissipation</b>
-        /// pour un Proxy — dont le rendement de production vaut zéro et dont tout l'effet passe
-        /// par ce champ. Le nom du champ de données (`traceGeneratedPerSecond`) ment pour ce
-        /// troisième cas ; l'interprétation du signe appartient à l'UpgradeManager, qui est le
-        /// seul à connaître le type.
-        /// </summary>
-        public float GetTraceMagnitudePerSecond() => _cachedTraceMagnitude;
-
-        /// <summary>
-        /// Trace laissée par UN cycle complet. N'a de sens que pour un Script — vaut 0 ailleurs,
-        /// le Hardware et les Proxies n'ayant pas de cycle.
+        /// Secondes de survie que rendraient les <paramref name="levels"/> PROCHAINS niveaux de
+        /// ce Proxy, avant la branche Interception. Vaut 0 hors Proxy.
         ///
-        /// C'est la grandeur de référence depuis le 2026-08-31 : « les Scripts produisent de
-        /// l'argent et de la trace à chaque utilisation ». <see cref="GetTraceMagnitudePerSecond"/>
-        /// n'en est que la dérivée temporelle, exposée telle quelle pour que le pipeline de Trace
-        /// existant (dissipation continue, Ghost Cache) reste inchangé et que la jauge avance en
-        /// continu plutôt que par à-coups à chaque échéance.
+        /// Chaque niveau compte avec les paliers de SON rang : acheter du niveau 8 au niveau 12
+        /// paie deux niveaux nus et trois au palier ×1,32 du niveau 10. Un lot ×100 qui franchit
+        /// trois paliers en tient donc compte au cran près, plutôt que d'appliquer à tout le lot
+        /// le palier de son dernier niveau.
+        ///
+        /// Pas de cache : la valeur ne sert qu'à l'achat et à l'affichage du générateur, jamais
+        /// dans une boucle de frame. Le parcours suit les paliers par tranches, sans itérer
+        /// niveau par niveau — un MAX peut porter des milliers de niveaux.
         /// </summary>
-        public float GetTracePerCycle() => _cachedTracePerCycle;
+        public double GetWipeSecondsForNextLevels(int levels)
+        {
+            if (levels <= 0 || Config.WipeSeconds <= 0d) return 0d;
 
-        /// <summary>
-        /// Plafond de Trace apporté par ce générateur. MULTIPLIÉ par le niveau, contrairement à
-        /// la trace générée qui est forfaitaire : c'est l'asymétrie voulue par le GD. Approfondir
-        /// une machine améliore son refroidissement sans augmenter son encombrement, ce qui donne
-        /// au joueur un levier défensif abordable à côté de l'achat du palier suivant.
-        /// </summary>
-        public float GetTraceCapIncrease() => _cachedTraceCapIncrease;
+            int cursor = _level + 1;
+            int last = _level + levels;
+
+            var milestones = Config.Milestones;
+            double factor = 1d;
+            int next = 0;
+
+            // Paliers déjà acquis au premier niveau du lot. Le générateur trie les paliers par
+            // niveau : on avance simplement dans la liste.
+            while (next < milestones.Count && milestones[next].Level <= cursor)
+            {
+                if (milestones[next].Effect == MilestoneEffect.WipeMultiplier) factor *= milestones[next].Factor;
+                next++;
+            }
+
+            double weightedLevels = 0d;
+
+            while (cursor <= last)
+            {
+                // Tranche à facteur constant : jusqu'à la veille du prochain palier, ou la fin du lot.
+                int segmentEnd = last;
+                if (next < milestones.Count && milestones[next].Level - 1 < segmentEnd)
+                {
+                    segmentEnd = milestones[next].Level - 1;
+                }
+
+                weightedLevels += factor * (segmentEnd - cursor + 1);
+                cursor = segmentEnd + 1;
+
+                while (next < milestones.Count && milestones[next].Level <= cursor)
+                {
+                    if (milestones[next].Effect == MilestoneEffect.WipeMultiplier) factor *= milestones[next].Factor;
+                    next++;
+                }
+            }
+
+            return Config.WipeSeconds * weightedLevels;
+        }
 
         /// <summary>Rendement théorique par seconde si le cycle tourne en continu. Sert à l'affichage.</summary>
         public double GetYieldPerSecond()
@@ -361,17 +356,13 @@ namespace Core.Models.Economy
             // base », « réduit le temps de cycle »). Les paliers puis les TFlops s'appliquent
             // ensuite par-dessus, et le plancher tranche en dernier.
             // « Puissance » du générateur : niveau × paliers de rendement, rapportée au niveau 1.
-            // Grandeur SANS UNITÉ, et c'est ce qui lui permet de servir de socle à la fois au
-            // rendement et à la Trace — c'est elle qui porte le couplage arrêté le 2026-08-31.
             double power = level;
 
             float duration = Config.BaseCycleDuration * (1f - Math.Min(_balancing.MaxTargetedReduction, _bonuses.TimeReduction));
 
-            // Paliers de Trace, isolés des paliers de rendement : sur un Proxy c'est un bonus de
-            // dissipation, sur un Script ou un Hardware un malus de génération.
-            float traceMilestoneFactor = 1f;
-
-            // Paliers : effets multiplicatifs, cumulatifs, et définitifs une fois atteints.
+            // Paliers : effets multiplicatifs, cumulatifs, et définitifs une fois atteints. Les
+            // paliers de Wipe des Proxies n'entrent dans aucun cache : ils se lisent niveau par
+            // niveau, à l'achat (GetWipeSecondsForNextLevels).
             var milestones = Config.Milestones;
             for (int i = 0; i < milestones.Count; i++)
             {
@@ -386,10 +377,6 @@ namespace Core.Models.Economy
 
                     case MilestoneEffect.DurationMultiplier:
                         duration *= milestone.Factor;
-                        break;
-
-                    case MilestoneEffect.TraceMultiplier:
-                        traceMilestoneFactor *= milestone.Factor;
                         break;
                 }
             }
@@ -410,14 +397,6 @@ namespace Core.Models.Economy
 
             yield *= tflopsYieldFactor;
 
-            // Zéro-Day Exploit, tout à la fin de la chaîne de rendement et pour les seuls
-            // Scripts : chez un Hardware ce « rendement » est sa capacité en TFlops, et la
-            // multiplier par 50 rendrait le joueur quasi indétectable au lieu de le mettre à nu.
-            if (Config.Type == UpgradeType.Script)
-            {
-                yield *= _globalYieldMultiplier;
-            }
-
             // Compression par les TFlops. L'exposant est ce qui a remplacé le mur du 2026-08-30 :
             // à 1 on retrouve la formule linéaire d'origine, qui saturait contre MinCycleDuration
             // et tuait le pilier Hardware ; sous 1 elle s'étale sur toute la partie sans jamais
@@ -431,65 +410,6 @@ namespace Core.Models.Economy
             // de TFlops. Ce qui reste n'est qu'un garde-fou de boucle pour le ScriptCycleRunner.
             float finalDuration = Math.Max(_balancing.AbsoluteMinCycleDuration, (float)compressed);
 
-            // ------------------------------------------------------------------
-            // Trace. Trois régimes, un seul principe : elle suit la PUISSANCE du générateur,
-            // élevée à un exposant strictement compris entre 0 et 1.
-            //
-            // C'est la synthèse de deux échecs successifs. À l'exposant 1 (avant le 2026-08-30),
-            // monter un générateur accélérait les gains ET la mort dans la même proportion : une
-            // run rapportait 133 Datas quoi que fasse le joueur. À l'exposant 0 (le « coût de
-            // surface » du 2026-08-30), la génération devenait bornée à 28 192/s pour le jeu
-            // ENTIER face à une dissipation non bornée : 2,7 M$ de Proxies achetaient
-            // l'invulnérabilité définitive. Entre les deux, progresser paie sans jamais
-            // supprimer le danger.
-            // ------------------------------------------------------------------
-            float traceMagnitude;
-            float tracePerCycle = 0f;
-
-            if (Config.Type == UpgradeType.Proxy)
-            {
-                // Le Proxy garde un couplage LINÉAIRE, et il le doit : sa magnitude n'est pas une
-                // génération mais une DISSIPATION. L'amortir rendrait un Proxy de niveau 50 à
-                // peine meilleur qu'un de niveau 1. C'est la saturation appliquée par le
-                // SimulationTicker qui borne son effet, pas cette formule. Lui seul voit le
-                // « boost de rendement » du prestige amplifier sa magnitude — sur un Script il
-                // augmenterait la trace, soit l'exact inverse d'un bonus.
-                traceMagnitude = (float)(Config.BaseTraceGeneratedPerSecond * power)
-                               * (1f + _bonuses.YieldBoost) * traceMilestoneFactor;
-            }
-            else if (level <= 0)
-            {
-                // Un générateur jamais acheté n'expose pas le joueur.
-                traceMagnitude = 0f;
-            }
-            else if (Config.Type == UpgradeType.Script)
-            {
-                // La trace d'un Script se compte PAR CYCLE — « produire de l'argent et de la
-                // trace à chaque utilisation ». La puissance inclut ici le boost de rendement des
-                // TFlops : grossir un Script comme le doper au Hardware attire l'attention.
-                //
-                // Le facteur BaseCycleDuration convertit la donnée historique, exprimée par
-                // seconde, en une quantité par cycle : au niveau 1, sans palier ni TFlops, les
-                // deux écritures coïncident exactement. Les JSON gardent donc la même unité
-                // qu'avant, et aucune des 45 valeurs de trace n'a besoin d'être réécrite.
-                tracePerCycle = (float)(Config.BaseTraceGeneratedPerSecond * Config.BaseCycleDuration
-                                        * Math.Pow(power * tflopsYieldFactor, _balancing.TraceYieldExponent))
-                              * traceMilestoneFactor;
-
-                // Dérivée temporelle, seule forme que consomme le pipeline de Trace. Comprimer un
-                // cycle augmente donc le $/s ET le Trace/s dans la même proportion : le Hardware
-                // accélère les deux horloges à la fois, il n'est jamais un bouclier.
-                traceMagnitude = tracePerCycle / finalDuration;
-            }
-            else
-            {
-                // Hardware : même exposant, mais en continu — il n'a pas de cycle, il chauffe dès
-                // l'achat. Sa puissance ne reçoit pas tflopsYieldFactor, qui vaut 1 pour lui.
-                traceMagnitude = (float)(Config.BaseTraceGeneratedPerSecond
-                                         * Math.Pow(power, _balancing.TraceYieldExponent))
-                               * traceMilestoneFactor;
-            }
-
             // Multiplicateur de coût effectif : la réduction GLOBALE de prestige aplatit la
             // courbe entière, mais jamais en dessous de 1,01 — sous ce seuil le coût cesse de
             // croître et l'économie n'a plus de frein. C'est aussi ce plancher qui garantit un
@@ -499,22 +419,6 @@ namespace Core.Models.Economy
                 Config.CostMultiplier - _globalCostMultiplierReduction);
 
             _cachedYield = yield;
-            _cachedTraceMagnitude = traceMagnitude;
-            _cachedTracePerCycle = tracePerCycle;
-            // Le plafond suit la PUISSANCE au même exposant que la trace, depuis le
-            // 2026-08-31. Il valait `base × niveau`, et le GDD assumait cette asymétrie tant que
-            // la trace était forfaitaire — mais elle suit désormais puissance^0,6, et un plafond
-            // linéaire décroche aussitôt. Mesuré : avec l'arbre de prestige entièrement acheté,
-            // le brut était multiplié par 98 quand le plafond ne gagnait que 8 %, et une run de
-            // fin de partie tombait de 1 766 s à 82 s.
-            //
-            // Les deux grandeurs partagent donc l'exposant, ce qui rend la contribution du
-            // Hardware à la survie CONSTANTE en proportion, donc calable : le rapport entre
-            // `traceCapIncrease` et `traceGeneratedPerSecond` d'un palier dit, à lui seul,
-            // combien de secondes de survie cette machine achète contre sa propre chaleur.
-            _cachedTraceCapIncrease = level > 0
-                ? (float)(Config.BaseTraceCapIncrease * Math.Pow(power, _balancing.TraceYieldExponent))
-                : 0f;
             _cachedCycleDuration = finalDuration;
             _cachedCostMultiplier = costMultiplier;
             _cachedLogCostMultiplier = Math.Log(costMultiplier);

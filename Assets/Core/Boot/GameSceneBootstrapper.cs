@@ -79,9 +79,9 @@ namespace Core.Boot
             if (keyboard.pKey.wasPressedThisFrame) _prestigePanel.ToggleFromKeyboard();
 
             // Une pression = un Overclock, exactement comme un clic. Pas de répétition au maintien :
-            // le modèle d'équilibrage traite le clic comme « une MAIN, pas un auto-clicker », avec
-            // une fatigue qui allonge les pauses. Une touche que l'on garde enfoncée retirerait
-            // cette fatigue et changerait l'économie, pas seulement le confort.
+            // chaque appui coûte cinq secondes de survie, une touche gardée enfoncée viderait la
+            // jauge sans que le joueur l'ait décidé. L'OverclockSystem impose en plus 0,1 s entre
+            // deux appuis pris en compte, contre le double clic et la touche martelée.
             if (keyboard.spaceKey.wasPressedThisFrame) _clickerPresenter.OnClickActionTriggered();
         }
 

@@ -12,21 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c843462bcc362c409285299e6c41c3c, type: 3}
   m_Name: BalancingConfig
   m_EditorClassIdentifier: Assembly-CSharp::Core.Models.Economy.BalancingConfigSO
-  _baseTraceCap: 5000000
-  _maxTraceReduction: 0.85
-  _dissipationHalfPointRatio: 0.3
-  _traceYieldExponent: 0.6
+  _amiTraceCap: 10000
+  _amiBaseSpeed: 33
+  _amiTFlopsFactor: 0.05
+  _amiSpeedExponent: 0.1
   _victoryTFlops: 500000000000
-  _dynamicTraceCap: 1
-  _dynamicCapReferenceYield: 300000
-  _passiveTraceFillMinutes: 6
   _traceReadoutMinInterval: 0.5
   _traceReadoutMaxInterval: 60
   _traceReadoutReferenceFillRate: 0.001
   _traceReadoutPessimism: 3
   _traceReadoutSensorPower: 1
   _traceReadoutSensorReferenceTFlops: 1000
-  _ghostCacheReductionThreshold: 0.7
   _tflopsTimeCompression: 0.05
   _tflopsCompressionExponent: 0.25
   _tflopsYieldExponent: 0.15
@@ -48,10 +44,8 @@ MonoBehaviour:
     _bonus: 0.5
     _requiresUnlock: 1
   _overclockWarpSeconds: 0.5
-  _ghostCacheCapacitySeconds: 90
-  _overdriveDurationSeconds: 30
-  _overdriveYieldMultiplier: 50
-  _overdriveTraceMultiplier: 10
+  _overclockPenaltySeconds: 5
+  _overclockMinIntervalSeconds: 0.1
   _emergencyBaseRequiredTFlops: 50
   _emergencyRequirementMultiplier: 3
   _emergencyTraceReduction: 0.25

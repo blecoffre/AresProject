@@ -15,7 +15,7 @@ MonoBehaviour:
   _id: P_EXTRACT_2
   _displayNameKey: PRESTIGE_P_EXTRACT_2_NAME
   _displayDescriptionKey: PRESTIGE_P_EXTRACT_2_DESC
-  _bonusType: 17
+  _bonusType: 12
   _maxLevel: 5
   _baseCost: 1
   _costMultiplier: 1

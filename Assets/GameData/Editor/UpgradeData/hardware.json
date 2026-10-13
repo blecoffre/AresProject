@@ -10,8 +10,6 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 0.81,
-      "traceCapIncrease": 28700.0,
       "milestones": [
         {
           "level": 10,
@@ -45,8 +43,6 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 1.46498,
-      "traceCapIncrease": 51802.7,
       "milestones": [
         {
           "level": 10,
@@ -80,8 +76,6 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 2.6496,
-      "traceCapIncrease": 93502.4,
       "milestones": [
         {
           "level": 10,
@@ -115,8 +109,6 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 4.79214,
-      "traceCapIncrease": 168769.0,
       "milestones": [
         {
           "level": 10,
@@ -150,8 +142,6 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 8.66717,
-      "traceCapIncrease": 304624.0,
       "milestones": [
         {
           "level": 10,
@@ -185,8 +175,6 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 15.6756,
-      "traceCapIncrease": 549837.0,
       "milestones": [
         {
           "level": 10,
@@ -220,8 +208,6 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 28.3513,
-      "traceCapIncrease": 992440.0,
       "milestones": [
         {
           "level": 10,
@@ -255,8 +241,6 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 51.2769,
-      "traceCapIncrease": 1791330.0,
       "milestones": [
         {
           "level": 10,
@@ -290,8 +274,6 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 92.7405,
-      "traceCapIncrease": 3233290.0,
       "milestones": [
         {
           "level": 10,
@@ -325,8 +307,6 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 167.733,
-      "traceCapIncrease": 5836000.0,
       "milestones": [
         {
           "level": 10,
@@ -360,8 +340,6 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 303.365,
-      "traceCapIncrease": 10533800.0,
       "milestones": [
         {
           "level": 10,
@@ -395,8 +373,6 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 548.673,
-      "traceCapIncrease": 19013200.0,
       "milestones": [
         {
           "level": 10,
@@ -430,8 +406,6 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 992.343,
-      "traceCapIncrease": 34318400.0,
       "milestones": [
         {
           "level": 10,
@@ -465,8 +439,6 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 1794.77,
-      "traceCapIncrease": 61943700.0,
       "milestones": [
         {
           "level": 10,
@@ -500,8 +472,6 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 3246.07,
-      "traceCapIncrease": 111807000.0,
       "milestones": [
         {
           "level": 10,
@@ -535,8 +505,6 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 5870.91,
-      "traceCapIncrease": 201808000.0,
       "milestones": [
         {
           "level": 10,
@@ -570,8 +538,6 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 10618.3,
-      "traceCapIncrease": 364257000.0,
       "milestones": [
         {
           "level": 10,
@@ -605,8 +571,6 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 19204.4,
-      "traceCapIncrease": 657474000.0,
       "milestones": [
         {
           "level": 10,
@@ -640,8 +604,6 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 34733.6,
-      "traceCapIncrease": 1186720000.0,
       "milestones": [
         {
           "level": 10,
@@ -675,8 +637,6 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 62820.0,
-      "traceCapIncrease": 2142000000.0,
       "milestones": [
         {
           "level": 10,

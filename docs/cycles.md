@@ -17,7 +17,7 @@
 
 **`GeneratorPresenter`** — l'abordabilité passe par `Select(...).DistinctUntilChanged()` : la vue n'est réveillée qu'au passage « pas assez » → « assez ».
 
-**`OverclockSystem`** — `TriggerManualOverclock()` retourne les secondes réellement accordées, pour que l'UI affiche la vraie valeur (elle croît avec `ClickPowerMultiplier`). Il avance d'abord les cycles en cours, puis réveille les Scripts à l'arrêt **seulement** si `P_OVERCLOCK_AWAKE` est possédé (cf. GDD).
+**`OverclockSystem`** — `TriggerManualOverclock()` avance les cycles **en cours** de `0,5 s + Σ branche Overclock`, puis inflige la pénalité (`V_AMI × 5 s`, via le `ThreatManager`). Il retourne l'issue (`Applied`, `NoActiveCycle`, `Throttled`), les secondes accordées et les UT payées, pour que la console dise les deux. Sans cycle en cours, rien n'avance et rien ne se paie ; deux appuis à moins de 0,1 s (temps réel) n'en font qu'un. Le « réveil » des Scripts à l'arrêt a disparu avec `P_OVERCLOCK_AWAKE` le 2026-10-13 (cf. GDD, « L'Overclock »).
 
 La **durée réelle** d'un cycle ne vient plus des paliers seuls : les TFlops la compriment
 (`DuréeBase / (1 + TFlops × k) ^ exposant`) et majorent le versement. Formules et raisons dans
@@ -39,7 +39,6 @@ La **durée réelle** d'un cycle ne vient plus des paliers seuls : les TFlops la
   "baseCycleDuration": 1.5,
   "durationReductionPerLevel": 0.01,
   "minCycleDuration": 0.2,
-  "traceGeneratedPerSecond": 2.7,
   "automationLevel": 10,
   "milestones": [
     { "level": 10, "effect": "DurationMultiplier", "factor": 0.8 },
@@ -53,17 +52,21 @@ La **durée réelle** d'un cycle ne vient plus des paliers seuls : les TFlops la
   `StreamingAssets/Localization/fr.json`. Un champ `displayName` ou `displayNameKey` resté dans un
   JSON est ignoré, et le générateur l'**avertit**.
 - `type` vaut `Script`, `Hardware` ou `Proxy`.
-- `traceCapIncrease` (Hardware) : contribution au plafond de jauge. **Inactif tant que le plafond
-  dynamique est actif** (`DynamicTraceCap`), qui dérive le plafond de la puissance (GDD).
-- **`traceGeneratedPerSecond` change de sens selon le type** : une génération de Trace pour un
-  Script ou un Hardware, une **dissipation** pour un Proxy. Le nom ment pour ce troisième type.
-- `effect` vaut `YieldMultiplier`, `DurationMultiplier` ou **`TraceMultiplier`**.
-- **`TraceMultiplier` change de sens selon le type**, comme le champ qu'il amplifie : c'est un BONUS pour un Proxy, dont la magnitude est une dissipation, mais un MALUS pour un Script ou un Hardware, dont elle est une génération. Le générateur avertit quand un facteur > 1 est déclaré hors Proxy. Sans ce troisième effet, les paliers ne pouvaient rien faire aux Proxies : leur rendement de production vaut zéro et ils n'ont pas de cycle.
+- **`wipeSeconds` (Proxies uniquement)** : les secondes de survie que rend chaque niveau acheté,
+  avant paliers et branche Interception. Converties en UT à la vitesse de l'A.M.I. au moment de
+  l'achat (GDD, « Les Proxies »). Le générateur avertit pour un Proxy qui n'en porte pas.
+- **Plus aucune Trace dans les upgrades** depuis la refonte « Time Attack » (2026-10-13) :
+  `traceGeneratedPerSecond` et `traceCapIncrease` ont quitté les trois fichiers. Un JSON qui les
+  porterait encore est signalé par le générateur, et le champ ignoré.
+- `effect` vaut `YieldMultiplier`, `DurationMultiplier` ou **`WipeMultiplier`** (ex-`TraceMultiplier`,
+  même index).
+- **`WipeMultiplier` est réservé aux Proxies** : il multiplie leurs secondes de survie, niveau par
+  niveau. Ailleurs il n'a aucun effet, et le générateur avertit.
 - Le générateur **avertit aussi** pour les paliers inertes : un `DurationMultiplier` hors Script, un `YieldMultiplier` sur un rendement de base nul.
 - `factor` > 1 pour un versement, < 1 pour une durée.
 - Les paliers sont **multiplicatifs et cumulatifs** : trois paliers ×2 donnent ×8. C'est ce qui garde un palier lointain spectaculaire malgré la croissance linéaire du niveau. Les Scripts partagent une ladder uniforme (GDD, « Accélération des Scripts »).
 - Les paliers sont triés par niveau à la génération.
-- `automationLevel` et `milestones` sont **optionnels** : sans eux, versement linéaire et seuil d'automatisation à 10. ⚠️ L'automatisation au niveau 10 est **appelée à disparaître** (intention du GD du 2026-09-25, cf. GDD « Refonte de l'arbre »).
+- `automationLevel` et `milestones` sont **optionnels** : sans eux, versement linéaire et seuil d'automatisation à 10. L'automatisation au niveau 10 est **conservée** (GD, 2026-10-13), contrairement à l'intention du 2026-09-25.
 
 **Champs obsolètes, toujours recopiés dans le ScriptableObject pour ne pas perdre la donnée, mais
 plus lus par le jeu :** `durationReductionPerLevel` (remplacé par les paliers) et
@@ -80,4 +83,4 @@ n'a pas été relancé — suivi des deux autres générateurs (voir `etat-des-l
 
 1. Acheter `SCR_01`, cliquer son bouton de lancement : la barre se remplit, l'argent tombe à l'échéance.
 2. Monter au niveau 10 : le bouton disparaît, le cycle s'enchaîne seul.
-3. Avec plusieurs Scripts actifs, un clic sur l'Overclock global (ou Espace) fait bondir toutes les barres et la console annonce la vraie valeur en secondes.
+3. Avec plusieurs Scripts actifs, un clic sur l'Overclock global (ou Espace) fait bondir toutes les barres ; la console annonce la vraie avance en secondes et la pénalité en UT. Sans cycle en cours, elle annonce un Overclock sans effet.

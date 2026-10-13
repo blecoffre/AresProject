@@ -20,8 +20,7 @@ MonoBehaviour:
   _baseCost: 50
   _costMultiplier: 1.23
   _baseProductionYield: 2
-  _traceGeneratedPerSecond: 0.81
-  _traceCapIncrease: 28700
+  _wipeSeconds: 0
   _baseCycleDuration: 1
   _minCycleDuration: 0.1
   _durationReductionPerLevel: 0

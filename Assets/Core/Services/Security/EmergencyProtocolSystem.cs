@@ -73,7 +73,7 @@ namespace Core.Services.Security
                 + _balancing.EmergencyBlockedIncreasePerUse * _timesUsedInCurrentRun.CurrentValue);
 
         /// <summary>Le parc atteint-il le palier requis. Lu sur la capacité EFFECTIVE, immobilisation comprise.</summary>
-        public bool HasEnoughPower => _upgradeManager.TotalTFlops.CurrentValue >= RequiredTFlops;
+        public bool HasEnoughPower => _upgradeManager.NetTFlops.CurrentValue >= RequiredTFlops;
 
         public bool IsOnCooldown => _cooldownRemaining.CurrentValue > 0f;
 

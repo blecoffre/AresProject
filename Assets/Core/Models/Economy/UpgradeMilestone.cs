@@ -14,18 +14,14 @@ namespace Core.Models.Economy
         DurationMultiplier,
 
         /// <summary>
-        /// Multiplie la magnitude de Trace du générateur. <b>Le sens dépend du type</b>, comme le
-        /// champ qu'il amplifie : c'est un BONUS pour un Proxy, dont la magnitude est une
-        /// dissipation, mais un MALUS pour un Script ou un Hardware, dont elle est une génération.
+        /// Multiplie les secondes de survie qu'un Proxy rend à chaque achat. Réservé aux Proxies :
+        /// ils n'ont ni rendement ni cycle, c'est leur seule façon de progresser par niveau.
         ///
-        /// Ce n'est pas un accident : un Script « très lucratif mais très bruyant » est un outil de
-        /// design légitime. Le générateur d'éditeur avertit quand un facteur supérieur à 1 est
-        /// déclaré hors Proxy, pour que ce soit toujours un choix et jamais une surprise.
-        ///
-        /// Sans ce troisième effet, les paliers ne pouvaient rien faire aux Proxies : leur
-        /// rendement de production vaut zéro et ils n'ont pas de cycle.
+        /// S'appelait TraceMultiplier jusqu'au 2026-10-13, quand il amplifiait aussi la Trace
+        /// générée des Scripts et du Hardware. L'index est conservé : il est sérialisé dans les
+        /// .asset générés.
         /// </summary>
-        TraceMultiplier
+        WipeMultiplier
     }
 
     /// <summary>

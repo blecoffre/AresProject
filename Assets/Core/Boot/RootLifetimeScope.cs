@@ -75,9 +75,8 @@ namespace Core.Infrastructure
             // les enregistrements de son parent.
             //
             // En production elle rend Time.deltaTime, ou zéro quand la partie est retenue (menu
-            // principal, menu de pause). Ce n'est pas un point d'extension théorique : c'est ce
-            // qui permet au harnais d'équilibrage de dérouler une campagne de dix heures en
-            // quelques secondes, hors Play Mode, sur CE code plutôt que sur une réplique.
+            // principal, menu de pause). C'est aussi le point d'entrée d'un futur harnais de
+            // mesure : dérouler une campagne hors Play Mode, sur CE code plutôt que sur une réplique.
             // ISimulationClock à part : lire le temps et le suspendre sont deux droits distincts.
             builder.Register<SimulationClock>(Lifetime.Singleton).As<ITimeSource>().As<ISimulationClock>();
 
@@ -144,7 +143,10 @@ namespace Core.Infrastructure
             // s'abonner à StartingComputerPower pour tenir les TFlops à jour.
             builder.Register<UpgradeManager>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
             builder.Register<PrestigeManager>(Lifetime.Singleton);
-            builder.Register<ThreatManager>(Lifetime.Singleton);
+
+            // IStartable depuis la refonte « Time Attack » : il s'abonne aux TFlops brutes et au
+            // Blindage pour tenir la vitesse de l'A.M.I. en cache, et aux achats de Proxies.
+            builder.Register<ThreatManager>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
 
             // Le capteur imparfait posé sur la jauge. AsImplementedInterfaces pour son ITickable :
             // il doit s'écouler même quand rien d'autre ne bouge, sinon l'âge du relevé se fige.
@@ -157,10 +159,6 @@ namespace Core.Infrastructure
             // La sortie volontaire termine une run : elle appartient à la partie, pas à
             // l'affichage, donc au scope racine comme le reste.
             builder.Register<ExfiltrationSystem>(Lifetime.Singleton);
-
-            // Le Ghost Cache accumule de l'état de run et survit au rechargement de la
-            // GameScene : scope racine, comme le reste de la simulation.
-            builder.Register<GhostCacheSystem>(Lifetime.Singleton);
 
             // La victoire est un fait de CAMPAGNE : elle survit au wipe, elle est sauvegardée, et
             // elle doit être armée avant que le gateway ne restaure la partie. AsImplementedInterfaces

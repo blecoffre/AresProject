@@ -82,24 +82,17 @@ namespace Core.UI.Prestige
                 case PrestigeBonusType.GlobalComputeMultiplier:
                     return loc.GetText("UI_PRESTIGE_EFFECT_COMPUTE", AsPercent(perLevel));
 
-                case PrestigeBonusType.TraceReduction:
-                    return loc.GetText("UI_PRESTIGE_EFFECT_TRACE", AsPercent(perLevel));
-
-                case PrestigeBonusType.ClickPowerMultiplier:
-                    return loc.GetText("UI_PRESTIGE_EFFECT_CLICK", AsPercent(perLevel));
-
                 case PrestigeBonusType.CostMultiplierReduction:
                     return loc.GetText("UI_PRESTIGE_EFFECT_COSTINFLATION", AsPercent(perLevel));
 
-                // Les trois branches de survie et de sortie. Elles étaient absentes de ce switch
-                // depuis leur création — le Blindage depuis le 2026-08-31 — et tombaient donc dans
-                // le `default` : une LogError pour le développeur, et une ligne d'effet VIDE pour
-                // le joueur sur onze nœuds, dont toute la colonne vertébrale de la méta.
-                case PrestigeBonusType.TraceCapacityMultiplier:
-                    return loc.GetText("UI_PRESTIGE_EFFECT_TRACE_CAPACITY", AsPercent(perLevel));
+                // Les branches du compte à rebours. Le Blindage divise la vitesse de l'A.M.I. par
+                // (1 + Σ) : un apport de 0,5 fait donc tenir la jauge 50 % plus longtemps, et la
+                // lecture en pourcentage reste juste en cumulé (Σ = 10, ×11, +1 000 %).
+                case PrestigeBonusType.HardenBonus:
+                    return loc.GetText("UI_PRESTIGE_EFFECT_HARDEN", AsPercent(perLevel));
 
-                case PrestigeBonusType.ProxyEfficiencyMultiplier:
-                    return loc.GetText("UI_PRESTIGE_EFFECT_PROXY_EFFICIENCY", AsPercent(perLevel));
+                case PrestigeBonusType.InterceptBonus:
+                    return loc.GetText("UI_PRESTIGE_EFFECT_INTERCEPT", AsPercent(perLevel));
 
                 case PrestigeBonusType.CleanExitBonusMultiplier:
                     return loc.GetText("UI_PRESTIGE_EFFECT_CLEAN_EXIT", AsPercent(perLevel));
@@ -107,9 +100,6 @@ namespace Core.UI.Prestige
                 // Un NOMBRE DE NIVEAUX, pas un pourcentage : pas d'AsPercent ici.
                 case PrestigeBonusType.GlobalAutomationReduction:
                     return loc.GetText("UI_PRESTIGE_EFFECT_AUTOMATION_GLOBAL", perLevel);
-
-                case PrestigeBonusType.ExploitYieldBoost:
-                    return loc.GetText("UI_PRESTIGE_EFFECT_EXPLOIT_YIELD", AsPercent(perLevel));
 
                 case PrestigeBonusType.SpecificUpgradeCostReduction:
                     return loc.GetText("UI_PRESTIGE_EFFECT_SPECIFIC_COST", AsPercent(perLevel), TargetName(config, loc));
@@ -130,18 +120,13 @@ namespace Core.UI.Prestige
                 case PrestigeBonusType.StartingComputerPower:
                     return loc.GetText("UI_PRESTIGE_EFFECT_START_TFLOPS", CurrencyFormatter.Format(perLevel));
 
-                case PrestigeBonusType.UnlockExploitCharges:
-                    return loc.GetText("UI_PRESTIGE_EFFECT_EXPLOIT_CHARGES", Mathf.RoundToInt(perLevel));
-
-                case PrestigeBonusType.ExploitTracePenaltyReduction:
-                    return loc.GetText("UI_PRESTIGE_EFFECT_EXPLOIT_TRACE", perLevel);
+                // Des SECONDES d'avance, ajoutées à celles de base : pas un pourcentage.
+                case PrestigeBonusType.OverclockBonus:
+                    return loc.GetText("UI_PRESTIGE_EFFECT_OVERCLOCK", perLevel);
 
                 // ---- Déblocages : aucun nombre n'a de sens -----------------------------------
                 case PrestigeBonusType.UnlockEmergencyButton:
                     return loc.GetText("UI_PRESTIGE_EFFECT_UNLOCK_EMERGENCY");
-
-                case PrestigeBonusType.OverclockWakesScripts:
-                    return loc.GetText("UI_PRESTIGE_EFFECT_OVERCLOCK_WAKE");
 
                 case PrestigeBonusType.UnlockHighRiskExtraction:
                     return loc.GetText("UI_PRESTIGE_EFFECT_UNLOCK_HIGHRISK");

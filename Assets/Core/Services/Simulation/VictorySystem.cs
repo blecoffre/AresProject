@@ -55,14 +55,14 @@ namespace Core.Services.Simulation
         /// L'abonnement se prend ici et non dans le constructeur : un constructeur appelé par le
         /// conteneur ne doit pas avoir d'effets de bord.
         ///
-        /// <b>Aucun coût par frame.</b> <c>TotalTFlops</c> ne bouge qu'au recalcul des totaux —
+        /// <b>Aucun coût par frame.</b> <c>NetTFlops</c> ne bouge qu'au recalcul des totaux —
         /// achat de Hardware, bonus de prestige, tranche immobilisée par le Data Wiper — donc
         /// jamais dans la boucle de jeu. Scruter le seuil dans un Tick aurait coûté une comparaison
         /// par frame pour un événement qui survient une fois par partie.
         /// </summary>
         public void Start()
         {
-            _upgrades.TotalTFlops
+            _upgrades.NetTFlops
                      .Subscribe(Evaluate)
                      .AddTo(ref _disposables);
         }
@@ -85,7 +85,7 @@ namespace Core.Services.Simulation
         /// Restauré depuis la sauvegarde.
         ///
         /// ⚠️ <b>Doit être appelé AVANT <c>UpgradeManager.InitializeFromSave</c>.</b> Celui-ci
-        /// recalcule les totaux, donc pousse une valeur dans <c>TotalTFlops</c> : sur une partie
+        /// recalcule les totaux, donc pousse une valeur dans <c>NetTFlops</c> : sur une partie
         /// déjà gagnée, l'abonnement ci-dessus rejouerait la victoire à chaque chargement si le
         /// drapeau n'était pas déjà posé. Voir l'ordre dans <c>GameStateGateway.Restore</c>.
         ///

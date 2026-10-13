@@ -15,7 +15,7 @@ MonoBehaviour:
   _id: P_EXTRACT_HIGHRISK
   _displayNameKey: PRESTIGE_P_EXTRACT_HIGHRISK_NAME
   _displayDescriptionKey: PRESTIGE_P_EXTRACT_HIGHRISK_DESC
-  _bonusType: 19
+  _bonusType: 14
   _maxLevel: 1
   _baseCost: 1
   _costMultiplier: 1

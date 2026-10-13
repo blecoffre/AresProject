@@ -9,7 +9,7 @@
       "bonus": 0.5,
       "posX": 2.0,
       "posY": -1.0,
-      "prerequisiteId": "P_STEALTH"
+      "prerequisiteId": "P_ROOT"
     },
     {
       "id": "P_EXTRACT_2",

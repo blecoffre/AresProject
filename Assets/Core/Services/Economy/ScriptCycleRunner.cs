@@ -48,19 +48,6 @@ namespace Core.Services.Economy
 
         private DisposableBag _disposables;
 
-        /// <summary>
-        /// Trace par seconde des seuls Scripts dont un cycle tourne à cet instant.
-        ///
-        /// Champ simple et non ReactiveProperty, volontairement : la valeur change à chaque
-        /// frame, et notifier ~15 abonnés soixante fois par seconde pour un unique lecteur
-        /// (le SimulationTicker) serait du gaspillage pur.
-        ///
-        /// Elle est rafraîchie à la fin de Tick(). Si le SimulationTicker s'exécute avant ce
-        /// runner sur une frame donnée, il lit la valeur de la frame précédente — un décalage
-        /// d'une frame sur une jauge qui met des minutes à se remplir, sans conséquence.
-        /// </summary>
-        public float ActiveScriptTracePerSecond { get; private set; }
-
         public ScriptCycleRunner(
             UserCurrencies currencies,
             UpgradeManager upgradeManager,
@@ -129,50 +116,27 @@ namespace Core.Services.Economy
         }
 
         /// <summary>
-        /// Avance tous les cycles actifs d'un nombre de secondes donné.
-        /// C'est le rôle de l'Overclock manuel : un coup de fouet sur ce qui tourne déjà,
-        /// pas un démarrage.
+        /// Avance tous les cycles actifs d'un nombre de secondes donné, et retourne combien l'ont
+        /// été. C'est le rôle de l'Overclock : un coup de fouet sur ce qui tourne déjà, pas un
+        /// démarrage. Zéro veut dire qu'il n'y avait rien à accélérer — l'Overclock ne coûte
+        /// alors rien.
         /// </summary>
-        public void AdvanceAllActive(float seconds)
+        public int AdvanceAllActive(float seconds)
         {
-            if (seconds <= 0f) return;
-            if (!_sessionManager.IsGameActive.CurrentValue) return;
+            if (seconds <= 0f) return 0;
+            if (!_sessionManager.IsGameActive.CurrentValue) return 0;
+
+            int advanced = 0;
 
             for (int i = 0; i < _slotCount; i++)
             {
                 if (!_slots[i].IsRunning) continue;
+
                 AdvanceSlot(i, seconds);
-            }
-        }
-
-        /// <summary>
-        /// Démarre d'un coup tous les Scripts POSSÉDÉS dont le cycle est à l'arrêt, et retourne
-        /// combien l'ont été. C'est le « réveil » de l'Overclock, réservé au nœud de prestige
-        /// tardif qui le débloque.
-        ///
-        /// Les Scripts automatisés n'y figurent jamais : ils repartent seuls au Tick suivant, et
-        /// les compter donnerait un retour trompeur au joueur (« 12 réveillés » alors que rien
-        /// n'aurait changé). Boucle indexée, aucune allocation.
-        /// </summary>
-        public int StartAllIdle()
-        {
-            if (!_sessionManager.IsGameActive.CurrentValue) return 0;
-
-            int started = 0;
-
-            for (int i = 0; i < _slotCount; i++)
-            {
-                if (_slots[i].IsRunning) continue;
-                if (!_slots[i].Model.IsOwned) continue;
-                if (_slots[i].Model.IsAutomated) continue;
-
-                _slots[i].IsRunning = true;
-                _slots[i].Elapsed = 0f;
-                _slots[i].Running.Value = true;
-                started++;
+                advanced++;
             }
 
-            return started;
+            return advanced;
         }
 
         public void Tick()
@@ -182,7 +146,6 @@ namespace Core.Services.Economy
             if (!_sessionManager.IsGameActive.CurrentValue) return;
 
             float deltaTime = _time.DeltaTime;
-            float activeTrace = 0f;
 
             for (int i = 0; i < _slotCount; i++)
             {
@@ -202,15 +165,8 @@ namespace Core.Services.Economy
                     }
                 }
 
-                // Un Script ne laisse de trace que TANT QU'IL TOURNE : l'A.M.I. ne repère le
-                // piratage que lorsqu'il est actif. Le cumul se fait dans la boucle qu'on
-                // parcourt déjà — un simple accumulateur float, aucune allocation.
-                activeTrace += _slots[i].Model.GetTraceMagnitudePerSecond();
-
                 AdvanceSlot(i, deltaTime);
             }
-
-            ActiveScriptTracePerSecond = activeTrace;
         }
 
         private void AdvanceSlot(int index, float seconds)
@@ -286,10 +242,6 @@ namespace Core.Services.Economy
 
             _slotCount = 0;
             _slotIndexById.Clear();
-
-            // Sans cette remise à zéro, la Trace des cycles d'AVANT le wipe continuerait à
-            // remplir la jauge tant qu'aucune frame n'a recalculé l'accumulateur.
-            ActiveScriptTracePerSecond = 0f;
         }
 
         public void Dispose()

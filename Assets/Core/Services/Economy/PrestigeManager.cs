@@ -53,17 +53,29 @@ namespace Core.Services.Economy
 
         // Propriétés réactives globales que le reste du jeu écoutera
         public ReactiveProperty<float> GlobalComputeMultiplier { get; } = new(1f);
-        public ReactiveProperty<float> TraceReductionMultiplier { get; } = new(1f);
+
+        private readonly ReactiveProperty<float> _totalHardenBonus = new(0f);
+        private readonly ReactiveProperty<float> _totalInterceptBonus = new(0f);
+        private readonly ReactiveProperty<float> _totalOverclockBonus = new(0f);
 
         /// <summary>
-        /// Multiplicateur de la DISSIPATION de tout le parc de Proxies, apporté par la branche
-        /// Interception. Vaut 1 sans aucun nœud acheté.
-        ///
-        /// Le pendant du Blindage : celui-ci achète de la marge avant saisie, celui-là achète du
-        /// débit dissipé. C'est ce qui permet aux Proxies de partir faibles et de le devenir
-        /// moins — sans lui, les affaiblir au départ les condamnait pour toute la partie.
+        /// Somme de la branche Blindage. La vitesse de l'A.M.I. est DIVISÉE par
+        /// <c>1 + cette somme</c> : à 10, l'arbre complet, une jauge dure onze fois plus
+        /// longtemps. Vaut 0 sans aucun nœud acheté.
         /// </summary>
-        public ReactiveProperty<float> ProxyEfficiencyMultiplier { get; } = new(1f);
+        public ReadOnlyReactiveProperty<float> TotalHardenBonus => _totalHardenBonus;
+
+        /// <summary>
+        /// Somme de la branche Interception. Le Wipe d'un Proxy est MULTIPLIÉ par
+        /// <c>1 + cette somme</c>. Vaut 0 sans aucun nœud acheté.
+        /// </summary>
+        public ReadOnlyReactiveProperty<float> TotalInterceptBonus => _totalInterceptBonus;
+
+        /// <summary>
+        /// Somme de la branche Overclock, en SECONDES ajoutées à l'avance de base d'un Overclock.
+        /// Elle ne touche jamais la pénalité. Vaut 0 sans aucun nœud acheté.
+        /// </summary>
+        public ReadOnlyReactiveProperty<float> TotalOverclockBonus => _totalOverclockBonus;
 
         /// <summary>
         /// Multiplie le bonus des paliers d'extraction. Jamais sous 1 : un noeud d'Extraction ne
@@ -77,48 +89,10 @@ namespace Core.Services.Economy
         /// </summary>
         public ReactiveProperty<float> GlobalAutomationReduction { get; } = new(0f);
 
-        /// <summary>
-        /// Multiplicateur du PLAFOND de la jauge de Trace, apporté par la branche Blindage.
-        /// Vaut 1 sans aucun nœud acheté.
-        ///
-        /// Distinct de <see cref="TraceReductionMultiplier"/>, qui agit sur le DÉBIT : celui-ci
-        /// achète de la marge avant saisie, l'autre ralentit le remplissage. Le premier fait
-        /// grandir les runs, le second les prolonge — et seul le premier compose d'une run à
-        /// l'autre, puisqu'il permet de construire plus haut avant de mourir.
-        /// </summary>
-        public ReactiveProperty<float> TraceCapacityMultiplier { get; } = new(1f);
-        public ReactiveProperty<float> ClickPowerMultiplier { get; } = new(1f);
         public ReactiveProperty<float> CostMultiplierReduction { get; } = new(0f);
         public ReactiveProperty<double> StartingMoney { get; } = new(0d);
         public ReactiveProperty<double> StartingComputerPower { get; } = new(0d);
         public ReactiveProperty<bool> IsEmergencyUnlocked { get; } = new(false);
-
-        /// <summary>
-        /// Nombre de charges de Ghost Cache que le joueur peut stocker. <b>Vaut 0 par défaut</b> :
-        /// le Zéro-Day Exploit est verrouillé tant que le nœud `P_EXPLOIT_CHARGES` n'a pas été
-        /// acheté au moins une fois. Le Ghost Cache continue de capter l'excédent, mais la
-        /// capacité étant nulle, rien ne s'accumule.
-        /// </summary>
-        public ReactiveProperty<int> ExploitMaxCharges { get; } = new(0);
-
-        /// <summary>
-        /// Majoration du multiplicateur de rendement de l'Exploit, en fraction. 1 = doublement du
-        /// ×50 de base, donc ×100. Additif et non exponentiel, comme tous les bonus du projet.
-        /// </summary>
-        public ReactiveProperty<double> ExploitYieldBoost { get; } = new(0d);
-
-        /// <summary>
-        /// Points retirés au malus de Trace de l'Exploit. Le multiplicateur effectif vaut
-        /// `×10 − cette valeur`, borné à ×1 : le joueur ne peut jamais rendre l'Exploit indolore.
-        /// </summary>
-        public ReactiveProperty<float> ExploitTracePenaltyReduction { get; } = new(0f);
-
-        /// <summary>
-        /// Le clic d'Overclock démarre-t-il aussi les Scripts à l'arrêt. Faux par défaut : le
-        /// lancement manuel est une contrainte assumée du début et du milieu de partie, et ce
-        /// nœud tardif ne sert qu'à fluidifier les runs de haut niveau.
-        /// </summary>
-        public ReactiveProperty<bool> OverclockWakesScripts { get; } = new(false);
 
         /// <summary>
         /// Les paliers d'extraction marqués « sous condition » — aujourd'hui le seul palier à
@@ -126,15 +100,6 @@ namespace Core.Services.Economy
         /// proposé dès la première run, alors que le joueur pilote encore à l'aveugle.
         /// </summary>
         public ReactiveProperty<bool> IsHighRiskExtractionUnlocked { get; } = new(false);
-
-        /// <summary>
-        /// L'Overclock manuel — la barre d'espace — est-il débloqué.
-        ///
-        /// ⚠️ Exposé mais PAS encore consommé : personne ne lit cette propriété pour l'instant, et
-        /// le clic reste libre. La brancher retirerait l'Overclock à toute sauvegarde ne possédant
-        /// pas le nœud, c'est-à-dire à toutes celles qui existent.
-        /// </summary>
-        public ReactiveProperty<bool> IsSpacebarUnlocked { get; } = new(false);
 
         public PrestigeManager(PrestigeCatalogSO catalog, UserCurrencies currencies)
         {
@@ -274,22 +239,16 @@ namespace Core.Services.Economy
             _specificBonuses.Clear();
 
             float computeBonus = 0f;
-            float traceReduction = 0f;
-            float clickBonus = 0f;
+            float hardenBonus = 0f;
+            float interceptBonus = 0f;
+            float overclockBonus = 0f;
             float costReduction = 0f;
             double startingFunds = 0d;
             double startingPower = 0d;
-            float traceCapacityBonus = 0f;
-            float proxyEfficiencyBonus = 0f;
             float cleanExitBonus = 0f;
             float automationReduction = 0f;
             bool emergencyUnlocked = false;
-            int exploitCharges = 0;
-            double exploitYieldBoost = 0d;
-            float exploitTraceRelief = 0f;
-            bool overclockWakes = false;
             bool highRiskExtraction = false;
-            bool spacebar = false;
 
             foreach (var kvp in _prestigeLevels)
             {
@@ -305,16 +264,19 @@ namespace Core.Services.Economy
                         computeBonus += totalBonus;
                         break;
 
-                    case PrestigeBonusType.TraceReduction:
-                        traceReduction += totalBonus;
+                    // Les trois branches du compte à rebours. Toutes trois des SOMMES, que les
+                    // systèmes appliquent en (1 + Σ) ou en secondes ajoutées : aucun nœud ne peut
+                    // rendre le joueur plus fragile qu'à l'origine.
+                    case PrestigeBonusType.HardenBonus:
+                        hardenBonus += totalBonus;
                         break;
 
-                    case PrestigeBonusType.TraceCapacityMultiplier:
-                        traceCapacityBonus += totalBonus;
+                    case PrestigeBonusType.InterceptBonus:
+                        interceptBonus += totalBonus;
                         break;
 
-                    case PrestigeBonusType.ProxyEfficiencyMultiplier:
-                        proxyEfficiencyBonus += totalBonus;
+                    case PrestigeBonusType.OverclockBonus:
+                        overclockBonus += totalBonus;
                         break;
 
                     case PrestigeBonusType.CleanExitBonusMultiplier:
@@ -323,10 +285,6 @@ namespace Core.Services.Economy
 
                     case PrestigeBonusType.GlobalAutomationReduction:
                         automationReduction += totalBonus;
-                        break;
-
-                    case PrestigeBonusType.ClickPowerMultiplier:
-                        clickBonus += totalBonus;
                         break;
 
                     case PrestigeBonusType.CostMultiplierReduction:
@@ -347,32 +305,10 @@ namespace Core.Services.Economy
                         if (currentLevel > 0) emergencyUnlocked = true;
                         break;
 
-                    // Arrondi et non troncature : un BonusPerLevel de 1 stocké en float peut
-                    // valoir 0,99999994, et (int)(0,99999994 × 5) rendrait 4 charges au lieu de 5.
-                    case PrestigeBonusType.UnlockExploitCharges:
-                        exploitCharges += UnityEngine.Mathf.RoundToInt(totalBonus);
-                        break;
-
-                    case PrestigeBonusType.ExploitYieldBoost:
-                        exploitYieldBoost += totalBonus;
-                        break;
-
-                    case PrestigeBonusType.ExploitTracePenaltyReduction:
-                        exploitTraceRelief += totalBonus;
-                        break;
-
-                    case PrestigeBonusType.OverclockWakesScripts:
-                        if (currentLevel > 0) overclockWakes = true;
-                        break;
-
-                    // Déblocage booléen, comme les deux précédents : seul le fait de posséder le
-                    // nœud compte, la magnitude n'aurait aucun sens.
+                    // Déblocage booléen, comme le précédent : seul le fait de posséder le nœud
+                    // compte, la magnitude n'aurait aucun sens.
                     case PrestigeBonusType.UnlockHighRiskExtraction:
                         if (currentLevel > 0) highRiskExtraction = true;
-                        break;
-
-                    case PrestigeBonusType.UnlockSpacebarAction:
-                        if (currentLevel > 0) spacebar = true;
                         break;
 
                     // La racine n'a aucun effet : elle ne sert qu'à ancrer l'arbre. Le cas est
@@ -401,29 +337,22 @@ namespace Core.Services.Economy
 
             // Application mathématique des bonus
             GlobalComputeMultiplier.Value = 1f + computeBonus;
-            TraceReductionMultiplier.Value = UnityEngine.Mathf.Max(0.1f, 1f - traceReduction); // Ne pas descendre sous 10%
 
-            // Additif comme les six autres bonus cumulés, puis appliqué en multiplicateur :
-            // dix rangs à +0,5 donnent ×6, pas ×0,5^10. Jamais sous 1 — un nœud de Blindage ne
-            // peut pas rendre le joueur plus fragile qu'à l'origine.
-            TraceCapacityMultiplier.Value = UnityEngine.Mathf.Max(1f, 1f + traceCapacityBonus);
+            // Jamais sous zéro : un nœud ne peut pas accélérer l'A.M.I., affaiblir un Proxy ou
+            // retirer de l'avance à l'Overclock.
+            _totalHardenBonus.Value = UnityEngine.Mathf.Max(0f, hardenBonus);
+            _totalInterceptBonus.Value = UnityEngine.Mathf.Max(0f, interceptBonus);
+            _totalOverclockBonus.Value = UnityEngine.Mathf.Max(0f, overclockBonus);
 
-            // Jamais sous 1, comme le Blindage : un nœud d'Interception ne peut pas rendre les
-            // Proxies moins efficaces qu'à l'origine.
-            ProxyEfficiencyMultiplier.Value = UnityEngine.Mathf.Max(1f, 1f + proxyEfficiencyBonus);
+            // Jamais sous 1 : un nœud d'Extraction ne peut pas rendre une sortie propre moins
+            // payante qu'à l'origine.
             CleanExitBonusMultiplier.Value = UnityEngine.Mathf.Max(1f, 1f + cleanExitBonus);
             GlobalAutomationReduction.Value = UnityEngine.Mathf.Max(0f, automationReduction);
-            ClickPowerMultiplier.Value = 1f + clickBonus;
             CostMultiplierReduction.Value = costReduction;
             StartingMoney.Value = startingFunds;
             StartingComputerPower.Value = startingPower;
             IsEmergencyUnlocked.Value = emergencyUnlocked;
-            ExploitMaxCharges.Value = exploitCharges < 0 ? 0 : exploitCharges;
-            ExploitYieldBoost.Value = exploitYieldBoost < 0d ? 0d : exploitYieldBoost;
-            ExploitTracePenaltyReduction.Value = exploitTraceRelief < 0f ? 0f : exploitTraceRelief;
-            OverclockWakesScripts.Value = overclockWakes;
             IsHighRiskExtractionUnlocked.Value = highRiskExtraction;
-            IsSpacebarUnlocked.Value = spacebar;
 
             // Émis EN DERNIER, une fois la table et les scalaires cohérents. C'est ce signal qui
             // pousse les bonus ciblés dans les UpgradeModel : sans lui, ils seraient ignorés au
@@ -431,7 +360,6 @@ namespace Core.Services.Economy
             // le prestige (étape 3).
             _onBonusesRecalculated.OnNext(Unit.Default);
         }
-
         private enum UpgradePrestigeNodeBonusType { Cost, Yield, Time, Automation }
 
         /// <summary>
@@ -492,22 +420,16 @@ namespace Core.Services.Economy
             _specificBonuses.Clear();
 
             GlobalComputeMultiplier.Dispose();
-            TraceReductionMultiplier.Dispose();
-            TraceCapacityMultiplier.Dispose();
-            ProxyEfficiencyMultiplier.Dispose();
+            _totalHardenBonus.Dispose();
+            _totalInterceptBonus.Dispose();
+            _totalOverclockBonus.Dispose();
             CleanExitBonusMultiplier.Dispose();
             GlobalAutomationReduction.Dispose();
-            ClickPowerMultiplier.Dispose();
             CostMultiplierReduction.Dispose();
             StartingMoney.Dispose();
             StartingComputerPower.Dispose();
             IsEmergencyUnlocked.Dispose();
-            ExploitMaxCharges.Dispose();
-            ExploitYieldBoost.Dispose();
-            ExploitTracePenaltyReduction.Dispose();
-            OverclockWakesScripts.Dispose();
             IsHighRiskExtractionUnlocked.Dispose();
-            IsSpacebarUnlocked.Dispose();
         }
     }
 }

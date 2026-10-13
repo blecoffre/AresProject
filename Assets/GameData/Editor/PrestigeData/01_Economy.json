@@ -21,39 +21,6 @@
       "posX": -2.0,
       "posY": 2.0,
       "prerequisiteId": "P_REFAC"
-    },
-    {
-      "id": "P_EXPLOIT_CHARGES",
-      "bonusType": "UnlockExploitCharges",
-      "maxLevel": 1,
-      "baseCost": 1.0,
-      "costMult": 1.0,
-      "bonus": 5.0,
-      "posX": 2.0,
-      "posY": 4.0,
-      "prerequisiteId": "P_EMERG"
-    },
-    {
-      "id": "P_EXPLOIT_MULT",
-      "bonusType": "ExploitYieldBoost",
-      "maxLevel": 5,
-      "baseCost": 1.0,
-      "costMult": 1.0,
-      "bonus": 1.0,
-      "posX": 4.0,
-      "posY": 4.0,
-      "prerequisiteId": "P_EXPLOIT_CHARGES"
-    },
-    {
-      "id": "P_EXPLOIT_TRACE_REDUC",
-      "bonusType": "ExploitTracePenaltyReduction",
-      "maxLevel": 3,
-      "baseCost": 1.0,
-      "costMult": 1.0,
-      "bonus": 2.5,
-      "posX": 3.0,
-      "posY": 5.0,
-      "prerequisiteId": "P_EXPLOIT_CHARGES"
     }
   ]
 }

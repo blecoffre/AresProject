@@ -38,7 +38,7 @@
     },
     {
       "Key": "LOG_MANUAL_OVERCLOCK",
-      "Value": "Overclock manuel : +{0} s sur les cycles en cours."
+      "Value": "Overclock : +{0} s sur les cycles en cours. Jauge +{1:0} UT."
     },
     {
       "Key": "LOG_UPGRADE_PURCHASED",
@@ -621,60 +621,12 @@
       "Value": "> Redémarrage du système..."
     },
     {
-      "Key": "UI_GHOSTCACHE_CHARGING",
-      "Value": "[GHOST CACHE] Mise en cache du surplus : {0} %"
-    },
-    {
-      "Key": "UI_GHOSTCACHE_READY",
-      "Value": "[ARMÉ ×{0}] ZÉRO-DAY EXPLOIT — rendement x{1:0.#} pendant {2:0.#} s / proxies hors ligne, trace x{3:0.#}"
-    },
-    {
-      "Key": "UI_GHOSTCACHE_ACTIVE",
-      "Value": "[EXPLOIT] À DÉCOUVERT — {0} s"
-    },
-    {
-      "Key": "LOG_OVERDRIVE_START",
-      "Value": "> zeroday.sh --unleash : proxies hors ligne, rendement x50. Tiens bon."
-    },
-    {
-      "Key": "LOG_OVERDRIVE_END",
-      "Value": "> Exploit épuisé. Proxies de nouveau en ligne."
-    },
-    {
       "Key": "UI_PRESTIGE_TREE_OPEN",
       "Value": "[ NOYAU IA — ARBRE ]"
     },
     {
       "Key": "UI_PRESTIGE_TREE_CLOSE",
       "Value": "[ FERMER ]"
-    },
-    {
-      "Key": "UI_GHOSTCACHE_LOCKED",
-      "Value": "[VERROUILLÉ] Ghost Cache — requiert le nœud Capacité du Ghost Cache"
-    },
-    {
-      "Key": "PRESTIGE_P_EXPLOIT_CHARGES_NAME",
-      "Value": "Capacité du Ghost Cache"
-    },
-    {
-      "Key": "PRESTIGE_P_EXPLOIT_CHARGES_DESC",
-      "Value": "Débloque le Zéro-Day Exploit et permet de stocker une charge de Ghost Cache supplémentaire par rang."
-    },
-    {
-      "Key": "PRESTIGE_P_EXPLOIT_MULT_NAME",
-      "Value": "Optimisation de l'Exploit"
-    },
-    {
-      "Key": "PRESTIGE_P_EXPLOIT_MULT_DESC",
-      "Value": "Majore le rendement du Zéro-Day Exploit de 10 % par rang, au-dessus du x50 de base."
-    },
-    {
-      "Key": "PRESTIGE_P_EXPLOIT_TRACE_REDUC_NAME",
-      "Value": "Isolation Réseau"
-    },
-    {
-      "Key": "PRESTIGE_P_EXPLOIT_TRACE_REDUC_DESC",
-      "Value": "Allège le malus de Trace subi pendant l'Exploit, sans jamais pouvoir le supprimer."
     },
     {
       "Key": "UI_EMERGENCY_LOCKED",
@@ -715,18 +667,6 @@
     {
       "Key": "PRESTIGE_P_OVERCLOCK_POWER_3_DESC",
       "Value": "Pousse le gain de temps de l'overclock manuel à son maximum."
-    },
-    {
-      "Key": "PRESTIGE_P_OVERCLOCK_AWAKE_NAME",
-      "Value": "Injecteur Automatique"
-    },
-    {
-      "Key": "PRESTIGE_P_OVERCLOCK_AWAKE_DESC",
-      "Value": "L'Overclock relance désormais tous les scripts à l'arrêt, en plus d'accélérer ceux qui tournent."
-    },
-    {
-      "Key": "LOG_MANUAL_OVERCLOCK_WAKE",
-      "Value": "> Overclock : +{0} s sur les cycles actifs, {1} script(s) relancé(s)."
     },
     {
       "Key": "LOG_EMERGENCY_WIPE",
@@ -773,14 +713,6 @@
       "Value": "Des machines qui survivent au formatage. Tu redémarres chaque run avec de la puissance de calcul déjà en place."
     },
     {
-      "Key": "PRESTIGE_P_STEALTH_NAME",
-      "Value": "Furtivité"
-    },
-    {
-      "Key": "PRESTIGE_P_STEALTH_DESC",
-      "Value": "Réduit toute la Trace générée, avant même que les proxies n'entrent en jeu."
-    },
-    {
       "Key": "PRESTIGE_P_EMERG_NAME",
       "Value": "Protocole d'Urgence"
     },
@@ -794,7 +726,7 @@
     },
     {
       "Key": "PRESTIGE_P_HARDEN_1_DESC",
-      "Value": "Du grillage de poulailler agrafé aux murs du sous-sol. Ridicule, mais l'A.M.I. doit accumuler bien plus avant de lancer la saisie."
+      "Value": "Du grillage de poulailler agrafé aux murs du sous-sol. Ridicule, mais l'A.M.I. met nettement plus longtemps à remonter jusqu'à toi."
     },
     {
       "Key": "PRESTIGE_P_HARDEN_2_NAME",
@@ -802,7 +734,7 @@
     },
     {
       "Key": "PRESTIGE_P_HARDEN_2_DESC",
-      "Value": "Une machine qui chauffe est une machine qui parle. Augmente encore la marge avant saisie."
+      "Value": "Une machine qui chauffe est une machine qui parle. L'A.M.I. ralentit encore."
     },
     {
       "Key": "PRESTIGE_P_HARDEN_3_NAME",
@@ -818,7 +750,7 @@
     },
     {
       "Key": "PRESTIGE_P_HARDEN_4_DESC",
-      "Value": "Béton, sas étanche, et une réserve de nouilles pour six mois. La jauge de Trace encaisse un ordre de grandeur de plus."
+      "Value": "Béton, sas étanche, et une réserve de nouilles pour six mois. L'A.M.I. s'y casse les dents bien plus longtemps."
     },
     {
       "Key": "PRESTIGE_P_INTERCEPT_1_NAME",
@@ -826,7 +758,7 @@
     },
     {
       "Key": "PRESTIGE_P_INTERCEPT_1_DESC",
-      "Value": "Tu arrêtes de demander poliment ton chemin au fournisseur d'accès. Tous tes proxies dissipent un peu mieux."
+      "Value": "Tu arrêtes de demander poliment ton chemin au fournisseur d'accès. Chaque proxy acheté brouille un peu plus ta piste."
     },
     {
       "Key": "PRESTIGE_P_INTERCEPT_2_NAME",
@@ -993,20 +925,8 @@
       "Value": "> Multiplicateur global de calcul : +{0:0.##} % par niveau"
     },
     {
-      "Key": "UI_PRESTIGE_EFFECT_TRACE",
-      "Value": "> Trace générée : -{0:0.##} % par niveau"
-    },
-    {
-      "Key": "UI_PRESTIGE_EFFECT_CLICK",
-      "Value": "> Puissance de l'Overclock : +{0:0.##} % par niveau"
-    },
-    {
       "Key": "UI_PRESTIGE_EFFECT_COSTINFLATION",
       "Value": "> Inflation des coûts : -{0:0.##} % par niveau"
-    },
-    {
-      "Key": "UI_PRESTIGE_EFFECT_EXPLOIT_YIELD",
-      "Value": "> Rendement du Zéro-Day : +{0:0.##} % par niveau"
     },
     {
       "Key": "UI_PRESTIGE_EFFECT_SPECIFIC_COST",
@@ -1023,14 +943,6 @@
     {
       "Key": "UI_PRESTIGE_EFFECT_AUTOMATION",
       "Value": "> Réduction du palier d'automatisation de {1} : -{0} par niveau"
-    },
-    {
-      "Key": "UI_PRESTIGE_EFFECT_TRACE_CAPACITY",
-      "Value": "> Plafond de la jauge de Trace : +{0:0.##} % par niveau"
-    },
-    {
-      "Key": "UI_PRESTIGE_EFFECT_PROXY_EFFICIENCY",
-      "Value": "> Dissipation de tous les Proxies : +{0:0.##} % par niveau"
     },
     {
       "Key": "UI_PRESTIGE_EFFECT_CLEAN_EXIT",
@@ -1057,20 +969,8 @@
       "Value": "> TFlops au démarrage d'une run : +{0} par niveau"
     },
     {
-      "Key": "UI_PRESTIGE_EFFECT_EXPLOIT_CHARGES",
-      "Value": "> Charges de Ghost Cache stockables : +{0} par niveau"
-    },
-    {
-      "Key": "UI_PRESTIGE_EFFECT_EXPLOIT_TRACE",
-      "Value": "> Malus de Trace du Zéro-Day : -{0:0.##} points par niveau"
-    },
-    {
       "Key": "UI_PRESTIGE_EFFECT_UNLOCK_EMERGENCY",
       "Value": "> Débloque le Data Wiper"
-    },
-    {
-      "Key": "UI_PRESTIGE_EFFECT_OVERCLOCK_WAKE",
-      "Value": "> L'Overclock relance les Scripts à l'arrêt"
     },
     {
       "Key": "UI_BUY_ONE",
@@ -1163,14 +1063,6 @@
     {
       "Key": "UI_YIELD_PER_SECOND",
       "Value": "+{0}/s"
-    },
-    {
-      "Key": "PRESTIGE_P_OVERCLOCK_SPACEBAR_NAME",
-      "Value": "Accélérateur Manuel"
-    },
-    {
-      "Key": "PRESTIGE_P_OVERCLOCK_SPACEBAR_DESC",
-      "Value": "Du nouveau matériel te permet de pousser l’overclock encore plus loin"
     },
     {
       "Key": "MENU_TITLE",
@@ -1415,6 +1307,30 @@
     {
       "Key": "MENU_START",
       "Value": "[ COMMENCER ]"
+    },
+    {
+      "Key": "LOG_MANUAL_OVERCLOCK_IDLE",
+      "Value": "Overclock sans effet : aucun cycle en cours."
+    },
+    {
+      "Key": "LOG_PROXY_WIPE",
+      "Value": "> Brouillage : jauge −{0:0} UT."
+    },
+    {
+      "Key": "UI_PROXY_WIPE",
+      "Value": "Efface {0} s de traque par achat"
+    },
+    {
+      "Key": "UI_PRESTIGE_EFFECT_HARDEN",
+      "Value": "> Temps avant saisie : +{0:0.##} % (l'A.M.I. ralentit)"
+    },
+    {
+      "Key": "UI_PRESTIGE_EFFECT_INTERCEPT",
+      "Value": "> Brouillage de chaque Proxy acheté : +{0:0.##} % par niveau"
+    },
+    {
+      "Key": "UI_PRESTIGE_EFFECT_OVERCLOCK",
+      "Value": "> Avance de l'Overclock : +{0:0.##} s par niveau"
     }
   ]
 }

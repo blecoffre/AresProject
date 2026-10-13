@@ -31,7 +31,6 @@ namespace Core.Services.Persistence
         private readonly ThreatManager _threatManager;
         private readonly TraceReadout _traceReadout;
         private readonly EmergencyProtocolSystem _emergencyProtocol;
-        private readonly GhostCacheSystem _ghostCache;
         private readonly GameSessionManager _sessionManager;
         private readonly BuyQuantitySelector _buyQuantity;
         private readonly VictorySystem _victory;
@@ -81,7 +80,6 @@ namespace Core.Services.Persistence
             ThreatManager threatManager,
             TraceReadout traceReadout,
             EmergencyProtocolSystem emergencyProtocol,
-            GhostCacheSystem ghostCache,
             GameSessionManager sessionManager,
             BuyQuantitySelector buyQuantity,
             VictorySystem victory)
@@ -92,7 +90,6 @@ namespace Core.Services.Persistence
             _threatManager = threatManager;
             _traceReadout = traceReadout;
             _emergencyProtocol = emergencyProtocol;
-            _ghostCache = ghostCache;
             _sessionManager = sessionManager;
             _buyQuantity = buyQuantity;
             _victory = victory;
@@ -121,7 +118,7 @@ namespace Core.Services.Persistence
 
             // ⚠️ La victoire se restaure ICI, AVANT les générateurs de l'étape 2 — et l'ordre est
             // la seule chose qui empêche le bug. InitializeFromSave recalcule les totaux, donc
-            // pousse une valeur dans TotalTFlops, que le VictorySystem observe : sur une partie
+            // pousse une valeur dans NetTFlops, que le VictorySystem observe : sur une partie
             // déjà gagnée, poser le drapeau après rejouerait la séquence de victoire à chaque
             // ouverture du jeu.
             _victory.Restore(data.HasWon);
@@ -134,14 +131,8 @@ namespace Core.Services.Persistence
             FillLevels(data.PrestigeUpgrades, _prestigeLevels);
             _prestigeManager.InitializeFromSave(_prestigeLevels);
 
-            // 4. État de menace de la run
-            //
-            // Le plafond D'ABORD : il se compose du parc Hardware, restauré à l'étape 2, et la
-            // trace restaurée est plafonnée par lui. L'ordre inverse écrêterait sur le plafond de
-            // base et rendrait une trace trop faible à qui possède du matériel.
-            _threatManager.SetCapacity(
-                _upgradeManager.TraceCapacityBonus.CurrentValue,
-                _prestigeManager.TraceCapacityMultiplier.CurrentValue);
+            // 4. État de menace de la run. Le plafond est fixe depuis la refonte « Time Attack » :
+            // plus rien à recomposer avant de restaurer la jauge.
             _threatManager.RestoreTrace(Mathf.Min(data.CurrentTrace, _threatManager.TraceCap * MaxRestorableThreat));
 
             // Le capteur se recale sur la valeur restaurée, sans délai. Sans ça il croirait voir
@@ -152,7 +143,6 @@ namespace Core.Services.Persistence
                 data.EmergencyUsesInRun,
                 data.EmergencyBlockRemainingSeconds,
                 data.EmergencyCooldownRemainingSeconds);
-            _ghostCache.RestoreCharge(data.GhostCacheSeconds);
             _sessionManager.RestoreElapsed(data.RunElapsedSeconds);
 
             // 5. Préférences d'interface
@@ -194,7 +184,6 @@ namespace Core.Services.Persistence
             _buffer.EmergencyUsesInRun = _emergencyProtocol.UsesInCurrentRun;
             _buffer.EmergencyBlockRemainingSeconds = _emergencyProtocol.BlockRemaining.CurrentValue;
             _buffer.EmergencyCooldownRemainingSeconds = _emergencyProtocol.CooldownRemaining.CurrentValue;
-            _buffer.GhostCacheSeconds = _ghostCache.ChargeSeconds.CurrentValue;
             _buffer.RunElapsedSeconds = _sessionManager.RunElapsedSeconds;
 
             _buffer.BuyQuantityMode = _buyQuantity.Capture();

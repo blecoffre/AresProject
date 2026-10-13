@@ -2,116 +2,72 @@
 
 namespace Core.Models.Economy
 {
+    /// <summary>
+    /// Ce qu'un nœud de prestige apporte.
+    ///
+    /// ⚠️ <b>L'index est sérialisé dans les .asset générés.</b> Un type s'APPEND en fin de liste.
+    /// En retirer un décale tous les suivants : ce n'est permis qu'en régénérant TOUT l'arbre
+    /// dans la foulée (les trois outils de `Tools/Core`, dans l'ordre), ce qui a été fait le
+    /// 2026-10-13 quand la refonte « Time Attack » a retiré la Furtivité, le Zéro-Day, le réveil
+    /// et la barre d'espace. Une insertion au milieu sans régénération avait fait croire à
+    /// P_EXPLOIT_CHARGES qu'il était un nœud d'automatisation, le 2026-08-30.
+    /// </summary>
     public enum PrestigeBonusType
     {
-        GlobalComputeMultiplier, // Multiplicateur global de TFlops
-        TraceReduction,          // Réduction passive de la Trace
-        ClickPowerMultiplier,    // Puissance du clic manuel
-        CostMultiplierReduction, // Réduction de l'inflation des coûts (M)
+        GlobalComputeMultiplier, // Multiplicateur des TFlops nettes (P_DATAM)
+
+        /// <summary>
+        /// Secondes AJOUTÉES à l'avance d'un Overclock (branche Overclock). S'appelait
+        /// ClickPowerMultiplier quand l'Overclock multipliait une avance de base.
+        /// </summary>
+        OverclockBonus,
+
+        CostMultiplierReduction, // Retranché du multiplicateur de coût de base (P_REFAC)
         StartingMoney,            // Argent de départ pour la prochaine Run
         StartingComputerPower,   // Botnets persistants
-        UnlockEmergencyButton,    // Déblocage du système d'urgence
+        UnlockEmergencyButton,    // Déblocage du Data Wiper
         SpecificUpgradeCostReduction, // Réduit le coût de base
         SpecificUpgradeYieldBoost,    // Augmente le rendement de base
         SpecificUpgradeTimeReduction, // Réduit le temps de cycle
 
-        // Zéro-Day Exploit. Appendés en fin d'enum à dessein : l'index est sérialisé dans les
-        // .asset générés, une insertion au milieu redéfinirait silencieusement tous les nœuds.
-        UnlockExploitCharges,         // Nombre de charges de Ghost Cache stockables (0 = verrouillé)
-        ExploitYieldBoost,            // Majore le multiplicateur de rendement de l'Exploit
-        ExploitTracePenaltyReduction, // Allège le malus de Trace subi pendant l'Exploit
-
-        // Le clic d'Overclock réveille les Scripts à l'arrêt. Nœud tardif : galérer au lancement
-        // manuel fait partie de l'expérience pendant une bonne partie de la partie.
-        OverclockWakesScripts,
-
-        // Palier d'automatisation des Scripts. APPENDÉ EN FIN, comme tous les autres :
-        // ce type avait été inséré après SpecificUpgradeTimeReduction, ce qui a décalé de un
-        // l'index de TOUTE la famille Zéro-Day dans les .asset déjà générés. Symptôme relevé
-        // en console le 2026-08-30 : P_EXPLOIT_CHARGES se croyait un nœud d'automatisation.
-        // Seuls les Scripts sont concernés : eux seuls relancent des cycles.
+        // Palier d'automatisation d'un Script. Seuls les Scripts relancent des cycles.
         SpecificUpgradeAutomationTresholdReduction,
 
-        // Blindage — multiplie le PLAFOND de la jauge de Trace. Ajouté le 2026-08-31, et
-        // appendé en fin comme tous les autres, pour la raison ci-dessus.
-        //
-        // C'est la colonne vertébrale de la méta-progression, et elle manquait. Mesuré en
-        // simulation de campagne : sans elle, le joueur enchaînait 125 runs identiques de
-        // quatre minutes — aucun des 134 nœuds ne déplaçait la contrainte qui met fin à une
-        // run. Multiplier le plafond par 1 000 fait passer une run de fin de partie de 6 à
-        // 80 050 CPU Cycles. Chaque prestige laisse survivre plus longtemps, donc construire
-        // plus haut, donc gagner plus, donc racheter du plafond : c'est la boucle qui rend
-        // une campagne progressive au lieu d'un tapis roulant.
-        TraceCapacityMultiplier,
+        /// <summary>
+        /// Blindage — S'AJOUTE au diviseur de la vitesse de l'A.M.I. :
+        /// <c>V_AMI ÷ (1 + Σ Blindage)</c>. S'appelait TraceCapacityMultiplier quand il
+        /// multipliait le plafond de la jauge, devenu fixe le 2026-10-13.
+        ///
+        /// La colonne vertébrale de la méta-progression : c'est le seul levier qui allonge une
+        /// run sans rien dépenser pendant celle-ci.
+        /// </summary>
+        HardenBonus,
 
-        // Interception — multiplie la DISSIPATION de tout le parc de Proxies. Ajouté le
-        // 2026-09-10, appendé en fin comme tous les autres : l'index est sérialisé.
-        //
-        // Le pendant défensif du Blindage. Celui-ci achète de la MARGE avant saisie, celui-là
-        // achète du DÉBIT dissipé — les deux moitiés de la survie, séparées parce qu'elles ne
-        // se règlent pas ensemble.
-        //
-        // Il existe parce que les nœuds ciblés qui visaient les Proxies plafonnaient à +50 % de
-        // dissipation : bien trop faible pour tenir la promesse « les Proxies deviennent viables
-        // en les améliorant au prestige ». Sans lui, affaiblir les Proxies de départ rendait la
-        // défense inutilisable pour toujours, au lieu de la rendre méritée.
-        ProxyEfficiencyMultiplier,
+        /// <summary>
+        /// Interception — multiplie le Wipe de tout Proxy acheté : <c>× (1 + Σ Interception)</c>.
+        /// S'appelait ProxyEfficiencyMultiplier quand il multipliait une dissipation continue.
+        /// </summary>
+        InterceptBonus,
 
-        // Extraction — multiplie le bonus des PALIERS d'exfiltration. Ajouté le 2026-09-10,
-        // appendé en fin comme tous les autres : l'index est sérialisé.
+        // Extraction — multiplie le bonus des PALIERS d'exfiltration.
         //
         // La seule branche qui récompense la manière de jouer plutôt que la puissance brute.
-        // Les paliers valent +15/+30/+50 % nus ; cette branche les fait monter, donc plus le
-        // joueur investit ici, plus il a de raisons d'aller chercher le palier suivant — et
-        // plus une saisie lui coûte cher. Elle achète de l'appât, pas de la sécurité.
+        // Elle achète de l'appât, pas de la sécurité.
         CleanExitBonusMultiplier,
 
         /// Automatisation GLOBALE — abaisse le palier d'auto-relance de TOUS les Scripts d'un
-        /// coup. Ajouté le 2026-09-15, appendé en fin comme tous les autres : l'index est
-        /// sérialisé.
-        ///
-        /// Remplace quinze nœuds ciblés, un par Script, qui éparpillaient le même effet. Mesuré
-        /// avant la fusion : la famille d'automatisation pesait NÉGATIVEMENT sur la puissance
-        /// d'une campagne — elle ne porte pas de production, elle porte un objectif, celui
-        /// d'arrêter de cliquer. Un objectif se donne une fois, pas quinze.
+        /// coup. Plus aucun nœud ne la porte depuis le retrait de P_AUTO_GLOBAL (2026-10-02).
         GlobalAutomationReduction,
 
         /// Extraction Haut Risque — ouvre les paliers d'extraction marqués « sous condition »,
-        /// aujourd'hui le seul palier à 90 %. Ajouté le 2026-09-16, appendé en fin comme tous les
-        /// autres : l'index est sérialisé dans les .asset générés.
-        ///
-        /// Le palier le plus dangereux était proposé dès la première run, alors que le joueur n'a
-        /// encore aucun capteur et pilote à l'aveugle : il invitait sans être tenable. Mesuré sans
-        /// capteur, la posture qui le visait mourait 15 fois sur 18 et plafonnait à 2,7 % de
-        /// l'arbre. Le réserver à qui s'est équipé transforme un piège en pari.
-        ///
-        /// Déblocage booléen : comme UnlockEmergencyButton, seul le fait de posséder le nœud
-        /// compte, sa magnitude n'a aucun sens.
+        /// aujourd'hui le seul palier à 90 %. Déblocage booléen : seul le fait de posséder le
+        /// nœud compte, sa magnitude n'a aucun sens.
         UnlockHighRiskExtraction,
 
         /// <summary>
         /// La racine de l'arbre, et rien d'autre. Aucun effet, aucune magnitude.
-        ///
-        /// Existe parce que P_ROOT portait jusqu'ici StartingMoney : la racine, que tout joueur
-        /// possède d'office, offrait donc discrètement des fonds de départ. Le rôle structurel et
-        /// le bonus étaient confondus dans un seul nœud.
-        ///
-        /// Appendé en fin, comme tous les autres : l'index est sérialisé dans les .asset générés.
         /// </summary>
-        Root,
-
-        /// <summary>
-        /// Rend l'Overclock manuel — la barre d'espace — disponible.
-        ///
-        /// Déblocage booléen. Le clic manuel cesse d'être acquis d'emblée pour devenir une
-        /// récompense tardive : il triplait la cadence des Scripts dès la première seconde, et
-        /// tout l'équilibrage mesuré à ce jour le suppose martelé à cinq coups par seconde.
-        ///
-        /// ⚠️ Le verrou n'est PAS encore branché : ce nœud expose son booléen, mais l'Overclock
-        /// reste libre. Le brancher retirerait le clic à toute sauvegarde ne possédant pas le
-        /// nœud — donc à toutes celles qui existent aujourd'hui.
-        /// </summary>
-        UnlockSpacebarAction
+        Root
     }
 
     [CreateAssetMenu(fileName = "NewPrestigeConfig", menuName = "Core/Economy/Prestige Config")]

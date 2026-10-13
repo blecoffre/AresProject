@@ -6,9 +6,9 @@ namespace Core.Models.Economy
 {
     public enum UpgradeType
     {
-        Script,     // Cycle de production : verse de l'argent à son terme, génère de la Trace
-        Hardware,   // Fournit de la capacité de calcul (TFlops), génère massivement de la Trace
-        Proxy       // Dissipe la Trace, ne produit rien
+        Script,     // Cycle de production : verse de l'argent à son terme
+        Hardware,   // Fournit de la capacité de calcul (TFlops), qui accélère Scripts ET A.M.I.
+        Proxy       // Consommable de survie : chaque achat retire des UT à la jauge
     }
 
     [CreateAssetMenu(fileName = "NewUpgradeConfig", menuName = "Core/Economy/Upgrade Config")]
@@ -36,17 +36,15 @@ namespace Core.Models.Economy
         [Tooltip("M : Multiplicateur de croissance (fixé entre 1.07 et 1.15)")]
         [SerializeField, Range(1.01f, 1.5f)] private double _costMultiplier = 1.07d;
 
-        [Header("Économie : Production & Trace")]
+        [Header("Économie : Production")]
         [Tooltip("Versement de base, multiplié par le niveau à chaque cycle")]
         [SerializeField] private double _baseProductionYield = 1d;
-        [SerializeField] private double _traceGeneratedPerSecond = 1f;
 
-        [Tooltip("Points de PLAFOND de Trace apportés par niveau. Réservé au Hardware : c'est " +
-                 "sa capacité de refroidissement et de dissimulation, l'équivalent d'un gain de " +
-                 "points de vie maximum. Contrairement à la trace générée, qui est forfaitaire, " +
-                 "celle-ci se multiplie par le niveau — optimiser une machine améliore sa " +
-                 "capacité d'absorption, alors que son encombrement physique ne bouge pas.")]
-        [SerializeField] private double _traceCapIncrease;
+        [Header("Proxies uniquement")]
+        [Tooltip("SECONDES DE SURVIE rendues par chaque niveau acheté, avant paliers et branche " +
+                 "Interception. Converties en UT à la vitesse courante de l'A.M.I. au moment de " +
+                 "l'achat : un Proxy offre le même répit à tous les stades de la partie.")]
+        [SerializeField] private double _wipeSeconds;
 
         [Header("Cycle (Scripts uniquement)")]
         [SerializeField] private float _baseCycleDuration = 1f;
@@ -74,10 +72,9 @@ namespace Core.Models.Economy
         public double BaseCost => _baseCost;
         public double CostMultiplier => _costMultiplier;
         public double BaseProductionYield => _baseProductionYield;
-        public double BaseTraceGeneratedPerSecond => _traceGeneratedPerSecond;
 
-        /// <summary>Plafond de Trace apporté PAR NIVEAU. Nul en dehors du Hardware.</summary>
-        public double BaseTraceCapIncrease => _traceCapIncrease;
+        /// <summary>Secondes de survie rendues par niveau de Proxy acheté, avant bonus. Nul ailleurs.</summary>
+        public double WipeSeconds => _wipeSeconds;
         public float BaseCycleDuration => _baseCycleDuration;
         /// <summary>
         /// OBSOLÈTE depuis le 2026-08-31 : plus lu nulle part. C'était un mur par générateur, et

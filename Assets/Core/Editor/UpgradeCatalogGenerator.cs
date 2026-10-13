@@ -19,7 +19,7 @@ namespace Core.Economy.Editor
     public class MilestoneJsonData
     {
         public int level;
-        public string effect; // "YieldMultiplier" ou "DurationMultiplier"
+        public string effect; // "YieldMultiplier", "DurationMultiplier" ou "WipeMultiplier"
         public float factor;
     }
 
@@ -38,6 +38,12 @@ namespace Core.Economy.Editor
         public double baseCost;
         public double costMultiplier;
         public double baseProductionYield;
+
+        // Proxies : secondes de survie rendues par niveau acheté (refonte « Time Attack »).
+        public double wipeSeconds;
+
+        // Champs de l'ancien modèle de Trace, conservés uniquement pour DÉTECTER un fichier resté
+        // à l'ancien format : la Trace n'est plus générée par les upgrades depuis le 2026-10-13.
         public double traceGeneratedPerSecond;
         public double traceCapIncrease;
 
@@ -164,8 +170,21 @@ namespace Core.Economy.Editor
             so.FindProperty("_baseCost").doubleValue = data.baseCost;
             so.FindProperty("_costMultiplier").doubleValue = data.costMultiplier;
             so.FindProperty("_baseProductionYield").doubleValue = data.baseProductionYield;
-            so.FindProperty("_traceGeneratedPerSecond").doubleValue = data.traceGeneratedPerSecond;
-            so.FindProperty("_traceCapIncrease").doubleValue = data.traceCapIncrease;
+            so.FindProperty("_wipeSeconds").doubleValue = data.wipeSeconds;
+
+            if (data.traceGeneratedPerSecond != 0d || data.traceCapIncrease != 0d)
+            {
+                Debug.LogWarning(
+                    $"[UpgradeGenerator] '{data.id}' porte encore traceGeneratedPerSecond ou traceCapIncrease. " +
+                    "Ces champs sont IGNORÉS depuis la refonte « Time Attack » : la Trace ne vient plus des " +
+                    "upgrades. Pour un Proxy, le répit se règle dans wipeSeconds.");
+            }
+
+            if (type == UpgradeType.Proxy && data.wipeSeconds <= 0d)
+            {
+                Debug.LogWarning(
+                    $"[UpgradeGenerator] Le Proxy '{data.id}' n'a pas de wipeSeconds : l'acheter ne retirera rien à la jauge.");
+            }
 
             // Ces trois champs étaient déjà écrits dans les JSON mais n'étaient jamais recopiés :
             // tous les générateurs héritaient donc de la durée par défaut du ScriptableObject.
@@ -218,7 +237,7 @@ namespace Core.Economy.Editor
                     Debug.LogError(
                         $"[UpgradeGenerator] Effet de palier '{milestone.effect}' inconnu pour {data.id} " +
                         $"(niveau {milestone.level}). Attendu : YieldMultiplier, DurationMultiplier " +
-                        "ou TraceMultiplier.");
+                        "ou WipeMultiplier.");
                     parsedEffect = MilestoneEffect.YieldMultiplier;
                 }
 
@@ -253,15 +272,13 @@ namespace Core.Economy.Editor
                     Debug.LogWarning(
                         $"[UpgradeGenerator] '{data.id}' (niveau {milestone.level}) : un YieldMultiplier " +
                         "n'a AUCUN effet ici, le rendement de base valant zéro. Pour un Proxy, " +
-                        "utiliser TraceMultiplier pour amplifier la dissipation.");
+                        "utiliser WipeMultiplier pour amplifier le répit.");
                     break;
 
-                case MilestoneEffect.TraceMultiplier when !isProxy && milestone.factor > 1f:
+                case MilestoneEffect.WipeMultiplier when !isProxy:
                     Debug.LogWarning(
-                        $"[UpgradeGenerator] '{data.id}' (niveau {milestone.level}) : un TraceMultiplier " +
-                        $"de {milestone.factor} sur un {data.type} AUGMENTE la trace générée — c'est un " +
-                        "malus, pas un bonus. Volontaire pour un générateur « lucratif mais bruyant », " +
-                        "à corriger sinon.");
+                        $"[UpgradeGenerator] '{data.id}' (niveau {milestone.level}) : un WipeMultiplier " +
+                        $"sur un {data.type} n'a AUCUN effet — seuls les Proxies retirent des UT à la jauge.");
                     break;
             }
         }

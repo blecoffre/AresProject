@@ -17,32 +17,34 @@ namespace Core.UI.Game
             _loc = loc;
         }
 
-        /// <summary>Appelé par la Vue lorsque le joueur clique sur le bouton d'overclock.</summary>
+        /// <summary>Appelé par la Vue (bouton) et par la barre d'espace.</summary>
         public void OnClickActionTriggered()
         {
             OverclockResult result = _overclockSystem.TriggerManualOverclock();
 
-            // On annonce la valeur réellement accordée. Elle augmente avec le nœud de prestige
-            // de puissance de clic, ce qui rend ce bonus enfin visible pour le joueur.
-            //
-            // Deux messages plutôt qu'un : tant que le nœud de réveil n'est pas acheté, parler de
-            // scripts réveillés n'aurait aucun sens, et une fois acheté, un clic qui n'a rien
-            // trouvé à réveiller ne doit pas annoncer « 0 script relancé ».
-            if (result.ScriptsWoken > 0)
+            switch (result.Outcome)
             {
-                _consolePresenter.Log(
-                    _loc.GetText(
-                        "LOG_MANUAL_OVERCLOCK_WAKE",
-                        result.SecondsGained.ToString("0.#"),
-                        result.ScriptsWoken),
-                    ConsoleLogType.Success);
+                // On annonce ce qui a été gagné ET ce que ça a coûté : l'Overclock est un pari,
+                // le joueur doit voir les deux plateaux de la balance.
+                case OverclockOutcome.Applied:
+                    _consolePresenter.Log(
+                        _loc.GetText(
+                            "LOG_MANUAL_OVERCLOCK",
+                            result.SecondsGained.ToString("0.#"),
+                            result.TracePenalty),
+                        ConsoleLogType.Success);
+                    break;
 
-                return;
+                // Rien ne tournait : l'appui n'a rien fait et rien coûté. Le dire, sinon le
+                // joueur croit la touche cassée.
+                case OverclockOutcome.NoActiveCycle:
+                    _consolePresenter.Log(_loc.GetText("LOG_MANUAL_OVERCLOCK_IDLE"), ConsoleLogType.Standard);
+                    break;
+
+                // Trop rapproché du précédent : silence, une rafale ne doit pas noyer la console.
+                case OverclockOutcome.Throttled:
+                    break;
             }
-
-            _consolePresenter.Log(
-                _loc.GetText("LOG_MANUAL_OVERCLOCK", result.SecondsGained.ToString("0.#")),
-                ConsoleLogType.Success);
         }
     }
 }

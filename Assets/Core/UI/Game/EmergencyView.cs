@@ -8,7 +8,7 @@ namespace Core.UI.Game
     /// <summary>
     /// Le bouton du « Data Wiper », c'est-à-dire le Bouton d'Urgence.
     ///
-    /// Vue autonome, sur le modèle de l'ExfiltrationView et de la GhostCacheView : elle peut être
+    /// Vue autonome, sur le modèle de l'ExfiltrationView : elle peut être
     /// posée n'importe où dans l'écran sans toucher au code. Aucune logique, que des références
     /// sérialisées et un événement brut.
     /// </summary>

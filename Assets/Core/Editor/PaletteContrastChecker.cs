@@ -89,7 +89,6 @@ namespace Core.Editor
             failures += Group(report, vision, "liens", p.LinkLocked, p.LinkUnlocked, p.LinkCompleted);
             failures += Group(report, vision, "paliers", p.TierReached, p.TierUncertain, p.TierUpcoming, p.TierLocked);
             failures += Group(report, vision, "fin de run", p.RunEndSeized, p.RunEndCleanExit);
-            failures += Group(report, vision, "Ghost Cache", p.GhostCharging, p.GhostReady, p.GhostOverdrive);
             failures += Group(report, vision, "urgence", p.EmergencyUnavailable, p.EmergencyReady, p.EmergencyBlocked);
             failures += Group(report, vision, "console", p.ConsoleSuccess, p.ConsoleNarrative, p.ConsoleStandard);
 

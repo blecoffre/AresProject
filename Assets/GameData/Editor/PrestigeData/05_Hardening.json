@@ -2,50 +2,50 @@
   "items": [
     {
       "id": "P_HARDEN_1",
-      "bonusType": "TraceCapacityMultiplier",
-      "maxLevel": 1,
-      "baseCost": 1.0,
-      "costMult": 1.0,
-      "bonus": 0.1,
-      "posX": -1.0,
-      "posY": -1.0,
-      "prerequisiteId": "P_STEALTH"
-    },
-    {
-      "id": "P_HARDEN_2",
-      "bonusType": "TraceCapacityMultiplier",
+      "bonusType": "HardenBonus",
       "maxLevel": 1,
       "baseCost": 1.0,
       "costMult": 1.0,
       "bonus": 0.5,
       "posX": -1.0,
+      "posY": -1.0,
+      "prerequisiteId": "P_ROOT"
+    },
+    {
+      "id": "P_HARDEN_2",
+      "bonusType": "HardenBonus",
+      "maxLevel": 1,
+      "baseCost": 3.0,
+      "costMult": 1.0,
+      "bonus": 1.0,
+      "posX": -1.0,
       "posY": -2.0,
       "prerequisiteId": "P_HARDEN_1",
-      "requiredLevel": 3
+      "requiredLevel": 0
     },
     {
       "id": "P_HARDEN_3",
-      "bonusType": "TraceCapacityMultiplier",
+      "bonusType": "HardenBonus",
       "maxLevel": 1,
-      "baseCost": 1.0,
+      "baseCost": 6.0,
       "costMult": 1.0,
-      "bonus": 2.0,
+      "bonus": 2.5,
       "posX": -1.0,
       "posY": -3.0,
       "prerequisiteId": "P_HARDEN_2",
-      "requiredLevel": 3
+      "requiredLevel": 0
     },
     {
       "id": "P_HARDEN_4",
-      "bonusType": "TraceCapacityMultiplier",
+      "bonusType": "HardenBonus",
       "maxLevel": 1,
-      "baseCost": 1.0,
+      "baseCost": 10.0,
       "costMult": 1.0,
-      "bonus": 10.0,
+      "bonus": 6.0,
       "posX": -1.0,
       "posY": -4.0,
       "prerequisiteId": "P_HARDEN_3",
-      "requiredLevel": 3
+      "requiredLevel": 0
     }
   ]
 }

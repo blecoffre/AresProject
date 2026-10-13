@@ -1,0 +1,15 @@
+{
+  "items": [
+    {
+      "id": "P_EMERG",
+      "bonusType": "UnlockEmergencyButton",
+      "maxLevel": 1,
+      "baseCost": 1.0,
+      "costMult": 1.0,
+      "bonus": 1.0,
+      "posX": 0.0,
+      "posY": -1.0,
+      "prerequisiteId": "P_ROOT"
+    }
+  ]
+}

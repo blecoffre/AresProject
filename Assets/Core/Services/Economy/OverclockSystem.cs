@@ -1,74 +1,115 @@
 using Core.Models.Economy;
+using Core.Services.Security;
+using UnityEngine;
 
 namespace Core.Services.Economy
 {
+    /// <summary>Ce qu'il est advenu d'une demande d'Overclock.</summary>
+    public enum OverclockOutcome
+    {
+        /// <summary>Les cycles en cours ont avancé, et la pénalité a été infligée.</summary>
+        Applied,
+
+        /// <summary>Aucun cycle ne tournait : rien n'a avancé, et rien n'a été payé.</summary>
+        NoActiveCycle,
+
+        /// <summary>Trop tôt après le précédent : ignoré, sans effet ni coût.</summary>
+        Throttled
+    }
+
     /// <summary>
-    /// Résultat d'un clic d'Overclock. Struct readonly : la vue en reçoit un par clic, et un type
-    /// référence allouerait à chaque appui.
+    /// Résultat d'un Overclock. Struct readonly : la vue en reçoit un par appui, et un type
+    /// référence allouerait à chaque fois.
     /// </summary>
     public readonly struct OverclockResult
     {
-        /// <summary>Secondes de progression accordées aux cycles déjà en cours.</summary>
+        public readonly OverclockOutcome Outcome;
+
+        /// <summary>Secondes d'avance accordées à chaque cycle en cours.</summary>
         public readonly float SecondsGained;
 
-        /// <summary>Scripts démarrés par le « réveil ». Vaut toujours 0 sans le nœud de prestige.</summary>
-        public readonly int ScriptsWoken;
+        /// <summary>UT ajoutées à la jauge par la pénalité.</summary>
+        public readonly float TracePenalty;
 
-        public OverclockResult(float secondsGained, int scriptsWoken)
+        public OverclockResult(OverclockOutcome outcome, float secondsGained, float tracePenalty)
         {
+            Outcome = outcome;
             SecondsGained = secondsGained;
-            ScriptsWoken = scriptsWoken;
+            TracePenalty = tracePenalty;
         }
     }
 
     /// <summary>
-    /// Le clic manuel.
+    /// L'Overclock — la barre d'espace, ou le bouton à l'écran.
     ///
-    /// Par défaut, ce n'est PAS un démarreur de cycle : c'est un coup de fouet qui avance d'un
-    /// coup tous les cycles déjà en cours. Lancer à la main les Scripts à l'arrêt fait partie de
-    /// l'expérience du début et du milieu de partie — décision du 2026-08-27, qui revient sur
-    /// celle du 26/08.
+    /// <b>Refonte « Time Attack » du 2026-10-13 : c'est un pari, plus un clic gratuit.</b> Chaque
+    /// appui avance tous les cycles en cours de <c>0,5 s + branche Overclock</c>, et coûte
+    /// <c>V_AMI × 5 s</c> de jauge — toujours les mêmes cinq secondes de survie, quels que soient
+    /// les TFlops et le Blindage. Sans arbre, l'échange est perdant d'un facteur dix : c'est voulu,
+    /// l'Overclock est un geste de désespoir en début de partie (gratter les Datas qui manquent
+    /// avant la saisie) et ne devient une vraie mécanique qu'une fois la branche investie.
     ///
-    /// Le « réveil » se débloque par un nœud de prestige tardif (`P_OVERCLOCK_AWAKE`) : à ce
-    /// stade, relancer quinze Scripts à la main est devenu une corvée plutôt qu'un choix.
+    /// Il ne démarre plus rien : le « réveil » des Scripts à l'arrêt a disparu avec son nœud.
     /// </summary>
     public class OverclockSystem
     {
         private readonly ScriptCycleRunner _cycleRunner;
         private readonly PrestigeManager _prestigeManager;
+        private readonly ThreatManager _threatManager;
         private readonly BalancingConfigSO _balancing;
+
+        /// <summary>
+        /// Instant réel du dernier Overclock pris en compte. Temps RÉEL et non temps de
+        /// simulation : le garde-fou protège contre une main qui martèle, pas contre la partie.
+        /// </summary>
+        private double _lastAppliedAt = double.NegativeInfinity;
 
         public OverclockSystem(
             ScriptCycleRunner cycleRunner,
             PrestigeManager prestigeManager,
+            ThreatManager threatManager,
             BalancingConfigSO balancing)
         {
             _cycleRunner = cycleRunner;
             _prestigeManager = prestigeManager;
+            _threatManager = threatManager;
             _balancing = balancing;
         }
 
-        /// <summary>Secondes qu'un clic ferait gagner en l'état. Exposé pour que l'UI dise la vérité.</summary>
-        public float CurrentWarpSeconds => _balancing.OverclockWarpSeconds * _prestigeManager.ClickPowerMultiplier.CurrentValue;
-
-        /// <summary>Le nœud de réveil a-t-il été acheté. Exposé pour l'affichage, pas pour la garde.</summary>
-        public bool WakesScripts => _prestigeManager.OverclockWakesScripts.CurrentValue;
+        /// <summary>Secondes d'avance qu'un appui accorderait en l'état. Exposé pour que l'UI dise la vérité.</summary>
+        public float CurrentAdvanceSeconds =>
+            _balancing.OverclockWarpSeconds + _prestigeManager.TotalOverclockBonus.CurrentValue;
 
         /// <summary>
-        /// Déclenche l'overclock.
+        /// Déclenche l'Overclock.
         ///
-        /// L'ordre compte : on avance D'ABORD les cycles en cours, on réveille ENSUITE. Le GDD dit
-        /// que le clic avance « ceux qui tournaient déjà » — réveiller en premier offrirait au
-        /// passage une demi-seconde d'avance aux Scripts qui viennent tout juste de démarrer.
+        /// L'avance passe AVANT la pénalité : un appui qui déclenche la saisie verse quand même
+        /// les cycles qu'il vient d'achever. Le joueur a payé, il touche — puis il tombe.
         /// </summary>
         public OverclockResult TriggerManualOverclock()
         {
-            float seconds = CurrentWarpSeconds;
-            _cycleRunner.AdvanceAllActive(seconds);
+            // Un appui maintenu ne se répète pas (une pression = un appui), mais un double clic ou
+            // une touche martelée peuvent arriver deux fois dans la même fraction de seconde. À
+            // cinq secondes de survie l'appui, c'est un Game Over accidentel en puissance.
+            double now = Time.realtimeSinceStartupAsDouble;
+            if (now - _lastAppliedAt < _balancing.OverclockMinIntervalSeconds)
+            {
+                return new OverclockResult(OverclockOutcome.Throttled, 0f, 0f);
+            }
 
-            int woken = WakesScripts ? _cycleRunner.StartAllIdle() : 0;
+            float seconds = CurrentAdvanceSeconds;
 
-            return new OverclockResult(seconds, woken);
+            // Rien ne tourne : rien n'avance, et rien ne se paie. Le garde-fou n'est pas réarmé,
+            // l'appui n'a rien coûté.
+            if (_cycleRunner.AdvanceAllActive(seconds) == 0)
+            {
+                return new OverclockResult(OverclockOutcome.NoActiveCycle, 0f, 0f);
+            }
+
+            _lastAppliedAt = now;
+
+            float penalty = _threatManager.ApplyOverclockPenalty();
+            return new OverclockResult(OverclockOutcome.Applied, seconds, penalty);
         }
     }
 }

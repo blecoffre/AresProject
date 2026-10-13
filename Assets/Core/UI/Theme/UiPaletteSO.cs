@@ -50,11 +50,6 @@ namespace Core.UI.Theme
         public Color RunEndSeized = new Color(1f, 0.2f, 0.2f, 1f);
         public Color RunEndCleanExit = new Color(0.29f, 0.96f, 0.15f, 1f);
 
-        [Header("Ghost Cache / Zéro-Day Exploit")]
-        public Color GhostCharging = new Color(0.25f, 0.65f, 0.45f, 1f);
-        public Color GhostReady = new Color(0.35f, 0.85f, 0.95f, 1f);
-        public Color GhostOverdrive = new Color(0.95f, 0.3f, 0.2f, 1f);
-
         [Header("Bouton d'urgence / Data Wiper")]
         public Color EmergencyUnavailable = new Color(0.35f, 0.35f, 0.40f, 1f);
         public Color EmergencyReady = new Color(0.95f, 0.75f, 0.20f, 1f);

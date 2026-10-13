@@ -10,26 +10,26 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 2.54,
+      "wipeSeconds": 2.54,
       "milestones": [
         {
           "level": 10,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.32
         },
         {
           "level": 25,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.552
         },
         {
           "level": 50,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.904
         },
         {
           "level": 100,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 2.512
         }
       ]
@@ -44,26 +44,26 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 10.6,
+      "wipeSeconds": 10.6,
       "milestones": [
         {
           "level": 10,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.32
         },
         {
           "level": 25,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.552
         },
         {
           "level": 50,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.904
         },
         {
           "level": 100,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 2.512
         }
       ]
@@ -78,26 +78,26 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 29.0,
+      "wipeSeconds": 29.0,
       "milestones": [
         {
           "level": 10,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.32
         },
         {
           "level": 25,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.552
         },
         {
           "level": 50,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.904
         },
         {
           "level": 100,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 2.512
         }
       ]
@@ -112,26 +112,26 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 61.5,
+      "wipeSeconds": 61.5,
       "milestones": [
         {
           "level": 10,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.32
         },
         {
           "level": 25,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.552
         },
         {
           "level": 50,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.904
         },
         {
           "level": 100,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 2.512
         }
       ]
@@ -146,26 +146,26 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 107.0,
+      "wipeSeconds": 107.0,
       "milestones": [
         {
           "level": 10,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.32
         },
         {
           "level": 25,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.552
         },
         {
           "level": 50,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.904
         },
         {
           "level": 100,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 2.512
         }
       ]
@@ -180,26 +180,26 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 233.0,
+      "wipeSeconds": 233.0,
       "milestones": [
         {
           "level": 10,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.32
         },
         {
           "level": 25,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.552
         },
         {
           "level": 50,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.904
         },
         {
           "level": 100,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 2.512
         }
       ]
@@ -214,26 +214,26 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 534.0,
+      "wipeSeconds": 534.0,
       "milestones": [
         {
           "level": 10,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.32
         },
         {
           "level": 25,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.552
         },
         {
           "level": 50,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.904
         },
         {
           "level": 100,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 2.512
         }
       ]
@@ -248,26 +248,26 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 1170.0,
+      "wipeSeconds": 1170.0,
       "milestones": [
         {
           "level": 10,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.32
         },
         {
           "level": 25,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.552
         },
         {
           "level": 50,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.904
         },
         {
           "level": 100,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 2.512
         }
       ]
@@ -282,26 +282,26 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 2480.0,
+      "wipeSeconds": 2480.0,
       "milestones": [
         {
           "level": 10,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.32
         },
         {
           "level": 25,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.552
         },
         {
           "level": 50,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.904
         },
         {
           "level": 100,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 2.512
         }
       ]
@@ -316,26 +316,26 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 5860.0,
+      "wipeSeconds": 5860.0,
       "milestones": [
         {
           "level": 10,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.32
         },
         {
           "level": 25,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.552
         },
         {
           "level": 50,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.904
         },
         {
           "level": 100,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 2.512
         }
       ]
@@ -350,26 +350,26 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 11800.0,
+      "wipeSeconds": 11800.0,
       "milestones": [
         {
           "level": 10,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.32
         },
         {
           "level": 25,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.552
         },
         {
           "level": 50,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.904
         },
         {
           "level": 100,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 2.512
         }
       ]
@@ -384,26 +384,26 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 20100.0,
+      "wipeSeconds": 20100.0,
       "milestones": [
         {
           "level": 10,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.32
         },
         {
           "level": 25,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.552
         },
         {
           "level": 50,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.904
         },
         {
           "level": 100,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 2.512
         }
       ]
@@ -418,26 +418,26 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 47500.0,
+      "wipeSeconds": 47500.0,
       "milestones": [
         {
           "level": 10,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.32
         },
         {
           "level": 25,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.552
         },
         {
           "level": 50,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.904
         },
         {
           "level": 100,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 2.512
         }
       ]
@@ -452,26 +452,26 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 79900.0,
+      "wipeSeconds": 79900.0,
       "milestones": [
         {
           "level": 10,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.32
         },
         {
           "level": 25,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.552
         },
         {
           "level": 50,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.904
         },
         {
           "level": 100,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 2.512
         }
       ]
@@ -486,26 +486,26 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "traceGeneratedPerSecond": 196700.0,
+      "wipeSeconds": 196700.0,
       "milestones": [
         {
           "level": 10,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.32
         },
         {
           "level": 25,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.552
         },
         {
           "level": 50,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 1.904
         },
         {
           "level": 100,
-          "effect": "TraceMultiplier",
+          "effect": "WipeMultiplier",
           "factor": 2.512
         }
       ]

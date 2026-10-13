@@ -34,7 +34,16 @@ namespace Core.Models
         /// correspondant dans Migrate(). Sans ça, le premier changement post-lancement casse
         /// silencieusement les sauvegardes des joueurs.
         /// </summary>
-        public const int CurrentVersion = 10;
+        public const int CurrentVersion = 11;
+
+        /// <summary>
+        /// Id de la racine de l'arbre, seul nœud gratuit de la v10. Recopié ici plutôt que lu
+        /// dans le catalogue : la migration v10 → v11 décrit un FORMAT figé, pas l'arbre vivant.
+        /// </summary>
+        private const string LegacyRootNodeId = "P_ROOT";
+
+        /// <summary>Argent de départ d'une run neuve en v10, pour la remise à neuf de la v11.</summary>
+        private const double LegacyStartingMoney = 10d;
 
         /// <summary>
         /// Le plafond de Trace tel qu'il était FIGÉ jusqu'en v6. Sert uniquement à convertir
@@ -120,23 +129,15 @@ namespace Core.Models
 
         public int EmergencyUsesInRun;
 
-        /// <summary>
-        /// Charge du Ghost Cache, en secondes d'excédent de dissipation accumulées.
-        ///
-        /// Sauvegardée alors que le reste des effets temporaires ne l'est pas : elle représente
-        /// du temps de jeu investi, et le joueur qui a maintenu sa posture défensive pendant
-        /// quatre minutes n'a pas à recommencer parce qu'il a fermé la fenêtre. Un Overdrive EN
-        /// COURS, lui, n'est pas sauvegardé — voir GhostCacheSystem.RestoreCharge.
-        /// </summary>
-        public float GhostCacheSeconds;
+        // GhostCacheSeconds a quitté le format en v11, avec le Ghost Cache lui-même. JsonUtility
+        // ignore le champ resté dans un ancien fichier : rien à faire pour le lire.
 
         /// <summary>
         /// Secondes restantes d'immobilisation des TFlops par le Bouton d'Urgence, et délai
         /// restant avant sa prochaine activation.
         ///
-        /// Sauvegardés alors que l'Overdrive du Ghost Cache ne l'est pas, et l'asymétrie est
-        /// volontaire : là-bas, sauvegarder aurait permis de mettre en PAUSE un bonus ; ici, ne
-        /// pas sauvegarder permettrait d'ÉCHAPPER à une pénalité en fermant la fenêtre.
+        /// Sauvegardés à dessein : ne pas le faire permettrait d'ÉCHAPPER à une pénalité en
+        /// fermant la fenêtre.
         /// </summary>
         public float EmergencyBlockRemainingSeconds;
         public float EmergencyCooldownRemainingSeconds;
@@ -194,7 +195,6 @@ namespace Core.Models
             RunMoney = 0d,
             CurrentTrace = 0f,
             EmergencyUsesInRun = 0,
-            GhostCacheSeconds = 0f,
             EmergencyBlockRemainingSeconds = 0f,
             EmergencyCooldownRemainingSeconds = 0f,
             RunElapsedSeconds = 0f,
@@ -214,14 +214,10 @@ namespace Core.Models
             if (Upgrades == null) Upgrades = new List<UpgradeSaveEntry>();
             if (PrestigeUpgrades == null) PrestigeUpgrades = new List<UpgradeSaveEntry>();
 
-            // Borne basse seulement : le plafond appartient au ThreatManager, qui le compose
-            // depuis le parc Hardware. Le dupliquer ici créerait deux sources de vérité.
+            // Borne basse seulement : le plafond appartient au ThreatManager, qui le lit dans les
+            // réglages. Le dupliquer ici créerait deux sources de vérité.
             if (CurrentTrace < 0f) CurrentTrace = 0f;
             if (EmergencyUsesInRun < 0) EmergencyUsesInRun = 0;
-
-            // Borne basse seulement : le plafond appartient au GhostCacheSystem, seul détenteur
-            // de la capacité. Le dupliquer ici créerait deux constantes à maintenir.
-            if (GhostCacheSeconds < 0f) GhostCacheSeconds = 0f;
 
             // Bornes hautes laissées à l'EmergencyProtocolSystem, seul détenteur des durées.
             if (EmergencyBlockRemainingSeconds < 0f) EmergencyBlockRemainingSeconds = 0f;
@@ -281,10 +277,8 @@ namespace Core.Models
                     goto case 3;
 
                 case 3:
-                    // v3 -> v4 : le Ghost Cache apparaît. Une sauvegarde antérieure n'a par
-                    // définition accumulé aucun excédent — la mécanique n'existait pas — donc
-                    // rien à reporter, on part de zéro.
-                    data.GhostCacheSeconds = 0f;
+                    // v3 -> v4 : le Ghost Cache apparaissait. Son champ a quitté le format en
+                    // v11 ; il ne reste qu'à tamponner la version.
                     data.Version = 4;
                     goto case 4;
 
@@ -351,6 +345,27 @@ namespace Core.Models
                     goto case 10;
 
                 case 10:
+                    // v10 -> v11 : refonte « Time Attack ». La jauge passe à 10 000 UT fixes et
+                    // l'arbre de prestige change de nœuds, de prix et d'effets.
+                    //
+                    // La RUN en cours est effacée : sa Trace se comptait sur un plafond de
+                    // plusieurs millions, et la ramener sur 10 000 UT la mettrait au bord de la
+                    // saisie.
+                    //
+                    // L'ARBRE est remis à zéro et chaque point dépensé RENDU : des nœuds ont
+                    // disparu (Furtivité, Zéro-Day, réveil, barre d'espace), d'autres ont changé
+                    // de prix — garder un Blindage acheté 1 point qui en coûte désormais 10 serait
+                    // un cadeau, perdre les points des nœuds retirés une punition. En v10, tout
+                    // rang coûtait exactement 1 point, sauf la racine, gratuite.
+                    //
+                    // Le cumul de campagne, les points déjà accordés et la victoire, eux, ne
+                    // bougent pas : le joueur garde tout ce qu'il a gagné, il le redépense.
+                    WipeRunForFormatChange(data);
+                    RefundPrestigeTree(data);
+                    data.Version = 11;
+                    goto case 11;
+
+                case 11:
                     // Format courant : rien à faire.
                     break;
 
@@ -363,6 +378,43 @@ namespace Core.Models
             }
 
             return data;
+        }
+
+        /// <summary>
+        /// Remet la run au départ : générateurs, argent, Trace, Data Wiper et chronomètre. Ce que
+        /// fait le wipe de fin de run, transcrit sur le FORMAT — la migration tourne avant que les
+        /// services n'existent.
+        /// </summary>
+        private static void WipeRunForFormatChange(SaveData data)
+        {
+            data.Money = LegacyStartingMoney;
+            data.RunMoney = 0d;
+            data.CurrentTrace = 0f;
+            data.EmergencyUsesInRun = 0;
+            data.EmergencyBlockRemainingSeconds = 0f;
+            data.EmergencyCooldownRemainingSeconds = 0f;
+            data.RunElapsedSeconds = 0f;
+            data.Upgrades.Clear();
+        }
+
+        /// <summary>
+        /// Vide l'arbre et rend au solde de CPU Cycles tout ce qui y a été dépensé, au tarif de la
+        /// v10 : un point par rang, la racine exceptée. La racine reste acquise.
+        /// </summary>
+        private static void RefundPrestigeTree(SaveData data)
+        {
+            double refund = 0d;
+
+            for (int i = data.PrestigeUpgrades.Count - 1; i >= 0; i--)
+            {
+                UpgradeSaveEntry entry = data.PrestigeUpgrades[i];
+                if (entry.Id == LegacyRootNodeId) continue;
+
+                if (entry.Level > 0) refund += entry.Level;
+                data.PrestigeUpgrades.RemoveAt(i);
+            }
+
+            data.CpuCycles += refund;
         }
     }
 

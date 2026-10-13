@@ -78,7 +78,7 @@ namespace Core.UI.Game
             // Franchir le palier requis doit rendre le bouton cliquable à l'achat du Hardware,
             // pas à la seconde suivante. On filtre sur le SEUIL et non sur la valeur : les
             // TFlops bougent à chaque achat, l'état du bouton bien plus rarement.
-            _upgradeManager.TotalTFlops
+            _upgradeManager.NetTFlops
                 .Select(_ => _emergency.HasEnoughPower)
                 .DistinctUntilChanged()
                 .Subscribe(_ => Refresh())
@@ -138,10 +138,10 @@ namespace Core.UI.Game
                 _view.ApplyState(
                     _loc.GetText(
                         "UI_EMERGENCY_INSUFFICIENT",
-                        CurrencyFormatter.Format(_upgradeManager.TotalTFlops.CurrentValue),
+                        CurrencyFormatter.Format(_upgradeManager.NetTFlops.CurrentValue),
                         CurrencyFormatter.FormatCost(_emergency.RequiredTFlops)),
                     interactable: false,
-                    fillAmount: (float)(_upgradeManager.TotalTFlops.CurrentValue
+                    fillAmount: (float)(_upgradeManager.NetTFlops.CurrentValue
                                         / _emergency.RequiredTFlops),
                     fillColor: _palette.Current.CurrentValue.EmergencyUnavailable);
 

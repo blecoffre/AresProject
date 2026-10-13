@@ -1,3 +1,4 @@
+using R3;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -23,90 +24,41 @@ namespace Core.Models.Economy
     public class BalancingConfigSO : ScriptableObject
     {
         // ------------------------------------------------------------------
-        // Trace
+        // La jauge de l'A.M.I. — le compte à rebours (refonte « Time Attack », 2026-10-13)
         // ------------------------------------------------------------------
-        [Header("Trace")]
-        [Tooltip("Convertit une Trace par seconde en fraction de jauge par seconde. À 100, un " +
-                 "débit de 100 Trace/s remplit la jauge en une seconde. BAISSER cette valeur rend " +
-                 "tout le jeu plus dangereux.")]
-        [SerializeField, Min(1f)] private float _baseTraceCap = 100f;
+        [Header("Jauge de l'A.M.I.")]
+        [Tooltip("Plafond de la jauge, en Unités de Trace (UT). FIXE : il ne varie jamais en " +
+                 "cours de partie. Le franchir déclenche la Saisie Fédérale.\n\n" +
+                 "Tout le reste s'exprime contre lui — les paliers d'extraction en sont des " +
+                 "fractions, l'Overclock et les Proxies des secondes de vitesse de l'A.M.I.")]
+        [SerializeField, Min(1f)] private float _amiTraceCap = 10000f;
 
-        [Tooltip("ASYMPTOTE de la réduction apportée par les Proxies. Jamais atteinte, seulement " +
-                 "approchée : il reste TOUJOURS au moins (1 − cette valeur) de la Trace brute qui " +
-                 "passe.\n\n" +
-                 "C'est ce qui rend l'invulnérabilité arithmétiquement impossible. Avant le " +
-                 "2026-08-31 la dissipation était soustraite platement, donc une valeur non " +
-                 "bornée face à une génération bornée : 2,7 M$ de Proxies annulaient toute la " +
-                 "Trace du jeu, définitivement.")]
-        [SerializeField, Range(0.1f, 0.99f)] private float _maxTraceReduction = 0.85f;
+        [Tooltip("Vitesse de l'A.M.I. à zéro TFlop et sans Blindage, en UT par seconde. À 33, " +
+                 "une jauge vide se remplit en ~5 minutes.\n\n" +
+                 "Formule : V = cette valeur × (1 + facteur × TFlops bruts) ^ exposant " +
+                 "÷ (1 + Blindage).")]
+        [SerializeField, Min(0f)] private float _amiBaseSpeed = 33f;
 
-        [Tooltip("Rapport Dissipation/Brut qui procure la MOITIÉ de l'asymptote ci-dessus.\n\n" +
-                 "Formule : R = MaxTraceReduction × D / (D + cette valeur × Brut).\n\n" +
-                 "Seul le RATIO compte, jamais la magnitude : la formule se comporte pareil à " +
-                 "1e0 et à 1e13 de Trace. Conséquence voulue — faire grossir son économie " +
-                 "augmente le Brut, donc DILUE les Proxies déjà achetés. C'est là que naît " +
-                 "l'arbitrage permanent entre pousser la production et tenir la défense.\n\n" +
-                 "MONTER cette valeur rend la défense plus chère à tous les stades.")]
-        [SerializeField, Min(0.01f)] private float _dissipationHalfPointRatio = 1f;
+        [Tooltip("Poids des TFlops BRUTS dans la vitesse de l'A.M.I. (le facteur de la formule " +
+                 "ci-dessus). Bruts = la seule somme du parc Hardware : ni P_DATAM ni le Noyau " +
+                 "n'accélèrent la menace, c'est ce qui permet au prestige d'accélérer les revenus " +
+                 "sans accélérer la mort.")]
+        [SerializeField, Min(0f)] private float _amiTFlopsFactor = 0.05f;
 
-        [Tooltip("Exposant qui lie la Trace d'un générateur à son RENDEMENT : " +
-                 "trace = base × (rendement / rendement de base) ^ exposant.\n\n" +
-                 "⚠️ RÉGLAGE STRUCTURANT. À 1, monter un générateur accélère les gains ET la mort " +
-                 "dans la même proportion — bien jouer ne change rien, c'est l'échec constaté " +
-                 "avant le 2026-08-30. À 0, la Trace est forfaitaire et bornée pour toujours, " +
-                 "c'est l'échec constaté après. Entre les deux, progresser paie sans jamais " +
-                 "supprimer le danger : à 0,6, doubler son rendement ne multiplie la Trace " +
-                 "que par 1,52.")]
-        [SerializeField, Range(0f, 1f)] private float _traceYieldExponent = 0.6f;
+        [Tooltip("Exposant des TFlops dans la vitesse de l'A.M.I.\n\n" +
+                 "⚠️ RÉGLAGE STRUCTURANT, distinct à dessein de l'exposant de compression des " +
+                 "Scripts (0,25). Plus bas que lui, le Hardware fait GAGNER la course : les " +
+                 "Scripts accélèrent plus vite que la menace. Calculé : à 0,25, une run de victoire " +
+                 "durait ~10 s Blindage compris ; à 0,10 (tranché par le GD le 2026-10-13), " +
+                 "~5 min 30.")]
+        [SerializeField, Range(0f, 1f)] private float _amiSpeedExponent = 0.10f;
 
-        [Tooltip("Puissance de calcul à atteindre pour GAGNER la partie — la clé USB du lore.\n\n" +
-                 "Posée à 1e12 le 2026-09-15. C'est environ quatre fois le pic d'une campagne " +
-                 "mesurée, et grosso modo le dernier Hardware poussé au niveau 100 : débloquer " +
-                 "la dernière machine NE SUFFIT PAS, il faut revenir la faire grandir. Le joueur " +
-                 "devra dépenser ses derniers points de prestige et refaire une run ou deux — " +
-                 "c'est la « semi-douleur » voulue par le GD.\n\n" +
-                 "Monter à 1e13 rendrait la fin nettement plus longue : 43 fois le pic mesuré.")]
+        [Tooltip("Puissance de calcul à atteindre pour GAGNER la partie — la clé USB du lore. " +
+                 "Comparée aux TFlops NETTES (après P_DATAM, Noyau et sacrifice du Data Wiper), " +
+                 "celles qu'affiche l'en-tête.\n\n" +
+                 "Posée à 1e12 le 2026-09-15 : débloquer la dernière machine NE SUFFIT PAS, il " +
+                 "faut revenir la faire grandir.")]
         [SerializeField, Min(1f)] private double _victoryTFlops = 1e12d;
-
-        [Tooltip("Le plafond de jauge suit-il la PUISSANCE du joueur, ou le seul parc Hardware ?\n\n" +
-                 "⚠️ RÉGLAGE STRUCTURANT — il décide si les runs raccourcissent en progressant.\n\n" +
-                 "Décoché, le plafond vient de traceCapIncrease, une statistique portée par les " +
-                 "objets Hardware. Mais la Trace, elle, est alimentée par TOUTE la production : " +
-                 "acheter des Scripts fait monter le numérateur sans le dénominateur. Mesuré, la " +
-                 "durée de run s'effondre de 20 minutes à 3, puis se fige — chaque gain de " +
-                 "puissance est reconverti en run plus courte, jusqu'à un point fixe.\n\n" +
-                 "Coché, le plafond dérive du MÊME agrégat que la Trace et avec le même exposant, " +
-                 "donc la durée de run devient invariante à la puissance. Il ne reste alors que " +
-                 "deux leviers pour tenir plus longtemps : la Furtivité, qui multiplie la durée " +
-                 "par 1/(1−réduction) jusqu'à x6,67 à l'asymptote, et le Blindage.\n\n" +
-                 "La Furtivité NE PEUT PAS y suppléer seule : son asymptote à 85 % laisse passer " +
-                 "15 % du brut quoi qu'il arrive, et ce brut croît sans borne.")]
-        [SerializeField] private bool _dynamicTraceCap = true;
-
-        [Tooltip("Rendement par seconde auquel le plafond dynamique DOUBLE le plafond de base.\n\n" +
-                 "C'est l'ancrage de l'échelle, et il est indispensable : sans lui le facteur de " +
-                 "puissance multiplie un plafond de base déjà à sept chiffres, ce qui a rendu le " +
-                 "joueur littéralement immortel — cent cinquante minutes de run, le plafond de " +
-                 "mesure, sur les quatre postures. L'exposant était bon, la constante fausse de " +
-                 "six ordres de grandeur.")]
-        [SerializeField, Min(1f)] private double _dynamicCapReferenceYield = 1e6d;
-
-        [Tooltip("Minutes que met l'A.M.I., À ELLE SEULE, pour remplir une jauge de base non " +
-                 "défendue. 0 désactive la traque passive.\n\n" +
-                 "⚠️ RÉGLAGE STRUCTURANT — c'est ce qui fait du temps un coût.\n\n" +
-                 "Sans lui, la Trace ne mesure QUE la production du joueur, donc jouer faiblement " +
-                 "achète du temps illimité. Mesuré le 2026-09-10 : un joueur qui n'achète que de " +
-                 "l'acquisition, ni Hardware ni Proxy, tenait 92,7 minutes — 6,3 % de jauge à la " +
-                 "vingtième minute — sans jamais courir le moindre risque. Il rampait, mais rien " +
-                 "ne venait jamais le chercher. Le seul chronomètre du jeu était celui que le " +
-                 "joueur remontait lui-même.\n\n" +
-                 "Le débit est calculé sur le plafond DE BASE, jamais sur le plafond courant : " +
-                 "c'est ce qui permet au Blindage et au Hardware d'acheter du temps en diluant " +
-                 "la traque. L'indexer sur le plafond courant la rendrait inesquivable.\n\n" +
-                 "La forme se règle toute seule : 0,067 Trace/s écrase une production naissante " +
-                 "et devient négligeable face à une économie mûre. La traque domine le début de " +
-                 "partie puis s'efface, sans réglage supplémentaire.")]
-        [SerializeField, Min(0f)] private float _passiveTraceFillMinutes = 25f;
 
         // ------------------------------------------------------------------
         // Relevé de Trace — le brouillard de guerre
@@ -168,15 +120,6 @@ namespace Core.Models.Economy
                  "À 1000, la même run garde 52,6 s de brouillard, et la clarté s'achète vraiment " +
                  "en milieu de partie. MONTER cette valeur repousse le rachat plus tard encore.")]
         [SerializeField, Min(1f)] private float _traceReadoutSensorReferenceTFlops = 1000f;
-
-        [Tooltip("Fraction de l'asymptote au-delà de laquelle le Ghost Cache se charge.\n\n" +
-                 "Remplace l'ancienne condition « la dissipation dépasse la génération », qui " +
-                 "n'a plus de sens : avec une réduction asymptotique il n'existe plus d'excédent. " +
-                 "L'intention du GDD est conservée à l'identique — ce qui se paie est un MAINTIEN " +
-                 "DE POSTURE DÉFENSIVE, et la charge se remplit toujours en temps, pas en " +
-                 "magnitude. À 0,75 avec une asymptote de 0,85, il faut tenir 63,75 % de " +
-                 "réduction pour charger.")]
-        [SerializeField, Range(0f, 1f)] private float _ghostCacheReductionThreshold = 0.75f;
 
         // ------------------------------------------------------------------
         // TFlops et générateurs
@@ -289,31 +232,27 @@ namespace Core.Models.Economy
             new CleanExitTier(0.90f, 0.50d, requiresUnlock: true)
         };
 
-        [Tooltip("Secondes de progression offertes par clic d'Overclock, avant bonus de prestige.")]
+        // ------------------------------------------------------------------
+        // Overclock — la barre d'espace
+        // ------------------------------------------------------------------
+        [Header("Overclock")]
+        [Tooltip("Secondes d'avance offertes à chaque cycle en cours par un Overclock, AVANT la " +
+                 "branche Overclock de l'arbre, qui s'y AJOUTE (jusqu'à +22 s).")]
         [SerializeField, Min(0f)] private float _overclockWarpSeconds = 0.5f;
 
-        // ------------------------------------------------------------------
-        // Ghost Cache et Zéro-Day Exploit
-        // ------------------------------------------------------------------
-        [Header("Ghost Cache / Zéro-Day Exploit")]
-        [Tooltip("Secondes d'excédent de dissipation à accumuler pour UNE charge. Le nombre de " +
-                 "charges stockables vient du nœud de prestige P_EXPLOIT_CHARGES.")]
-        [SerializeField, Min(1f)] private float _ghostCacheCapacitySeconds = 300f;
+        [Tooltip("Ce que coûte un Overclock, en SECONDES DE SURVIE : la pénalité vaut " +
+                 "V_AMI × cette valeur, en UT. Indexée sur la vitesse et non fixe — 500 UT fixes " +
+                 "pesaient 15 s au départ et une fraction de seconde en fin de partie.\n\n" +
+                 "Le Blindage n'y change rien en secondes : il ralentit l'A.M.I., donc la " +
+                 "pénalité en UT baisse d'autant. Sans cycle en cours, l'Overclock ne fait rien " +
+                 "et ne coûte rien.")]
+        [SerializeField, Min(0f)] private float _overclockPenaltySeconds = 5f;
 
-        [Tooltip("Durée du Zéro-Day Exploit, en secondes.")]
-        [SerializeField, Min(1f)] private float _overdriveDurationSeconds = 30f;
-
-        [Tooltip("Multiplicateur de rendement des Scripts pendant l'Exploit. Ne touche que les " +
-                 "Scripts : chez un Hardware, le rendement EST la capacité en TFlops.")]
-        [SerializeField, Min(1f)] private double _overdriveYieldMultiplier = 50d;
-
-        [Tooltip("Multiplicateur de la génération BRUTE de Trace pendant l'Exploit, en plus de " +
-                 "l'extinction des Proxies.\n\n" +
-                 "⚠️ RÉGLAGE LE PLUS SENSIBLE DU JEU. La dissipation valant zéro pendant " +
-                 "l'Exploit, le temps de survie depuis une jauge vide vaut " +
-                 "100 / (génération × cette valeur). À 10, tenir les 30 secondes exige de générer " +
-                 "moins de 0,33 Trace/s — soit moins qu'un seul Script de niveau 1.")]
-        [SerializeField, Min(1f)] private float _overdriveTraceMultiplier = 10f;
+        [Tooltip("Délai minimal, en secondes réelles, entre deux Overclocks pris en compte. " +
+                 "Garde-fou contre le Game Over accidentel d'une touche martelée ou d'un double " +
+                 "clic : à 5 s de survie l'appui, dix appuis par seconde videraient une jauge en " +
+                 "quelques secondes.")]
+        [SerializeField, Range(0f, 1f)] private float _overclockMinIntervalSeconds = 0.1f;
 
         // ------------------------------------------------------------------
         // Bouton d'Urgence / Data Wiper
@@ -350,31 +289,38 @@ namespace Core.Models.Economy
         // Lecture. Propriétés et non champs publics : l'asset est une donnée de
         // référence, aucun système n'a le droit de la modifier au runtime.
         // ------------------------------------------------------------------
-        /// <summary>
-        /// Plafond de Trace avant saisie, hors apport du Hardware. Ancien « diviseur de jauge » :
-        /// il jouait déjà ce rôle, la jauge normalisée valant trace / diviseur. Le nommer pour ce
-        /// qu'il est était le préalable au plafond dynamique.
-        /// </summary>
-        public float BaseTraceCap => _baseTraceCap;
+        /// <summary>Plafond fixe de la jauge, en UT. Le franchir déclenche la Saisie Fédérale.</summary>
+        public float AmiTraceCap => _amiTraceCap;
 
-        /// <summary>Asymptote de la réduction des Proxies. Jamais atteinte, seulement approchée.</summary>
-        public float MaxTraceReduction => _maxTraceReduction;
+        /// <summary>Vitesse de l'A.M.I. à zéro TFlop et sans Blindage, en UT/s.</summary>
+        public float AmiBaseSpeed => _amiBaseSpeed;
 
-        /// <summary>Rapport Dissipation/Brut donnant la moitié de <see cref="MaxTraceReduction"/>.</summary>
-        public float DissipationHalfPointRatio => _dissipationHalfPointRatio;
+        /// <summary>Poids des TFlops bruts dans la vitesse de l'A.M.I.</summary>
+        public float AmiTFlopsFactor => _amiTFlopsFactor;
 
-        /// <summary>Exposant liant la Trace d'un générateur à son rendement. Strictement entre 0 et 1.</summary>
-        public float TraceYieldExponent => _traceYieldExponent;
+        /// <summary>Exposant des TFlops bruts dans la vitesse de l'A.M.I.</summary>
+        public float AmiSpeedExponent => _amiSpeedExponent;
+
         public double VictoryTFlops => _victoryTFlops;
-        public bool DynamicTraceCap => _dynamicTraceCap;
-        public double DynamicCapReferenceYield => _dynamicCapReferenceYield;
 
         /// <summary>
-        /// Trace par seconde générée par la seule traque de l'A.M.I., avant dissipation.
-        /// Dérivée du plafond de base pour que relever le plafond dilue la traque.
+        /// Émis à chaque retouche de l'asset dans l'inspecteur, éditeur seulement.
+        ///
+        /// Les systèmes lisent leurs réglages à l'usage, ce qui les rend modifiables en Play
+        /// Mode sans rien faire. Le ThreatManager est l'exception : il met la vitesse de l'A.M.I.
+        /// en cache et ne la recalcule que lorsque ses entrées bougent. Sans ce signal, régler
+        /// l'exposant en jouant resterait sans effet jusqu'au prochain achat de Hardware.
         /// </summary>
-        public float PassiveTracePerSecond =>
-            _passiveTraceFillMinutes <= 0f ? 0f : _baseTraceCap / (_passiveTraceFillMinutes * 60f);
+        public Observable<Unit> Edited => _edited;
+
+        private readonly Subject<Unit> _edited = new Subject<Unit>();
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            _edited.OnNext(Unit.Default);
+        }
+#endif
 
         public float TraceReadoutMinInterval => _traceReadoutMinInterval;
         public float TraceReadoutMaxInterval => _traceReadoutMaxInterval;
@@ -393,9 +339,6 @@ namespace Core.Models.Economy
         /// </summary>
         public float TraceReadoutSensorReferenceTFlops => _traceReadoutSensorReferenceTFlops;
 
-        /// <summary>Fraction de l'asymptote au-delà de laquelle le Ghost Cache se charge.</summary>
-        public float GhostCacheReductionThreshold => _ghostCacheReductionThreshold;
-
         public double TFlopsTimeCompression => _tflopsTimeCompression;
         public double TFlopsCompressionExponent => _tflopsCompressionExponent;
         public double TFlopsYieldExponent => _tflopsYieldExponent;
@@ -409,11 +352,8 @@ namespace Core.Models.Economy
         public double SeizedContributionRatio => _seizedContributionRatio;
         public IReadOnlyList<CleanExitTier> CleanExitTiers => _cleanExitTiers;
         public float OverclockWarpSeconds => _overclockWarpSeconds;
-
-        public float GhostCacheCapacitySeconds => _ghostCacheCapacitySeconds;
-        public float OverdriveDurationSeconds => _overdriveDurationSeconds;
-        public double OverdriveYieldMultiplier => _overdriveYieldMultiplier;
-        public float OverdriveTraceMultiplier => _overdriveTraceMultiplier;
+        public float OverclockPenaltySeconds => _overclockPenaltySeconds;
+        public float OverclockMinIntervalSeconds => _overclockMinIntervalSeconds;
 
         public double EmergencyBaseRequiredTFlops => _emergencyBaseRequiredTFlops;
         public double EmergencyRequirementMultiplier => _emergencyRequirementMultiplier;

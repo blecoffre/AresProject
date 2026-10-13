@@ -52,47 +52,37 @@ namespace Core.Services.Economy
         /// <summary>Rendement théorique cumulé des Scripts, si tous leurs cycles tournaient en continu.</summary>
         public ReactiveProperty<double> TotalMoneyYieldPerSecond { get; } = new(0d);
 
-        /// <summary>
-        /// Capacité de calcul totale du joueur : somme du parc Hardware possédé, plus le bonus
-        /// persistant de prestige. Ce n'est PAS un débit — la valeur ne bouge qu'à l'achat, elle
-        /// ne s'accumule pas et ne se dépense pas. D'où l'abandon du suffixe « PerSecond ».
-        /// </summary>
-        public ReactiveProperty<double> TotalTFlops { get; } = new(0d);
+        private readonly ReactiveProperty<double> _grossTFlops = new(0d);
+        private readonly ReactiveProperty<double> _netTFlops = new(0d);
+        private readonly Subject<float> _onProxyWipe = new();
 
         /// <summary>
-        /// Trace générée en continu par le parc Hardware possédé. Un Hardware n'a pas de cycle :
-        /// il chauffe dès l'achat, contrairement aux Scripts dont la Trace ne court que pendant
-        /// un cycle actif. Cette part-là est donc statique et ne bouge qu'à l'achat.
-        /// </summary>
-        public ReactiveProperty<float> HardwareTracePerSecond { get; } = new(0f);
-
-        /// <summary>
-        /// Plafond de Trace apporté par le parc Hardware, hors plafond de base. Le Hardware est
-        /// le rempart : il achète de la marge avant saisie, là où les Proxies achètent du débit.
-        /// </summary>
-        public ReactiveProperty<float> TraceCapacityBonus { get; } = new(0f);
-
-        /// <summary>
-        /// Puissance de dissipation cumulée des Proxies, TFlops déjà appliquées :
-        /// Σ (base × niveau × paliers) × (1 + log10(1 + TFlops)).
+        /// TFlops BRUTES : la seule somme du parc Hardware possédé, sans aucun bonus de prestige
+        /// ni sacrifice. C'est la puissance de la MENACE — la vitesse de l'A.M.I. ne lit qu'elle.
         ///
-        /// <b>Ce n'est plus un débit à soustraire depuis le 2026-08-31</b>, et le renommage n'est
-        /// pas cosmétique. Tant qu'on la soustrayait platement, on opposait une valeur NON BORNÉE
-        /// à une génération bornée : 2,7 M$ de Proxies annulaient toute la Trace du jeu, pour
-        /// toujours. C'est désormais une grandeur qui n'a de sens que RAPPORTÉE au brut, et c'est
-        /// le SimulationTicker qui la convertit en fraction de réduction.
+        /// Séparée des TFlops nettes le 2026-10-13 : indexer la menace sur P_DATAM et le Noyau
+        /// faisait de chaque nœud d'économie un accélérateur de mort. Le prestige accélère les
+        /// revenus, jamais la traque.
         /// </summary>
-        public ReactiveProperty<float> ProxyDissipationPower { get; } = new(0f);
-
-        // ProxySynergyMultiplier a disparu le 2026-09-10 avec la synergie qu'il exposait.
+        public ReadOnlyReactiveProperty<double> GrossTFlops => _grossTFlops;
 
         /// <summary>
-        /// Multiplicateur temporaire appliqué au rendement des Scripts. Vaut 1 hors Overdrive.
+        /// TFlops NETTES : les brutes, plus le bonus de départ, multipliées par la méta-progression,
+        /// moins la tranche immobilisée par le Data Wiper. C'est la puissance de l'ÉCONOMIE —
+        /// compression et rendement des Scripts, capteur du brouillard, victoire, affichage.
         ///
-        /// Champ simple et non ReactiveProperty : le seul lecteur est la boucle de poussée
-        /// ci-dessous, et TotalMoneyYieldPerSecond porte déjà l'information vers l'UI.
+        /// Ce n'est PAS un débit : la valeur ne bouge qu'à l'achat, elle ne s'accumule pas et ne
+        /// se dépense pas.
         /// </summary>
-        private double _globalYieldMultiplier = 1d;
+        public ReadOnlyReactiveProperty<double> NetTFlops => _netTFlops;
+
+        /// <summary>
+        /// Émis à chaque achat de Proxy : les SECONDES DE SURVIE que le lot rend, base, paliers de
+        /// chaque niveau et quantité compris. Le ThreatManager les convertit en UT à la vitesse
+        /// courante de l'A.M.I. — il est le seul à modifier la jauge, et ce gestionnaire ne la
+        /// connaît pas.
+        /// </summary>
+        public Observable<float> OnProxyWipe => _onProxyWipe;
 
         /// <summary>
         /// Fraction du parc immobilisée par le Bouton d'Urgence, de 0 à 0,9. Le « Data Wiper »
@@ -329,8 +319,19 @@ namespace Core.Services.Economy
 
             bool isFirstPurchase = model.CurrentLevel.CurrentValue == 0;
 
+            // Chiffré AVANT la montée de niveau : ce sont les paliers des niveaux ACHETÉS qui
+            // comptent, pas ceux du niveau d'arrivée appliqués à tout le lot.
+            float wipeSeconds = model.Config.Type == UpgradeType.Proxy
+                ? (float)model.GetWipeSecondsForNextLevels(levels)
+                : 0f;
+
             model.AddLevels(levels);
             RecalculateTotals();
+
+            if (wipeSeconds > 0f)
+            {
+                _onProxyWipe.OnNext(wipeSeconds);
+            }
 
             if (isFirstPurchase)
             {
@@ -352,21 +353,11 @@ namespace Core.Services.Economy
         }
 
         /// <summary>
-        /// Applique un multiplicateur temporaire au rendement de TOUS les Scripts. Réservé au
-        /// Zéro-Day Exploit, qui l'élève à 50 pendant 30 s puis le ramène à 1.
-        ///
-        /// Passe par les caches des modèles plutôt que par une multiplication au moment du
-        /// versement : c'est ce qui garantit que le chiffre affiché dans le header et le montant
-        /// réellement crédité racontent la même chose. Le coût est de 15 recalculs de cache aux
-        /// deux extrémités de l'Overdrive — négligeable devant une frame.
-        /// </summary>
-        /// <summary>
-        /// Immobilise une fraction du parc de TFlops. Réservé au Bouton d'Urgence, qui la porte à
+        /// Immobilise une fraction des TFlops NETTES. Réservé au Bouton d'Urgence, qui la porte à
         /// 0,3 et plus pendant une minute avant de la rendre à zéro.
         ///
-        /// La tranche s'applique à la capacité EFFECTIVE, donc à tout ce qu'elle alimente : la
-        /// compression des cycles ET la dissipation des Proxies. C'est exactement le contrecoup
-        /// voulu — purger la Trace affaiblit la défense juste après.
+        /// Les TFlops brutes n'y sont pas soumises : la vitesse de l'A.M.I. ne ralentit pas quand
+        /// le joueur sacrifie sa puissance, sinon le Data Wiper deviendrait un soin gratuit.
         /// </summary>
         public void SetTFlopsBlockedFraction(float fraction)
         {
@@ -374,15 +365,6 @@ namespace Core.Services.Economy
             if (safe == _tflopsBlockedFraction) return;
 
             _tflopsBlockedFraction = safe;
-            RecalculateTotals();
-        }
-
-        public void SetGlobalYieldMultiplier(double multiplier)
-        {
-            double safe = multiplier < 1d ? 1d : multiplier;
-            if (safe == _globalYieldMultiplier) return;
-
-            _globalYieldMultiplier = safe;
             RecalculateTotals();
         }
 
@@ -394,109 +376,43 @@ namespace Core.Services.Economy
         private void RecalculateTotals()
         {
             // Passe 1 — la capacité de calcul, seule grandeur dont rien d'autre ne dépend.
-            double hardwareTFlops = 0d;
+            double grossTFlops = 0d;
 
             var hardwareList = _upgradesByType[UpgradeType.Hardware];
             for (int i = 0; i < hardwareList.Count; i++)
             {
-                hardwareTFlops += hardwareList[i].GetCurrentYield();
+                grossTFlops += hardwareList[i].GetCurrentYield();
             }
 
             // Le multiplicateur global de calcul s'applique à la capacité ENTIÈRE, bonus de
             // départ compris : c'est une amélioration du matériel, pas de son seul parc acheté.
-            double totalTFlops = (hardwareTFlops + _prestigeManager.StartingComputerPower.CurrentValue)
-                               * _prestigeManager.GlobalComputeMultiplier.CurrentValue;
+            double netTFlops = (grossTFlops + _prestigeManager.StartingComputerPower.CurrentValue)
+                             * _prestigeManager.GlobalComputeMultiplier.CurrentValue;
 
             // Immobilisation du Bouton d'Urgence, appliquée en DERNIER : c'est une amputation de
             // la capacité finale, pas un facteur à composer avec le multiplicateur de prestige.
-            totalTFlops *= 1d - _tflopsBlockedFraction;
-
-            // La synergie des Proxies — chaque niveau accélérait TOUS les Scripts de 1 % — a été
-            // RETIRÉE le 2026-09-10. Elle existait pour qu'un achat de Proxy ne soit jamais perdu
-            // quand la Trace était basse, mais elle donnait de l'OFFENSE au pilier défensif et
-            // brouillait exactement ce qu'on cherche à rendre lisible. Un Proxy dissipe, point.
-            //
-            // Le confort qu'elle apportait est assumé perdu : c'est le coût d'opportunité des
-            // Proxies qui rend la répartition entre les trois piliers intéressante.
+            netTFlops *= 1d - _tflopsBlockedFraction;
 
             // Poussée dans les modèles : c'est ce qui invalide leur cache de durée. Seuls les
-            // Scripts ont un cycle, mais on pousse à tous — SetTFlops s'auto-garde sur l'égalité,
-            // et un Hardware n'a pas de durée à recalculer de toute façon.
+            // Scripts ont un cycle ; SetTFlops s'auto-garde sur l'égalité.
             var scriptList = _upgradesByType[UpgradeType.Script];
             for (int i = 0; i < scriptList.Count; i++)
             {
-                scriptList[i].SetTFlops(totalTFlops);
-
-                // Poussé aux seuls Scripts, comme le reste de cette boucle. Le modèle refuse de
-                // toute façon d'appliquer le multiplicateur à un autre type — ceinture et
-                // bretelles, parce qu'un ×50 égaré sur le Hardware ne se verrait pas tout de
-                // suite et fausserait toute l'économie de la run.
-                scriptList[i].SetGlobalYieldMultiplier(_globalYieldMultiplier);
+                scriptList[i].SetTFlops(netTFlops);
             }
 
-            // Passe 2 — les agrégats qui dépendent des durées fraîchement recalculées.
-            //
-            // Le SIGNE dépend du type, et c'est tout l'enjeu : additionner aveuglément
-            // GetTraceMagnitudePerSecond() sur les trois types faisait qu'acheter un Proxy
-            // AUGMENTAIT la Trace au lieu de la dissiper.
+            // Passe 2 — le débit théorique, qui dépend des durées fraîchement recalculées.
             double moneyPerSecond = 0d;
-            float hardwareTrace = 0f;
-            float proxyBase = 0f;
-            float traceCapacity = 0f;
 
-            foreach (var model in _activeUpgrades.Values)
+            for (int i = 0; i < scriptList.Count; i++)
             {
-                switch (model.Config.Type)
-                {
-                    case UpgradeType.Script:
-                        // Débit théorique (versement ÷ durée de cycle), pas un versement par seconde.
-                        moneyPerSecond += model.GetYieldPerSecond();
-
-                        // Sa Trace n'est PAS comptée ici : elle ne court que pendant un cycle
-                        // actif, et seul le ScriptCycleRunner sait lesquels tournent.
-                        break;
-
-                    case UpgradeType.Hardware:
-                        hardwareTrace += model.GetTraceMagnitudePerSecond();
-                        traceCapacity += model.GetTraceCapIncrease();
-                        break;
-
-                    case UpgradeType.Proxy:
-                        proxyBase += model.GetTraceMagnitudePerSecond();
-                        break;
-                }
+                // Débit théorique (versement ÷ durée de cycle), pas un versement par seconde.
+                moneyPerSecond += scriptList[i].GetYieldPerSecond();
             }
-
-            // LE HARDWARE N'AMÉLIORE PLUS LES PROXIES. Le facteur (1 + log10(1 + TFlops)) a été
-            // retiré le 2026-09-10 : c'était le vrai coupable du chevauchement des rôles, le
-            // Hardware tenant à lui seul les DEUX moitiés de la défense — il levait le plafond
-            // ET rendait les Proxies meilleurs. Les Proxies dissipent maintenant selon leur seul
-            // niveau, et la branche de prestige Interception.
-            //
-            // Ce qui RESTE ici n'est pas un bonus mais une CONVERSION D'UNITÉ, et la distinction
-            // est tout l'enjeu. La trace d'un Script se compte PAR CYCLE : comprimé ×33, il la
-            // verse trente-trois fois plus souvent, donc son Trace/s est multiplié d'autant. Une
-            // dissipation exprimée par seconde serait diluée d'autant. Mesuré avant correction :
-            // 1 500 niveaux de Proxies ne tenaient plus que 24 % de réduction.
-            //
-            // En appliquant la même compression aux deux côtés, elle devient NEUTRE sur le
-            // rapport dissipation/génération : le Hardware ne rend les Proxies ni meilleurs ni
-            // pires. C'est précisément la neutralité qu'exigent des rôles tranchés. Tout le
-            // danger du Hardware passe par où il doit — sa propre chaleur, et le boost de
-            // rendement qu'il donne aux Scripts.
-            double dissipationFactor = Math.Pow(
-                1d + totalTFlops * _balancing.TFlopsTimeCompression,
-                _balancing.TFlopsCompressionExponent);
 
             TotalMoneyYieldPerSecond.Value = moneyPerSecond;
-            TotalTFlops.Value = totalTFlops;
-            HardwareTracePerSecond.Value = hardwareTrace;
-            TraceCapacityBonus.Value = traceCapacity;
-            // La branche Interception multiplie tout le parc d'un coup, là où les nœuds ciblés
-            // n'agissent que sur un Proxy à la fois. C'est ce qui rend les Proxies faibles au
-            // départ et méritables ensuite, plutôt que faibles pour toujours.
-            ProxyDissipationPower.Value = (float)(proxyBase * dissipationFactor
-                                                  * _prestigeManager.ProxyEfficiencyMultiplier.CurrentValue);
+            _grossTFlops.Value = grossTFlops;
+            _netTFlops.Value = netTFlops;
         }
 
         public void Dispose()
@@ -510,12 +426,11 @@ namespace Core.Services.Economy
             _activeUpgrades.Clear();
 
             _onUpgradesRebuilt.Dispose();
+            _onProxyWipe.Dispose();
             OnUpgradeRevealed.Dispose();
             TotalMoneyYieldPerSecond.Dispose();
-            TotalTFlops.Dispose();
-            HardwareTracePerSecond.Dispose();
-            TraceCapacityBonus.Dispose();
-            ProxyDissipationPower.Dispose();
+            _grossTFlops.Dispose();
+            _netTFlops.Dispose();
         }
     }
 }

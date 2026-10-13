@@ -11,6 +11,958 @@
 
 ---
 
+## Refonte « Time Attack », lot 1 — le modèle de Trace retiré du GDD (2026-10-13)
+
+Le GD a remplacé la Trace dynamique par un compte à rebours fixe (voir `game-design.md`, « La jauge
+de l'A.M.I. »). Les sections ci-dessous sont celles que ce lot a retirées du GDD, **telles
+qu'elles étaient** au commit `d8465d0` : elles expliquent pourquoi l'ancien modèle était fait
+ainsi — génération de Trace par Script, chaleur du Hardware, saturation des Proxies, plafond
+dynamique, Ghost Cache, calages de septembre, harnais. **Rien n'y fait plus foi.**
+
+Retirés du code dans le même lot : `GhostCacheSystem` et sa vue, le harnais d'équilibrage
+(`Editor/Balance`, ~2 700 lignes) et le simulateur Python (`tools/balance/`), les nœuds
+`P_STEALTH`, `P_EXPLOIT_*`, `P_OVERCLOCK_AWAKE`, `P_OVERCLOCK_SPACEBAR`, le son du Zéro-Day.
+
+### Entrées du backlog soldées par le lot 1
+
+Chacune tombe avec la mécanique qu'elle visait, par décision du GD du 2026-10-13 :
+
+- **`P_OVERCLOCK_SPACEBAR`** → nœud retiré, la barre d'espace est libre dès le départ.
+- **Le Zéro-Day qui ne se déclenche plus** → Ghost Cache, Zéro-Day et Baroud d'Honneur abandonnés.
+- **`P_STEALTH` qui sature** → nœud retiré, la réduction passive de Trace n'existe plus.
+- **`P_HARDEN_2` à `_4` au niveau 3** → règle « parent au maximum » partout (`requiredLevel: 0`).
+- **Les deux mécaniques attendues par l'arbre** → le prérequis « X points dépensés » est abandonné,
+  l'automatisation au niveau 10 est conservée.
+
+Leur texte au moment de la clôture :
+
+- 📖 **`P_OVERCLOCK_SPACEBAR` (« Accélérateur manuel ») n'a aucun effet.** Il coûte 1 point, mais
+  `PrestigeManager.IsSpacebarUnlocked` n'a **aucun lecteur** : la barre d'espace marche pour tout
+  le monde, nœud acheté ou non. Laissé débranché exprès dans `a772e67` — brancher le verrou
+  retirerait le clic aux sauvegardes existantes. **À trancher par le GD** : brancher le verrou
+  (et offrir le nœud aux sauvegardes antérieures par migration ?) ou retirer le nœud. À traiter
+  avec la refonte de l'arbre, qui fait de l'espace un nœud tardif (cf. GDD).
+- 📖 **Le Zéro-Day Exploit ne se déclenche plus — mais ses nœuds s'achètent.** Zéro déclenchement
+  sur 264 runs simulées (2026-09-16). C'est la **charge** qui est hors d'atteinte (90 s de posture
+  tenue au-dessus de 59,5 % de réduction), pas l'effet. Les trois nœuds `P_EXPLOIT_CHARGES`,
+  `P_EXPLOIT_MULT` (5 rangs) et `P_EXPLOIT_TRACE_REDUC` (3 rangs) coûtent 9 points. La refonte en
+  **Baroud d'Honneur** est tranchée depuis le 2026-09-16 et pas commencée (spécification dans le
+  GDD, § Ghost Cache). Elle fait sortir `GhostCacheSeconds` de la sauvegarde → `SaveData` v11.
+- 📖 **`P_STEALTH` sature au 4ᵉ de ses 10 rangs.** 0,25 par rang, et
+  `TraceReductionMultiplier = max(0,1 ; 1 − Σ)` touche son plancher dès 4 rangs. Les rangs 5 à 10
+  coûtent 6 points pour rien, et le 4ᵉ retire d'un coup 90 % de la Trace brute. Probable erreur de
+  `a772e67` : le nœud est passé de 1 à 10 rangs sans que son bonus — qui portait jusque-là les
+  cinq anciens rangs d'un coup — soit divisé. ⚖️ Effet sur l'équilibrage non mesuré.
+- 📖 **`P_HARDEN_2` à `_4` exigent leur parent au niveau 3, qui n'a qu'un rang.** Le générateur
+  ramène l'exigence au maximum et avertit à chaque passage : sans conséquence en jeu, mais trois
+  avertissements permanents noient les vrais. Vestige de l'aplatissement du 2026-09-12 : retirer
+  les `requiredLevel` des trois JSON.
+- 📖 **La refonte de l'arbre attend deux mécaniques qui n'existent pas.**
+  1. Un prérequis **« X points dépensés »** : `PrestigeRequirement` ne connaît qu'un couple (nœud
+     parent, niveau). Le GD en a besoin au moins deux fois (barre d'espace, réveil).
+  2. **La fin de l'automatisation au niveau 10.** Le seuil existe toujours
+     (`UpgradeConfigSO._automationLevel`, 10 par défaut, déclaré sur les 25 Scripts) mais plus aucun
+     nœud ne l'abaisse depuis le retrait de `P_AUTO_GLOBAL` : `GlobalAutomationReduction` et
+     `SpecificUpgradeBonuses.AutomationThresholdReduction` sont du code mort côté données.
+
+### LA TRINITÉ — un rôle par pilier, tranché le 2026-09-10
+
+**C'est la règle qui prime sur toutes les autres.** Trois sessions d'équilibrage se sont brisées
+dessus : chaque correction en cassait deux, parce qu'aucun pilier n'avait de frontière. Le
+Hardware faisait **cinq choses** — vitesse, rendement, plafond, efficacité des Proxies, sa propre
+chaleur — et les Proxies faisaient de l'offense.
+
+| Pilier | Rôle, en une phrase | Ce qu'il touche |
+|---|---|---|
+| **Scripts** | **L'attaque.** Ils rapportent, et c'est eux qu'on repère. | Argent, génération de Trace |
+| **Proxies** | **La furtivité active.** Dissipation pure, rien d'autre. | Dissipation |
+| **Hardware** | **L'infrastructure.** Il encaisse le choc et suralimente le moteur. | Plafond de jauge, compression des cycles, rendement des Scripts |
+
+La décision du joueur devient énonçable : *je stagne financièrement* → Scripts. *Le mur arrive trop
+vite* → Hardware. *La pression ne redescend pas* → Proxies.
+
+**Ce qui a été coupé le 2026-09-10 :**
+
+- **Le Hardware n'améliore plus les Proxies.** Le facteur `(1 + log10(1 + TFlops))` sur la
+  dissipation a disparu. C'était le vrai coupable : le Hardware tenait à lui seul les DEUX moitiés
+  de la défense, il levait le plafond *et* rendait les Proxies meilleurs. Aucun réglage ne pouvait
+  départager les deux piliers tant que ce facteur existait.
+- **Les Proxies n'accélèrent plus les cycles.** La synergie de +1 % par niveau existait pour qu'un
+  achat de Proxy ne soit « jamais perdu ». Elle donnait de l'offense au pilier défensif. Le confort
+  est assumé perdu : **c'est le coût d'opportunité des Proxies qui rend la répartition
+  intéressante.**
+
+⚠️ **Ce qui RESTE et n'est pas un bonus :** la compression s'applique aussi à la dissipation. Ce
+n'est pas « le Hardware aide les Proxies », c'est une **conversion d'unité**. La trace d'un Script
+se compte par CYCLE : comprimé ×33, il la verse trente-trois fois plus souvent. Une dissipation
+exprimée par seconde serait diluée d'autant — mesuré, 1 500 niveaux de Proxies ne tenaient plus que
+24 % de réduction. En l'appliquant des deux côtés, la compression devient **neutre** : le Hardware
+ne rend les Proxies ni meilleurs ni pires. C'est exactement la neutralité qu'exigent des rôles
+tranchés.
+
+### Les TFlops : deux effets, tous deux offensifs
+
+Ils ne touchent plus à la défense. Ce sont **la puissance de calcul du joueur, et rien d'autre** —
+un supercalculateur détourné doit calculer, pas servir de bouclier passif.
+
+**1. Compression du temps sur les Scripts**
+```
+DuréeRéelle = DuréeBase / (1 + TFlops × k) ^ CompressionExponent
+```
+Décroissance asymptotique, jamais zéro. L'exposant a remplacé le mur `minCycleDuration`, qui
+saturait dès quelques dizaines de TFlops et tuait le pilier.
+
+**2. Rendement des Scripts**
+```
+RendementScript × = (1 + TFlops) ^ YieldExponent
+```
+Réservé aux Scripts : chez un Hardware le rendement EST la capacité en TFlops, l'y brancher
+créerait une boucle divergente.
+
+Le **plafond de jauge**, lui, ne passe PAS par les TFlops : il vient directement du champ
+`traceCapIncrease` de chaque Hardware, en `puissance^TraceYieldExponent`.
+
+### Ladder des Scripts — la phrase sur la Trace par cycle
+
+**Uniforme en RELATIF, à dessein.** Les durées de base s'étalent de 1,5 s à 3 600 s — un facteur
+2 400. Rendre un Script à long cycle jouable dans l'absolu est le travail du **Hardware**, via la
+compression. Le palier n'a qu'une mission : que chaque Script donne le sentiment d'accélérer quand
+on l'approfondit. Et comme la trace se compte par cycle, un Script qui accélère génère mécaniquement
+plus de Trace par seconde — « plus d'argent ET plus de menace », ce qui referme sa définition.
+
+### L'Overclock « réveil » et `P_OVERCLOCK_AWAKE`
+
+**Action de l'Overclock (Clic manuel) :** Le clic global (Overclock) agit comme un **réveil**. S'il y a des Scripts inactifs (car sous le seuil d'automatisation), le clic de l'Overclock les démarre en priorité. Si les cycles sont déjà en cours, il avance le temps de tous les cycles de `0,5 s × ClickPowerMultiplier`.
+
+**Revirement du 2026-08-27 — le « réveil » devient un nœud de prestige avancé.** Un clic ne
+démarre PAS les Scripts à l'arrêt par défaut : il se contente d'avancer ceux qui tournent. Galérer
+au lancement manuel fait partie de l'expérience, et pendant une bonne partie du jeu. Le réveil
+automatique se débloque par un nœud de prestige tardif, pour fluidifier les runs de haut niveau
+où relancer quinze Scripts à la main devient une corvée plutôt qu'un choix.
+
+Le nœud est `P_OVERCLOCK_AWAKE` — « Injecteur Automatique », un seul rang, **5 000 CPU Cycles**,
+branche Automatisation derrière `P_POWER_START`.
+
+*État au 2026-10-13 : depuis l'aplatissement de l'arbre, il coûte **1 point**, derrière
+`P_OVERCLOCK_POWER_3` au maximum ; `P_POWER_START` n'existe plus. La refonte annoncée en fait un
+nœud tardif conditionné par « avoir dépensé X points » (voir « Refonte de l'arbre »).*
+
+*Le paragraphe ci-dessous décrivait le comportement de base envisagé le 26/08. Il décrit
+désormais l'effet du nœud, une fois celui-ci acheté :*
+
+**Un clic fait alors les DEUX, jamais l'un ou l'autre.**
+
+*L'ordre compte à l'implémentation : on avance D'ABORD les cycles en cours, on réveille ENSUITE.
+Réveiller en premier offrirait au passage une demi-seconde d'avance aux Scripts qui viennent tout
+juste de démarrer, alors que le GDD dit « ceux qui tournaient déjà ». Les Scripts automatisés ne
+sont jamais comptés comme réveillés : ils repartent seuls au Tick suivant.* Un même clic démarre d'un coup **tous** les Scripts possédés à l'arrêt, *et* avance de `0,5 s × ClickPowerMultiplier` ceux qui tournaient déjà. Aucun clic n'est donc perdu, et sa valeur reste constante à tous les stades de la partie. Ne pas implémenter de priorité exclusive (« tant qu'il reste un inactif, on ne fait que réveiller »).
+
+⚠️ **Justification corrigée le 2026-09-16.** Cette règle s'appuyait sur le début de partie — « chaque
+clic ne servirait qu'à relancer et jamais à accélérer » — ce qui n'a plus de sens depuis que le
+réveil est passé derrière `P_OVERCLOCK_AWAKE` : sans le nœud, un clic ne réveille rien. **La règle,
+elle, reste nécessaire**, mais elle protège désormais l'autre bout de la partie — le joueur QUI A
+ACHETÉ le nœud et se retrouve avec des Scripts à l'arrêt. Une priorité exclusive ferait cesser ses
+clics d'accélérer au moment précis où il en a quinze à gérer, c'est-à-dire là où le nœud était censé
+l'aider.
+
+Implémenté conformément dans `OverclockSystem.TriggerManualOverclock` : `AdvanceAllActive` d'abord,
+`StartAllIdle` ensuite et seulement si le nœud est possédé.
+
+### Trace — les Proxies agissent sur le débit, jamais sur la jauge
+
+**Refonte du 2026-08-31 — la soustraction plate est morte, remplacée par une saturation.**
+
+```
+TraceBrute  = (Σ TraceScriptsActifs + Σ TraceHardwarePossédés) × (1 − ReductionPrestige)
+Reduction   = MaxTraceReduction × D / (D + HalfPointRatio × TraceBrute)
+DebitTrace  = TraceBrute × (1 − Reduction)
+```
+
+où `D` est la puissance de dissipation cumulée des Proxies :
+
+```
+D = Σ (base × niveau × paliers) × MultiplicateurInterception × (1 + TFlops × k) ^ CompressionExponent
+```
+
+**Le facteur de compression y a été ajouté le 2026-08-31, et il n'est pas un bonus de plus.**
+Sans lui la défense décrochait mécaniquement : un Script comprimé ×33 verse sa trace de cycle
+trente-trois fois plus souvent, donc son Trace/s est multiplié d'autant, alors que la dissipation
+— exprimée par seconde — ne gagnait que le `log10`. Mesuré en simulation de fin de partie :
+1 500 niveaux de Proxies achetés ne tenaient plus que **24 %** de réduction. Avec le facteur,
+**80 %**.
+
+Un Proxy filtre du **trafic**, pas des secondes, et il tourne sur le matériel du joueur : si les
+Scripts vont trente fois plus vite, sa charge suit. La compression devient ainsi **neutre** sur le
+rapport dissipation/génération, et tout le danger du Hardware passe par où il doit — sa propre
+chaleur et le boost de rendement qu'il donne aux Scripts, tous deux comptés en `puissance^0,6`.
+
+**Pourquoi.** L'ancienne formule `max(0, Brut − Dissipation)` opposait une valeur **non bornée**
+à une génération **bornée** — la trace étant devenue forfaitaire le 30/08, elle plafonnait à
+28 192/s pour le jeu ENTIER. Mesuré : un unique `PRX_01` monté au niveau 100, soit 2,7 M$ dans
+une économie qui atteint 1e13, annulait toute la trace du jeu définitivement. Le joueur ne
+mourait plus que s'il le décidait, et il n'existait aucun arbitrage.
+
+**Trois propriétés de la nouvelle forme :**
+
+1. **L'asymptote n'est jamais atteinte.** Une fraction de la trace passe toujours, donc la jauge
+   monte toujours. L'invulnérabilité n'est plus un réglage à ne pas rater : elle est
+   arithmétiquement hors d'atteinte.
+2. **Le coût de chaque tranche explose.** Passer de 42,5 % à 76,5 % de réduction demande 9× plus
+   de puissance ; atteindre 84,9 % en demande 849×. C'est ce qui rend **tout plafond de niveau
+   inutile** — le rendement décroissant *est* le plafond, et il est naturel plutôt qu'arbitraire.
+   Vérifié : tout au niveau 1000, Proxies compris, donne 18,7 % de réduction seulement.
+3. **Seul le RATIO `D/Brut` compte, jamais la magnitude.** La formule se comporte à l'identique à
+   1e0 et à 1e13. Conséquence voulue et centrale : **faire grossir son économie dilue les Proxies
+   déjà achetés**. Défense figée à 100 niveaux de `PRX_01`, en poussant la production :
+   84,4 % → 62,8 % → 3,6 %. Le joueur doit réinvestir en permanence, ou assumer le risque.
+
+Il n'y a **pas** de plafond par Proxy : les quinze versent dans un `D` unique et c'est le *pool*
+qui sature. Des budgets séparés feraient une check-list à remplir, pas un arbitrage.
+
+La réduction de prestige s'applique **avant** la réduction des Proxies.
+
+#### La TRAQUE PASSIVE — le temps est un coût (tranché le 2026-09-10)
+
+L'A.M.I. te cherche activement. Rester connecté coûte, **indépendamment de ce que tu produis** :
+un débit constant s'ajoute au brut, réglé par `PassiveTraceFillMinutes` (25 min à l'origine,
+**6 min depuis le 2026-09-12** — voir « La cible des 30 minutes est abandonnée »).
+
+#### ⚠️ Elle ne démarre QUE lorsque le joueur s'est manifesté (corrigé le 2026-09-21)
+
+La traque s'appliquait **dès la première frame de la run**, avant tout achat. Relevé en jeu : le
+joueur regardait sa jauge monter sans avoir encore rien fait — *« je suis puni sans avoir commencé
+à jouer »*. Absurde côté règles, et contraire au lore : l'A.M.I. cherche un intrus, pas une machine
+éteinte.
+
+Deux manifestations l'arment, et l'une suffit :
+
+| Condition | Pourquoi |
+|---|---|
+| Avoir volé sa **première Data** | Le piratage a eu lieu, il y a quelque chose à repérer |
+| Posséder du **Hardware** | Il chauffe en permanence dès l'achat — il trahit sans rien rapporter |
+
+**Aucune des deux ne redescend pendant une run**, ce qui est le point : un simple test sur le débit
+des Scripts aurait allumé et éteint la traque entre deux cycles manuels, et la jauge aurait
+clignoté en début de partie.
+
+**Aucune faille ouverte** : ne rien faire ne rapporte rien, et le seul moyen de retarder la traque
+est de ne pas jouer. Un Script acheté mais jamais lancé n'émet rien, donc n'attire rien — c'est
+cohérent, pas un trou.
+
+Mesuré : 180 s d'inaction totale laissent la jauge à **0,000 %** ; elle démarre à la seconde où un
+cycle s'achève ou un Hardware est posé.
+
+**Le constat qui l'a rendue nécessaire.** La Trace ne mesurait QUE la production du joueur. Elle
+était donc une horloge *proportionnelle* — jouer faiblement achetait du temps illimité. Mesuré sur
+la première run, en n'achetant que de l'acquisition (ni Hardware ni Proxy) :
+
+| | Sans traque passive | Avec |
+|---|---|---|
+| Durée de la run | **92,7 min** | **22,1 min** |
+| Jauge à 5 min | 0,2 % | 20,6 % |
+| Jauge à 20 min | 6,3 % | 86,9 % |
+
+Le joueur rampait pendant une heure et demie sans que rien ne vienne jamais le chercher. Il n'y
+avait **aucune pression absolue** dans le jeu : le seul chronomètre était celui que le joueur
+remontait lui-même. Confirmé en jeu réel, pas seulement en simulation.
+
+**Quatre conséquences, toutes voulues :**
+
+- **Le temps redevient un coût.** Traîner n'est plus gratuit.
+- **Les Proxies ont un rôle dès la première minute.** La traque entre dans le brut, donc elle
+  passe par la dissipation. Avant, ils n'avaient rien à dissiper avant la vingtième minute — d'où
+  l'impression, juste, qu'ils ne servaient à rien au début.
+- **Elle s'efface toute seule.** 0,067 fraction/s écrase une production naissante et devient
+  négligeable face à une économie mûre. La traque domine le début puis disparaît, sans second
+  réglage.
+- **Le Blindage garde son sens.** Le débit dérive du plafond **DE BASE**, jamais du plafond
+  courant : relever le plafond dilue donc la traque et achète du temps. L'indexer sur le plafond
+  courant la rendrait inesquivable, et viderait toute la branche Blindage de son intérêt.
+
+⚠️ **Ne jamais indexer la traque sur le plafond courant.** C'est le piège évident, et il annule à
+la fois le Hardware et le Blindage.
+
+**Rythme obtenu** (campagnes complètes, arbre mené à son terme) :
+
+| Palier visé | Runs | Durée de campagne |
+|---|---|---|
+| 50 % | 58 | 13,29 h |
+| 75 % | 32 | **10,30 h** |
+| 90 % | 25 | 8,58 h |
+
+La cible de 10 heures est désormais atteinte par un **style de jeu**, pas par une constante à
+caler : le prudent fait une campagne longue, le téméraire une campagne courte.
+
+#### Le PLAFOND suit la puissance, et la Furtivité décide de la durée (tranché le 2026-09-15)
+
+Le plafond de jauge dérive du même agrégat que la Trace, et avec le même exposant. La durée d'une
+run devient donc **invariante à la puissance**.
+
+**Le défaut corrigé.** La Trace est alimentée par TOUTE la production, mais le plafond ne venait
+que de `traceCapIncrease`, une statistique secondaire portée par les objets Hardware. Acheter des
+Scripts faisait monter le numérateur sans le dénominateur. Mesuré : la durée de run s'effondrait de
+vingt minutes à trois, puis se figeait — chaque gain de puissance était immédiatement reconverti en
+run plus courte, jusqu'à un point fixe. Les 10 derniers pour-cent de jauge finissaient par passer en
+deux secondes, rendant le dernier palier d'extraction arithmétiquement injouable.
+
+| | Plafond statique | Plafond dynamique |
+|---|---|---|
+| Durée des runs, sur 202 runs | 20 min → 3 min, puis figée | **3,4 → 3,4 → 3,4 → 3,8** |
+| Marge après le palier 90 % | 2 s | 10 s à 1,2 min |
+| Saisies, posture agressive | 15 | **1** |
+
+**La Furtivité devient le seul levier de durée**, et c'est visible dans les chiffres :
+
+| Dissipation tenue | Durée de run |
+|---|---|
+| 23,0 % | 3,4 min |
+| 51,5 % | 5,6 min |
+| 61,1 % | 7,0 min |
+
+C'est la relation `1/(1−R)`, bornée à ×6,67 par l'asymptote. **La Furtivité ne pouvait PAS suppléer
+au plafond statique** : son asymptote laisse passer 15 % du brut quoi qu'il arrive, alors que le
+brut croît sans borne. Mais une fois le plafond rendu dynamique, elle hérite du rôle entier.
+
+⚠️ **Le facteur se calcule en RAPPORT à un rendement de référence**, jamais en valeur absolue.
+Sans cette normalisation il multiplie un plafond de base à sept chiffres : mesuré, cent cinquante
+minutes de run sur les quatre postures, le joueur littéralement immortel. L'exposant était bon, la
+constante fausse de six ordres de grandeur.
+
+**Ce que le Hardware perd, et ce qu'il garde.** Il perd `traceCapIncrease`, une statistique
+secondaire. Il garde l'intégralité de son rôle : les TFlops n'alimentent QUE les Scripts, en
+majorant leur rendement et en raccourcissant leurs cycles. Vérifié dans le code avant de trancher.
+Les rôles en ressortent plus nets qu'avant — Scripts : ce que tu gagnes. Hardware : la vitesse et
+la force avec lesquelles tu le gagnes. Furtivité : combien de temps tu tiens.
+
+Le réglage reste **basculable** (`DynamicTraceCap`), pour pouvoir mesurer les deux sans toucher au
+code.
+
+#### La trace suit le rendement, à un exposant strictement entre 0 et 1
+
+**Tranché le 2026-08-31, annule et remplace le « coût de surface » du 30/08.**
+
+```
+TraceParCycle = BaseTrace × BaseCycleDuration × (Puissance × BoostTFlops) ^ TraceYieldExponent
+TracePerSeconde = TraceParCycle / DuréeCycleCourante
+```
+
+`Puissance` = niveau × paliers de rendement. Le Hardware suit la même règle, mais en continu.
+Le Proxy garde un couplage **linéaire** : sa magnitude est une dissipation, l'amortir rendrait un
+Proxy de niveau 50 à peine meilleur qu'un de niveau 1.
+
+C'est la synthèse de deux échecs successifs. À l'exposant **1** (avant le 30/08), monter un
+générateur accélérait les gains ET la mort dans la même proportion : une run rapportait 133 Datas
+quoi que fasse le joueur. À l'exposant **0** (le coût de surface du 30/08), la génération devenait
+bornée pour toujours et la défense gagnait mécaniquement. À **0,6**, doubler son rendement ne
+multiplie la trace que par 1,52 : progresser paie, sans jamais supprimer le danger.
+
+Le facteur `BaseCycleDuration` convertit la donnée historique — exprimée par seconde — en quantité
+par cycle. Au niveau 1, sans palier ni TFlops, les deux écritures coïncident exactement : **aucune
+des 45 valeurs de trace des JSON n'a eu besoin d'être réécrite.**
+
+#### Le Hardware n'est plus un pilier mort
+
+**Tranché le 2026-08-31.** `minCycleDuration` bornait la compression, et les seuils de saturation
+étaient dérisoires : `SCR_15` à **4 TFlops**, `SCR_14` et `SCR_03` à **10**, médiane à 55 — alors
+que `HW_01` niveau 10 en fournit déjà 40. Passé ce mur, le Hardware n'apportait plus rien
+économiquement. Constaté en simulation : après 60 min, une IA d'achat au meilleur ROI avait
+`SCR_01=252` mais `HW_01=13, HW_02=2`.
+
+Deux changements :
+
+```
+DuréeCycle = DuréeBase / (1 + TFlops × k) ^ TFlopsCompressionExponent     (plus de mur par générateur)
+RendementScript × = (1 + TFlops) ^ TFlopsYieldExponent                    (nouveau)
+```
+
+`minCycleDuration` **n'est plus lu** — comme `durationReductionPerLevel`, le champ survit dans les
+données sans être utilisé. Un plancher **absolu** unique, dans `BalancingConfig`, sert de garde-fou
+de boucle au `ScriptCycleRunner`.
+
+Le boost de rendement est **réservé aux Scripts** : chez un Hardware le rendement EST la capacité
+en TFlops, donc le brancher là créerait une boucle divergente.
+
+Les deux effets ne jouent pas le même rôle face au risque. La **compression** accélère l'argent et
+la trace dans la même proportion, et depuis le correctif ci-dessus elle accélère aussi la
+dissipation : elle est donc neutre sur le risque, et n'est plus qu'un accélérateur d'horloge. Le
+**boost de rendement**, lui, passe par l'exposant 0,6 : il rapporte plus qu'il ne coûte en trace.
+C'est le versant récompense du pilier.
+
+#### Le plafond de jauge suit la puissance, plus le seul niveau
+
+**Tranché le 2026-08-31 — annule l'asymétrie posée le 30/08.**
+
+```
+PlafondHardware = traceCapIncrease × puissance ^ TraceYieldExponent
+```
+
+Il valait `base × niveau`, et le GDD assumait cette asymétrie — « approfondir une machine améliore
+son refroidissement sans augmenter son encombrement » — tant que la trace générée était
+forfaitaire. Elle suit désormais `puissance^0,6` : un plafond resté linéaire décroche aussitôt.
+
+Mesuré, et c'est sans appel : **avec l'arbre de prestige entièrement acheté, le brut était
+multiplié par 98 quand le plafond ne gagnait que 8 %** — une run de fin de partie tombait de
+1 766 s à **82 s**. Plus le joueur progressait, plus ses runs se raccourcissaient, jusqu'à rendre
+la méta-progression impossible.
+
+Les deux grandeurs partagent donc l'exposant, ce qui rend la contribution du Hardware à la survie
+constante en proportion, donc **calable** : le rapport entre `traceCapIncrease` et
+`traceGeneratedPerSecond` d'un palier dit à lui seul combien de secondes de survie cette machine
+achète contre sa propre chaleur. Il vaut ≈ 60 sur les quinze paliers actuels.
+
+**Génération de la Trace :** Un Script génère de la Trace **uniquement pendant qu'un cycle tourne**. Cela renforce le concept de risk/reward (l'A.M.I. ne repère le piratage que lorsqu'il est actif), particulièrement en début de partie quand le lancement est strictement manuel.
+
+**Le Hardware, lui, chauffe en permanence** (tranché le 2026-08-26) : sa `traceGeneratedPerSecond` s'applique en continu dès l'achat, puisqu'il n'a pas de cycle. C'est ce qui maintient un risque sur l'onglet le plus rentable — sans quoi le Hardware deviendrait un achat sans contrepartie.
+
+**Attention au nom du champ.** `traceGeneratedPerSecond` porte une **génération** pour les Scripts et les Hardware, mais une **dissipation** pour les Proxies (dont le `baseProductionYield` vaut 0). Le nom ment pour ce troisième type : c'est la valeur qui alimente `ProxyBase` dans la formule de dissipation ci-dessus, et elle doit être **soustraite**, jamais ajoutée.
+
+**Synergie des Proxies — RETIRÉE le 2026-09-10.** Chaque niveau de Proxy accélérait tous les
+Scripts de 1 %, pour qu'un achat de Proxy ne soit « jamais perdu » même quand la Trace était basse.
+Elle donnait de l'offense au pilier défensif et brouillait la lecture des rôles. Voir « LA
+TRINITÉ » en tête de document, qui fait foi.
+
+**La règle d'or tient, confirmée le 2026-08-27.** Un excédent de dissipation ne fait PAS redescendre la jauge : il est capté par le Ghost Cache. Si la jauge se vidait, le joueur aurait toujours toute la marge devant lui et déclencher l'Overdrive ne coûterait rien. En la laissant où elle est, le Ghost Cache se remplit à la hauteur où le joueur s'est arrêté : à 30 % il a de la marge, à 80 % c'est un pari. C'est là que naît le choix « j'exfiltre ou je charge encore ».
+
+#### Où la règle est appliquée
+
+| Chaîne | Exigence | Raison |
+|---|---|---|
+| Overclock — `P_OVERCLOCK_POWER_2`, `_3`, `P_OVERCLOCK_AWAKE` | `requiredLevel: 0` (le max, soit 5) | Cinq rangs par palier : au premier rang, toute la ligne s'ouvrait d'un coup |
+| Blindage — `P_HARDEN_2`, `_3`, `_4` | `requiredLevel: 3` | Voir ci-dessous |
+
+**Pourquoi 3 et non le maximum sur le Blindage (tranché le 2026-09-09).** `P_HARDEN_4` verse
+**cent fois** le bonus de `P_HARDEN_1` par rang (1,0 contre 0,01). Le chemin le plus court jusqu'à
+lui, avec un coût de rang valant `1,5^(k-1)` :
+
+| Règle | Cycles pour ouvrir `P_HARDEN_4` | Plafond obtenu au passage |
+|---|---|---|
+| Niveau 1 (avant) | **4,0** | ×2,26 |
+| **Niveau 3 (retenu)** | **15,25** | ×2,78 |
+| Niveau max | 340 | ×4,39 |
+
+Exiger le maximum coûterait une quinzaine de runs rien que pour ouvrir la fin de la branche —
+punitif, et cela **forcerait le joueur à maximiser contre sa volonté**. Le palier 3 multiplie le
+ticket d'entrée par 3,8 tout en donnant 23 % de plafond en plus au passage, puisqu'il impose
+d'acheter les rangs intermédiaires : il retarde sans punir. Rapporté au rythme calé (~22 cycles
+en run 1), la chaîne passe de 18 % à 69 % du budget de la première run.
+
+⚠️ **Chiffrage arithmétique, toujours pas simulé.** Le simulateur a été réécrit le 2026-09-09 dans
+`tools/balance/` (versionné cette fois, et il lit `BalancingConfig.asset` directement). Son
+**modèle de run est vérifié fidèle** — il reproduit au chiffre près les mesures du tableau
+ci-dessus. Sa **boucle de campagne ne l'est pas** : là où ce document consigne 19 runs / 9,93 h /
+arbre complet, la réécriture donne 11 runs / 16 h / 18 %, quelle que soit la règle de sortie de
+run testée. L'agent réécrit est environ deux fois plus faible en fin de partie.
+
+L'effet des paliers de prérequis sur la durée totale reste donc **non mesuré**. Ce qu'on sait :
+le palier coûte ~15 cycles sur un arbre de 3 477, soit **0,4 %** — l'ordre de grandeur rend un
+dérapage des 10 h très improbable, mais ce n'est pas une confirmation.
+
+L'entrée de branche (`P_HARDEN_1` derrière `P_STEALTH`) reste au niveau 1 : ouvrir une branche et
+la parcourir sont deux décisions différentes.
+
+### Branche Blindage — la colonne vertébrale de la méta
+
+**Ajoutée le 2026-08-31.** Quatre nœuds (`P_HARDEN_1` à `_4`, dix rangs chacun, derrière
+`P_STEALTH`) portant un nouveau `bonusType` : **`TraceCapacityMultiplier`**, qui multiplie le
+plafond de la jauge — base comprise, donc utile dès la première run.
+
+**Pourquoi elle existe.** Sans elle, la campagne était un tapis roulant : **125 runs identiques de
+quatre minutes**, mesurées en simulation. Aucun des 134 nœuds ne déplaçait la contrainte qui met
+fin à une run — la jauge se remplissait au même point quels que soient les bonus achetés. Le
+plafond est le SEUL levier qui fasse grandir une run, et l'écart est brutal :
+
+| Levier, arbre de prestige complet | Durée de run | CPU Cycles |
+|---|---|---|
+| référence | 236 s | 6 |
+| plafond ×10 | 563 s | 70 |
+| plafond ×1000 | 2 016 s | **80 050** |
+| asymptote de défense 0,85 → 0,98 | 238 s | 6 *(nul)* |
+
+La boucle qui manquait : survivre plus longtemps → construire plus haut → gagner plus → racheter
+du plafond. C'est elle qui rend une campagne progressive.
+
+⚠️ **`TraceCapacityMultiplier` est appendé en FIN d'enum**, comme tous les types depuis l'incident
+du 30/08 : l'index est sérialisé dans les `.asset` générés, une insertion au milieu redéfinirait
+silencieusement des nœuds existants.
+
+### Rythme — calé le 2026-08-31, corrigé deux fois le 2026-09-01
+
+**Deux échecs successifs, et les deux leçons sont structurantes.**
+
+**Échec 1 — ralentir le début.** Pour atteindre « 30 minutes avant le premier prestige », le
+premier calage avait divisé **tous** les rendements par 10 et alourdi **toutes** les courbes de
+coût. Mesuré en jeu : `SCR_01` atteignait son automatisation en **1 256 s au lieu de 69 s**.
+
+> **Règle 1 : on ne ralentit JAMAIS le début pour allonger une run.** Le frein se place plus loin.
+
+**Échec 2 — l'explosion de la cinquième minute.** Avec les rendements restaurés, la production
+passait de 7 000 Datas à la 2ᵉ minute à **1,7 milliard** à la 5ᵉ. Le joueur brûlait toute
+l'économie du jeu dans sa première run, et le prestige ne servait plus à rien.
+
+> **Règle 2 : la montée en puissance doit venir des bonus de prestige, pas de l'intérieur d'une
+> run.** Cible fixée par le GD : quelques **dizaines de milliers** de Datas à la 5ᵉ minute.
+
+#### Ce qui freine, et ce qui ne freine pas
+
+Le coupable de l'explosion n'était ni les rendements ni le prix des nœuds de prestige (ceux-ci
+coûtaient **0,01 CPU Cycle** — vérifié) mais deux choses :
+
+| Levier | Effet sur les 10 premiers niveaux | Effet au niveau 190 |
+|---|---|---|
+| `costMultiplier` **1,07 → 1,15** | 138 $ → 203 $ *(négligeable)* | 5,5e7 $ → **2,3e13 $** |
+| Paliers **`facteur ^ 0,4`** | aucun *(le 1ᵉʳ palier est au niveau 10)* | empilement ×300 → **×4** |
+
+C'est le levier chirurgical cherché : **le début est intact, la profondeur devient chère.** Les
+`baseProductionYield` restent ceux d'origine et ne doivent plus jamais servir de variable de
+rythme.
+
+#### Mesures obtenues, sur les fichiers du projet
+
+| Mesure | Valeur | Cible |
+|---|---|---|
+| `SCR_01` niveau 10 (automatisation) | **75 s** | rapide ✅ |
+| Datas générées à la 5ᵉ minute | **40 066** | quelques dizaines de milliers ✅ |
+| Première run | **9,7 min**, jusqu'à `SCR_04` | ~10 min ✅ |
+| Campagne complète (arbre entier) | **10,69 h** au palier 75 % | ~10 h ✅ |
+| Nombre de runs | 39 à 45 selon le palier visé | — |
+
+### ⚠️ La cible « 30 minutes avant le premier prestige » est ABANDONNÉE (2026-09-12)
+
+Elle était une erreur, et c'est une partie jouée qui l'a tranchée, pas un calcul.
+
+**Le verdict manette en main :** « je trouve la run longue et ennuyante ; passé les cinq premières
+minutes cela devient long, les gains ne sont pas énormes donc on achète très rarement quoi que ce
+soit, le spam d'Overclock devient la seule solution, mais cela épuise vite ».
+
+**Ce que la mesure a confirmé.** Sur une run de 25 minutes, relevé minute par minute :
+
+| Minute | 5 | 10 | 15 | 20 | 24 |
+|---|---|---|---|---|---|
+| Achats dans la minute | 29 | 14 | 10 | 6 | 78 |
+| Croissance des Datas | ×3,97 | ×1,46 | ×1,26 | ×1,15 | ×1,11 |
+
+**La phase exponentielle meurt vers la minute 12.** Après, la run est linéaire : +10 à 15 % par
+minute, activité d'achat divisée par trois. Un incrémental linéaire est un incrémental ennuyeux.
+Les vingt dernières minutes n'ajoutaient rien qu'une attente.
+
+**Le réglage.** `PassiveTraceFillMinutes` passe de 25 à **6**, ce qui donne une première run de
+**9,7 minutes**. La courbe d'achats des premières minutes est rigoureusement identique — on n'a
+retiré aucun moment intéressant, on a coupé la partie plate. La run se termine désormais au PIC
+d'activité (61 achats à la minute 7) et en pleine exponentielle (×1,69 sur la dernière minute).
+
+⚠️ **Ce réglage n'est pas un cadran direct sur la durée de run.** Le Hardware relève le plafond et
+dilue la traque : à 12 minutes de remplissage, la run durait encore 19,9 minutes. Toujours mesurer
+plutôt que déduire.
+
+**Conséquence heureuse et non conçue :** les runs S'ALLONGENT au fil de la campagne — 9,7 min au
+départ, ~14,5 min en moyenne — parce que le Blindage relève le plafond. La méta-progression achète
+littéralement du temps de jeu par run.
+
+**Conséquence à assumer :** viser le palier 50 % ne boucle plus l'arbre (141 runs, 87 % au bout de
+16 h). Jouer très prudemment est devenu perdant, pas seulement lent.
+
+#### ⚠️ Le simulateur ne clique jamais l'Overclock
+
+Mesuré le 2026-09-12 : première run réelle **28 CPU Cycles**, même run simulée **3**. Le harnais ne
+modélise aucun clic, alors qu'un joueur spamme l'Overclock — qui avance tous les Scripts en cours.
+L'écart est d'environ deux ordres de grandeur sur les Datas.
+
+⚠️ **Le « 28 » est PÉRIMÉ** — il précède d'un jour le passage des points au cumul de campagne, et
+a donc été produit par une formule abandonnée. Il ne constitue **aucune cible**. La cible en vigueur
+est fixée plus bas, section « Ce que doit rapporter une première run ». Ce qui survit de ce
+paragraphe, c'est l'angle mort du harnais, pas le chiffre.
+
+**Toute mesure du harnais est donc une BORNE BASSE**, jamais une prédiction. C'est aussi ce qui
+expliquait un écart relevé plus tôt : une jauge à 27 % au bout de vingt minutes en partie réelle,
+contre 6 % en simulation.
+
+La première run monte jusqu'à `SCR_05` en pyramide (`84 / 60 / 42 / 23 / 9`) : le joueur achète
+sans arrêt, il n'y a ni plateau mort ni empilement dégénéré sur un seul générateur.
+
+#### La branche Blindage est le moteur de la campagne
+
+Sans elle, les Datas ne progressaient que de ×13 sur toute la campagne — 90 runs identiques. Avec
+elle calée à `+0,01 / +0,05 / +0,2 / +1,0` par rang (plafond ×13,6 au maximum), elles font **×660**
+et les runs s'allongent de 19 à 41 minutes.
+
+⚠️ **Piège vécu :** un facteur d'échelle appliqué deux fois avait ramené ses bonus à 0,00016 par
+rang. La branche devenait inerte et la campagne redevenait un tapis roulant — sans que rien ne le
+signale. Toute modification du Blindage doit être suivie d'une mesure de la croissance des Datas
+sur une campagne complète.
+
+#### `DissipationHalfPointRatio` (κ) décide si la défense vaut le coup
+
+Ramené à **0,3**. À cette valeur, les Proxies sont inutiles en début de partie — le joueur est trop
+petit pour être repéré — deviennent payants en milieu, puis redeviennent un mauvais achat en fin de
+campagne, où le budget doit repartir vers la production.
+
+⚠️ **κ est à revérifier après CHAQUE modification des magnitudes de trace ou de plafond.** Il ne
+porte pas une valeur absolue mais un rapport, et tout changement d'échelle le déplace. Il a dû être
+repris trois fois pendant ce calage (0,3 → 10 → 0,3).
+
+### Ghost Cache et Zéro-Day Exploit
+
+> ⚠️ **État au 2026-10-13 : la mécanique décrite ci-dessous est en vigueur dans le code, mais ne se
+> déclenche plus** (zéro fois sur 264 runs simulées). Elle est condamnée : sa refonte est tranchée,
+> pas implémentée.
+>
+> **Le BAROUD D'HONNEUR (tranché par le GD le 2026-09-16)** remplace la charge :
+>
+> | | Aujourd'hui | Baroud d'Honneur |
+> |---|---|---|
+> | Accès | Charge de 90 s de posture défensive tenue (`GhostCacheCapacitySeconds`) | **N usages par run**, N donné par `P_EXPLOIT_CHARGES` |
+> | Durée | 30 s | **3 à 5 s** |
+> | Rendement | ×50 sur les Scripts | ×50, inchangé |
+> | Malus de Trace | ×10, dissipation coupée | ×10 conservé |
+> | Sauvegarde | `GhostCacheSeconds` (v4) | Le champ sort du format → `SaveData` v11 |
+>
+> Pourquoi : les conditions d'activation sont devenues inatteignables — la charge exige plus de
+> posture tenue qu'une run de campagne n'en offre. La justification d'origine était double
+> (« la durée n'est jamais tenue » aussi) ; seule la première tient, voir plus bas. Raccourcir à
+> 3-5 s reste un choix de design, plus une réparation.
+>
+> **Question ouverte** : « N = rangs de `P_EXPLOIT_CHARGES` », mais ce nœud n'a plus qu'**un
+> rang**, de bonus 5, depuis l'aplatissement de l'arbre. N vaut-il le bonus ?
+>
+> Valeurs du code à cette date, qui diffèrent des tableaux ci-dessous : capacité **90 s** (et non
+> 300), `P_EXPLOIT_CHARGES` 1 rang de bonus 5, `P_EXPLOIT_MULT` 5 rangs, `P_EXPLOIT_TRACE_REDUC`
+> 3 rangs de 2,5.
+
+Valeurs tranchées par le GD le 2026-08-27. L'excédent de dissipation, jusque-là purement jeté, alimente une charge unique échangeable contre un pic de production.
+
+| Paramètre | Valeur | Raison |
+|---|---|---|
+| **Capacité de la jauge** | **300 secondes d'excédent** | Exprimée en temps et non en magnitude, sinon un joueur de fin de partie la remplirait instantanément |
+| **Durée de l'Exploit** | **30 secondes** | Assez long pour regarder la Trace monter et le regretter |
+| **Multiplicateur** | **×50 sur le RENDEMENT** | Pas sur la vitesse : `minCycleDuration` bornerait l'effet et le gain deviendrait imprévisible d'un Script à l'autre |
+| **Contrepartie 1** | **Dissipation → 0** | Tous les Proxies s'éteignent |
+| **Contrepartie 2** | **×10 sur la génération brute de Trace** | Ajouté le 2026-08-27. La jauge se remplit dix fois plus vite en plus de n'être plus dissipée |
+
+**La charge se remplit en TEMPS, pas en magnitude.** Une seconde de posture défensive tenue vaut une seconde de charge. Le prix à payer est un maintien de posture, pas un empilement de Proxies. ⚠️ Conséquence à surveiller : rien ne récompense une dissipation massive, seulement sa durée.
+
+**Condition de charge revue le 2026-08-31.** Elle captait « l'excédent de dissipation ». Cette notion n'existe plus : la réduction étant asymptotique, la trace monte toujours et il n'y a plus rien à jeter. Le seuil porte désormais sur la **fraction de réduction tenue** (`GhostCacheReductionThreshold`, en part de l'asymptote). ⚠️ **Charger n'est plus gratuit** — la jauge continue de grimper pendant l'accumulation, là où l'excédent mettait le joueur à l'abri. Se constituer une réserve devient un pari sur la jauge, ce qui est le propos même de la mécanique.
+
+**Le ×50 ne touche QUE les Scripts.** Chez un Hardware, le « rendement » EST sa contribution en TFlops : le laisser passer multiplierait par 50 la capacité de calcul, donc la compression des cycles *et* la dissipation des Proxies. Un buff économique deviendrait une invulnérabilité.
+
+⚠️ **Le ×10 NE casse PAS l'Exploit — corrigé le 2026-09-16.** Ce paragraphe a longtemps annoncé
+une saisie à **1,58 s**, donc un bouton inutilisable. C'était vrai, et ça ne l'est plus : le calcul
+`100 / (génération × 10)` supposait un plafond de jauge de **100**, alors que `BaseTraceCap` vaut
+**5e6** depuis la refonte du 31/08. La conclusion est restée dans le document deux semaines après
+que sa prémisse a disparu.
+
+**Mesuré sur le code actuel**, avec l'exemple d'origine (`SCR_01` niveau 12 + `HW_01` niveau 4) :
+l'Overdrive **va au bout de ses 30 secondes**, et la partie est encore vivante à l'arrivée.
+
+| | Valeur |
+|---|---|
+| Durée tenue | **30,0 s** sur 30 nominales |
+| Jauge à la fin | **81,8 %**, partie active |
+| Jauge consommée | ~81 points |
+
+⚠️ **Le pari est donc réel, et il est dans le bon sens :** consommer 81 points de jauge veut dire
+que déclencher l'Exploit **au-dessus de ~19 % de jauge tue avant la fin des 30 s**. Le joueur
+encaisse le ×50 entier s'il le lance tôt, et joue sa run s'il le lance tard. C'est exactement
+l'arbitrage que cette section cherchait à créer — il existait déjà, personne ne l'avait mesuré.
+
+⚠️ **Leçon de méthode.** Une conclusion chiffrée survit à la constante qui l'a produite. Toute
+mesure consignée ici doit nommer les réglages qui la sous-tendent, faute de quoi elle devient un
+fait acquis que plus personne ne rejoue.
+
+#### Les trois nœuds de prestige de l'Exploit
+
+Ajoutés le 2026-08-27, branche Économie, tous trois derrière `P_EMERG`.
+
+| Nœud | Rangs | Par rang | Au maximum |
+|---|---|---|---|
+| `P_EXPLOIT_CHARGES` | 5 | +1 charge stockable | 5 charges, soit 1 500 s de réserve |
+| `P_EXPLOIT_MULT` | 10 | +10 % de rendement | ×100 au lieu de ×50 |
+| `P_EXPLOIT_TRACE_REDUC` | 5 | −0,5 sur le malus de Trace | ×7,5 au lieu de ×10 |
+
+**Le Zéro-Day Exploit est VERROUILLÉ au départ.** `P_EXPLOIT_CHARGES` vaut 0 tant qu'il n'est pas
+acheté, donc la capacité du Ghost Cache est nulle et **rien ne s'accumule** — pas de réserve
+fantôme qui attendrait un déblocage. Le bouton porte un quatrième état, verrouillé, qui nomme le
+nœud à acheter plutôt que de rester gris et muet.
+
+Le malus de Trace est borné à ×1 : le joueur peut l'alléger, jamais le supprimer ni le retourner
+en bonus.
+
+**Cas limites, tranchés par le GD :**
+
+- **Mort pendant l'Exploit** → la charge est perdue. C'est la punition pour avoir mal calculé son pari.
+- **Interruption manuelle** → impossible. Une fois lancé, l'Exploit va jusqu'au bout.
+- **Wipe** → la charge est effacée, même pleine. C'est de l'état de run. La laisser survivre offrirait un Exploit gratuit au démarrage de chaque run, exactement quand la Trace est à zéro et où il ne coûterait donc rien.
+- **Fermeture du jeu** → la charge est sauvegardée (`SaveData` v4). Elle représente du temps de jeu investi.
+- **Débordement** → plafonne à 1 charge, pour forcer la consommation plutôt que la thésaurisation.
+
+*Précision technique : un Exploit EN COURS n'est pas sauvegardé — la charge ayant déjà été consommée, fermer la fenêtre pendant les 30 s revient à les perdre. Sauvegarder un effet temporaire permettrait de le mettre en pause par fermeture du jeu, dans un jeu qui n'a justement aucune progression hors-ligne.*
+
+La jauge elle-même n'est réduite que par le **Bouton d'Urgence** (voir plus bas) et par le wipe. Règle d'or : *« le FBI n'oublie jamais, sauf si tu formates tout. »* Il faut un mur qui pousse inévitablement au wipe — sinon le joueur trouve une planque parfaite (`ΔTrace = 0`) et le danger disparaît.
+
+### Refonte de l'arbre — intentions du GD (2026-09-25)
+
+Le GD a annoncé une **passe massive** sur l'arbre : 120 des 146 nœuds sont du remplissage généré
+(deux par générateur, tous identiques), et l'ensemble a cessé d'être maîtrisable. Ce qui est tranché :
+
+- **L'arbre pourra être complété, sans que ce soit garanti.** Finir l'histoire n'exige pas l'arbre
+  complet ; selon le style de jeu, certains l'achèveront, d'autres non. ⚠️ Le cumul d'une campagne
+  **n'a donc pas à dépasser** le prix de l'arbre entier : il doit atterrir dans le même voisinage.
+  Un écart de quelques points en fin de campagne est normal, un écart de cinquante ne l'est pas.
+- **La barre d'espace (Overclock au clavier) et le réveil deviennent des nœuds tardifs**,
+  conditionnés par « avoir dépensé X points de prestige ».
+- **L'automatisation des Scripts au niveau 10 disparaît** : elle rend le jeu trop simple trop vite.
+- **Le Data Wiper reste payé en TFlops** : une raison de plus de monter le Hardware.
+
+**Ce qui manque avant de pouvoir dessiner dessus** (lot 2 de la feuille de route) : un prérequis
+« X points dépensés » — `PrestigeRequirement` ne connaît qu'un couple (nœud, niveau) — et le retrait
+de l'automatisation. Les sources de l'arbre sont les JSON de `GameData/Editor/PrestigeData/`,
+`04_SpecificUpgrades.json` excepté (sortie de générateur, voir plus haut).
+
+**Couplage à connaître :** ces deux chantiers ne peuvent pas se calibrer séparément. Avec un arbre
+de 1450 niveaux, 4 points en achètent 4 — la production ne bouge pas, le cumul monte linéairement
+pendant que les seuils montent en exponentielle, et la progression se bloque DÉFINITIVEMENT.
+
+### ⚠️ Le simulateur CLIQUE, depuis le 2026-09-13
+
+Le harnais ne modélisait aucun clic d'Overclock. C'était son plus gros angle mort :
+
+| Première run | Datas | Points |
+|---|---|---|
+| Partie réelle | 196 M | 28 |
+| Simulée sans clic | 2,9 M | 0 |
+| Simulée avec clic | **107 M** | **5** |
+
+Un facteur **87**. Toute grandeur exprimée en Datas absolues — paliers de points, seuil
+d'exfiltration — était calibrée sur un joueur qui n'existe pas.
+
+⚠️ **CES TROIS LIGNES SONT PÉRIMÉES — ne pas s'en servir pour calibrer quoi que ce soit.** Elles
+datent du 2026-09-12, soit la VEILLE du passage des points au cumul de campagne : la colonne
+« Points » a été produite par une formule qui n'existe plus. Et l'économie a bougé d'un ordre de
+grandeur depuis — mesuré en jeu le **2026-09-16**, une première run réelle ne fait plus 196 M de
+Datas mais **15,7 M**.
+
+Ce qui reste vrai de ce tableau : le simulateur sous-estimait le joueur d'un facteur 87 faute de
+modéliser le clic. C'était le propos. **Les chiffres, eux, ne décrivent plus le jeu.**
+
+**Conséquence rétroactive à connaître :** la mesure « 40 066 Datas à la 5ᵉ minute », consignée
+plus haut comme conforme à la cible, a été prise sans clic. Avec clic, c'est **18 M**. La cible
+« quelques dizaines de milliers » n'a jamais décrit une partie réelle.
+
+**Le modèle est une MAIN, pas un auto-clicker.** Cadence de rafale, part du temps réellement passée
+à cliquer, et fatigue qui allonge les pauses au fil de la run. Les rafales ne sont pas simulées une
+à une : l'apport d'un clic étant linéaire et sans temps de recharge, une cadence moyenne donne le
+même résultat pour un dixième du coût de calcul.
+
+⚠️ **Le modèle est calé sur UNE SEULE run réelle.** Il reste 1,8× sous elle. C'est infiniment mieux
+que zéro clic, mais ce n'est pas une distribution validée : toute conclusion tirée d'un écart
+inférieur à 2× est du bruit.
+
+### Tous les réglages vivent dans `BalancingConfig.asset`
+
+Depuis le 2026-08-27, l'équilibrage ne demande plus de toucher au C#. Un ScriptableObject unique,
+`Assets/GameData/Balancing/BalancingConfig.asset`, porte **toutes** les valeurs : diviseur de
+Trace, compression par TFlop, synergie des Proxies, argent de départ, bonus Clean Exit, Datas par
+CPU Cycle, secondes d'Overclock, les quatre réglages du Ghost Cache et les huit du Data Wiper.
+
+Il est modifiable **en Play Mode** : les systèmes lisent les propriétés à l'usage plutôt que de
+les recopier au démarrage, donc un changement dans l'inspecteur prend effet immédiatement. C'est
+le seul asset du projet qu'on édite à la main sans qu'un générateur ne l'écrase.
+
+Chaque champ porte un tooltip qui dit ce qu'il fait et dans quel sens il pousse. Les `[Range]` ne
+sont pas décoratifs : ils empêchent de saisir une valeur qui casserait une formule.
+
+### État des lieux d'avant la refonte — équilibrage, outillage, réglages
+
+La partie chiffrée de `etat-des-lieux.md` au commit `d8465d0`, telle qu'elle était. Elle mesure
+l'ancien modèle de Trace avec le harnais supprimé.
+
+#### Équilibrage
+
+##### Ce qui est acquis
+
+| | Valeur |
+|---|---|
+| Contenu | 25 Scripts · 20 Hardware · 15 Proxies |
+| Arbre de prestige | **146 nœuds, 239 rangs**, 1 point par rang *(131 nœuds à un rang, 15 à plusieurs depuis le 2026-10-02)* |
+| Condition de victoire | **1e12 TFlops** — l'asset porte **5e11**, à titre provisoire |
+| Premier point de prestige | **2e6** de cumul, boîte suivante +12 % (modèle des boîtes) |
+| Saisie | verse **30 %** de sa contribution au cumul |
+| Pic atteint en campagne | 6,4e11 TFlops *(mesuré le 2026-09-16)* |
+| Première run | 10,8 min, palier 90 % à 8,9 min *(idem)* |
+| Durée des runs en campagne | stable, ~3,5 à 6,3 min selon la posture *(idem)* |
+
+⚠️ **Toutes les mesures de campagne de ce document datent du 2026-09-16 ou avant.** Elles
+précèdent `a772e67` (2026-10-02), qui a changé à la fois le calcul des points, leur premier
+seuil, la saisie et le nombre de rangs de l'arbre. Elles décrivent l'ancien réglage.
+
+Les quatre piliers ont chacun un rôle mesurable et distinct :
+
+- **Scripts** — ce que tu gagnes
+- **Hardware** — la vitesse et la force avec lesquelles tu le gagnes *(TFlops → Scripts
+  uniquement)*, et **ce que tu vois** : les TFlops divisent le brouillard du relevé de Trace.
+  Troisième rôle propre, qui n'empiète pas sur les Proxies
+- **Furtivité** — combien de temps tu tiens. Seul levier de durée depuis le plafond dynamique :
+  23 % de dissipation donnent des runs de 3,4 min, 61 % en donnent 7,0
+- **Blindage** *(prestige)* — multiplie le plafond
+
+##### Les chantiers ouverts
+
+###### 1. Tout remesurer après le 2 octobre
+
+`a772e67` a changé quatre choses que **personne n'a mesurées depuis** :
+
+- **Le modèle des boîtes.** N points exigent la SOMME de N boîtes, et non plus le prix de la
+  dernière. L'ancien calcul rendait trois points pour deux et demi.
+- **Le premier point** passe de 5e6 à **2e6**, pour compenser.
+- **La saisie verse 30 %** au lieu de rien (`_seizedContributionRatio`), après une partie réelle
+  du 2026-09-22 : 294 M de Datas sur deux morts, zéro point, arbre vide.
+- **L'arbre passe de 147 à 239 rangs** : quinze nœuds ont repris des rangs (`P_REFAC` et
+  `P_DATAM` à 20, `P_STEALTH` à 10…).
+
+⚖️ **Estimation arithmétique, à cumul de campagne égal** : les boîtes retirent ~19 points, le
+seuil à 2e6 en rend ~8, soit **~220 points** par campagne au lieu des ~232 mesurés le 16/09. Or
+l'arbre est passé de 147 à 239 rangs. Le surplus de 50 % devient un **déficit d'environ 8 %** —
+ce qui rejoint l'intention du GD (le cumul doit atterrir « dans le voisinage » du prix de l'arbre,
+cf. GDD § Refonte de l'arbre) mais n'a **jamais été mesuré**. La saisie à 30 % pousse dans l'autre
+sens, et `P_STEALTH` saturé (`backlog.md` § 2) fausse probablement tout.
+
+Première chose à faire au lot 3, avant de régler quoi que ce soit : relancer « Comparer les
+paliers d'extraction » sur le réglage actuel.
+
+###### 2. Le capteur — à reconfirmer
+
+Le lot « capteurs » a désamorcé la spirale de la posture agressive : le brouillard se rachète en
+Hardware, donc le téméraire peut s'outiller au lieu de subir. Mesuré le 2026-09-16, posture 90 % :
+
+| | Sans capteur | Capteur, brouillard 25 s | **Capteur, brouillard 60 s** |
+|---|---|---|---|
+| Saisies | 15 sur 18 runs | 0 | **2 sur 11** |
+| Arbre | 2,7 % | complet | **complet** |
+| Contenu | SCR_16 / 25 | SCR_25 / 25 | **SCR_25 / 25** |
+
+Le téméraire meurt parfois et boucle quand même sa campagne. C'est `_traceReadoutMaxInterval` qui
+dose l'ensemble. ⚠️ **Un seul passage par configuration, toutes campagnes TRONQUÉES** : un signal
+net, pas une validation. Et le réglage a changé depuis (chantier 1).
+
+**Ce qui reste, et qui n'est plus la même question :** la posture 90 % sortait en réalité à
+**~68 %** de jauge. Le palier 90 % est verrouillé depuis (`P_EXTRACT_HIGHRISK`) : il faut remesurer
+avant de savoir si la question se pose encore.
+
+###### 3. Le Zéro-Day — à refondre
+
+Zéro déclenchement sur 264 runs simulées. Il a marché, puis s'est éteint **trois fois pour trois
+raisons différentes** : seuil de charge trop haut, capacité plus longue qu'une run, puis runs
+raccourcies. C'est la **charge** qui est cassée, pas l'effet : l'Overdrive tient ses 30 s.
+
+Le GD a tranché le 2026-09-16 : **Baroud d'Honneur** — un burst de 3 à 5 s, ×50 sur le rendement,
+malus ×10 conservé, et N usages par run à la place de la charge de 90 s. Spécification dans le GDD,
+§ Ghost Cache ; une question reste ouverte sur N (`backlog.md` § 9). Lot 2.
+
+###### 4. La victoire — seuil provisoire, écran jamais vu
+
+`VictorySystem` observe les TFlops et déclenche une fois, au franchissement ; la partie continue
+après. `HasWon` est sauvegardé (v10) et restauré **avant** les totaux. L'écran `VictoryPanel` est
+monté et câblé. Vérifié hors Play Mode : franchissement, non-redéclenchement, reprise d'une
+sauvegarde gagnée, migration v9 → v10. **Le chemin complet n'a jamais été joué** (`a-tester.md`
+1.12 à 1.14). Seuil à 5e11 pour tester ; à remonter à 1e12 au lot 3.
+
+---
+
+#### Ce qu'il faut savoir avant de toucher à l'équilibrage
+
+**Sept défauts ont été trouvés en deux jours en septembre, et pas un seul ne venait d'un
+réglage.** Tous venaient d'une mécanique que le simulateur n'exerçait pas, ou d'une constante qui
+ne suivait pas le reste. Avant de tourner un curseur, vérifier que la chose qu'on mesure est bien
+jouée.
+
+⚠️ **Le simulateur est une borne basse, jamais une prédiction.** Il clique l'Overclock depuis le
+2026-09-13, mais son modèle est calé sur **une seule run réelle** et reste 1,8× en dessous. Tout
+écart inférieur à un facteur 2 est du bruit. Toute grandeur exprimée en Datas absolues (seuil du
+premier point, notamment) se pose sur une partie **jouée**, jamais sur une sortie du harnais.
+
+⚠️ **Le réglage en vigueur n'a jamais été joué.** Le dernier retour de jeu consigné date du
+2026-09-22 ; `a772e67` a tout changé dix jours plus tard. Chaque session du GD a trouvé un problème
+que les mesures ne voyaient pas.
+
+⚠️ **Un changement de réglage se consigne dans le GDD le jour même.** Les trois changements
+d'économie de `a772e67` ne l'avaient été nulle part : ni dans le message de commit, ni dans le
+GDD, ni ici. Ils ont été retrouvés en comparant `BalancingConfig.asset` à sa documentation.
+`BalancingConfig.asset` fait foi sur les valeurs, le GDD sur les intentions ; quand les deux
+divergent, c'est un bug de l'un ou de l'autre.
+
+⚠️ **Les fichiers générés sont des SORTIES.** `04_SpecificUpgrades.json` et tous les `.asset` de
+`GameData/` sont écrasés par leurs générateurs. Régler une valeur dedans ne survit pas. Les sources
+sont `GameData/Editor/**` (sauf `04_SpecificUpgrades.json`) et `PrestigeSpecificNodesGenerator.cs`.
+
+⚠️ **Les valeurs de l'enum `PrestigeBonusType` s'appendent en FIN.** L'index est sérialisé dans les
+`.asset` : une insertion au milieu redéfinit silencieusement des nœuds existants. Déjà arrivé.
+
+⚠️ **Un nœud à plusieurs rangs multiplie son bonus par son niveau.** Passer un nœud de 1 à N rangs
+sans diviser son bonus multiplie sa puissance par N — c'est ce qui sature `P_STEALTH`.
+
+---
+
+#### Outillage de mesure
+
+Tout est sous `Tools/Core/Équilibrage/` :
+
+| Entrée | Ce qu'elle répond |
+|---|---|
+| **Comparer les paliers d'extraction** | la mesure principale — 4 postures, durée, contenu, saisies, dissipation, mécaniques utilisées |
+| **Campagne complète** / **+ export CSV** / **« joueur gourmand » + export CSV** | une campagne entière, et son détail run par run |
+| **Première run — temps avant le Game Over** | le plafond dur d'une run, et la marge après chaque palier |
+| **Première run — où se trouve le temps mort ?** | densité d'achats minute par minute |
+| **Première run — acquisition seule, minute par minute** | la première run d'un joueur qui n'achète que de l'acquisition : la courbe à confronter à une partie réelle |
+| **Et si le joueur évitait une famille de nœuds ?** | ce que coûte l'évitement d'une famille |
+| **Test rapide (une run)** | un relevé complet sur une seule run |
+| **Fenêtre de simulation** | le poste de pilotage : lancer une simulation, lire les courbes, exporter |
+
+Une campagne est coupée à **45 secondes de calcul** et s'annonce alors « MESURE TRONQUÉE ». Ce
+n'est pas « jamais fini » : c'est une mesure incomplète, et les confondre mène à une fausse
+conclusion.
+
+**Les générateurs de données**, sous `Tools/Core/`, à relancer **dans cet ordre** après toute
+modification de `GameData/Editor/` :
+
+1. **Générer Catalogue Upgrades depuis JSON**
+2. **Générer les nœuds ciblés (04_SpecificUpgrades)** — le même générateur s'ouvre aussi en
+   fenêtre par « Générer JSON (Grille - Arête de poisson Corrigée) »
+3. **Générer l'Arbre depuis JSON (Dossier)** — lire son message : il compte les `.asset` orphelins
+   qu'il supprime
+
+Scripts Python versionnés sous `tools/balance/` (réplique indépendante du modèle de run, qui
+s'accorde avec le harnais Unity) : `recost.py` aligne la croissance des coûts sur celle des
+rendements, `extend_ladder.py` étend une échelle en conservant ses deux extrémités.
+
+---
+
+#### Réglages en vigueur
+
+Relevés dans `BalancingConfig.asset` le 2026-10-13.
+
+```
+_dynamicTraceCap              1        le plafond suit la puissance
+_dynamicCapReferenceYield     3e+05    baisser = runs plus longues
+_victoryTFlops                5e+11    ⚠️ PROVISOIRE — la cible est 1e12
+_passiveTraceFillMinutes      6        la traque de l'A.M.I.
+_maxTraceReduction            0.85     asymptote de la Furtivité
+_dissipationHalfPointRatio    0.3      κ — à revérifier après tout changement d'échelle
+_traceReadoutMaxInterval      60       brouillard AU DÉPART, avant rachat
+_traceReadoutSensorPower      1        ce que les TFlops achètent en visibilité ; 0 = éteint
+_traceReadoutSensorReferenceTFlops 1000  en dessous, le Hardware n'achète PAS de visibilité
+_prestigeFirstThresholdDatas  2e+06    première boîte (5e6 jusqu'au 2026-10-02)
+_prestigeThresholdGrowth      1.12     +12 % par boîte suivante
+_seizedContributionRatio      0.3      part de la contribution versée par une saisie
+_ghostCacheCapacitySeconds    90       charge du Zéro-Day (disparaît avec le Baroud d'Honneur)
+_ghostCacheReductionThreshold 0.7      × l'asymptote = 59,5 % de réduction à tenir
+_emergencyTraceReduction      0.25     Data Wiper : FRACTION de la Trace courante
+paliers d'extraction          50 % → +15 % · 75 % → +30 % · 90 % → +50 % (sous P_EXTRACT_HIGHRISK)
+```
+
+Le plafond dynamique est **basculable** : décocher `_dynamicTraceCap` restaure l'ancien
+comportement sans toucher au code, pour comparer en jouant.
+
+---
+
 ## Session de test du GD — 2026-10-13
 
 Première passe sur `a-tester.md`, jouée à la main par Bertrand.

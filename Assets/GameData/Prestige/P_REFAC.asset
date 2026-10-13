@@ -15,7 +15,7 @@ MonoBehaviour:
   _id: P_REFAC
   _displayNameKey: PRESTIGE_P_REFAC_NAME
   _displayDescriptionKey: PRESTIGE_P_REFAC_DESC
-  _bonusType: 3
+  _bonusType: 2
   _maxLevel: 20
   _baseCost: 1
   _costMultiplier: 1

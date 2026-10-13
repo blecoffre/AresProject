@@ -15,13 +15,13 @@ MonoBehaviour:
   _id: P_INTERCEPT_4
   _displayNameKey: PRESTIGE_P_INTERCEPT_4_NAME
   _displayDescriptionKey: PRESTIGE_P_INTERCEPT_4_DESC
-  _bonusType: 16
+  _bonusType: 11
   _maxLevel: 5
   _baseCost: 1
   _costMultiplier: 1
-  _bonusPerLevel: 20
+  _bonusPerLevel: 15
   _uiPosition: {x: -2, y: -4}
   _requirement:
     _node: {fileID: 11400000, guid: e67da298d8259bd48992ea1144fe9f35, type: 2}
-    _requiredLevel: 3
+    _requiredLevel: 0
   _targetUpgradeId: 

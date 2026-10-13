@@ -2,6 +2,7 @@ using Core.Models.Console;
 using Core.Models.Economy;
 using Core.Services.Economy;
 using Core.Services.Localization;
+using Core.Services.Security;
 using Core.UI.Game;
 using Core.Utils;
 using R3;
@@ -18,12 +19,15 @@ namespace Core.UI.Upgrades
         private readonly ScriptCycleRunner _cycleRunner;
         private readonly UserCurrencies _currencies;
         private readonly BuyQuantitySelector _buyQuantity;
+        private readonly PrestigeManager _prestige;
+        private readonly ThreatManager _threat;
         private readonly ConsolePresenter _console;
         private readonly ILocalizationService _loc;
 
         private readonly CompositeDisposable _disposables;
 
         private readonly bool _isScript;
+        private readonly bool _isProxy;
 
         /// <summary>
         /// Le dernier état d'achat effectivement poussé à la vue : le lot payable, le mode et le
@@ -46,6 +50,8 @@ namespace Core.UI.Upgrades
             ScriptCycleRunner cycleRunner,
             UserCurrencies currencies,
             BuyQuantitySelector buyQuantity,
+            PrestigeManager prestige,
+            ThreatManager threat,
             ConsolePresenter console,
             ILocalizationService loc)
         {
@@ -55,10 +61,13 @@ namespace Core.UI.Upgrades
             _cycleRunner = cycleRunner;
             _currencies = currencies;
             _buyQuantity = buyQuantity;
+            _prestige = prestige;
+            _threat = threat;
             _console = console;
             _loc = loc;
 
             _isScript = model.Config.Type == UpgradeType.Script;
+            _isProxy = model.Config.Type == UpgradeType.Proxy;
             _disposables = new CompositeDisposable();
 
             _view.InitializeStaticData(
@@ -72,6 +81,16 @@ namespace Core.UI.Upgrades
             BindLevel();
             BindPurchaseState();
             BindCycle();
+
+            // Le répit annoncé par un Proxy inclut la branche Interception. Skip(1) : la valeur
+            // courante vient d'être rendue.
+            if (_isProxy)
+            {
+                _prestige.TotalInterceptBonus
+                    .Skip(1)
+                    .Subscribe(_ => _view.UpdateStats(BuildStatsText()))
+                    .AddTo(_disposables);
+            }
 
             // Langue changée à chaud. Skip(1) : tout vient d'être rendu dans la langue courante.
             _loc.CurrentLanguage
@@ -235,6 +254,17 @@ namespace Core.UI.Upgrades
                     _model.GetCurrentCycleDuration().ToString("0.##"));
             }
 
+            // Un Proxy ne produit rien : ce qu'il vaut, c'est le répit qu'il achète. Annoncé en
+            // SECONDES et non en UT — c'est ce qu'il rend quelle que soit la vitesse de l'A.M.I.
+            // Prochain niveau seul : le palier qu'il franchit éventuellement est compris.
+            if (_isProxy)
+            {
+                double seconds = _model.GetWipeSecondsForNextLevels(1)
+                               * (1d + _prestige.TotalInterceptBonus.CurrentValue);
+
+                return _loc.GetText("UI_PROXY_WIPE", seconds.ToString("0.#"));
+            }
+
             return _loc.GetText("UI_GENERATES_DATAS", CurrencyFormatter.Format(_model.GetCurrentYield()));
         }
 
@@ -244,6 +274,7 @@ namespace Core.UI.Upgrades
             // réellement obtenus. Le manager recalcule son lot depuis le solde de l'instant, donc
             // le devis affiché ne fait pas foi — un cycle a pu verser entre les deux.
             int levelBefore = _model.CurrentLevel.CurrentValue;
+            float traceBefore = _threat.CurrentTrace.CurrentValue;
 
             if (!_upgradeManager.TryPurchaseUpgrade(_model.Config.Id, _buyQuantity.Current.CurrentValue)) return;
 
@@ -262,6 +293,17 @@ namespace Core.UI.Upgrades
                         _loc.GetText(_model.Config.DisplayNameKey),
                         levelAfter),
                 ConsoleLogType.Standard);
+
+            // Ce que le Proxy a réellement effacé, lu sur la jauge plutôt que recalculé : la
+            // jauge ne descend pas sous zéro, et un achat à vide doit s'annoncer comme tel — c'est
+            // la leçon « on achète un Proxy au bon moment ».
+            if (_isProxy)
+            {
+                float wiped = traceBefore - _threat.CurrentTrace.CurrentValue;
+                if (wiped < 0f) wiped = 0f;
+
+                _console.Log(_loc.GetText("LOG_PROXY_WIPE", wiped), ConsoleLogType.Success);
+            }
         }
 
         private void HandleRunRequest()
