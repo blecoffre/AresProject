@@ -33,6 +33,9 @@ Chacune tombe avec la mécanique qu'elle visait, par décision du GD du 2026-10-
 - **`P_HARDEN_2` à `_4` au niveau 3** → règle « parent au maximum » partout (`requiredLevel: 0`).
 - **Les deux mécaniques attendues par l'arbre** → le prérequis « X points dépensés » est abandonné,
   l'automatisation au niveau 10 est conservée.
+- **Les `wipeSeconds` des Proxies à refaire** (ouverte et soldée le 2026-10-13) → le GD a fourni
+  15 valeurs de 2,5 à 145 s ; les anciennes magnitudes de dissipation, lues en secondes, faisaient
+  valoir à `PRX_07`–`PRX_15` plus qu'une jauge entière dès le niveau 1.
 
 Leur texte au moment de la clôture :
 

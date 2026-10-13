@@ -20,7 +20,7 @@ MonoBehaviour:
   _baseCost: 2624400000000
   _costMultiplier: 1.34
   _baseProductionYield: 0
-  _wipeSeconds: 5860
+  _wipeSeconds: 43
   _baseCycleDuration: 1
   _minCycleDuration: 0.1
   _durationReductionPerLevel: 0

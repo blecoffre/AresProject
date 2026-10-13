@@ -31,7 +31,7 @@ sauvegarde ne bougent pas.
 |---|---|---|
 | Boucle de base — 60 générateurs (25 Scripts, 20 Hardware, 15 Proxies), cycles, achat multiple | Livré | Oui |
 | **Jauge de l'A.M.I.** — 10 000 UT fixes, vitesse sur les TFlops brutes, Blindage | **Refonte lot 1, livré le 2026-10-13** | **Non** |
-| **Proxies** — Wipe en secondes de survie à l'achat, Interception | **Refonte lot 1** | **Non** — valeurs de base à refaire par le GD (`backlog.md` § 0) |
+| **Proxies** — Wipe en secondes de survie à l'achat, Interception | **Refonte lot 1** | **Non** — valeurs de base du GD du 2026-10-13 |
 | **Overclock** — avance + pénalité de 5 s de survie, rien sans cycle, 0,1 s entre deux appuis | **Refonte lot 1** | **Non** |
 | Capteur de Trace (brouillard) | Ancien réglage, **refonte au lot 3** | Partiellement (septembre) |
 | Paliers d'extraction, leur affichage, verrou du 90 % | Livré le 2026-09-16 ; valeurs d'Extraction au lot 4 | **Non** |
@@ -66,9 +66,6 @@ Chaque lot se termine par son protocole de test (`a-tester.md`), sur la branche
 Après la refonte, la feuille de route d'avant reprend : **session de jeu « chiffres »** (une
 campagne complète, victoire remise à 1e12), **dette technique groupée** (`backlog.md` § 4 à 7),
 **Steam et Steam Deck**, **traductions**.
-
-⚠️ **En attente du GD** : les 15 valeurs de base des Proxies (`backlog.md` § 0). Elles ne bloquent
-aucun lot : il suffit de corriger `proxys.json` et de relancer les générateurs.
 
 ⚠️ **Inconnue de planning : y a-t-il une échéance** (démo publique, Steam Next Fest, ouverture de
 la page) ? Si oui, le lot Steam remonte — au moins le nom du jeu et la manette.

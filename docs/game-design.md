@@ -143,10 +143,21 @@ Wipe (UT) = wipeSeconds × paliers du niveau acheté × quantité × V_AMI × (1
   moment, pas spammer jauge vide. La console annonce les UT réellement retirées, zéro compris.
 - Le champ JSON s'appelle `wipeSeconds`, et les paliers des Proxies `WipeMultiplier`.
 
-⚠️ **Valeurs de base à refaire par le GD** (`backlog.md` § 0). Les 15 `wipeSeconds` sont les
-anciennes magnitudes de dissipation, reprises telles quelles : de 2,54 à 196 700. Or une jauge
-pleine vaut ~300 s au départ, ~3 300 s Blindage max, ~330 s en fin de partie : **`PRX_07` à
-`PRX_15` valent chacun plus qu'une jauge entière dès le niveau 1**.
+**Valeurs de base, tranchées par le GD le 2026-10-13** — une progression géométrique qui
+ralentit de ×1,4 à ×1,25 d'un Proxy au suivant :
+
+| `PRX_01` | `_02` | `_03` | `_04` | `_05` | `_06` | `_07` | `_08` | `_09` | `_10` | `_11` | `_12` | `_13` | `_14` | `_15` |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2,5 s | 3,5 | 5 | 7 | 10 | 14 | 19 | 25 | 33 | 43 | 55 | 70 | 90 | 115 | 145 |
+
+Elles remplacent les anciennes magnitudes de dissipation (2,54 à 196 700), qui, lues en secondes,
+faisaient de chaque achat de fin de liste une remise à zéro de plusieurs jauges. ⚖️ Sans
+Interception, un niveau 1 retire au plus 48 % d'une jauge de départ (`PRX_15`), et 44 % d'une
+jauge de victoire Blindage max.
+
+**Le gaspillage est assumé** (GD) : en fin de partie, les derniers Proxies deviennent des purges
+totales et aveugles, dont l'excédent part dans le vide ; le joueur qui veut économiser dose un lot
+×10 ou ×100 d'un Proxy de milieu de liste pour ramener la jauge juste sous le seuil critique.
 
 ## L'Overclock — un pari, plus un clic gratuit (2026-10-13)
 
@@ -194,8 +205,10 @@ Au maximum : Blindage Σ 10 (jauge ×11 en durée, 20 points), Interception Σ 1
 Ces sommes sont exposées par le `PrestigeManager` (`TotalHardenBonus`, `TotalInterceptBonus`,
 `TotalOverclockBonus`, en lecture seule) et lues par le `ThreatManager` et l'`OverclockSystem`.
 
-⚖️ **Interception au maximum :** `PRX_01` niveau 1 rend 2,54 × 102 ≈ 259 s, soit presque une jauge
-de fin de partie. À revoir avec les nouvelles valeurs de base des Proxies.
+⚖️ **Interception au maximum (×102), calculé :** en fin de partie Blindage max (jauge de ~330 s),
+`PRX_01` niveau 1 retire 78 % de la jauge et **tout Proxy à partir de `PRX_02` la vide
+entièrement**. Le dosage fin d'un Proxy de milieu de liste, décrit par le GD, n'existe donc
+qu'avec une Interception partielle. À regarder en jeu (`backlog.md` § 0).
 
 **Retirés de l'arbre au lot 1 :** `P_STEALTH` (réduction passive de Trace, qui n'a plus d'objet),
 toute la branche Zéro-Day (`P_EXPLOIT_CHARGES`, `_MULT`, `_TRACE_REDUC`), `P_OVERCLOCK_AWAKE`,

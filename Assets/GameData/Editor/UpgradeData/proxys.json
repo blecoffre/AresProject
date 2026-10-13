@@ -10,7 +10,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "wipeSeconds": 2.54,
+      "wipeSeconds": 2.5,
       "milestones": [
         {
           "level": 10,
@@ -44,7 +44,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "wipeSeconds": 10.6,
+      "wipeSeconds": 3.5,
       "milestones": [
         {
           "level": 10,
@@ -78,7 +78,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "wipeSeconds": 29.0,
+      "wipeSeconds": 5.0,
       "milestones": [
         {
           "level": 10,
@@ -112,7 +112,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "wipeSeconds": 61.5,
+      "wipeSeconds": 7.0,
       "milestones": [
         {
           "level": 10,
@@ -146,7 +146,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "wipeSeconds": 107.0,
+      "wipeSeconds": 10.0,
       "milestones": [
         {
           "level": 10,
@@ -180,7 +180,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "wipeSeconds": 233.0,
+      "wipeSeconds": 14.0,
       "milestones": [
         {
           "level": 10,
@@ -214,7 +214,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "wipeSeconds": 534.0,
+      "wipeSeconds": 19.0,
       "milestones": [
         {
           "level": 10,
@@ -248,7 +248,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "wipeSeconds": 1170.0,
+      "wipeSeconds": 25.0,
       "milestones": [
         {
           "level": 10,
@@ -282,7 +282,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "wipeSeconds": 2480.0,
+      "wipeSeconds": 33.0,
       "milestones": [
         {
           "level": 10,
@@ -316,7 +316,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "wipeSeconds": 5860.0,
+      "wipeSeconds": 43.0,
       "milestones": [
         {
           "level": 10,
@@ -350,7 +350,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "wipeSeconds": 11800.0,
+      "wipeSeconds": 55.0,
       "milestones": [
         {
           "level": 10,
@@ -384,7 +384,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "wipeSeconds": 20100.0,
+      "wipeSeconds": 70.0,
       "milestones": [
         {
           "level": 10,
@@ -418,7 +418,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "wipeSeconds": 47500.0,
+      "wipeSeconds": 90.0,
       "milestones": [
         {
           "level": 10,
@@ -452,7 +452,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "wipeSeconds": 79900.0,
+      "wipeSeconds": 115.0,
       "milestones": [
         {
           "level": 10,
@@ -486,7 +486,7 @@
       "baseCycleDuration": 0.0,
       "durationReductionPerLevel": 0.0,
       "minCycleDuration": 0.0,
-      "wipeSeconds": 196700.0,
+      "wipeSeconds": 145.0,
       "milestones": [
         {
           "level": 10,

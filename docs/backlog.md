@@ -39,13 +39,12 @@ dans le code de jeu (voir § 7).
 
 La feuille de route des lots est dans `etat-des-lieux.md`. Ici, les points ouverts.
 
-- 📖 **Les `wipeSeconds` des Proxies sont à refaire par le GD** (2026-10-13). Ce sont les anciennes
-  magnitudes de dissipation, reprises telles quelles : de 2,54 (`PRX_01`) à 196 700 (`PRX_15`).
-  Lues en secondes de survie, face à une jauge qui vaut ~300 s au départ, ~3 300 s Blindage max et
-  ~330 s en fin de partie, **`PRX_07` à `PRX_15` valent chacun plus qu'une jauge entière dès le
-  niveau 1**, sans prestige. ⚖️ Et avec l'Interception au maximum (×102), `PRX_01` niveau 1 rend
-  déjà ~259 s. Le code n'en dépend pas : il suffit de corriger `proxys.json` et de relancer les
-  générateurs.
+- ⚖️ **L'Interception au maximum écrase le choix des Proxies** (calculé le 2026-10-13, sur les
+  valeurs de base du GD). À ×102, en fin de partie Blindage max (jauge de ~330 s), `PRX_01`
+  niveau 1 retire 78 % de la jauge et tout Proxy à partir de `PRX_02` la vide entièrement. Le
+  choix que décrit le GD — purge aveugle d'un `PRX_15` contre dosage fin d'un lot de `PRX_06` ou
+  `_07` — n'existe qu'avec une Interception partielle. À regarder en jeu ; si ça se confirme, le
+  levier est la branche Interception (+0,2 / +1 / +4 / +15 par rang), pas les Proxies.
 - 📖 **Les 15 nœuds « Opti Prod » des Proxies ne font plus rien** (`P_UPG_PRX_xx_PROD`) : le Wipe
   ignore les bonus ciblés. Ils disparaissent au lot 4 avec les 120 nœuds ciblés.
 - 📖 **`P_EXTRACT_2` et `_3` exigent encore leur parent au niveau 3**, alors que la règle du GD est
@@ -263,7 +262,7 @@ Pas des bugs : des arbitrages que seul le GD peut rendre. Les trancher débloque
 
 | Question | Entrée liée |
 |---|---|
-| Nouvelles valeurs de base des 15 Proxies (`wipeSeconds`), et Interception à revoir avec | § 0 |
+| Interception au maximum : tout Proxy vide la jauge en fin de partie — voulu ? | § 0 |
 | Quand remonter la victoire à 1e12 ? | § 1 |
 | L'écran méta masque la jauge de Trace pendant une run : ajouter un rappel de Trace dans son header ? | — |
 | Brouillard sur les nœuds verrouillés : le nom reste visible (choix de Bertrand, pour planifier). À rediscuter si le GD tient au mystère. | — |
