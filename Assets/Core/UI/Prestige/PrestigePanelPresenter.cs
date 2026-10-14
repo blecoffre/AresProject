@@ -95,8 +95,12 @@ namespace Core.UI.Prestige
             // n'ouvrait donc visuellement ses enfants que parce qu'il coûtait quelque chose. Ce
             // flux-là est émis après CHAQUE recalcul — achat comme chargement de sauvegarde.
             _prestigeManager.OnBonusesRecalculated
-                .Subscribe(_ => RefreshAll())
+                .Subscribe(_ => HandleBonusesRecalculated())
                 .AddTo(_disposables);
+
+            // Premier rendu de la ligne du Noyau : le signal ci-dessus n'émet qu'au prochain
+            // recalcul, et la sauvegarde a pu être chargée avant que cet écran n'existe.
+            RenderCoreSummary();
 
             // Ouverture et fermeture de la fenêtre de compilation : la pulsation ambre s'éteint
             // pendant une run, et le bouton d'achat annonce pourquoi il refuse.
@@ -143,7 +147,23 @@ namespace Core.UI.Prestige
                 _childPresenters[i].RefreshLocalizedTexts();
             }
 
+            RenderCoreSummary();
             HandleCyclesChanged();
+        }
+
+        private void HandleBonusesRecalculated()
+        {
+            RenderCoreSummary();
+            RefreshAll();
+        }
+
+        /// <summary>
+        /// La ligne du Noyau Compilé, sous le solde de Cycles : c'est en dépensant qu'on la voit
+        /// grossir. Masquée tant qu'aucun point n'est dépensé.
+        /// </summary>
+        private void RenderCoreSummary()
+        {
+            _view.SetCoreSummary(PrestigeLabels.ResolveCoreSummary(_prestigeManager, _loc));
         }
 
         /// <summary>

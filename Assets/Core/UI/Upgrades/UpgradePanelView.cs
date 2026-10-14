@@ -1,5 +1,7 @@
 using Core.Models.Economy; // Pour accéder à l'enum UpgradeType
+using Core.UI.Prestige;
 using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using VContainer;
@@ -38,6 +40,11 @@ namespace Core.UI.Upgrades
         [SerializeField] private TabButtonView _buyX10Visual;
         [SerializeField] private TabButtonView _buyX100Visual;
         [SerializeField] private TabButtonView _buyMaxVisual;
+
+        [Header("Noyau Compilé")]
+        [Tooltip("La ligne « Noyau : coûts −X %, rendement ×Y » en tête du panneau. Masquée tant " +
+                 "qu'aucun point n'est dépensé dans l'arbre. Facultatif.")]
+        [SerializeField] private TextMeshProUGUI _coreSummaryText;
 
         [Header("Content Prefab")]
         [SerializeField] private GeneratorView _generatorPrefab;
@@ -193,6 +200,12 @@ namespace Core.UI.Upgrades
             if (_scriptTabVisual != null) _scriptTabVisual.SetLabel(script);
             if (_hardwareTabVisual != null) _hardwareTabVisual.SetLabel(hardware);
             if (_proxyTabVisual != null) _proxyTabVisual.SetLabel(proxy);
+        }
+
+        /// <summary>La ligne du Noyau Compilé. Une chaîne vide la masque.</summary>
+        public void SetCoreSummary(string text)
+        {
+            CoreSummaryText.Apply(_coreSummaryText, text);
         }
 
         public void SetBuyQuantityLabels(string x1, string x10, string x100, string max)

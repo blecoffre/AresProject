@@ -95,15 +95,14 @@ L'équilibrage est **découplé de l'inspecteur Unity** :
 1. Assets/GameData/Editor/UpgradeData/*.json   →  Tools/Core/Générer Catalogue Upgrades depuis JSON
         ↓
    Assets/GameData/Upgrades/*.asset  +  Catalogs/UpgradeCatalog.asset
-        ↓
-2. Tools/Core/Générer les nœuds ciblés (04_SpecificUpgrades)
-        ↓  réécrit ENTIÈREMENT PrestigeData/04_SpecificUpgrades.json — une sortie, jamais une source
-3. Assets/GameData/Editor/PrestigeData/*.json  →  Tools/Core/Générer l'Arbre depuis JSON (Dossier)
+
+2. Assets/GameData/Editor/PrestigeData/*.json  →  Tools/Core/Générer l'Arbre depuis JSON (Dossier)
         ↓
    Assets/GameData/Prestige/*.asset  +  Catalogs/PrestigeCatalog.asset
 ```
 
-Les trois outils se relancent **dans cet ordre**. Modifier un JSON n'a **aucun effet** tant que l'outil d'éditeur n'a pas été relancé. Ne jamais éditer un `.asset` à la main : il sera écrasé. Seul `Assets/GameData/Balancing/BalancingConfig.asset` s'édite à la main (et en Play Mode).
+Les deux outils sont indépendants depuis le retrait des nœuds ciblés (2026-10-14) : chacun se
+relance après une modification de ses propres JSON. Modifier un JSON n'a **aucun effet** tant que l'outil d'éditeur n'a pas été relancé. Ne jamais éditer un `.asset` à la main : il sera écrasé. Seul `Assets/GameData/Balancing/BalancingConfig.asset` s'édite à la main (et en Play Mode).
 
 ## Vérification
 

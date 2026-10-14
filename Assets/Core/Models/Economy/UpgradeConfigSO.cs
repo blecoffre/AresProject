@@ -57,7 +57,7 @@ namespace Core.Models.Economy
 
         [Header("Automatisation")]
         [Tooltip("Niveau à partir duquel ce générateur relance ses cycles tout seul. " +
-                 "Les nœuds de prestige ciblés peuvent abaisser ce seuil.")]
+                 "Aucun nœud de prestige ne l'abaisse depuis le retrait des nœuds ciblés (2026-10-14).")]
         [SerializeField] private int _automationLevel = 10;
 
         [Header("Paliers")]

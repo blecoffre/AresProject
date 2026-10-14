@@ -8,8 +8,19 @@
       "costMult": 1.0,
       "bonus": 0.0,
       "posX": 0.0,
-      "posY": 0.0,
+      "posY": 2.0,
       "prerequisiteId": ""
+    },
+    {
+      "id": "P_CORE_OVERRIDE",
+      "bonusType": "CoreOverride",
+      "maxLevel": 0,
+      "baseCost": 1.0,
+      "costMult": 1.0,
+      "bonus": 0.0,
+      "posX": 0.0,
+      "posY": 0.0,
+      "prerequisiteId": "P_ROOT"
     }
   ]
 }

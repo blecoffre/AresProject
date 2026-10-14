@@ -8,7 +8,7 @@
       "costMult": 1.0,
       "bonus": 0.5,
       "posX": 2.0,
-      "posY": -1.0,
+      "posY": 0.0,
       "prerequisiteId": "P_ROOT"
     },
     {
@@ -17,11 +17,11 @@
       "maxLevel": 5,
       "baseCost": 1.0,
       "costMult": 1.0,
-      "bonus": 1.5,
+      "bonus": 0.5,
       "posX": 2.0,
-      "posY": -2.0,
+      "posY": -1.0,
       "prerequisiteId": "P_EXTRACT_1",
-      "requiredLevel": 3
+      "requiredLevel": 0
     },
     {
       "id": "P_EXTRACT_3",
@@ -29,11 +29,11 @@
       "maxLevel": 5,
       "baseCost": 1.0,
       "costMult": 1.0,
-      "bonus": 4.0,
+      "bonus": 0.5,
       "posX": 2.0,
-      "posY": -3.0,
+      "posY": -2.0,
       "prerequisiteId": "P_EXTRACT_2",
-      "requiredLevel": 3
+      "requiredLevel": 0
     },
     {
       "id": "P_EXTRACT_HIGHRISK",
@@ -43,8 +43,9 @@
       "costMult": 1.0,
       "bonus": 1.0,
       "posX": 2.0,
-      "posY": -4.0,
-      "prerequisiteId": "P_EXTRACT_3"
+      "posY": -3.0,
+      "prerequisiteId": "P_EXTRACT_3",
+      "requiredLevel": 0
     }
   ]
 }

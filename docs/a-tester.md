@@ -28,6 +28,10 @@
   avant de la retoucher, et avant tout test de migration. ⚠️ **Le premier lancement de la branche
   `chantier/refonte-time-attack` migre la sauvegarde en v11** : run effacée, arbre remis à zéro,
   points rendus. Copier le fichier AVANT, pour pouvoir revenir sur `main`.
+- **Le test de la refonte se fait d'un bloc, sur une sauvegarde neuve** (Bertrand, 2026-10-14) :
+  § 0 à § 0 quater, une fois le lot 5 livré. Supprimer `savegame.json` avant de commencer — le
+  lot 4 n'a pas de migration, et un nœud d'une ancienne sauvegarde absent du nouvel arbre serait
+  simplement ignoré.
 
 ---
 
@@ -41,7 +45,7 @@ les montées, **la console fait foi** ; les baisses, elles, se voient tout de su
 
 | # | Quoi | Comment | Ce qu'on doit voir |
 |---|---|---|---|
-| 0.1 | **Migration v10 → v11** — *non éprouvée le 14/10 : la sauvegarde avait été supprimée* | Copier une sauvegarde v10, lancer depuis RootScene, « Continuer ». | Run neuve : générateurs au niveau 0, 10 $, jauge à 0 %. Le compteur de Cycles de l'en-tête a grossi des points qui étaient dépensés. Arbre (P, ou « [ NOYAU IA — ARBRE ] ») vide hors la racine. Aucune erreur en console. |
+| 0.1 | **Migration v10 → v11** — *non éprouvée le 14/10 : la sauvegarde avait été supprimée. Facultative : Bertrand repart d'une sauvegarde neuve, il n'y a plus de v10 à migrer* | Copier une sauvegarde v10, lancer depuis RootScene, « Continuer ». | Run neuve : générateurs au niveau 0, 10 $, jauge à 0 %. Le compteur de Cycles de l'en-tête a grossi des points qui étaient dépensés. Arbre (P, ou « [ NOYAU IA — ARBRE ] ») vide hors la racine. Aucune erreur en console. |
 | 0.15 | **La rangée d'actions** — *trou constaté le 14/10, corrigé le jour même* | Regarder la rangée d'actions de l'écran de jeu, sous la console. | Deux lignes pleine largeur : « Overclock », puis le Data Wiper. Plus de bouton Ghost Cache, aucun vide à droite. |
 
 
@@ -87,6 +91,29 @@ rouge** devant elle (la borne pessimiste). La sauvegarde passe en v13 au premier
 | 3.8 | **Paliers et gain sur l'aiguille** | Approcher 50 % de jauge en regardant le bouton « [PRÊT] WIPE SYSTÈME » et le trait des 50 %. | Le trait passe à l'ambre pulsant quand la barre rouge l'enjambe, au vert quand l'**aiguille** le franchit ; le gain du bouton saute au même moment, pas avant. |
 | 3.9 | **Pause** | Échap 30 s en pleine run. | Ni l'aiguille, ni la barre, ni le « relevé il y a N s » ne bougent. |
 
+## 0 quater. Refonte « Time Attack », lot 4 — l'arbre à 21 nœuds et le Noyau Compilé
+
+Livré le 2026-10-14, compilé (Unity, zéro erreur), arbre régénéré, **jamais joué**. Pour avoir des
+points : jeu fermé, monter `CpuCycles` dans `savegame.json` (200 suffit), relancer. Les achats ne se
+font qu'entre deux runs, sur l'écran de fin ; en éditeur, « [PRÊT] WIPE SYSTÈME » finit une run tout
+de suite. Pour simuler beaucoup de points dépensés sans cliquer : jeu fermé, ajouter
+`{ "Id": "P_CORE_OVERRIDE", "Level": 50 }` à la liste `PrestigeUpgrades` de la sauvegarde.
+
+| # | Quoi | Comment | Ce qu'on doit voir |
+|---|---|---|---|
+| 4.1 | **L'arbre** | Ouvrir l'arbre (P, ou « [ NOYAU IA — ARBRE ] »), dézoomer à la molette. | 21 nœuds. « Noyau Compromis » en haut ; sept colonnes en dessous, de gauche à droite : « Filtrage DNS », « Cage de Faraday », « Protocole d'Urgence », « Recompilation Forcée », « Code Polymorphe », « Sortie répétée », « Surcadencement ». Plus aucun nœud « Opti Coût » ou « Opti Prod ». Aucun lien ne traverse un nœud. Dire si ça fait trop « arbre de talents de RPG ». |
+| 4.2 | **Ligne du Noyau masquée** | Sauvegarde neuve, aucun point dépensé. | Ni sous les boutons ×1 / ×10 / ×100 / MAX, ni en haut de l'arbre : pas de ligne « Noyau : ». Aucun vide gênant sous les boutons de quantité. |
+| 4.3 | **Ligne du Noyau affichée** | Sur l'écran de fin, acheter un rang de « Code Polymorphe », puis « [ NOUVELLE INTRUSION ] ». | « Noyau : coûts −1 %, rendement ×1,01 » en haut de l'arbre dès l'achat, puis sous les boutons de quantité en jeu. |
+| 4.4 | **Le Noyau baisse les prix d'entrée** | Avec 50 rangs de « Recompilation Forcée » (sauvegarde éditée), run neuve. | Ligne « Noyau : coûts −39 %, rendement ×1,50 ». « Campagne de Phishing Basique » affiche un coût de 7 au lieu de 10 (6,05 arrondi au-dessus), « Vieux PC Recyclé » 31 au lieu de 50 (30,25). |
+| 4.5 | **… et pas la menace** | Même run. Overclock pendant un cycle, sans Hardware ; puis un « VPN Public Décentralisé ». | Console : pénalité « Jauge +165 UT », exactement comme sans Noyau. Le Proxy retire ~82 UT (2,5 s × 33 UT/s), comme sans Noyau. |
+| 4.6 | **TFlops nettes** | Même run, acheter un « Vieux PC Recyclé ». | Les TFlops de l'en-tête valent 1,5 fois ce que le Hardware annonce produire. |
+| 4.7 | **Recompilation Forcée sans plafond** | En acheter trois rangs. | Le nœud affiche « Niv. 3 », jamais « / max » ni « MAX ». Inspecteur : « > Niveau actuel : 3 » et « > Chaque niveau compte comme un point de plus dans le Noyau Compilé ». Le pourcentage de la ligne du Noyau monte d'un cran à chaque rang. |
+| 4.8 | **Économie** | Monter « Code Polymorphe » à 9 / 10, puis à 10 / 10. | À 9, « Architecture Distribuée » reste verrouillé, lien en pointillé. À 10, il s'ouvre ; l'inspecteur annonce un coût de **2** CPU et « > TFlops nettes : +10 % par niveau ». « Code Polymorphe » : « > Hausse du prix à chaque niveau acheté : −1 point par niveau ». |
+| 4.9 | **Chaînes au maximum** | Monter « Sortie répétée » à 4 / 5 puis 5 / 5 ; même chose plus bas jusqu'à « Extraction Haut Risque ». | Chaque nœud suivant ne s'ouvre qu'au 5 / 5 du précédent, jamais avant. |
+| 4.10 | **Extraction** | Deux rangs de « Sortie répétée », run neuve. | Sur la jauge, les paliers annoncent **+30 %** (50 %) et **+60 %** (75 %) au lieu de +15 % et +30 %. Le 90 % reste « [VERROUILLÉ] » sans « Extraction Haut Risque ». |
+| 4.11 | **Interception rabotée** | Inspecteur de « Relais fantômes », puis de « Nuage de témoins ». | « +100 % par niveau », puis « +150 % par niveau » (au lieu de +400 % et +1 500 %). |
+| 4.12 | **La racine** | Cliquer « Noyau Compromis ». | « > Aucun effet : l'ancre de tout l'arbre ». Aucune erreur en console. |
+
 ## 1. Fin de partie et économie — d'avant la refonte, jamais jouées
 
 Tout ce bloc vient de `bf490c6` (2026-09-22), dont le message dit : « Rien de tout cela n'a été
@@ -124,6 +151,6 @@ soldés dans `historique.md`. Rien en attente.
 
 | Après | Quoi |
 |---|---|
-| Refonte, lot 4 (arbre) | Arbre à 21 nœuds, Noyau Compilé affiché dans les panneaux, `P_CORE_OVERRIDE` infini, nouvelle migration avec remboursement. Puis session de jeu « chiffres » sur une campagne : durée des runs, points par run, part de l'arbre à la victoire. Victoire remise à 1e12. |
+| Refonte, lot 5 (nettoyage) | Le test d'ensemble des § 0 à § 0 quater. Puis session de jeu « chiffres » sur une campagne : durée des runs, points par run, part de l'arbre à la victoire, valeurs de l'Interception. Victoire remise à 1e12. |
 | Steam | Lisibilité sur un écran 1280×800. Navigation complète à la manette, sans souris. Overlay Steam. Synchronisation cloud entre deux machines. |
 | Traductions | **Langue à chaud** (ex-2.5) : basculer de langue en pleine partie, parcourir tous les écrans ; aucun texte ne doit rester dans l'ancienne langue, hors lignes déjà écrites dans la console. **Premier lancement** : l'écran de choix propose toutes les langues, celle du système présélectionnée. D'ici là, la technique du `zz.json` (chaque valeur de `fr.json` préfixée « ZZ· ») permet de traquer les textes en dur ; supprimer le fichier et sa `.meta` après. |

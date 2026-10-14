@@ -27,25 +27,5 @@ namespace Core.Services.Localization
         /// soit celle qui est affichée.
         /// </summary>
         public static string LanguageName(string languageCode) => "LANGUAGE_NAME_" + languageCode.ToUpperInvariant();
-
-        /// <summary>
-        /// Gabarits des nœuds de prestige « spécifiques ». Ces nœuds n'ont pas de nom propre :
-        /// leur libellé se compose d'un gabarit et du nom de l'upgrade ciblée, ce qui remplace
-        /// 324 entrées de traduction quasi identiques par ces six-là. Le {0} reçoit le nom résolu
-        /// de l'upgrade.
-        ///
-        /// Constantes et non concaténations : ces clés sont fixes, il n'y a rien à dériver.
-        /// </summary>
-        public const string PrestigeSpecificCostName = "PRESTIGE_SPECIFIC_COST_NAME";
-        public const string PrestigeSpecificCostDescription = "PRESTIGE_SPECIFIC_COST_DESC";
-
-        public const string PrestigeSpecificYieldName = "PRESTIGE_SPECIFIC_YIELD_NAME";
-        public const string PrestigeSpecificYieldDescription = "PRESTIGE_SPECIFIC_YIELD_DESC";
-
-        public const string PrestigeSpecificTimeName = "PRESTIGE_SPECIFIC_TIME_NAME";
-        public const string PrestigeSpecificTimeDescription = "PRESTIGE_SPECIFIC_TIME_DESC";
-
-        public const string PrestigeAutomationName = "PRESTIGE_AUTOMATION_NAME";
-        public const string PrestigeAutomationDescription = "PRESTIGE_AUTOMATION_DESC";
     }
 }

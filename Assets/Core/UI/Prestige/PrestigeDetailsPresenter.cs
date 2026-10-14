@@ -98,7 +98,9 @@ namespace Core.UI.Prestige
             // Un saut de ligne simple, et non AppendLine() : cette dernière ajoute le retour
             // chariot de Windows, que TextMeshPro rend comme un caractère de plus.
             _effects.Append(NewLine);
-            _effects.Append(_loc.GetText("UI_PRESTIGE_DETAILS_LEVEL", currentLevel, _selected.MaxLevel));
+            _effects.Append(_selected.IsUnlimited
+                ? _loc.GetText("UI_PRESTIGE_DETAILS_LEVEL_UNLIMITED", currentLevel)
+                : _loc.GetText("UI_PRESTIGE_DETAILS_LEVEL", currentLevel, _selected.MaxLevel));
 
             return _effects.ToString();
         }

@@ -7,8 +7,8 @@
       "baseCost": 1.0,
       "costMult": 1.0,
       "bonus": 0.2,
-      "posX": -2.0,
-      "posY": -1.0,
+      "posX": -3.0,
+      "posY": 0.0,
       "prerequisiteId": "P_ROOT"
     },
     {
@@ -18,8 +18,8 @@
       "baseCost": 1.0,
       "costMult": 1.0,
       "bonus": 1.0,
-      "posX": -2.0,
-      "posY": -2.0,
+      "posX": -3.0,
+      "posY": -1.0,
       "prerequisiteId": "P_INTERCEPT_1",
       "requiredLevel": 0
     },
@@ -29,9 +29,9 @@
       "maxLevel": 5,
       "baseCost": 1.0,
       "costMult": 1.0,
-      "bonus": 4.0,
-      "posX": -2.0,
-      "posY": -3.0,
+      "bonus": 1.0,
+      "posX": -3.0,
+      "posY": -2.0,
       "prerequisiteId": "P_INTERCEPT_2",
       "requiredLevel": 0
     },
@@ -41,9 +41,9 @@
       "maxLevel": 5,
       "baseCost": 1.0,
       "costMult": 1.0,
-      "bonus": 15.0,
-      "posX": -2.0,
-      "posY": -4.0,
+      "bonus": 1.5,
+      "posX": -3.0,
+      "posY": -3.0,
       "prerequisiteId": "P_INTERCEPT_3",
       "requiredLevel": 0
     }

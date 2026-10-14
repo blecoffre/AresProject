@@ -64,10 +64,15 @@ namespace Core.Models.Economy
         private double _tflops;
 
         /// <summary>
-        /// Bonus de prestige visant CE générateur. Poussés par l'UpgradeManager sur le signal
-        /// OnBonusesRecalculated, comme les TFlops — jamais lus dans une boucle chaude.
+        /// Noyau Compilé : multiplicateur du coût de BASE (0,99^points dépensés, plancher 0,05)
+        /// et du rendement des Scripts (1 + 0,01 × points). Poussés par l'UpgradeManager sur le
+        /// signal OnBonusesRecalculated, comme les TFlops — jamais lus dans une boucle chaude.
+        ///
+        /// Ils remplacent depuis le 2026-10-14 les bonus des 120 nœuds ciblés, qui rabotaient un
+        /// générateur à la fois.
         /// </summary>
-        private SpecificUpgradeBonuses _bonuses = SpecificUpgradeBonuses.None;
+        private double _coreCostMultiplier = 1d;
+        private double _coreYieldMultiplier = 1d;
 
         /// <summary>
         /// Réduction GLOBALE du multiplicateur de coût, apportée par le prestige. Poussée par
@@ -82,13 +87,6 @@ namespace Core.Models.Economy
         /// </summary>
         private float _globalCostMultiplierReduction;
 
-        /// <summary>
-        /// Niveaux retirés au palier d'automatisation par la méta-progression GLOBALE,
-        /// en plus du bonus ciblé. Un seul nœud d'arbre les donne à tous les Scripts.
-        /// </summary>
-        private float _globalAutomationReduction;
-
-
         public UpgradeModel(UpgradeConfigSO config, BalancingConfigSO balancing, int savedLevel = 0)
         {
             Config = config;
@@ -102,24 +100,12 @@ namespace Core.Models.Economy
         public bool IsOwned => _level > 0;
 
         /// <summary>
-        /// Niveau à partir duquel le générateur relance ses cycles seul.
-        /// Jamais sous 1 : un nœud de prestige ne doit pas pouvoir automatiser un générateur
-        /// que le joueur ne possède pas encore.
+        /// Niveau à partir duquel le générateur relance ses cycles seul : celui des données,
+        /// 10 pour tous les Scripts (GD, 2026-10-13). Plus aucun nœud ne l'abaisse depuis le
+        /// retrait des nœuds ciblés. Jamais sous 1 : un générateur qu'on ne possède pas encore
+        /// ne tourne pas.
         /// </summary>
-        public int AutomationThreshold
-        {
-            get
-            {
-                // Arrondi et non troncature : un bonus de 1 par rang stocké en float peut valoir
-                // 0,99999994, et (int)(0,99999994 × 3) rendrait 2 niveaux au lieu de 3. Même
-                // piège que celui déjà rencontré sur les charges du Ghost Cache.
-                int reduction = UnityEngine.Mathf.RoundToInt(
-                    _bonuses.AutomationThresholdReduction + _globalAutomationReduction);
-                if (reduction < 0) reduction = 0;
-
-                return Math.Max(1, Config.AutomationLevel - reduction);
-            }
-        }
+        public int AutomationThreshold => Math.Max(1, Config.AutomationLevel);
 
         public bool IsAutomated => _level >= AutomationThreshold;
 
@@ -137,17 +123,6 @@ namespace Core.Models.Economy
             RecalculateCache();
         }
 
-
-
-        /// <summary>
-        /// Abaissement GLOBAL du palier d'automatisation. Ne touche pas au cache : le palier
-        /// se recalcule à la lecture, il n'entre dans aucune formule mise en cache.
-        /// </summary>
-        public void SetGlobalAutomationReduction(float reduction)
-        {
-            _globalAutomationReduction = reduction < 0f ? 0f : reduction;
-        }
-
         /// <summary>
         /// Met à jour la réduction GLOBALE du multiplicateur de coût. Même garde d'égalité que
         /// SetTFlops : la valeur est poussée à tous les modèles à chaque recalcul des bonus,
@@ -163,30 +138,27 @@ namespace Core.Models.Economy
         }
 
         /// <summary>
-        /// Applique les bonus de prestige ciblant ce générateur. Même garde d'égalité que
-        /// SetTFlops : la valeur est poussée à tous les modèles à chaque recalcul, et la plupart
-        /// ne sont visés par aucun nœud.
+        /// Applique le Noyau Compilé : multiplicateur du coût de base et du rendement. Même
+        /// garde d'égalité que SetTFlops : les deux valeurs sont poussées à tous les modèles à
+        /// chaque recalcul de l'arbre, et ne bougent qu'aux achats de prestige.
         /// </summary>
-        public void SetSpecificBonuses(SpecificUpgradeBonuses bonuses)
+        public void SetCoreMultipliers(double costMultiplier, double yieldMultiplier)
         {
-            if (bonuses.CostReduction == _bonuses.CostReduction
-                && bonuses.YieldBoost == _bonuses.YieldBoost
-                && bonuses.TimeReduction == _bonuses.TimeReduction
-                && bonuses.AutomationThresholdReduction == _bonuses.AutomationThresholdReduction)
-            {
-                return;
-            }
+            double safeCost = costMultiplier > 0d ? costMultiplier : 1d;
+            double safeYield = yieldMultiplier > 0d ? yieldMultiplier : 1d;
+            if (safeCost == _coreCostMultiplier && safeYield == _coreYieldMultiplier) return;
 
-            _bonuses = bonuses;
+            _coreCostMultiplier = safeCost;
+            _coreYieldMultiplier = safeYield;
             RecalculateCache();
         }
 
         /// <summary>
-        /// Coût du prochain niveau : C(n) = C_base_ajusté * M^n.
+        /// Coût du prochain niveau : C(n) = C_base × Noyau × M^n.
         ///
         /// Deux réductions de prestige distinctes s'appliquent, et il ne faut pas les confondre :
-        /// un nœud CIBLÉ rabote le coût de BASE, un nœud GLOBAL rabote le MULTIPLICATEUR M, ce
-        /// qui aplatit la courbe entière. Les deux sont désormais dans le cache — voir
+        /// le Noyau Compilé rabote le coût de BASE (le prix d'entrée), `P_REFAC` rabote le
+        /// MULTIPLICATEUR M, ce qui aplatit la courbe entière. Les deux sont dans le cache — voir
         /// <see cref="_globalCostMultiplierReduction"/> pour la raison.
         /// </summary>
         public double GetCurrentCost() => _cachedCost;
@@ -252,9 +224,11 @@ namespace Core.Models.Economy
             return levels;
         }
 
-        /// <summary>Coût de base après réduction ciblée. Bornée pour qu'un générateur ne soit jamais gratuit.</summary>
-        private double AdjustedBaseCost =>
-            Config.BaseCost * (1d - Math.Min(_balancing.MaxTargetedReduction, _bonuses.CostReduction));
+        /// <summary>
+        /// Coût de base après le Noyau Compilé. Jamais gratuit : le multiplicateur du Noyau a son
+        /// plancher (0,05 par défaut, dans le BalancingConfig).
+        /// </summary>
+        private double AdjustedBaseCost => Config.BaseCost * _coreCostMultiplier;
 
         /// <summary>Montant versé à la fin d'un cycle, paliers inclus.</summary>
         public double GetCurrentYield() => _cachedYield;
@@ -351,14 +325,12 @@ namespace Core.Models.Economy
         {
             int level = _level;
 
-            // Les bonus ciblés s'appliquent aux valeurs de BASE — c'est le sens littéral des
-            // trois types de nœuds (« réduit le coût de base », « augmente le rendement de
-            // base », « réduit le temps de cycle »). Les paliers puis les TFlops s'appliquent
-            // ensuite par-dessus, et le plancher tranche en dernier.
-            // « Puissance » du générateur : niveau × paliers de rendement, rapportée au niveau 1.
+            // Les paliers puis les TFlops s'appliquent aux valeurs de base, et le plancher tranche
+            // en dernier. « Puissance » du générateur : niveau × paliers de rendement, rapportée
+            // au niveau 1.
             double power = level;
 
-            float duration = Config.BaseCycleDuration * (1f - Math.Min(_balancing.MaxTargetedReduction, _bonuses.TimeReduction));
+            float duration = Config.BaseCycleDuration;
 
             // Paliers : effets multiplicatifs, cumulatifs, et définitifs une fois atteints. Les
             // paliers de Wipe des Proxies n'entrent dans aucun cache : ils se lisent niveau par
@@ -381,21 +353,23 @@ namespace Core.Models.Economy
                 }
             }
 
-            double yield = Config.BaseProductionYield * (1d + _bonuses.YieldBoost) * power;
+            double yield = Config.BaseProductionYield * power;
 
             // Second effet des TFlops sur les Scripts, ajouté le 2026-08-31 : ils multiplient le
             // RENDEMENT, et pas seulement la vitesse. Sans lui le Hardware était un pilier mort —
             // la compression butait sur MinCycleDuration entre 4 et 180 TFlops selon le Script,
             // quand HW_01 niveau 10 en fournit déjà 40.
             //
+            // Le rendement du Noyau Compilé suit la même restriction, pour la même raison.
+            //
             // Réservé aux Scripts, et la restriction est vitale : chez un Hardware le rendement
-            // EST la capacité en TFlops, donc le brancher là créerait une boucle de rétroaction
-            // divergente — plus de TFlops, donc plus de TFlops.
-            double tflopsYieldFactor = Config.Type == UpgradeType.Script
-                ? Math.Pow(1d + _tflops, _balancing.TFlopsYieldExponent)
-                : 1d;
-
-            yield *= tflopsYieldFactor;
+            // EST la capacité en TFlops — les TFlops BRUTES, celles de la menace. Le Noyau
+            // multiplie les TFlops NETTES dans l'UpgradeManager ; l'appliquer ici le ferait
+            // accélérer l'A.M.I., et brancher le facteur TFlops créerait une boucle divergente.
+            if (Config.Type == UpgradeType.Script)
+            {
+                yield *= Math.Pow(1d + _tflops, _balancing.TFlopsYieldExponent) * _coreYieldMultiplier;
+            }
 
             // Compression par les TFlops. L'exposant est ce qui a remplacé le mur du 2026-08-30 :
             // à 1 on retrouve la formule linéaire d'origine, qui saturait contre MinCycleDuration

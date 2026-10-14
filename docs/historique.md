@@ -11,6 +11,126 @@
 
 ---
 
+## Refonte « Time Attack », lot 4 — l'arbre à 140 nœuds retiré du GDD (2026-10-14)
+
+Remplacé par l'arbre à 21 nœuds et le Noyau Compilé (voir `game-design.md`, « L'arbre de
+compilation »). Retirés du code : les 120 nœuds ciblés, leur générateur
+(`PrestigeSpecificNodesGenerator`, menu « Générer les nœuds ciblés »), leur fichier
+`04_SpecificUpgrades.json`, la struct `SpecificUpgradeBonuses` et ses quatre types de bonus ; les
+types sans nœud `StartingMoney`, `StartingComputerPower`, `GlobalAutomationReduction` ; le
+`_maxTargetedReduction` du `BalancingConfig` ; dix-neuf clés de localisation. Aucune migration de
+sauvegarde : Bertrand, seul joueur, repart d'une sauvegarde neuve. Un nœud d'une ancienne
+sauvegarde absent du catalogue est ignoré et ne compte pas au Noyau.
+
+Entrées du backlog soldées par ce lot : l'Interception au maximum qui écrasait le choix des Proxies
+(rabotée à ×19,5, valeurs à régler en jouant) ; les 15 nœuds « Opti Prod » des Proxies sans effet ;
+`P_EXTRACT_2` et `_3` qui exigeaient encore leur parent au niveau 3 ; les 120 nœuds de remplissage ;
+la question du pooling de l'arbre ; le piège « `04_SpecificUpgrades.json` est une sortie » ; les clés
+orphelines `PRESTIGE_P_AUTO_GLOBAL_*` et `PRESTIGE_P_POWER_START_*`. Et, trouvé en route :
+l'inspecteur n'avait aucun libellé d'effet pour la racine et loguait une erreur en la sélectionnant.
+
+Les sections du GDD, telles qu'elles étaient :
+
+### Magnitude des bonus de prestige
+
+**Magnitude des bonus de prestige (tranché le 2026-08-26)** : `StartingMoney` et
+`StartingComputerPower` se calculent avec `BonusPerLevel × niveau`, comme les autres types de
+bonus — indexer l'effet d'un nœud sur son prix couple deux réglages qui doivent bouger séparément.
+
+### Les branches du compte à rebours (lot 1, 2026-10-13)
+
+Chaque branche part de `P_ROOT` et se parcourt en chaîne : un nœud n'ouvre le suivant qu'**à son
+niveau maximum**. Chaque rang coûte 1 point, sauf le Blindage.
+
+| Branche | Effet | Nœuds | Rangs | Coût | Apport |
+|---|---|---|---|---|---|
+| **Blindage** | Vitesse de l'A.M.I. ÷ `(1 + Σ)` | `P_HARDEN_1` à `_4` | 1 chacun | 1, 3, 6, 10 | +0,5 · +1,0 · +2,5 · +6,0 |
+| **Interception** | Wipe des Proxies × `(1 + Σ)` | `P_INTERCEPT_1` à `_4` | 5 chacun | 1 / rang | +0,2 · +1,0 · +4,0 · +15,0 par rang |
+| **Overclock** | Avance de l'Overclock `+ Σ` secondes | `P_CLICK`, `P_OVERCLOCK_POWER_1` à `_3` | 5 chacun | 1 / rang | +0,1 · +0,3 · +1,0 · +3,0 s par rang |
+
+Au maximum : Blindage Σ 10 (jauge ×11 en durée, 20 points), Interception Σ 101 (Wipe ×102,
+20 points), Overclock Σ 22 s (avance 22,5 s, 20 points).
+
+Ces sommes sont exposées par le `PrestigeManager` (`TotalHardenBonus`, `TotalInterceptBonus`,
+`TotalOverclockBonus`, en lecture seule) et lues par le `ThreatManager` et l'`OverclockSystem`.
+
+⚖️ **Interception au maximum (×102), calculé :** en fin de partie Blindage max (jauge de ~330 s),
+`PRX_01` niveau 1 retire 78 % de la jauge et **tout Proxy à partir de `PRX_02` la vide
+entièrement**. Le dosage fin d'un Proxy de milieu de liste, décrit par le GD, n'existe donc
+qu'avec une Interception partielle.
+
+**Tranché par le GD le 2026-10-14 :** les valeurs de base des Proxies sont bonnes, c'est
+l'inflation de l'arbre qui écrase le choix. Les apports de `P_INTERCEPT_3` et `P_INTERCEPT_4`
+(+4 et +15 par rang) seront **rabotés drastiquement au lot 4**, valeurs fixées en jouant, pour que
+le multiplicateur final oblige encore à racheter des Proxies chers pour survivre.
+
+**Retirés de l'arbre au lot 1 :** `P_STEALTH` (réduction passive de Trace, qui n'a plus d'objet),
+toute la branche Zéro-Day (`P_EXPLOIT_CHARGES`, `_MULT`, `_TRACE_REDUC`), `P_OVERCLOCK_AWAKE`,
+`P_OVERCLOCK_SPACEBAR`. `P_EMERG`, `P_HARDEN_1`, `P_INTERCEPT_1` et `P_EXTRACT_1` se branchent
+désormais sur la racine. **Le Ghost Cache et le Zéro-Day Exploit disparaissent du jeu** — leur
+refonte en « Baroud d'Honneur », tranchée le 2026-09-16, est abandonnée avec eux.
+
+### ⚠️ `04_SpecificUpgrades.json` est une SORTIE, pas une entrée
+
+**Piège constaté le 2026-09-10, après lui avoir coûté deux sessions d'équilibrage.**
+
+Contrairement aux cinq autres fichiers de `PrestigeData`, celui-ci est **écrit par un
+générateur** — `PrestigeSpecificNodesGenerator`, menu `Tools/Core/Générer JSON (Grille — Arête de
+poisson Corrigée)`. Y régler un prix à la main ne survit pas au prochain passage de ce menu.
+
+Ce que ça a produit : un calage avait ramené les 120 nœuds spécifiques à `baseCost = 1`. Le
+générateur relancé les a remis à `50 × Order`, et **l'arbre est passé de 3 477 à 527 552 CPU
+Cycles** — dont 525 389 pour ce seul fichier, soit 99,6 % du total. La campagne plafonnait à
+17 % de l'arbre en seize heures et personne ne voyait pourquoi : les JSON avaient l'air corrects,
+puisqu'ils l'étaient au moment où on les regardait.
+
+**Le prix de ces 120 nœuds se règle dans `PrestigeSpecificNodesGenerator.CreateGridItem`**, et
+nulle part ailleurs. Il est désormais **plat** (`baseCost = 1.0`) : la progression par palier est
+portée par la **chaîne de prérequis**, et par elle seule.
+
+⚠️ **`costMult` est INERTE — vérifié le 2026-09-16.** Cette phrase invoquait aussi `costMult`, ce
+qui contredisait la règle « tout coûte 1 point » énoncée plus bas. Les données tranchent : les
+**147 nœuds ont tous `maxLevel = 1`**, et un multiplicateur de coût ne s'applique qu'à partir du
+deuxième rang. Compté sur le catalogue généré : **zéro** nœud où `costMult` peut agir, et un arbre
+complet à **147 CPU Cycles** pour 147 nœuds. Le champ survit dans les données sans être lu, comme
+`minCycleDuration` et `durationReductionPerLevel`.
+
+*Au 2026-10-13 : `costMult` reste inerte — `PrestigeConfigSO.GetCostAtLevel` rend `baseCost`
+quel que soit le rang — mais l'arbre n'est plus entièrement à un rang. Voir « Tout coûte 1
+point ».*
+
+⚠️ La même prudence vaut pour tout fichier de `GameData/Editor/` : vérifier qu'il n'a pas de
+générateur avant d'y régler quoi que ce soit à la main.
+
+### Tout coûte 1 point, et l'arbre a fondu
+
+Chaque niveau de chaque nœud coûte **1 CPU Cycle**. La courbe `BaseCost × CostMultiplier^niveau`
+est supprimée — elle était recopiée dans quatre fichiers indépendants, et l'arbre s'était déjà
+retrouvé 152 fois trop cher pour une erreur sur un seul terme.
+
+Elle créait surtout un piège invisible : **mesuré, un joueur qui achète naturellement le nœud le
+moins cher d'abord jouait cent fois moins bien qu'un joueur qui les évitait**, parce que 145 nœuds
+affichés au même prix n'avaient pas du tout la même valeur.
+
+L'arbre passe de **783 à 145 niveaux** : chaque nœud devient un choix unique portant d'un coup ce
+que ses cinq rangs apportaient. Même puissance totale, mais un point achète cinq fois plus.
+
+⚠️ **Les 120 nœuds ciblés sont une SORTIE de générateur.** `maxLevel` et le bonus se règlent dans
+`PrestigeSpecificNodesGenerator.cs`, jamais dans le JSON.
+
+⚠️ **Plus entièrement vrai depuis le 2026-10-02 (`a772e67`).** Chaque rang coûte toujours 1 point,
+mais quinze nœuds ont repris des rangs : `P_REFAC` et `P_DATAM` 20, `P_STEALTH` 10, `P_CLICK`,
+`P_OVERCLOCK_POWER_1` et `_3`, `P_EXPLOIT_MULT`, les quatre `P_INTERCEPT` et les trois
+`P_EXTRACT` 5, `P_EXPLOIT_TRACE_REDUC` 3. L'arbre comptait **146 nœuds pour 239 rangs**. ⚠️ Un
+nœud passé à N rangs multiplie sa puissance par N si son bonus n'est pas divisé : c'est arrivé à
+`P_STEALTH`, qui saturait au 4ᵉ rang.
+
+*Depuis le lot 1 de la refonte « Time Attack » : 140 nœuds ; le Blindage coûte 1, 3, 6 et 10
+points, `P_DATAM` passera à 2 points par rang au lot 4 (voir « Les branches du compte à
+rebours »).*
+
+---
+
 ## Refonte « Time Attack », lot 3 — l'ancien brouillard retiré du GDD (2026-10-14)
 
 Remplacé par le relevé en UT et la borne calculée sur la vitesse de l'A.M.I. (voir

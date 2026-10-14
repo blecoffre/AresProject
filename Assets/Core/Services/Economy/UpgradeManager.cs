@@ -67,8 +67,8 @@ namespace Core.Services.Economy
         public ReadOnlyReactiveProperty<double> GrossTFlops => _grossTFlops;
 
         /// <summary>
-        /// TFlops NETTES : les brutes, plus le bonus de départ, multipliées par la méta-progression,
-        /// moins la tranche immobilisée par le Data Wiper. C'est la puissance de l'ÉCONOMIE —
+        /// TFlops NETTES : les brutes multipliées par la méta-progression (`P_DATAM`, puis le
+        /// rendement du Noyau Compilé), moins la tranche immobilisée par le Data Wiper. C'est la puissance de l'ÉCONOMIE —
         /// compression et rendement des Scripts, capteur du brouillard, victoire, affichage.
         ///
         /// Ce n'est PAS un débit : la valeur ne bouge qu'à l'achat, elle ne s'accumule pas et ne
@@ -115,10 +115,10 @@ namespace Core.Services.Economy
 
         public void Start()
         {
-            // Un seul abonnement pour TOUS les bonus de prestige : ciblés comme globaux. S'abonner
-            // aux sept propriétés séparément serait fragile, et OnPrestigePurchased ne suffirait
-            // pas — il n'est pas émis par InitializeFromSave, donc le chargement d'une partie
-            // n'appliquerait aucun bonus.
+            // Un seul abonnement pour TOUS les bonus de prestige. S'abonner à chaque propriété
+            // séparément serait fragile, et OnPrestigePurchased ne suffirait pas — il n'est pas
+            // émis par InitializeFromSave, donc le chargement d'une partie n'appliquerait aucun
+            // bonus.
             // Abonnement dans Start() et non dans le constructeur : un constructeur appelé par
             // le conteneur ne doit pas avoir d'effets de bord.
             _prestigeManager.OnBonusesRecalculated
@@ -127,26 +127,25 @@ namespace Core.Services.Economy
         }
 
         /// <summary>
-        /// Redistribue les bonus ciblés dans les modèles, puis recalcule les agrégats.
-        /// Les deux dans cet ordre : les totaux dépendent des rendements et des durées que ces
-        /// bonus viennent de modifier.
+        /// Pousse le Noyau Compilé et `P_REFAC` dans les modèles, puis recalcule les agrégats.
+        /// Les deux dans cet ordre : les totaux dépendent des rendements que le Noyau vient de
+        /// modifier.
         /// </summary>
         private void ApplyPrestigeBonuses()
         {
-            // Lue une fois hors de la boucle : la valeur est la même pour les quarante-cinq
-            // modèles, c'est précisément ce qui la distingue des bonus ciblés.
+            // Lues une fois hors de la boucle : les valeurs sont les mêmes pour les soixante
+            // modèles. Depuis le retrait des nœuds ciblés, tout le prestige est GLOBAL.
             float globalCostReduction = _prestigeManager.CostMultiplierReduction.CurrentValue;
-            float globalAutomation = _prestigeManager.GlobalAutomationReduction.CurrentValue;
+            double coreCost = _prestigeManager.TotalCostMultiplier.CurrentValue;
+            double coreYield = _prestigeManager.TotalYieldBonus.CurrentValue;
 
             foreach (var kvp in _activeUpgrades)
             {
-                kvp.Value.SetSpecificBonuses(_prestigeManager.GetSpecificBonuses(kvp.Key));
-
                 // Poussée dans le modèle depuis le 2026-08-30, au lieu d'être passée en argument
                 // au seul calcul d'achat. Tant qu'elle restait un argument, la vue l'oubliait et
                 // affichait un prix plus élevé que celui réellement débité.
                 kvp.Value.SetGlobalCostMultiplierReduction(globalCostReduction);
-                kvp.Value.SetGlobalAutomationReduction(globalAutomation);
+                kvp.Value.SetCoreMultipliers(coreCost, coreYield);
             }
 
             RecalculateTotals();
@@ -186,8 +185,8 @@ namespace Core.Services.Economy
             }
 
             // Les modèles viennent d'être recréés : ils repartent sans bonus. On les réapplique
-            // avant tout calcul, sinon un rechargement de sauvegarde perdrait la méta-progression
-            // ciblée jusqu'au prochain achat de nœud.
+            // avant tout calcul, sinon un rechargement de sauvegarde perdrait le Noyau Compilé et
+            // P_REFAC jusqu'au prochain achat de nœud.
             ApplyPrestigeBonuses();
 
             // Notifié en dernier : les abonnés doivent voir un état complet et cohérent.
@@ -383,10 +382,11 @@ namespace Core.Services.Economy
                 grossTFlops += hardwareList[i].GetCurrentYield();
             }
 
-            // Le multiplicateur global de calcul s'applique à la capacité ENTIÈRE, bonus de
-            // départ compris : c'est une amélioration du matériel, pas de son seul parc acheté.
-            double netTFlops = (grossTFlops + _prestigeManager.StartingComputerPower.CurrentValue)
-                             * _prestigeManager.GlobalComputeMultiplier.CurrentValue;
+            // P_DATAM puis le Noyau Compilé, composés : TFlops nettes = brutes × P_DATAM × Noyau
+            // (GD, 2026-10-13). Les brutes restent intactes — ce sont elles que lit l'A.M.I.
+            double netTFlops = grossTFlops
+                             * _prestigeManager.GlobalComputeMultiplier.CurrentValue
+                             * _prestigeManager.TotalYieldBonus.CurrentValue;
 
             // Sacrifice du Data Wiper, appliqué en DERNIER : c'est une amputation de la capacité
             // finale, pas un facteur à composer avec le multiplicateur de prestige.

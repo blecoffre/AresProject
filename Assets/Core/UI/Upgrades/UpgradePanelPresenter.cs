@@ -4,6 +4,7 @@ using Core.Services.Economy;
 using Core.Services.Localization;
 using Core.Services.Security;
 using Core.UI.Game;
+using Core.UI.Prestige;
 using R3;
 using System;
 using System.Collections.Generic;
@@ -84,11 +85,24 @@ namespace Core.UI.Upgrades
                 .Subscribe(_ => RenderLabels())
                 .AddTo(_disposables);
 
+            // Le Noyau Compilé ne bouge qu'aux achats de l'arbre et au chargement : le signal de
+            // recalcul couvre les deux. Le premier rendu est fait par RenderLabels ci-dessus.
+            _prestige.OnBonusesRecalculated
+                .Subscribe(_ => RenderCoreSummary())
+                .AddTo(_disposables);
+
             InitializePanel();
+        }
+
+        private void RenderCoreSummary()
+        {
+            _panelView.SetCoreSummary(PrestigeLabels.ResolveCoreSummary(_prestige, _loc));
         }
 
         private void RenderLabels()
         {
+            RenderCoreSummary();
+
             _panelView.SetTabLabels(
                 _loc.GetText("UI_TAB_SCRIPT"),
                 _loc.GetText("UI_TAB_HARDWARE"),

@@ -35,9 +35,9 @@ sauvegarde ne bougent pas.
 | **Proxies** — Wipe en secondes de survie à l'achat, Interception | **Refonte lot 1** | Oui (2026-10-14) ; valeurs de base du GD du 2026-10-13 |
 | **Overclock** — avance + pénalité de 5 s de survie, rien sans cycle, 0,1 s entre deux appuis | **Refonte lot 1** | Oui (2026-10-14) |
 | **Brouillard** — relevé en UT (800 → 200), borne sur la vitesse de l'A.M.I., relevé sauvegardé | **Refonte lot 3, livré le 2026-10-14** | **Non** |
-| Paliers d'extraction, leur affichage, verrou du 90 % | Livré le 2026-09-16 ; valeurs d'Extraction au lot 4 | Oui (2026-10-14) |
+| Paliers d'extraction, leur affichage, verrou du 90 % | Livré le 2026-09-16 ; branche Extraction refaite au lot 4 (×8,5 au max) | Oui (2026-10-14) ; nouvelles valeurs **non** |
 | Points de prestige — cumul de campagne, modèle des boîtes, saisie à 30 % | Livré le 2026-10-02, inchangé par la refonte | Oui (2026-10-14) |
-| Arbre de prestige — 140 nœuds (20 utiles + 120 ciblés) | **Refonte au lot 4** : 21 nœuds, Noyau Compilé | Interface oui (août) |
+| **Arbre de prestige** — 21 nœuds en éventail, Noyau Compilé, `P_CORE_OVERRIDE` infini | **Refonte lot 4, livré le 2026-10-14** | Interface oui (août) ; **nouvel arbre non** |
 | Zéro-Day Exploit / Ghost Cache | **Retirés** le 2026-10-13 | — |
 | **Data Wiper** — −2 500 UT, sacrifice de 30 % des TFlops nettes par usage, trois usages | **Refonte lot 2, livré le 2026-10-14** | **Non** |
 | Victoire — 1e12 TFlops nettes | Livrée le 2026-09-16, **seuil provisoire à 5e11** | Séquence oui ; écran jamais vu (objet éteint dans la scène, corrigé le 2026-10-14, à rejouer) |
@@ -61,8 +61,11 @@ Chaque lot se termine par son protocole de test (`a-tester.md`), sur la branche
 | R1 | **Jauge, Overclock, Proxies** | Jauge de l'A.M.I. à 10 000 UT, TFlops brutes / nettes, Proxies en Wipe, Overclock pénalisé, branches Blindage / Interception / Overclock, retrait du Ghost Cache, du Zéro-Day, de `P_STEALTH`, du réveil et de la barre d'espace, `SaveData` v11, suppression du harnais | ✅ livré le 2026-10-13, joué le 2026-10-14 ; restent la migration v11 et la lisibilité (`a-tester.md` § 0) |
 | R2 | **Data Wiper** | Sans délai, −2 500 UT, sacrifice de +30 % des TFlops nettes par usage jusqu'à 90 % (trois usages), permanent pour la run ; la vitesse de l'A.M.I. lit les TFlops brutes, donc ne ralentit pas. **Et la sauvegarde de l'écran de fin de run**, dans le même changement de format (v12) | ✅ livré le 2026-10-14, **à jouer** (`a-tester.md` § 0 bis) |
 | R3 | **Brouillard** | Relevé tous les 800 UT remplis (200 en fin de partie, via les TFlops nettes) ; aiguille + borne pessimiste `relevé + V_AMI × âge × pessimisme` ; paliers et gain du bouton sur l'aiguille ; état du relevé sauvegardé (contre la triche du rechargement) | ✅ livré le 2026-10-14, **à jouer** (`a-tester.md` § 0 ter) |
-| R4 | **Arbre** — *suivant* | Retrait des 120 nœuds ciblés et de leur générateur ; Noyau Compilé (coût × 0,99^points, plancher 0,05 ; rendement + 1 % par point, Datas et TFlops) affiché dans les panneaux ; `P_CORE_OVERRIDE` infini ; `P_REFAC`, `P_DATAM`, Extraction (+0,5 par rang, trois paliers) ; `P_INTERCEPT_3` et `_4` rabotés (GD, 2026-10-14) ; chaînes « parent au max » ; disposition ; nouvelle migration | à faire |
-| R5 | **Nettoyage** | Code mort restant (bonus ciblés, champs obsolètes, clés orphelines), réglages inutilisés, doc | à faire |
+| R4 | **Arbre** | Retrait des 120 nœuds ciblés et de leur générateur ; Noyau Compilé (coût × 0,99^points, plancher 0,05 ; rendement + 1 % par point, Datas et TFlops nettes) affiché dans les panneaux ; `P_CORE_OVERRIDE` infini ; `P_REFAC` 10 rangs, `P_DATAM` à 2 points, Extraction (+0,5 par rang, trois paliers) ; `P_INTERCEPT_3` et `_4` rabotés à +1 et +1,5 ; chaînes « parent au max » ; éventail. **Pas de migration** : Bertrand repart d'une sauvegarde neuve | ✅ livré le 2026-10-14, **à jouer** (`a-tester.md` § 0 quater) |
+| R5 | **Nettoyage** — *suivant* | Code mort restant (champs obsolètes des générateurs, `ExfiltrationUnlockDatas`, clés orphelines, panneau de fin mort), commentaires périmés, doc, dossier partagé du GD | à faire |
+
+**Bertrand joue l'ensemble des lots d'un bloc**, une fois le lot 5 livré (décidé le 2026-10-14) :
+`a-tester.md` § 0 à § 0 quater forme le protocole complet.
 
 Après la refonte, la feuille de route d'avant reprend : **session de jeu « chiffres »** (une
 campagne complète, victoire remise à 1e12), **dette technique groupée** (`backlog.md` § 4 à 7),
@@ -85,12 +88,14 @@ dynamique, saturation des Proxies, plafond suivant la puissance). Elles sont arc
 | Run sans Hardware ni Blindage | 5 min (33 UT/s) |
 | Run de victoire, Blindage max | ⚖️ ~5 min 30 — la cible de pacing du GD |
 | Overclock | rentable au-delà de ~13 points dans sa branche (avance > 5 s) |
-| Arbre au lot 1 | Blindage 20 points, Interception 20, Overclock 20 |
+| Arbre utile (lot 4) | **107 points** : Blindage 20, Interception 20, Overclock 20, Économie 30, Extraction 16, Data Wiper 1 |
+| Noyau Compilé | coûts −66 % et rendement ×2,07 à 107 points ; plancher −95 % vers 299 points |
+| Interception max | ×19,5 — valeurs de départ, à régler en jouant |
 | Condition de victoire | **1e12 TFlops nettes** — l'asset porte **5e11**, à titre provisoire |
 | Premier point de prestige | **2e6** de cumul, boîte suivante +12 % (modèle des boîtes) |
 | Saisie | verse **30 %** de sa contribution au cumul |
 
-Rien n'a été joué. La première chose à faire après les lots 1 à 4 est une campagne réelle.
+Rien n'a été joué. La première chose à faire après la refonte est une campagne réelle.
 
 ### Ce qu'il faut savoir avant de toucher à l'équilibrage
 
@@ -102,9 +107,9 @@ absolues se pose sur une partie **jouée**.
 foi sur les valeurs, le GDD sur les intentions ; quand les deux divergent, c'est un bug de l'un ou
 de l'autre.
 
-⚠️ **Les fichiers générés sont des SORTIES.** `04_SpecificUpgrades.json` et tous les `.asset` de
-`GameData/` sont écrasés par leurs générateurs. Les sources sont `GameData/Editor/**` (sauf
-`04_SpecificUpgrades.json`) et `PrestigeSpecificNodesGenerator.cs`.
+⚠️ **Les fichiers générés sont des SORTIES.** Tous les `.asset` de `GameData/` (sauf le
+`BalancingConfig`) sont écrasés par leurs générateurs. Les sources sont les JSON de
+`GameData/Editor/**`.
 
 ⚠️ **Les valeurs de l'enum `PrestigeBonusType` s'appendent en FIN.** L'index est sérialisé dans les
 `.asset`. En retirer une n'est permis qu'en relançant les trois générateurs dans la foulée.
@@ -122,13 +127,13 @@ de bout en bout. Un petit harnais sera refait sur le nouveau modèle si le GD a 
 la `SimulationClock` (`ITimeSource`) reste le point d'entrée prévu pour dérouler une campagne hors
 Play Mode.
 
-**Les générateurs de données**, sous `Tools/Core/`, à relancer **dans cet ordre** après toute
-modification de `GameData/Editor/` :
+**Les générateurs de données**, sous `Tools/Core/`, à relancer après toute modification de
+`GameData/Editor/` — chacun pour ses propres JSON, ils ne dépendent plus l'un de l'autre :
 
-1. **Générer Catalogue Upgrades depuis JSON**
-2. **Générer les nœuds ciblés (04_SpecificUpgrades)** — jusqu'au lot 4, qui les retire
-3. **Générer l'Arbre depuis JSON (Dossier)** — lire son message : il compte les `.asset` orphelins
-   qu'il supprime
+1. **Générer Catalogue Upgrades depuis JSON** — `UpgradeData/*.json`
+2. **Générer l'Arbre depuis JSON (Dossier)** — `PrestigeData/*.json`. Lire ses messages : il liste
+   les nœuds sans plafond, les prérequis au-delà du premier rang, et les `.asset` orphelins qu'il
+   supprime
 
 ---
 

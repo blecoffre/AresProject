@@ -7,8 +7,8 @@
       "baseCost": 1.0,
       "costMult": 1.0,
       "bonus": 1.0,
-      "posX": 0.0,
-      "posY": -1.0,
+      "posX": -1.0,
+      "posY": 0.0,
       "prerequisiteId": "P_ROOT"
     }
   ]

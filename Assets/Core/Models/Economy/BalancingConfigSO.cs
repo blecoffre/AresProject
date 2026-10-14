@@ -127,15 +127,32 @@ namespace Core.Models.Economy
                  "tuait le pilier Hardware.")]
         [SerializeField, Range(0.01f, 1f)] private float _absoluteMinCycleDuration = 0.05f;
 
-        [Tooltip("Plafond de TOUTES les réductions ciblées de prestige (coût, temps). " +
-                 "Empêche qu'un générateur devienne gratuit ou son cycle instantané.")]
-        [SerializeField, Range(0.5f, 0.99f)] private float _maxTargetedReduction = 0.95f;
+        // ------------------------------------------------------------------
+        // Noyau Compilé — la méta-progression passive (refonte, lot 4, 2026-10-14)
+        // ------------------------------------------------------------------
+        [Header("Noyau Compilé")]
+        [Tooltip("Le coût de TOUS les générateurs — Scripts, Hardware, Proxies — est multiplié " +
+                 "par cette base élevée au nombre de points DÉPENSÉS dans l'arbre. 0,99 = −1 % " +
+                 "par point, composé : −66 % à 107 points, l'arbre utile complet.\n\n" +
+                 "Remplace les 120 nœuds ciblés, qui rabotaient le coût d'un générateur à la fois.")]
+        [SerializeField, Range(0.9f, 1f)] private float _coreCostBase = 0.99f;
+
+        [Tooltip("Plancher du multiplicateur de coût ci-dessus. 0,05 = jamais moins de 5 % du " +
+                 "prix d'origine, atteint vers 298 points dépensés.")]
+        [SerializeField, Range(0.01f, 1f)] private float _coreCostFloor = 0.05f;
+
+        [Tooltip("Rendement ajouté par point dépensé : les Datas des Scripts et les TFlops NETTES " +
+                 "sont multipliées par (1 + points × ce réglage). Sans plafond — P_CORE_OVERRIDE " +
+                 "le fait monter à l'infini.\n\n" +
+                 "Ne touche JAMAIS la vitesse de l'A.M.I. (elle lit les TFlops brutes) ni le Wipe " +
+                 "des Proxies : le Noyau accélère les revenus, pas la traque.")]
+        [SerializeField, Range(0f, 0.1f)] private float _coreYieldPerPoint = 0.01f;
 
         // ------------------------------------------------------------------
         // Run et prestige
         // ------------------------------------------------------------------
         [Header("Run et prestige")]
-        [Tooltip("Argent de départ d'une run neuve, AVANT le bonus de prestige qui s'y ajoute.")]
+        [Tooltip("Argent de départ d'une run neuve.")]
         [SerializeField, Min(0f)] private double _baseStartingMoney = 10d;
 
         [Tooltip("⚠️ CE RÉGLAGE N'EST PLUS LU — abandonné le 2026-09-16.\n\n" +
@@ -271,9 +288,10 @@ namespace Core.Models.Economy
         /// Émis à chaque retouche de l'asset dans l'inspecteur, éditeur seulement.
         ///
         /// Les systèmes lisent leurs réglages à l'usage, ce qui les rend modifiables en Play
-        /// Mode sans rien faire. Le ThreatManager est l'exception : il met la vitesse de l'A.M.I.
-        /// en cache et ne la recalcule que lorsque ses entrées bougent. Sans ce signal, régler
-        /// l'exposant en jouant resterait sans effet jusqu'au prochain achat de Hardware.
+        /// Mode sans rien faire. Le ThreatManager et le PrestigeManager sont les exceptions : l'un
+        /// met la vitesse de l'A.M.I. en cache, l'autre les multiplicateurs du Noyau, et tous deux
+        /// ne les recalculent que lorsque leurs entrées bougent. Sans ce signal, régler l'exposant
+        /// ou le Noyau en jouant resterait sans effet jusqu'au prochain achat.
         /// </summary>
         public Observable<Unit> Edited => _edited;
 
@@ -310,7 +328,15 @@ namespace Core.Models.Economy
         public double TFlopsCompressionExponent => _tflopsCompressionExponent;
         public double TFlopsYieldExponent => _tflopsYieldExponent;
         public float AbsoluteMinCycleDuration => _absoluteMinCycleDuration;
-        public float MaxTargetedReduction => _maxTargetedReduction;
+
+        /// <summary>Base du multiplicateur de coût du Noyau : <c>base ^ points dépensés</c>.</summary>
+        public float CoreCostBase => _coreCostBase;
+
+        /// <summary>Plancher du multiplicateur de coût du Noyau.</summary>
+        public float CoreCostFloor => _coreCostFloor;
+
+        /// <summary>Rendement ajouté par point dépensé, sur les Datas et les TFlops nettes.</summary>
+        public float CoreYieldPerPoint => _coreYieldPerPoint;
 
         public double BaseStartingMoney => _baseStartingMoney;
         public double ExfiltrationUnlockDatas => _exfiltrationUnlockDatas;

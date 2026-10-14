@@ -26,7 +26,9 @@ MonoBehaviour:
   _tflopsCompressionExponent: 0.25
   _tflopsYieldExponent: 0.15
   _absoluteMinCycleDuration: 0.05
-  _maxTargetedReduction: 0.95
+  _coreCostBase: 0.99
+  _coreCostFloor: 0.05
+  _coreYieldPerPoint: 0.01
   _baseStartingMoney: 10
   _exfiltrationUnlockDatas: 400000
   _prestigeFirstThresholdDatas: 2000000

@@ -26,7 +26,18 @@ namespace Core.Economy.Editor
         public string descKey;
 
         public string bonusType;
-        public int maxLevel;
+
+        /// <summary>
+        /// Rangs du nœud. <b>0 = sans plafond</b> (`P_CORE_OVERRIDE`), voir
+        /// <see cref="PrestigeConfigSO.IsUnlimited"/>.
+        ///
+        /// Initialisé à 1 pour la même raison que <see cref="requiredLevel"/> : JsonUtility garde
+        /// la valeur d'initialisation d'un champ absent du fichier. Sans elle, un nœud qui omet
+        /// le champ deviendrait silencieusement achetable à l'infini. Le générateur liste les
+        /// nœuds sans plafond pour que ce filet se voie s'il cédait.
+        /// </summary>
+        public int maxLevel = 1;
+
         public double baseCost;
         public double costMult;
         public float bonus;
@@ -41,12 +52,10 @@ namespace Core.Economy.Editor
         /// <b>L'initialisation à 1 est porteuse de sens et ne doit pas être retirée.</b>
         /// JsonUtility construit l'objet avant de le remplir : un champ absent du fichier
         /// conserve donc cette valeur. Sans elle, un champ omis vaudrait 0 — c'est-à-dire
-        /// « parent au maximum » — et les cent trente nœuds existants, qui ne déclarent rien,
-        /// deviendraient tous silencieusement bien plus durs à ouvrir.
+        /// « parent au maximum » — et les têtes de branche, qui ne déclarent rien, deviendraient
+        /// silencieusement bien plus dures à ouvrir.
         /// </summary>
         public int requiredLevel = 1;
-
-        public string targetUpgradeId; // <- Ajoute cette ligne
     }
 
     public class PrestigeTreeGenerator : EditorWindow
@@ -94,6 +103,11 @@ namespace Core.Economy.Editor
 
             Dictionary<string, PrestigeConfigSO> createdAssets = new Dictionary<string, PrestigeConfigSO>();
 
+            // Filet du champ `maxLevel`, comme le récapitulatif des prérequis plus bas : un nœud
+            // sans plafond doit être une INTENTION. Si l'initialiseur du champ cédait, toute la
+            // liste des nœuds y passerait.
+            List<string> unlimited = new List<string>();
+
             // ==========================================
             // PASSE 1 : Création de tous les ScriptableObjects
             // ==========================================
@@ -103,6 +117,8 @@ namespace Core.Economy.Editor
                 {
                     var asset = CreateNodeBase(item, parsedEnum);
                     createdAssets[item.id] = asset;
+
+                    if (item.maxLevel <= 0) unlimited.Add(item.id);
                 }
                 else
                 {
@@ -110,17 +126,23 @@ namespace Core.Economy.Editor
                 }
             }
 
+            if (unlimited.Count > 0)
+            {
+                Debug.Log($"[PrestigeGenerator] {unlimited.Count} nœud(s) sans plafond de niveau : "
+                          + string.Join(", ", unlimited));
+            }
+
             // ==========================================
             // PASSE 2 : Câblage des Prérequis entre eux
             // ==========================================
-            // Note : Grâce à la fusion, un objet dans Stealth.json peut très bien 
-            // avoir comme prérequis un objet situé dans Core.json !
+            // Note : grâce à la fusion, un nœud de 05_Hardening.json peut très bien avoir pour
+            // prérequis un nœud de 00_Core.json.
             // Le récapitulatif ci-dessous n'est pas décoratif : c'est le filet de sécurité du
             // champ `requiredLevel`. Absent du JSON, il doit valoir 1 grâce à son initialiseur
             // de champ ; si ce mécanisme venait à céder, TOUS les nœuds tomberaient à 0 —
             // c'est-à-dire « parent au maximum » — et l'arbre deviendrait silencieusement
             // infranchissable. En ne listant que les exigences non triviales, la régression
-            // saute aux yeux : la liste passerait de quelques lignes à plus de cent trente.
+            // saute aux yeux : la liste passerait aux vingt nœuds de l'arbre.
             List<string> reinforced = new List<string>();
 
             foreach (var item in allItems)
@@ -175,18 +197,6 @@ namespace Core.Economy.Editor
             Debug.Log($"<color=green>[PrestigeGenerator]</color> Génération terminée ! {allItems.Count} items créés à partir de {jsonFiles.Length} fichiers, {pruned} orphelin(s) supprimé(s).");
         }
 
-        /// <summary>
-        /// Les trois bonus ciblant une upgrade précise. Leur libellé est composé à l'affichage,
-        /// pas stocké.
-        /// </summary>
-        private static bool IsSpecificBonus(PrestigeBonusType type)
-        {
-            return type == PrestigeBonusType.SpecificUpgradeCostReduction
-                || type == PrestigeBonusType.SpecificUpgradeYieldBoost
-                || type == PrestigeBonusType.SpecificUpgradeTimeReduction
-                || type == PrestigeBonusType.SpecificUpgradeAutomationTresholdReduction;
-        }
-
         private static PrestigeConfigSO CreateNodeBase(PrestigeItemData data, PrestigeBonusType type)
         {
             string assetPath = $"{TargetFolder}/{data.id}.asset";
@@ -203,21 +213,12 @@ namespace Core.Economy.Editor
             SerializedObject so = new SerializedObject(asset);
 
             so.FindProperty("_id").stringValue = data.id;
-
-            // Un nœud « spécifique » n'a pas de nom propre : le presenter compose son libellé à
-            // partir d'un gabarit et du nom de l'upgrade ciblée. Lui fabriquer une clé dédiée
-            // imposerait 324 entrées de traduction quasi identiques dans fr.json.
-            bool isSpecific = IsSpecificBonus(type);
-
-            so.FindProperty("_displayNameKey").stringValue =
-                isSpecific ? string.Empty : LocalizationKeys.PrestigeName(data.id);
-
-            so.FindProperty("_displayDescriptionKey").stringValue =
-                isSpecific ? string.Empty : LocalizationKeys.PrestigeDescription(data.id);
+            so.FindProperty("_displayNameKey").stringValue = LocalizationKeys.PrestigeName(data.id);
+            so.FindProperty("_displayDescriptionKey").stringValue = LocalizationKeys.PrestigeDescription(data.id);
 
             // Même garde que dans UpgradeCatalogGenerator : un libellé laissé dans le JSON serait
             // ignoré EN SILENCE, et l'auteur croirait l'avoir renseigné.
-            if (!isSpecific && (!string.IsNullOrEmpty(data.nameKey) || !string.IsNullOrEmpty(data.descKey)))
+            if (!string.IsNullOrEmpty(data.nameKey) || !string.IsNullOrEmpty(data.descKey))
             {
                 Debug.LogWarning(
                     $"[PrestigeGenerator] '{data.id}' porte encore un champ nameKey/descKey. " +
@@ -237,7 +238,6 @@ namespace Core.Economy.Editor
             // prérequis disparaît du JSON ne doit pas conserver l'ancien.
             so.FindProperty("_requirement._node").objectReferenceValue = null;
             so.FindProperty("_requirement._requiredLevel").intValue = 1;
-            so.FindProperty("_targetUpgradeId").stringValue = string.IsNullOrEmpty(data.targetUpgradeId) ? "" : data.targetUpgradeId;
 
             so.ApplyModifiedProperties();
 
@@ -313,6 +313,16 @@ namespace Core.Economy.Editor
         /// </summary>
         private static int ResolveRequiredLevel(PrestigeItemData item, PrestigeConfigSO parent)
         {
+            // « Le maximum » d'un nœud sans plafond n'est jamais atteint : l'enfant resterait
+            // fermé pour toujours. Toujours une faute de saisie.
+            if (parent.IsUnlimited && item.requiredLevel <= PrestigeRequirement.RequireParentMaxLevel)
+            {
+                Debug.LogError(
+                    $"[PrestigeGenerator] '{item.id}' exige le niveau MAXIMUM de '{item.prerequisiteId}', " +
+                    "qui n'a pas de plafond : il ne s'ouvrira jamais. Donne-lui un requiredLevel chiffré.");
+                return parent.MaxLevel;
+            }
+
             if (item.requiredLevel <= PrestigeRequirement.RequireParentMaxLevel) return parent.MaxLevel;
 
             if (item.requiredLevel > parent.MaxLevel)

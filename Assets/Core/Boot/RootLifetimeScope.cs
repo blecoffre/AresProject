@@ -139,10 +139,13 @@ namespace Core.Infrastructure
             // 6. Systèmes métier
             //    Tous en Singleton : un service enregistré en Scoped ICI serait ré-instancié dans
             //    chaque scope enfant, et la scène de jeu manipulerait alors une seconde instance.
-            // AsImplementedInterfaces : l'UpgradeManager est devenu IStartable, il doit
-            // s'abonner à StartingComputerPower pour tenir les TFlops à jour.
+            // AsImplementedInterfaces : l'UpgradeManager est IStartable, il s'abonne aux recalculs
+            // du prestige pour pousser le Noyau et P_REFAC dans les générateurs.
             builder.Register<UpgradeManager>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
-            builder.Register<PrestigeManager>(Lifetime.Singleton);
+
+            // IStartable depuis le lot 4 : il écoute les retouches du BalancingConfig pour
+            // recalculer le Noyau Compilé en Play Mode.
+            builder.Register<PrestigeManager>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
 
             // IStartable depuis la refonte « Time Attack » : il s'abonne aux TFlops brutes et au
             // Blindage pour tenir la vitesse de l'A.M.I. en cache, et aux achats de Proxies.

@@ -102,7 +102,11 @@ namespace Core.UI.Prestige
                 // l'inspecteur donne de toute façon. Ce cas implique MaxLevel > 1 — un nœud à
                 // achat unique passe directement de « jamais acheté » à « au maximum ».
                 case PrestigeNodeState.InProgress:
-                    statusText = _loc.GetText("UI_PRESTIGE_LEVEL", currentLevel, Config.MaxLevel);
+                    // Un nœud sans plafond (P_CORE_OVERRIDE) n'a pas de « / max » à afficher :
+                    // « Niv. 12 / 2147483647 » serait un mensonge, et un compteur suffit.
+                    statusText = Config.IsUnlimited
+                        ? _loc.GetText("UI_PRESTIGE_LEVEL_UNLIMITED", currentLevel)
+                        : _loc.GetText("UI_PRESTIGE_LEVEL", currentLevel, Config.MaxLevel);
                     break;
 
                 // Jamais acheté, branche ouverte : le prix est la seule information actionnable,

@@ -41,6 +41,10 @@ namespace Core.UI.Prestige
                  "consulter quand on planifie une branche.")]
         [SerializeField] private TextMeshProUGUI _cyclesText;
 
+        [Tooltip("La ligne du Noyau Compilé : « Noyau : coûts −X %, rendement ×Y ». Masquée tant " +
+                 "qu'aucun point n'est dépensé. Facultatif.")]
+        [SerializeField] private TextMeshProUGUI _coreSummaryText;
+
         [Header("Inspecteur")]
         [SerializeField] private PrestigeDetailsView _detailsView;
 
@@ -127,6 +131,12 @@ namespace Core.UI.Prestige
         public void SetCyclesText(string text)
         {
             if (_cyclesText != null) _cyclesText.text = text;
+        }
+
+        /// <summary>La ligne du Noyau Compilé. Une chaîne vide la masque.</summary>
+        public void SetCoreSummary(string text)
+        {
+            CoreSummaryText.Apply(_coreSummaryText, text);
         }
 
         private static void SetGroupActive(GameObject[] group, bool isActive)

@@ -15,13 +15,12 @@ MonoBehaviour:
   _id: P_EXTRACT_HIGHRISK
   _displayNameKey: PRESTIGE_P_EXTRACT_HIGHRISK_NAME
   _displayDescriptionKey: PRESTIGE_P_EXTRACT_HIGHRISK_DESC
-  _bonusType: 14
+  _bonusType: 7
   _maxLevel: 1
   _baseCost: 1
   _costMultiplier: 1
   _bonusPerLevel: 1
-  _uiPosition: {x: 2, y: -4}
+  _uiPosition: {x: 2, y: -3}
   _requirement:
     _node: {fileID: 11400000, guid: 0094284ad31054f49810c4185d461d6d, type: 2}
-    _requiredLevel: 1
-  _targetUpgradeId: 
+    _requiredLevel: 0

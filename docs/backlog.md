@@ -39,17 +39,16 @@ dans le code de jeu (voir § 7).
 
 La feuille de route des lots est dans `etat-des-lieux.md`. Ici, les points ouverts.
 
-- ⚖️ **L'Interception au maximum écrase le choix des Proxies** (calculé le 2026-10-13, sur les
-  valeurs de base du GD). À ×102, en fin de partie Blindage max (jauge de ~330 s), `PRX_01`
-  niveau 1 retire 78 % de la jauge et tout Proxy à partir de `PRX_02` la vide entièrement. Le
-  choix que décrit le GD — purge aveugle d'un `PRX_15` contre dosage fin d'un lot de `PRX_06` ou
-  `_07` — n'existe qu'avec une Interception partielle. **Le GD confirme (2026-10-14)** : les
-  valeurs de base des Proxies restent, et `P_INTERCEPT_3` / `_4` (+4 et +15 par rang) seront
-  rabotés drastiquement **au lot 4**, valeurs fixées pendant ses tests.
-- 📖 **Les 15 nœuds « Opti Prod » des Proxies ne font plus rien** (`P_UPG_PRX_xx_PROD`) : le Wipe
-  ignore les bonus ciblés. Ils disparaissent au lot 4 avec les 120 nœuds ciblés.
-- 📖 **`P_EXTRACT_2` et `_3` exigent encore leur parent au niveau 3**, alors que la règle du GD est
-  désormais « parent au maximum ». Passe au lot 4 avec les valeurs d'Extraction.
+- ⚖️ **Valeurs de l'Interception provisoires** (lot 4, 2026-10-14). `P_INTERCEPT_3` et `_4` passent
+  de +4 et +15 à **+1,0 et +1,5 par rang** (×19,5 au max au lieu de ×102), point de départ choisi
+  par Bertrand ; le GD fixera les valeurs définitives en jouant. Calcul, fin de partie Blindage
+  max : `PRX_01` retire ~15 % de la jauge, `PRX_05` ~59 %, il faut `PRX_07` pour la vider.
+- ⚖️ **La disposition de l'arbre en éventail est provisoire** (lot 4) : Bertrand veut voir en jeu si
+  elle ne fait pas trop « arbre de talents de RPG ». À zoom 1, l'écran ne montre que trois des
+  sept colonnes ; il faut dézoomer à la molette.
+- 📖 **Commentaires périmés dans l'interface de l'arbre** : `PrestigePanelPresenter`,
+  `PrestigeItemPresenter`, `PrestigeItemView` et `PrestigePanelView` justifient encore leurs choix
+  par « 116 » ou « 134 nœuds ». Les choix tiennent toujours ; les chiffres sont faux. Lot 5.
 
 ## 1. Bloquant pour une sortie publique
 
@@ -101,9 +100,6 @@ Le détail chiffré et les chantiers d'équilibrage sont dans `etat-des-lieux.md
   — rattrapé dans le GDD le 2026-10-13 : modèle des boîtes pour les points, premier point
   abaissé de 5e6 à 2e6, saisie versant 30 % au lieu de rien. ⚖️ **Aucune campagne n'a été
   remesurée depuis** — voir `etat-des-lieux.md`, chantier 1.
-- 📖 **120 des 140 nœuds sont du remplissage généré.** Deux par générateur (réduction de coût,
-  boost de rendement), tous identiques : 1 rang, coût 1, bonus 1,0. Ils disparaissent au lot 4 de
-  la refonte « Time Attack », remplacés par le Noyau Compilé.
 - 📖 **Deux textes de développeur mentent** sur le code qu'ils décrivent :
   - le commentaire de `UserCurrencies.BankRunContribution` dit « une saisie n'appelle rien du
     tout » ; elle l'appelle avec 30 % de sa contribution depuis `a772e67` ;
@@ -126,8 +122,7 @@ Le détail chiffré et les chantiers d'équilibrage sont dans `etat-des-lieux.md
   `{fileID: 0}` dans la GameScene (constaté en jeu le 2026-08-28, relu dans la scène le
   2026-10-13). Le libellé porte encore le pourcentage, mais la barre de progression vers le
   premier point a disparu au rework UI.
-- 📖 **Clés de localisation orphelines** : `MONEY`, `TRACE`, `PRESTIGE_P_AUTO_GLOBAL_NAME/_DESC`,
-  `PRESTIGE_P_POWER_START_NAME/_DESC` (nœuds retirés). Les `LANGUAGE_NAME_*` ne sont pas
+- 📖 **Clés de localisation orphelines** : `MONEY`, `TRACE`. Les `LANGUAGE_NAME_*` ne sont pas
   orphelines : elles se construisent depuis le code de langue (`LocalizationKeys.LanguageName`).
 
 - 🔬 **Les boutons du bas du panneau d'options chevauchent les réglages** — « [ PAR DÉFAUT ] » et
@@ -209,12 +204,10 @@ Le jeu tourne sans ralentissement perceptible. Rien ici n'a été profilé.
   `JsonLocalizationService.cs:128`). → `ZString.Format<T>`, déjà disponible avec UniTask.
 - 📖 **`LogObjectPool`** recycle par `_activeItems.RemoveAt(0)` et teste par un `Contains`
   linéaire. Un tampon circulaire le rendrait O(1).
-- ⚖️ **Repeinte de l'arbre** : 140 nœuds × 3 passes par achat de prestige, chacune avec un
+- ⚖️ **Repeinte de l'arbre** : 21 nœuds × 3 passes par achat de prestige, chacune avec un
   `Math.Pow` et une chaîne par nœud. Jamais mesuré, et probablement sans importance (achat rare,
   écran modal). Le remède, si besoin, est celui de `GeneratorPresenter` : cache et
   `DistinctUntilChanged`.
-- ⚖️ **Pooling ou virtualisation de l'arbre** : la question disparaît au lot 4 de la refonte,
-  qui ramène l'arbre à 21 nœuds.
 
 ## 7. Outillage et qualité
 
@@ -271,16 +264,10 @@ Pas des bugs : des arbitrages que seul le GD peut rendre. Les trancher débloque
   `LocalizedText` (« No such registration of type: ILocalizationService »), ce qui se lit comme
   un bug de localisation. Toujours partir de `Assets/Data/Scenes/RootScene.unity`. Une garde
   explicite dans `GameSceneLifetimeScope` éviterait le diagnostic à chaque fois.
-- **`04_SpecificUpgrades.json` est une SORTIE, pas une source.** `PrestigeSpecificNodesGenerator`
-  le réécrit **intégralement** depuis le catalogue d'upgrades. Le 2026-08-30, quinze nœuds écrits
-  à la main dans le fichier ont disparu au passage suivant, puis le générateur d'arbre a supprimé
-  leurs `.asset` orphelins — sans erreur, seulement un compte dans un message de succès que
-  personne ne lit. **Un nouveau type de nœud ciblé s'ajoute dans le générateur, jamais dans le
-  JSON.** Et avant de conclure qu'un nœud « ne s'affiche pas », compter les entrées du fichier.
 - **Les valeurs de `PrestigeBonusType` s'appendent en FIN d'enum.** L'index est sérialisé dans les
   `.asset` : une insertion au milieu redéfinit silencieusement des nœuds existants. Déjà arrivé.
-  Retirer une valeur n'est permis qu'en relançant **dans la foulée** les trois générateurs, qui
-  réécrivent tous les `.asset` — fait le 2026-10-13 pour la refonte.
+  Retirer une valeur n'est permis qu'en relançant **dans la foulée** le générateur de l'arbre,
+  qui réécrit tous les `.asset` — fait le 2026-10-13 et le 2026-10-14 pour la refonte.
 - **Le player loop de l'éditeur est figé tant que la fenêtre Unity n'a pas le focus**
   (`Time.frameCount` ne bouge pas), et `runInBackground` n'y change rien. Le Play Mode reste alors
   bloqué en transition. Pour vérifier un `ITickable` sans focus, appeler `Tick()` à la main ; pour

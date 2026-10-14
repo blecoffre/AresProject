@@ -1,6 +1,6 @@
 using Core.Models.Economy;
+using Core.Services.Economy;
 using Core.Services.Localization;
-using Core.Utils;
 using UnityEngine;
 
 namespace Core.UI.Prestige
@@ -20,57 +20,24 @@ namespace Core.UI.Prestige
     public static class PrestigeLabels
     {
         /// <summary>
-        /// Les nœuds ciblant une upgrade précise n'ont pas de nom en base : on compose
-        /// « &lt;nom de l'upgrade&gt; (Opti Coût) » depuis un gabarit localisé. Les autres portent
-        /// leur propre clé, dérivée de leur id par le générateur.
+        /// Le nom du nœud, par sa clé dérivée de l'id. Depuis le retrait des 120 nœuds ciblés
+        /// (2026-10-14), plus aucun libellé n'est composé à partir d'un gabarit.
         /// </summary>
         public static string ResolveName(PrestigeConfigSO config, ILocalizationService loc)
         {
-            switch (config.BonusType)
-            {
-                case PrestigeBonusType.SpecificUpgradeCostReduction:
-                    return loc.GetText(LocalizationKeys.PrestigeSpecificCostName, TargetName(config, loc));
-
-                case PrestigeBonusType.SpecificUpgradeYieldBoost:
-                    return loc.GetText(LocalizationKeys.PrestigeSpecificYieldName, TargetName(config, loc));
-
-                case PrestigeBonusType.SpecificUpgradeTimeReduction:
-                    return loc.GetText(LocalizationKeys.PrestigeSpecificTimeName, TargetName(config, loc));
-
-                case PrestigeBonusType.SpecificUpgradeAutomationTresholdReduction:
-                    return loc.GetText(LocalizationKeys.PrestigeAutomationName, TargetName(config, loc));
-
-                default:
-                    return loc.GetText(config.DisplayNameKey);
-            }
+            return loc.GetText(config.DisplayNameKey);
         }
 
         public static string ResolveDescription(PrestigeConfigSO config, ILocalizationService loc)
         {
-            switch (config.BonusType)
-            {
-                case PrestigeBonusType.SpecificUpgradeCostReduction:
-                    return loc.GetText(LocalizationKeys.PrestigeSpecificCostDescription, TargetName(config, loc));
-
-                case PrestigeBonusType.SpecificUpgradeYieldBoost:
-                    return loc.GetText(LocalizationKeys.PrestigeSpecificYieldDescription, TargetName(config, loc));
-
-                case PrestigeBonusType.SpecificUpgradeTimeReduction:
-                    return loc.GetText(LocalizationKeys.PrestigeSpecificTimeDescription, TargetName(config, loc));
-
-                case PrestigeBonusType.SpecificUpgradeAutomationTresholdReduction:
-                    return loc.GetText(LocalizationKeys.PrestigeAutomationDescription, TargetName(config, loc));
-
-                default:
-                    return loc.GetText(config.DisplayDescriptionKey);
-            }
+            return loc.GetText(config.DisplayDescriptionKey);
         }
 
         /// <summary>
-        /// La phrase d'effet, apport PAR NIVEAU. Trois familles de mise en forme cohabitent et
-        /// c'est irréductible : un multiplicateur se lit en pourcentage, des fonds de départ en
-        /// monnaie, et un déblocage n'a aucun nombre à afficher. Le gabarit et le formatage sont
-        /// choisis ensemble, ici, plutôt que laissés au fichier de traduction.
+        /// La phrase d'effet, apport PAR NIVEAU. Deux familles de mise en forme cohabitent et
+        /// c'est irréductible : un multiplicateur se lit en pourcentage, un déblocage n'a aucun
+        /// nombre à afficher. Le gabarit et le formatage sont choisis ensemble, ici, plutôt que
+        /// laissés au fichier de traduction.
         /// </summary>
         public static string ResolveEffect(PrestigeConfigSO config, ILocalizationService loc)
         {
@@ -82,6 +49,8 @@ namespace Core.UI.Prestige
                 case PrestigeBonusType.GlobalComputeMultiplier:
                     return loc.GetText("UI_PRESTIGE_EFFECT_COMPUTE", AsPercent(perLevel));
 
+                // Un retrait au MULTIPLICATEUR de coût : 0,01 fait passer ×1,15 à ×1,14, soit un
+                // point de hausse en moins à chaque niveau acheté.
                 case PrestigeBonusType.CostMultiplierReduction:
                     return loc.GetText("UI_PRESTIGE_EFFECT_COSTINFLATION", AsPercent(perLevel));
 
@@ -97,39 +66,24 @@ namespace Core.UI.Prestige
                 case PrestigeBonusType.CleanExitBonusMultiplier:
                     return loc.GetText("UI_PRESTIGE_EFFECT_CLEAN_EXIT", AsPercent(perLevel));
 
-                // Un NOMBRE DE NIVEAUX, pas un pourcentage : pas d'AsPercent ici.
-                case PrestigeBonusType.GlobalAutomationReduction:
-                    return loc.GetText("UI_PRESTIGE_EFFECT_AUTOMATION_GLOBAL", perLevel);
-
-                case PrestigeBonusType.SpecificUpgradeCostReduction:
-                    return loc.GetText("UI_PRESTIGE_EFFECT_SPECIFIC_COST", AsPercent(perLevel), TargetName(config, loc));
-
-                case PrestigeBonusType.SpecificUpgradeYieldBoost:
-                    return loc.GetText("UI_PRESTIGE_EFFECT_SPECIFIC_YIELD", AsPercent(perLevel), TargetName(config, loc));
-
-                case PrestigeBonusType.SpecificUpgradeTimeReduction:
-                    return loc.GetText("UI_PRESTIGE_EFFECT_SPECIFIC_TIME", AsPercent(perLevel), TargetName(config, loc));
-
-                case PrestigeBonusType.SpecificUpgradeAutomationTresholdReduction:
-                    return loc.GetText("UI_PRESTIGE_EFFECT_AUTOMATION", perLevel, TargetName(config, loc));
-
-                // ---- Familles en valeur absolue ---------------------------------------------
-                case PrestigeBonusType.StartingMoney:
-                    return loc.GetText("UI_PRESTIGE_EFFECT_START_MONEY", CurrencyFormatter.Format(perLevel));
-
-                case PrestigeBonusType.StartingComputerPower:
-                    return loc.GetText("UI_PRESTIGE_EFFECT_START_TFLOPS", CurrencyFormatter.Format(perLevel));
-
                 // Des SECONDES d'avance, ajoutées à celles de base : pas un pourcentage.
                 case PrestigeBonusType.OverclockBonus:
                     return loc.GetText("UI_PRESTIGE_EFFECT_OVERCLOCK", perLevel);
 
-                // ---- Déblocages : aucun nombre n'a de sens -----------------------------------
+                // ---- Sans nombre -------------------------------------------------------------
                 case PrestigeBonusType.UnlockEmergencyButton:
                     return loc.GetText("UI_PRESTIGE_EFFECT_UNLOCK_EMERGENCY");
 
                 case PrestigeBonusType.UnlockHighRiskExtraction:
                     return loc.GetText("UI_PRESTIGE_EFFECT_UNLOCK_HIGHRISK");
+
+                // Le puits à points n'a d'effet que par le Noyau, dont la ligne en tête de
+                // l'écran donne déjà les chiffres.
+                case PrestigeBonusType.CoreOverride:
+                    return loc.GetText("UI_PRESTIGE_EFFECT_CORE_OVERRIDE");
+
+                case PrestigeBonusType.Root:
+                    return loc.GetText("UI_PRESTIGE_EFFECT_ROOT");
 
                 default:
                     // Un type de bonus ajouté à l'enum sans gabarit ici afficherait du vide dans
@@ -143,31 +97,28 @@ namespace Core.UI.Prestige
         }
 
         /// <summary>
+        /// La ligne du Noyau Compilé, « Noyau : coûts −66 %, rendement ×2,07 », affichée en tête du
+        /// panneau d'upgrades et de l'arbre. Chaîne VIDE tant qu'aucun point n'est dépensé : la
+        /// ligne est alors masquée, « −0 % / ×1,00 » parlerait d'un système que le joueur ne
+        /// connaît pas encore (Bertrand, 2026-10-14).
+        ///
+        /// Partagée ici pour que les deux panneaux ne puissent pas l'écrire différemment.
+        /// </summary>
+        public static string ResolveCoreSummary(PrestigeManager prestige, ILocalizationService loc)
+        {
+            if (prestige.TotalPointsSpent.CurrentValue <= 0) return string.Empty;
+
+            float costReduction = AsPercent(1f - prestige.TotalCostMultiplier.CurrentValue);
+            return loc.GetText("UI_CORE_SUMMARY", costReduction, prestige.TotalYieldBonus.CurrentValue);
+        }
+
+        /// <summary>
         /// 0,15 devient 15. Le symbole « % » vit dans le fichier de traduction, pas ici — et le
         /// gabarit garde deux décimales facultatives : un bonus de 7,5 % ne doit pas s'annoncer 8 %.
         /// </summary>
         private static float AsPercent(float fraction)
         {
             return fraction * 100f;
-        }
-
-        /// <summary>
-        /// Résout le nom de l'upgrade ciblée par sa seule clé, sans passer par le catalogue :
-        /// la clé se dérive de l'id, donc rien de plus n'a besoin d'être injecté pour ça.
-        /// </summary>
-        private static string TargetName(PrestigeConfigSO config, ILocalizationService loc)
-        {
-            if (string.IsNullOrEmpty(config.TargetUpgradeId))
-            {
-                // Nœud marqué « spécifique » mais sans cible : donnée incohérente, on le dit.
-                Debug.LogError(
-                    "[PRESTIGE] Le nœud '" + config.Id + "' a un bonus ciblé (" + config.BonusType +
-                    ") mais aucun targetUpgradeId. Son libellé sera incomplet.");
-
-                return string.Empty;
-            }
-
-            return loc.GetText(LocalizationKeys.UpgradeName(config.TargetUpgradeId));
         }
     }
 }

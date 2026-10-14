@@ -4,13 +4,23 @@ using Core.Models.Economy;
 using R3;
 using System;
 using System.Collections.Generic;
+using VContainer.Unity;
 
 namespace Core.Services.Economy
 {
-    public class PrestigeManager : IDisposable
+    /// <summary>
+    /// L'arbre de compilation : les niveaux achetés, les règles d'achat, et ce que tout cela
+    /// rapporte, exposé en propriétés réactives en lecture seule.
+    ///
+    /// Chargé en premier dans la chaîne de la méta-progression (refonte « Time Attack ») : il ne
+    /// connaît ni l'argent de la run ni la jauge. L'UpgradeManager et le ThreatManager lisent ses
+    /// sommes ; jamais l'inverse.
+    /// </summary>
+    public class PrestigeManager : IStartable, IDisposable
     {
         private readonly PrestigeCatalogSO _catalog;
         private readonly UserCurrencies _currencies;
+        private readonly BalancingConfigSO _balancing;
 
         // Dictionnaire des niveaux achetés (Id -> Niveau actuel)
         private readonly Dictionary<string, ReactiveProperty<int>> _prestigeLevels = new();
@@ -18,8 +28,7 @@ namespace Core.Services.Economy
         private readonly Subject<string> _onPrestigePurchased = new();
         private readonly Subject<Unit> _onBonusesRecalculated = new();
 
-        /// <summary>Bonus ciblés, indexés par l'id de l'upgrade visée. Reconstruite à chaque recalcul.</summary>
-        private readonly Dictionary<string, SpecificUpgradeBonuses> _specificBonuses = new();
+        private IDisposable _balancingSubscription;
 
         /// <summary>
         /// La fenêtre de compilation. Fermée pendant toute une run, ouverte entre deux.
@@ -51,12 +60,29 @@ namespace Core.Services.Economy
         /// </summary>
         public Observable<string> OnPrestigePurchased => _onPrestigePurchased;
 
-        // Propriétés réactives globales que le reste du jeu écoutera
-        public ReactiveProperty<float> GlobalComputeMultiplier { get; } = new(1f);
-
+        private readonly ReactiveProperty<float> _globalComputeMultiplier = new(1f);
+        private readonly ReactiveProperty<float> _costMultiplierReduction = new(0f);
         private readonly ReactiveProperty<float> _totalHardenBonus = new(0f);
         private readonly ReactiveProperty<float> _totalInterceptBonus = new(0f);
         private readonly ReactiveProperty<float> _totalOverclockBonus = new(0f);
+        private readonly ReactiveProperty<float> _cleanExitBonusMultiplier = new(1f);
+        private readonly ReactiveProperty<bool> _isEmergencyUnlocked = new(false);
+        private readonly ReactiveProperty<bool> _isHighRiskExtractionUnlocked = new(false);
+        private readonly ReactiveProperty<int> _totalPointsSpent = new(0);
+        private readonly ReactiveProperty<float> _totalCostMultiplier = new(1f);
+        private readonly ReactiveProperty<float> _totalYieldBonus = new(1f);
+
+        /// <summary>
+        /// Multiplicateur des TFlops NETTES apporté par `P_DATAM` : <c>1 + Σ</c>. Vaut 1 sans
+        /// aucun nœud. Les TFlops brutes, celles de la menace, n'y sont jamais soumises.
+        /// </summary>
+        public ReadOnlyReactiveProperty<float> GlobalComputeMultiplier => _globalComputeMultiplier;
+
+        /// <summary>
+        /// Ce que `P_REFAC` retranche au multiplicateur de coût de base de chaque générateur.
+        /// L'UpgradeModel applique le plancher de 1,01.
+        /// </summary>
+        public ReadOnlyReactiveProperty<float> CostMultiplierReduction => _costMultiplierReduction;
 
         /// <summary>
         /// Somme de la branche Blindage. La vitesse de l'A.M.I. est DIVISÉE par
@@ -78,33 +104,55 @@ namespace Core.Services.Economy
         public ReadOnlyReactiveProperty<float> TotalOverclockBonus => _totalOverclockBonus;
 
         /// <summary>
-        /// Multiplie le bonus des paliers d'extraction. Jamais sous 1 : un noeud d'Extraction ne
-        /// peut pas rendre une sortie propre moins payante qu'a l'origine.
+        /// Multiplie le bonus des TROIS paliers d'extraction : <c>1 + Σ Extraction</c>. Jamais
+        /// sous 1 : un nœud d'Extraction ne peut pas rendre une sortie propre moins payante qu'à
+        /// l'origine.
         /// </summary>
-        public ReactiveProperty<float> CleanExitBonusMultiplier { get; } = new(1f);
+        public ReadOnlyReactiveProperty<float> CleanExitBonusMultiplier => _cleanExitBonusMultiplier;
 
-        /// <summary>
-        /// Niveaux retirés au palier d'automatisation de TOUS les Scripts. Remplace quinze
-        /// nœuds ciblés qui éparpillaient le même effet.
-        /// </summary>
-        public ReactiveProperty<float> GlobalAutomationReduction { get; } = new(0f);
-
-        public ReactiveProperty<float> CostMultiplierReduction { get; } = new(0f);
-        public ReactiveProperty<double> StartingMoney { get; } = new(0d);
-        public ReactiveProperty<double> StartingComputerPower { get; } = new(0d);
-        public ReactiveProperty<bool> IsEmergencyUnlocked { get; } = new(false);
+        /// <summary>Le Data Wiper est-il débloqué (`P_EMERG`).</summary>
+        public ReadOnlyReactiveProperty<bool> IsEmergencyUnlocked => _isEmergencyUnlocked;
 
         /// <summary>
         /// Les paliers d'extraction marqués « sous condition » — aujourd'hui le seul palier à
         /// 90 % — versent-ils leur bonus. Faux par défaut : le palier le plus dangereux était
         /// proposé dès la première run, alors que le joueur pilote encore à l'aveugle.
         /// </summary>
-        public ReactiveProperty<bool> IsHighRiskExtractionUnlocked { get; } = new(false);
+        public ReadOnlyReactiveProperty<bool> IsHighRiskExtractionUnlocked => _isHighRiskExtractionUnlocked;
 
-        public PrestigeManager(PrestigeCatalogSO catalog, UserCurrencies currencies)
+        /// <summary>
+        /// Points de prestige DÉPENSÉS dans tout l'arbre, `P_CORE_OVERRIDE` compris. C'est la
+        /// seule entrée du Noyau Compilé : il récompense l'investissement, quel qu'en soit
+        /// l'objet.
+        /// </summary>
+        public ReadOnlyReactiveProperty<int> TotalPointsSpent => _totalPointsSpent;
+
+        /// <summary>
+        /// Noyau Compilé — multiplicateur du coût de TOUS les générateurs :
+        /// <c>max(plancher ; base ^ points dépensés)</c>, soit 0,99^points borné à 0,05.
+        /// </summary>
+        public ReadOnlyReactiveProperty<float> TotalCostMultiplier => _totalCostMultiplier;
+
+        /// <summary>
+        /// Noyau Compilé — multiplicateur du RENDEMENT : <c>1 + points dépensés × 0,01</c>. Il
+        /// s'applique aux Datas des Scripts et aux TFlops nettes, jamais à la vitesse de
+        /// l'A.M.I. ni au Wipe des Proxies.
+        /// </summary>
+        public ReadOnlyReactiveProperty<float> TotalYieldBonus => _totalYieldBonus;
+
+        public PrestigeManager(PrestigeCatalogSO catalog, UserCurrencies currencies, BalancingConfigSO balancing)
         {
             _catalog = catalog;
             _currencies = currencies;
+            _balancing = balancing;
+        }
+
+        public void Start()
+        {
+            // Retouche du Noyau dans l'inspecteur, en Play Mode : les multiplicateurs sont en
+            // cache, il faut les recalculer — et le signal de recalcul les pousse dans les
+            // générateurs. Éditeur seulement, le sujet n'émet jamais dans un build.
+            _balancingSubscription = _balancing.Edited.Subscribe(_ => RecalculateBonuses());
         }
 
         public void InitializeFromSave(Dictionary<string, int> savedPrestigeLevels)
@@ -150,8 +198,8 @@ namespace Core.Services.Economy
         /// Exposé pour que la vue reflète la règle au lieu de la redéfinir de son côté.
         ///
         /// Le seuil n'est plus figé à « niveau &gt; 0 » depuis le 2026-09-09 : un nœud peut
-        /// désormais exiger un rang précis du parent, voire son maximum. Sans quoi une ligne à
-        /// dix rangs comme les paliers d'Overclock s'ouvrait entièrement pour un seul cran acheté.
+        /// désormais exiger un rang précis du parent, voire son maximum — c'est la règle de toute
+        /// la refonte « Time Attack ».
         /// </summary>
         public bool IsUnlocked(PrestigeConfigSO config)
         {
@@ -191,6 +239,7 @@ namespace Core.Services.Economy
             // rendre toute la méta-progression facultative, sans rien casser de visible.
             if (!IsUnlocked(config)) return false;
 
+            // Un nœud sans plafond a pour MaxLevel int.MaxValue : la garde reste la même.
             int currentLevel = GetLevel(id);
             if (currentLevel >= config.MaxLevel) return false;
 
@@ -234,29 +283,27 @@ namespace Core.Services.Economy
 
         private void RecalculateBonuses()
         {
-            // Table reconstruite intégralement : un nœud dont le niveau retombe à zéro doit voir
-            // son apport disparaître, pas rester coincé dans une entrée obsolète.
-            _specificBonuses.Clear();
-
             float computeBonus = 0f;
             float hardenBonus = 0f;
             float interceptBonus = 0f;
             float overclockBonus = 0f;
             float costReduction = 0f;
-            double startingFunds = 0d;
-            double startingPower = 0d;
             float cleanExitBonus = 0f;
-            float automationReduction = 0f;
             bool emergencyUnlocked = false;
             bool highRiskExtraction = false;
+            double pointsSpent = 0d;
 
             foreach (var kvp in _prestigeLevels)
             {
+                // Un id absent du catalogue — nœud retiré depuis la sauvegarde — ne rapporte rien
+                // et ne compte pas au Noyau : ses points ne sont plus dans l'arbre.
                 var config = _catalog.GetById(kvp.Key);
                 if (config == null) continue;
 
                 int currentLevel = kvp.Value.CurrentValue;
                 float totalBonus = config.BonusPerLevel * currentLevel;
+
+                pointsSpent += config.GetTotalCostOfLevels(currentLevel);
 
                 switch (config.BonusType)
                 {
@@ -283,22 +330,8 @@ namespace Core.Services.Economy
                         cleanExitBonus += totalBonus;
                         break;
 
-                    case PrestigeBonusType.GlobalAutomationReduction:
-                        automationReduction += totalBonus;
-                        break;
-
                     case PrestigeBonusType.CostMultiplierReduction:
                         costReduction += totalBonus;
-                        break;
-
-                    // BonusPerLevel et non BaseCost : indexer l'effet d'un nœud sur son PRIX
-                    // couplait deux réglages qui doivent bouger séparément à l'équilibrage.
-                    case PrestigeBonusType.StartingMoney:
-                        startingFunds += totalBonus;
-                        break;
-
-                    case PrestigeBonusType.StartingComputerPower:
-                        startingPower += totalBonus;
                         break;
 
                     case PrestigeBonusType.UnlockEmergencyButton:
@@ -311,32 +344,17 @@ namespace Core.Services.Economy
                         if (currentLevel > 0) highRiskExtraction = true;
                         break;
 
-                    // La racine n'a aucun effet : elle ne sert qu'à ancrer l'arbre. Le cas est
-                    // écrit explicitement pour que le switch reste exhaustif et qu'un futur type
-                    // oublié se remarque, plutôt que de tomber dans un default silencieux.
+                    // Ni la racine ni le puits à points n'ont d'effet propre. Le second ne sert
+                    // qu'au Noyau, par ses points déjà comptés ci-dessus. Les cas sont écrits pour
+                    // que le switch reste exhaustif et qu'un futur type oublié se remarque.
                     case PrestigeBonusType.Root:
-                        break;
-
-                    case PrestigeBonusType.SpecificUpgradeCostReduction:
-                        AccumulateSpecific(config.TargetUpgradeId, totalBonus, UpgradePrestigeNodeBonusType.Cost);
-                        break;
-
-                    case PrestigeBonusType.SpecificUpgradeYieldBoost:
-                        AccumulateSpecific(config.TargetUpgradeId, totalBonus, UpgradePrestigeNodeBonusType.Yield);
-                        break;
-
-                    case PrestigeBonusType.SpecificUpgradeTimeReduction:
-                        AccumulateSpecific(config.TargetUpgradeId, totalBonus, UpgradePrestigeNodeBonusType.Time);
-                        break;
-
-                    case PrestigeBonusType.SpecificUpgradeAutomationTresholdReduction:
-                        AccumulateSpecific(config.TargetUpgradeId, totalBonus, UpgradePrestigeNodeBonusType.Automation);
+                    case PrestigeBonusType.CoreOverride:
                         break;
                 }
             }
 
-            // Application mathématique des bonus
-            GlobalComputeMultiplier.Value = 1f + computeBonus;
+            _globalComputeMultiplier.Value = 1f + UnityEngine.Mathf.Max(0f, computeBonus);
+            _costMultiplierReduction.Value = UnityEngine.Mathf.Max(0f, costReduction);
 
             // Jamais sous zéro : un nœud ne peut pas accélérer l'A.M.I., affaiblir un Proxy ou
             // retirer de l'avance à l'Overclock.
@@ -346,68 +364,39 @@ namespace Core.Services.Economy
 
             // Jamais sous 1 : un nœud d'Extraction ne peut pas rendre une sortie propre moins
             // payante qu'à l'origine.
-            CleanExitBonusMultiplier.Value = UnityEngine.Mathf.Max(1f, 1f + cleanExitBonus);
-            GlobalAutomationReduction.Value = UnityEngine.Mathf.Max(0f, automationReduction);
-            CostMultiplierReduction.Value = costReduction;
-            StartingMoney.Value = startingFunds;
-            StartingComputerPower.Value = startingPower;
-            IsEmergencyUnlocked.Value = emergencyUnlocked;
-            IsHighRiskExtractionUnlocked.Value = highRiskExtraction;
+            _cleanExitBonusMultiplier.Value = UnityEngine.Mathf.Max(1f, 1f + cleanExitBonus);
+            _isEmergencyUnlocked.Value = emergencyUnlocked;
+            _isHighRiskExtractionUnlocked.Value = highRiskExtraction;
 
-            // Émis EN DERNIER, une fois la table et les scalaires cohérents. C'est ce signal qui
-            // pousse les bonus ciblés dans les UpgradeModel : sans lui, ils seraient ignorés au
+            ApplyCore((int)Math.Round(pointsSpent));
+
+            // Émis EN DERNIER, une fois toutes les sommes cohérentes. C'est ce signal qui pousse
+            // le Noyau et P_REFAC dans les UpgradeModel : sans lui, ils seraient ignorés au
             // chargement, puisque le GameStateGateway restaure les générateurs (étape 2) AVANT
             // le prestige (étape 3).
             _onBonusesRecalculated.OnNext(Unit.Default);
         }
-        private enum UpgradePrestigeNodeBonusType { Cost, Yield, Time, Automation }
 
         /// <summary>
-        /// Cumule un bonus ciblé dans la table. Plusieurs nœuds peuvent viser la même upgrade —
-        /// c'est même la règle : chaque upgrade a son COST, son PROD et, pour les Scripts, son TIME.
+        /// Le Noyau Compilé, dérivé des seuls points dépensés. Le coût décroît en puissance et
+        /// bute sur un plancher ; le rendement croît sans fin, et c'est voulu : c'est ce qui
+        /// donne une raison d'acheter `P_CORE_OVERRIDE` une fois l'arbre fini.
         /// </summary>
-        private void AccumulateSpecific(string targetUpgradeId, float amount, UpgradePrestigeNodeBonusType kind)
+        private void ApplyCore(int pointsSpent)
         {
-            if (string.IsNullOrEmpty(targetUpgradeId)) return;
+            float costMultiplier = UnityEngine.Mathf.Pow(_balancing.CoreCostBase, pointsSpent);
 
-            _specificBonuses.TryGetValue(targetUpgradeId, out SpecificUpgradeBonuses current);
-
-            switch (kind)
-            {
-                case UpgradePrestigeNodeBonusType.Cost:
-                    current = current.WithCostReduction(current.CostReduction + amount);
-                    break;
-
-                case UpgradePrestigeNodeBonusType.Yield:
-                    current = current.WithYieldBoost(current.YieldBoost + amount);
-                    break;
-
-                case UpgradePrestigeNodeBonusType.Time:
-                    current = current.WithTimeReduction(current.TimeReduction + amount);
-                    break;
-
-                // Des NIVEAUX, pas une fraction : ce nœud avance le palier d'automatisation d'un
-                // cran par rang. Le cas existait déjà dans le switch appelant, mais il n'avait
-                // aucune branche ici — le bonus était cumulé puis jeté en silence.
-                case UpgradePrestigeNodeBonusType.Automation:
-                    current = current.WithAutomationThresholdReduction(
-                        current.AutomationThresholdReduction + amount);
-                    break;
-            }
-
-            _specificBonuses[targetUpgradeId] = current;
-        }
-
-        /// <summary>Bonus cumulés visant cette upgrade. Retourne None si aucun nœud ne la cible.</summary>
-        public SpecificUpgradeBonuses GetSpecificBonuses(string upgradeId)
-        {
-            return _specificBonuses.TryGetValue(upgradeId, out SpecificUpgradeBonuses bonuses)
-                ? bonuses
-                : SpecificUpgradeBonuses.None;
+            // Les points EN DERNIER : un abonné aux points qui lit les multiplicateurs dans la
+            // foulée doit les trouver déjà à jour.
+            _totalCostMultiplier.Value = UnityEngine.Mathf.Max(_balancing.CoreCostFloor, costMultiplier);
+            _totalYieldBonus.Value = 1f + pointsSpent * _balancing.CoreYieldPerPoint;
+            _totalPointsSpent.Value = pointsSpent;
         }
 
         public void Dispose()
         {
+            _balancingSubscription?.Dispose();
+
             foreach (var levelProp in _prestigeLevels.Values)
             {
                 levelProp.Dispose();
@@ -417,19 +406,18 @@ namespace Core.Services.Economy
             _onPrestigePurchased.Dispose();
             _onBonusesRecalculated.Dispose();
             _arePurchasesAllowed.Dispose();
-            _specificBonuses.Clear();
 
-            GlobalComputeMultiplier.Dispose();
+            _globalComputeMultiplier.Dispose();
+            _costMultiplierReduction.Dispose();
             _totalHardenBonus.Dispose();
             _totalInterceptBonus.Dispose();
             _totalOverclockBonus.Dispose();
-            CleanExitBonusMultiplier.Dispose();
-            GlobalAutomationReduction.Dispose();
-            CostMultiplierReduction.Dispose();
-            StartingMoney.Dispose();
-            StartingComputerPower.Dispose();
-            IsEmergencyUnlocked.Dispose();
-            IsHighRiskExtractionUnlocked.Dispose();
+            _cleanExitBonusMultiplier.Dispose();
+            _isEmergencyUnlocked.Dispose();
+            _isHighRiskExtractionUnlocked.Dispose();
+            _totalPointsSpent.Dispose();
+            _totalCostMultiplier.Dispose();
+            _totalYieldBonus.Dispose();
         }
     }
 }

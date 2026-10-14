@@ -309,13 +309,14 @@ namespace Core.Services.Simulation
         }
 
         /// <summary>
-        /// Remet la run à son état de départ, bonus de méta-progression appliqués.
+        /// Remet la run à son état de départ. Aucun nœud ne donne plus d'argent de départ depuis
+        /// le lot 4 : le prestige agit par le Noyau Compilé, sur les coûts et les rendements.
         /// Les TFlops n'y figurent pas : elles sont dérivées du parc Hardware, donc elles
         /// retombent d'elles-mêmes quand les niveaux sont remis à zéro.
         /// </summary>
         private void WipeRun()
         {
-            _userCurrencies.Money.Reset(_balancing.BaseStartingMoney + _prestigeManager.StartingMoney.CurrentValue);
+            _userCurrencies.Money.Reset(_balancing.BaseStartingMoney);
             _userCurrencies.ResetRunCounters();
             _emergencyProtocolSystem.ResetSystem();
             _runElapsedSeconds = 0f;

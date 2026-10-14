@@ -69,6 +69,10 @@
       "Value": "Niv. {0} / {1}"
     },
     {
+      "Key": "UI_PRESTIGE_LEVEL_UNLIMITED",
+      "Value": "Niv. {0}"
+    },
+    {
       "Key": "UI_PRESTIGE_COST",
       "Value": "{0} CPU"
     },
@@ -557,38 +561,6 @@
       "Value": "Toutes les transactions interbancaires de la planète passent par toi. Et ça s'entend."
     },
     {
-      "Key": "PRESTIGE_SPECIFIC_COST_NAME",
-      "Value": "{0} (Opti Coût)"
-    },
-    {
-      "Key": "PRESTIGE_SPECIFIC_YIELD_NAME",
-      "Value": "{0} (Opti Rendement)"
-    },
-    {
-      "Key": "PRESTIGE_SPECIFIC_TIME_NAME",
-      "Value": "{0} (Opti Temps)"
-    },
-    {
-      "Key": "PRESTIGE_AUTOMATION_NAME",
-      "Value": "{0} (Réduction Automatisation)"
-    },
-    {
-      "Key": "PRESTIGE_SPECIFIC_COST_DESC",
-      "Value": "Réduit le coût de base de {0}."
-    },
-    {
-      "Key": "PRESTIGE_SPECIFIC_YIELD_DESC",
-      "Value": "Augmente le rendement de base de {0}."
-    },
-    {
-      "Key": "PRESTIGE_SPECIFIC_TIME_DESC",
-      "Value": "Réduit la durée de cycle de {0}."
-    },
-    {
-      "Key": "PRESTIGE_AUTOMATION_DESC",
-      "Value": "Abaisse le niveau à partir duquel {0} relance ses cycles tout seul."
-    },
-    {
       "Key": "UI_EXFIL_LOCKED",
       "Value": "> [VERROUILLÉ] Compilation du 1er Cycle CPU : {0} %"
     },
@@ -673,6 +645,14 @@
       "Value": "Ce qui reste de la dernière tentative. Le point de départ de tout le reste — et il ne coûte rien."
     },
     {
+      "Key": "PRESTIGE_P_CORE_OVERRIDE_NAME",
+      "Value": "Recompilation Forcée"
+    },
+    {
+      "Key": "PRESTIGE_P_CORE_OVERRIDE_DESC",
+      "Value": "Plus rien à débloquer ? Recompile le noyau une passe de plus. Chaque passe le rend un peu moins cher à nourrir et un peu plus rapide. Sans fin."
+    },
+    {
       "Key": "PRESTIGE_P_REFAC_NAME",
       "Value": "Code Polymorphe"
     },
@@ -695,14 +675,6 @@
     {
       "Key": "PRESTIGE_P_CLICK_DESC",
       "Value": "Tu tapes plus fort sur le processeur. Chaque clic d'Overclock injecte davantage de cycles."
-    },
-    {
-      "Key": "PRESTIGE_P_POWER_START_NAME",
-      "Value": "Botnet Persistant"
-    },
-    {
-      "Key": "PRESTIGE_P_POWER_START_DESC",
-      "Value": "Des machines qui survivent au formatage. Tu redémarres chaque run avec de la puissance de calcul déjà en place."
     },
     {
       "Key": "PRESTIGE_P_EMERG_NAME",
@@ -857,8 +829,16 @@
       "Value": "[ {0} CYCLES DISPONIBLES ]"
     },
     {
+      "Key": "UI_CORE_SUMMARY",
+      "Value": "Noyau : coûts −{0:0} %, rendement ×{1:0.00}"
+    },
+    {
       "Key": "UI_PRESTIGE_DETAILS_LEVEL",
       "Value": "> Niveau actuel : {0} / {1}"
+    },
+    {
+      "Key": "UI_PRESTIGE_DETAILS_LEVEL_UNLIMITED",
+      "Value": "> Niveau actuel : {0}"
     },
     {
       "Key": "UI_PRESTIGE_DETAILS_PREREQ_NONE",
@@ -914,55 +894,27 @@
     },
     {
       "Key": "UI_PRESTIGE_EFFECT_COMPUTE",
-      "Value": "> Multiplicateur global de calcul : +{0:0.##} % par niveau"
+      "Value": "> TFlops nettes : +{0:0.##} % par niveau"
     },
     {
       "Key": "UI_PRESTIGE_EFFECT_COSTINFLATION",
-      "Value": "> Inflation des coûts : -{0:0.##} % par niveau"
-    },
-    {
-      "Key": "UI_PRESTIGE_EFFECT_SPECIFIC_COST",
-      "Value": "> Coût de {1} : -{0:0.##} % par niveau"
-    },
-    {
-      "Key": "UI_PRESTIGE_EFFECT_SPECIFIC_YIELD",
-      "Value": "> Rendement de {1} : +{0:0.##} % par niveau"
-    },
-    {
-      "Key": "UI_PRESTIGE_EFFECT_SPECIFIC_TIME",
-      "Value": "> Durée de cycle de {1} : -{0:0.##} % par niveau"
-    },
-    {
-      "Key": "UI_PRESTIGE_EFFECT_AUTOMATION",
-      "Value": "> Réduction du palier d'automatisation de {1} : -{0} par niveau"
+      "Value": "> Hausse du prix à chaque niveau acheté : −{0:0.##} point par niveau"
     },
     {
       "Key": "UI_PRESTIGE_EFFECT_CLEAN_EXIT",
       "Value": "> Bonus des paliers d'extraction : +{0:0.##} % par niveau"
     },
     {
-      "Key": "PRESTIGE_P_AUTO_GLOBAL_NAME",
-      "Value": "Ordonnanceur Autonome"
-    },
-    {
-      "Key": "PRESTIGE_P_AUTO_GLOBAL_DESC",
-      "Value": "Tes scripts n'attendent plus qu'on leur dise de repartir. Tu peux enfin lâcher la souris."
-    },
-    {
-      "Key": "UI_PRESTIGE_EFFECT_AUTOMATION_GLOBAL",
-      "Value": "> Palier d'automatisation de TOUS les Scripts : -{0} par niveau"
-    },
-    {
-      "Key": "UI_PRESTIGE_EFFECT_START_MONEY",
-      "Value": "> Fonds au démarrage d'une run : +{0} Datas par niveau"
-    },
-    {
-      "Key": "UI_PRESTIGE_EFFECT_START_TFLOPS",
-      "Value": "> TFlops au démarrage d'une run : +{0} par niveau"
-    },
-    {
       "Key": "UI_PRESTIGE_EFFECT_UNLOCK_EMERGENCY",
       "Value": "> Débloque le Data Wiper"
+    },
+    {
+      "Key": "UI_PRESTIGE_EFFECT_CORE_OVERRIDE",
+      "Value": "> Chaque niveau compte comme un point de plus dans le Noyau Compilé"
+    },
+    {
+      "Key": "UI_PRESTIGE_EFFECT_ROOT",
+      "Value": "> Aucun effet : l'ancre de tout l'arbre"
     },
     {
       "Key": "UI_BUY_ONE",
