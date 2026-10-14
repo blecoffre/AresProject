@@ -10,7 +10,7 @@
 > | les décisions de design — elles font foi | `game-design.md` |
 > | ce qui a déjà été réglé, et comment | `historique.md` |
 >
-> Dernière mise à jour : **2026-10-13** — lot 1 de la refonte « Time Attack », branche
+> Dernière mise à jour : **2026-10-14** — lot 1 de la refonte « Time Attack » joué, branche
 > `chantier/refonte-time-attack`.
 
 ---
@@ -19,8 +19,9 @@
 
 Le gameplay est en **refonte « Time Attack »** depuis le 2026-10-13 : la Trace dynamique laisse la
 place à un compte à rebours fixe, les Proxies deviennent des consommables de survie, l'arbre passe
-à une vingtaine de nœuds. Le lot 1 (jauge de l'A.M.I., Overclock, Proxies) est livré et compilé,
-**jamais joué** ; les lots 2 à 5 restent à faire. Le menu, les options, la pause, le son et la
+à une vingtaine de nœuds. Le lot 1 (jauge de l'A.M.I., Overclock, Proxies) est livré et **joué le
+2026-10-14** — la mécanique tient, mais l'ancien brouillard rend la jauge illisible ; les lots 2 à 5
+restent à faire. Le menu, les options, la pause, le son et la
 sauvegarde ne bougent pas.
 
 ---
@@ -30,16 +31,16 @@ sauvegarde ne bougent pas.
 | Domaine | État | Vu fonctionner en jeu ? |
 |---|---|---|
 | Boucle de base — 60 générateurs (25 Scripts, 20 Hardware, 15 Proxies), cycles, achat multiple | Livré | Oui |
-| **Jauge de l'A.M.I.** — 10 000 UT fixes, vitesse sur les TFlops brutes, Blindage | **Refonte lot 1, livré le 2026-10-13** | **Non** |
-| **Proxies** — Wipe en secondes de survie à l'achat, Interception | **Refonte lot 1** | **Non** — valeurs de base du GD du 2026-10-13 |
-| **Overclock** — avance + pénalité de 5 s de survie, rien sans cycle, 0,1 s entre deux appuis | **Refonte lot 1** | **Non** |
+| **Jauge de l'A.M.I.** — 10 000 UT fixes, vitesse sur les TFlops brutes, Blindage | **Refonte lot 1, livré le 2026-10-13** | Oui (2026-10-14) — illisible sous l'ancien brouillard (lot 3) |
+| **Proxies** — Wipe en secondes de survie à l'achat, Interception | **Refonte lot 1** | Oui (2026-10-14) ; valeurs de base du GD du 2026-10-13 |
+| **Overclock** — avance + pénalité de 5 s de survie, rien sans cycle, 0,1 s entre deux appuis | **Refonte lot 1** | Oui (2026-10-14) |
 | Capteur de Trace (brouillard) | Ancien réglage, **refonte au lot 3** | Partiellement (septembre) |
-| Paliers d'extraction, leur affichage, verrou du 90 % | Livré le 2026-09-16 ; valeurs d'Extraction au lot 4 | **Non** |
-| Points de prestige — cumul de campagne, modèle des boîtes, saisie à 30 % | Livré le 2026-10-02, inchangé par la refonte | **Non** |
+| Paliers d'extraction, leur affichage, verrou du 90 % | Livré le 2026-09-16 ; valeurs d'Extraction au lot 4 | Oui (2026-10-14) |
+| Points de prestige — cumul de campagne, modèle des boîtes, saisie à 30 % | Livré le 2026-10-02, inchangé par la refonte | Oui (2026-10-14) |
 | Arbre de prestige — 140 nœuds (20 utiles + 120 ciblés) | **Refonte au lot 4** : 21 nœuds, Noyau Compilé | Interface oui (août) |
 | Zéro-Day Exploit / Ghost Cache | **Retirés** le 2026-10-13 | — |
 | Data Wiper | Ancien modèle, **refonte au lot 2** | Oui (août), valeurs provisoires |
-| Victoire — 1e12 TFlops nettes | Livrée le 2026-09-16, **seuil provisoire à 5e11** | **Non** |
+| Victoire — 1e12 TFlops nettes | Livrée le 2026-09-16, **seuil provisoire à 5e11** | Séquence oui ; écran jamais vu (objet éteint dans la scène, corrigé le 2026-10-14, à rejouer) |
 | Sauvegarde — `SaveData` **v11**, écriture atomique, autosave, fermeture | Livrée ; v11 le 2026-10-13 | v10 oui ; **migration v11 non** |
 | Menu principal, options en trois onglets, pause, langue à chaud | Livré le 2026-10-02 | Oui — touches et build vus le 2026-10-13 |
 | Daltonisme — quatre palettes | Livré le 2026-10-02 | Oui (outil de contrôle + Play Mode) |
@@ -57,9 +58,9 @@ Chaque lot se termine par son protocole de test (`a-tester.md`), sur la branche
 
 | # | Lot | Contenu | Statut |
 |---|---|---|---|
-| R1 | **Jauge, Overclock, Proxies** | Jauge de l'A.M.I. à 10 000 UT, TFlops brutes / nettes, Proxies en Wipe, Overclock pénalisé, branches Blindage / Interception / Overclock, retrait du Ghost Cache, du Zéro-Day, de `P_STEALTH`, du réveil et de la barre d'espace, `SaveData` v11, suppression du harnais | ✅ livré le 2026-10-13, **à jouer** (`a-tester.md` § 0) |
-| R2 | **Data Wiper** | Sans délai, −2 500 UT, sacrifice de +30 % des TFlops nettes par usage jusqu'à 90 % (trois usages), permanent pour la run ; la vitesse de l'A.M.I. lit les TFlops brutes, donc ne ralentit pas | à faire |
-| R3 | **Brouillard** | Relevé tous les 800 UT remplis (200 en fin de partie, via les TFlops nettes) ; aiguille + borne pessimiste `relevé + V_AMI × âge × pessimisme` ; paliers et gain du bouton sur l'aiguille | à faire |
+| R1 | **Jauge, Overclock, Proxies** | Jauge de l'A.M.I. à 10 000 UT, TFlops brutes / nettes, Proxies en Wipe, Overclock pénalisé, branches Blindage / Interception / Overclock, retrait du Ghost Cache, du Zéro-Day, de `P_STEALTH`, du réveil et de la barre d'espace, `SaveData` v11, suppression du harnais | ✅ livré le 2026-10-13, joué le 2026-10-14 ; restent la migration v11 et la lisibilité (`a-tester.md` § 0) |
+| R2 | **Data Wiper** | Sans délai, −2 500 UT, sacrifice de +30 % des TFlops nettes par usage jusqu'à 90 % (trois usages), permanent pour la run ; la vitesse de l'A.M.I. lit les TFlops brutes, donc ne ralentit pas. **Et la sauvegarde de l'écran de fin de run** (`backlog.md` § 5), dans le même changement de format | **suivant** (choix du 2026-10-14) |
+| R3 | **Brouillard** | Relevé tous les 800 UT remplis (200 en fin de partie, via les TFlops nettes) ; aiguille + borne pessimiste `relevé + V_AMI × âge × pessimisme` ; paliers et gain du bouton sur l'aiguille ; état du relevé sauvegardé (contre la triche du rechargement) | à faire |
 | R4 | **Arbre** | Retrait des 120 nœuds ciblés et de leur générateur ; Noyau Compilé (coût × 0,99^points, plancher 0,05 ; rendement + 1 % par point, Datas et TFlops) affiché dans les panneaux ; `P_CORE_OVERRIDE` infini ; `P_REFAC`, `P_DATAM`, Extraction (+0,5 par rang, trois paliers) ; `P_INTERCEPT_3` et `_4` rabotés (GD, 2026-10-14) ; chaînes « parent au max » ; disposition ; nouvelle migration | à faire |
 | R5 | **Nettoyage** | Code mort restant (bonus ciblés, champs obsolètes, clés orphelines), réglages inutilisés, doc | à faire |
 

@@ -11,6 +11,62 @@
 
 ---
 
+## Session de test du lot 1 de la refonte — 2026-10-14
+
+Jouée par Bertrand en éditeur, sur `chantier/refonte-time-attack`, sauvegarde supprimée au
+préalable (la migration v11 n'a donc pas été éprouvée).
+
+**Vu fonctionner** — lignes retirées de `a-tester.md`, telles qu'elles étaient :
+
+| # | Quoi | Comment | Ce qu'on doit voir |
+|---|---|---|---|
+| 0.2 | **Départ de la traque** | Run neuve. Attendre 30 s sans rien faire, puis acheter `SCR_01` et lancer son cycle. | Jauge à 0,0 % tant qu'aucune Data n'est volée. Elle démarre à la fin du premier cycle (ou au premier Hardware acheté). |
+| 0.5 | **Overclock en cycle** | Un cycle de `SCR_01` en cours, appuyer une fois sur Espace. | La barre du Script bondit. Console : « Overclock : +0,5 s sur les cycles en cours. Jauge +165 UT. » (un peu plus avec du Hardware). Même chose au bouton. |
+| 0.6 | **Overclock maintenu** | Tenir Espace enfoncé 3 s, cycle en cours. | **Une seule** ligne d'Overclock dans la console. |
+| 0.7 | **Saisie par Overclock** | Cycles automatisés en cours (`SCR_01` niveau 10), marteler Espace. | Chaque appui retenu coûte 165 UT : la saisie tombe en une soixantaine d'appuis. Écran de fin de saisie habituel. |
+| 0.8 | **Proxy : la jauge descend** | Jauge non nulle, acheter un `PRX_01`. | Carte du Proxy : « Efface 2,5 s de traque par achat ». Console : « > Brouillage : jauge −83 UT. » (un peu plus avec du Hardware). L'aiguille de la jauge recule aussitôt. |
+| 0.9 | **Proxy acheté à vide** | Run neuve, avant toute Data volée, acheter un `PRX_01`. | Console : « > Brouillage : jauge −0 UT. » — l'excédent est perdu, c'est voulu. |
+| 0.10 | **Proxy en lot** | Mode d'achat ×10 sur `PRX_01` (niveau 0 → 10), jauge bien remplie. | Wipe d'environ 10,3 fois celui du niveau 1 (neuf niveaux nus, le dixième au palier ×1,32), soit ~850 UT. |
+| 0.11 | **L'arbre du lot 1** | Écran de fin de run (exfiltrer : le bouton « [PRÊT] WIPE SYSTÈME » reste cliquable en éditeur). Parcourir l'arbre. | Plus de Furtivité, de Zéro-Day, d'Injecteur Automatique ni d'Accélérateur Manuel. Data Wiper, Blindage, Interception et Extraction reliés à la racine. Blindage à 1, 3, 6 et 10 points. Lignes d'effet remplies : « > Temps avant saisie : +50 % (l'A.M.I. ralentit) », « > Brouillage de chaque Proxy acheté : +20 % par niveau », « > Avance de l'Overclock : +0,1 s par niveau ». Aucune clé entre crochets. |
+| 0.12 | **Chaînes au maximum** | Acheter un rang de `P_INTERCEPT_1`. | `P_INTERCEPT_2` reste verrouillé jusqu'à `P_INTERCEPT_1` 5/5. Idem `P_HARDEN_2` derrière `P_HARDEN_1`, et les paliers d'Overclock. |
+| 0.13 | **Blindage** | Acheter `P_HARDEN_1`, « [ NOUVELLE INTRUSION ] », Overclock en cycle. | Console : « Jauge +110 UT » au lieu de 165 (vitesse divisée par 1,5). La jauge met ~7 min 30 à se remplir. |
+| 0.14 | **Interception et Overclock** | Acheter un rang de `P_INTERCEPT_1` et un de `P_CLICK`, nouvelle intrusion. | Carte de `PRX_01` : « Efface 3 s » ; Wipe ~99 UT. Overclock : « +0,6 s ». |
+| 0.16 | **Pause** | En pleine run, Échap 30 s, puis refermer. | Pendant la pause, le compteur « relevé il y a N s » ne bouge pas : la jauge est figée. |
+| 1.2 | **Capteur : le brouillard se voit** | Première run, sans Hardware. Laisser la jauge monter. | L'aiguille se fige entre deux relevés (« relevé il y a N s ») et la fourchette court devant elle. En début de partie, le relevé doit **bégayer franchement** (jusqu'à 60 s). |
+| 1.3 | **Capteur : le Hardware rachète la vue** | Acheter du Hardware au fil de la run. | Les relevés se rapprochent, la fourchette se resserre. Question de ressenti : le joueur s'en aperçoit-il ? (À la session du 2026-09-16, il n'avait « rien vu » : c'est ce qui a fait ajouter l'échelle de 1000 TFlops.) |
+| 1.4 | **Les trois paliers sur la jauge** | Monter vers 50 %, 75 %, 90 %. | Trois traits, chacun dans son état : vert (franchi), **ambre pulsant** (la fourchette l'enjambe), terne (à venir), gris (verrouillé). Questions de ressenti : la pulsation de l'incertain se lit-elle du coin de l'œil ? |
+| 1.5 | **Le gain du bouton d'exfiltration saute** | Pendant la même montée, regarder le bouton « [PRÊT] WIPE SYSTÈME ». | Le gain annoncé change d'un cran à chaque palier franchi **sur le relevé** (pas sur la vraie jauge). Ressenti : le saut se remarque-t-il ? |
+| 1.6 | **Verrou du palier 90 %** | Sans le nœud `P_EXTRACT_HIGHRISK`, pousser au-delà de 90 % et exfiltrer. | Le trait des 90 % est gris, marqué [VERROUILLÉ]. Au bilan, le bonus vaut celui des 75 % (+30 %), jamais zéro. Puis acheter le nœud et refaire : +50 %. |
+| 1.7 | **L'aperçu du bouton tient sa promesse** | Noter le gain annoncé par le bouton juste avant de cliquer. | Le bilan crédite **exactement** ce nombre de Cycles. (Défaut corrigé dans `a772e67` : le bouton annonçait 6,5 là où la fin de run en versait 6.) |
+| 1.8 | **Modèle des boîtes** | Enchaîner deux ou trois exfiltrations, noter les Cycles crédités et le « Prochain à N Datas ». | Le seuil suivant grandit de 12 % par point. Un point exige la **somme** des boîtes, pas le prix de la dernière. Repère calculé (non mesuré) pour une première run, bonus de palier non compris : 3 M de Datas → 1 point, 7,9 M → 3, 15,7 M → 5. |
+| 1.9 | **La saisie verse 30 %** | Se laisser saisir à 100 % après une run correcte. | Le bilan montre la ligne « perdu à la saisie … −N » et crédite quand même des Cycles si le cumul franchit une boîte. Une saisie ne doit jamais rapporter autant qu'une exfiltration au même moment. |
+| 1.10 | **Alertes sonores des paliers** | Pendant 1.4, écouter. | Le son d'un palier part quand le trait s'allume **à l'écran** (sur le relevé), jamais avant. Pas d'alerte au chargement d'une sauvegarde. Un palier verrouillé ne sonne pas. |
+| 1.11 | **Le Data Wiper aveugle le capteur** | Avec `P_EMERG`, déclencher le Data Wiper en milieu de run. | La Trace baisse de 25 % de sa valeur courante (⚠️ le bouton annonce « −25 pts », c'est un libellé faux connu). Pendant les 60 s de contrecoup, le brouillard s'épaissit. |
+| 2.6 | **Mode daltonien à chaud** | Choisir **Deutéranopie** dans Options > Accessibilité, refermer les options **et la pause**, puis ouvrir l'arbre (P) — ou attendre l'écran de fin de run. ⚠️ Les options ne s'ouvrent que depuis la pause, et Échap referme l'arbre avant d'ouvrir la pause : on ne peut **pas** regarder l'arbre en changeant de mode. Le premier protocole le demandait, et c'est pour ça que le test du 13/10 n'a rien montré. | Sur l'écran de jeu principal, presque rien ne change : le vert terminal reste le « positif » dans tous les modes (option B). Dans l'arbre : nœuds **abordables** blancs au lieu d'orange, nœuds **trop chers** violets au lieu de rouges, liens **ouverts** lilas au lieu de cyan. Sur la jauge, le palier **incertain** blanc au lieu d'ambre. Le Data Wiper, une fois débloqué, change aussi. Revenir en Standard : tout reprend ses couleurs d'origine. |
+
+Remarques de Bertrand sur ces lignes, reportées au backlog :
+
+- 0.8 : la barre rouge du brouillard disparaît après un achat de Proxy (lot 3).
+- 0.10 : quitter et relancer révèle la vraie jauge — une triche (lot 3).
+- 0.11 : quitter sur l'écran de fin relance une run ; la fenêtre d'achat du prestige est perdue
+  (lot 2).
+- 1.11 : le brouillard se met à jour plus tard après le Data Wiper — attendu, c'est le contrecoup.
+
+**Corrigé le jour même :**
+
+- 0.15 — le retrait du Ghost Cache laissait un trou à droite du Data Wiper : la rangée d'actions
+  n'a pas de layout automatique. Le Data Wiper prend désormais toute la largeur, sous l'Overclock
+  (choix de Bertrand).
+- 1.12 — la séquence console de victoire se déroulait, mais aucun écran ne suivait : l'objet
+  `VictoryPanel`, qui porte la `VictoryView`, était **éteint dans la scène depuis sa création**
+  (`bf490c6`, 2026-09-22). Le panneau enfant s'allumait sous un parent inactif. Réactivé ; la vue
+  éteint elle-même son panneau à l'`Awake`, comme prévu. 1.12 à 1.14 sont à rejouer.
+
+**Méthode :** les protocoles nommeront désormais les nœuds par leur nom affiché en jeu
+(« Filtrage DNS »), pas par leur id (`P_INTERCEPT_1`).
+
+---
+
 ## Refonte « Time Attack », lot 1 — le modèle de Trace retiré du GDD (2026-10-13)
 
 Le GD a remplacé la Trace dynamique par un compte à rebours fixe (voir `game-design.md`, « La jauge

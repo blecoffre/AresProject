@@ -50,9 +50,16 @@ La feuille de route des lots est dans `etat-des-lieux.md`. Ici, les points ouver
   ignore les bonus ciblés. Ils disparaissent au lot 4 avec les 120 nœuds ciblés.
 - 📖 **`P_EXTRACT_2` et `_3` exigent encore leur parent au niveau 3**, alors que la règle du GD est
   désormais « parent au maximum ». Passe au lot 4 avec les valeurs d'Extraction.
-- 📖 **Le relevé de Trace est encore à l'ancien réglage** : intervalle de 60 s au départ,
-  dépendant de la vitesse de remplissage. Le lot 3 le passe en UT (un relevé tous les 800 UT
-  remplis, 200 en fin de partie).
+- 🔬 **Le relevé de Trace rend la nouvelle jauge illisible** (session du 2026-10-14). Encore à
+  l'ancien réglage : un relevé toutes les 60 s au départ, si bien que l'A.M.I. semble ne pas
+  avancer. Et la barre rouge (borne pessimiste) **disparaît après un achat de Proxy** :
+  📖 `TraceReadout.Resync` remet la vitesse connue à zéro, et la barre ne repart qu'au relevé
+  suivant. Le lot 3 passe le relevé en UT (tous les 800 UT, 200 en fin de partie) et calcule la
+  barre avec la vitesse de l'A.M.I., qui est connue.
+- 🔬 **Quitter puis relancer le jeu révèle la vraie jauge** (session du 2026-10-14) : 📖
+  `GameStateGateway.Restore` recale le relevé sur la vérité (`TraceReadout.Resync`). Un aller-retour
+  par le bureau suffit à lever le brouillard. Correctif au lot 3 : sauvegarder l'état du relevé
+  (dernière valeur relevée, UT remplies depuis) et le restaurer tel quel.
 - 📖 **Le Data Wiper est encore à l'ancien modèle** (délai de 5 min, contrecoup de 60 s, −25 % de
   la Trace courante). Le lot 2 le passe en sacrifice permanent de TFlops, −2 500 UT, trois usages.
 
@@ -148,7 +155,8 @@ Le détail chiffré et les chantiers d'équilibrage sont dans `etat-des-lieux.md
   orphelines : elles se construisent depuis le code de langue (`LocalizationKeys.LanguageName`).
 
 - 🔬 **Les boutons du bas du panneau d'options chevauchent les réglages** — « [ PAR DÉFAUT ] » et
-  « [ RETOUR ] ». Constaté par Bertrand le 2026-10-13, en build, en 3840×2160 plein écran.
+  « [ RETOUR ] ». Constaté par Bertrand le 2026-10-13, en build, en 3840×2160 plein écran ;
+  reconfirmé le 2026-10-14 au-delà de 120 % de taille d'interface.
   📖 **Cause probable, lue dans `OptionsPanel.prefab`** : le panneau mélange des ancrages
   proportionnels et des tailles fixes. `Pages` est ancré à 64 % de la hauteur avec une hauteur
   fixe de 460 (l'onglet Audio la remplit exactement : 6 lignes de 60 + 5 espaces de 20) ; les deux
@@ -165,7 +173,9 @@ Le détail chiffré et les chantiers d'équilibrage sont dans `etat-des-lieux.md
   boutons) n'y tient pas même parfaitement empilé. Il faudra choisir : panneau compact, défilement,
   ou plafond plus bas pour la taille d'interface. Et les autres écrans n'ont jamais été regardés
   au-delà de 100 % (`a-tester.md` 2.8).
-- 🔬 **L'inspecteur de nœud se chevauche** — reconfirmé par Bertrand le 2026-10-13. Auto-sizing et
+- 🔬 **L'inspecteur de nœud se chevauche** — reconfirmé par Bertrand le 2026-10-13, et plus
+  nettement encore le 2026-10-14 au-delà de 120 % de taille d'interface (nom, description et effet
+  imprimés les uns sur les autres). Auto-sizing et
   `ContentSizeFitter` s'annulent : `Name_Desc_Effects` et `Prerequisite` ont un `ContentSizeFitter`
   en *PreferredSize* mais un `VerticalLayoutGroup` à `childControlHeight = false`, donc le groupe
   additionne des hauteurs figées à 50 px alors que la description en demande 500. ⚠️ **Basculer
@@ -184,6 +194,13 @@ Le détail chiffré et les chantiers d'équilibrage sont dans `etat-des-lieux.md
   s'appelle lui aussi `PrestigeButton` — nom hérité — et sert bien.
 
 ## 5. Architecture et cycle de vie
+
+- 🔬 **L'écran de fin de run n'est pas sauvegardé** (session du 2026-10-14, défaut antérieur à la
+  refonte). Quitter le jeu sur l'écran de fin, arbre ouvert, relance une run neuve au retour : 📖
+  `GameSessionManager.IsGameActive` repart à vrai, la fenêtre d'achat du prestige se ferme, et le
+  joueur ne peut plus dépenser ses points avant la fin de la run suivante. Décision du
+  2026-10-14 : corrigé **avec le lot 2**, dont le changement de format de sauvegarde accueillera
+  l'état « entre deux runs » et le bilan affiché.
 
 - 📖 **`GameOverPresenter.cs:183`** : `_ = _sceneLoader.LoadGameSceneAsync(CancellationToken.None)`.
   Il manque le `.Forget()` — une exception y disparaîtrait sans log, et le joueur resterait bloqué
