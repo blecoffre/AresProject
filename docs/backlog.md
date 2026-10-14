@@ -50,16 +50,6 @@ La feuille de route des lots est dans `etat-des-lieux.md`. Ici, les points ouver
   ignore les bonus ciblés. Ils disparaissent au lot 4 avec les 120 nœuds ciblés.
 - 📖 **`P_EXTRACT_2` et `_3` exigent encore leur parent au niveau 3**, alors que la règle du GD est
   désormais « parent au maximum ». Passe au lot 4 avec les valeurs d'Extraction.
-- 🔬 **Le relevé de Trace rend la nouvelle jauge illisible** (session du 2026-10-14). Encore à
-  l'ancien réglage : un relevé toutes les 60 s au départ, si bien que l'A.M.I. semble ne pas
-  avancer. Et la barre rouge (borne pessimiste) **disparaît après un achat de Proxy** :
-  📖 `TraceReadout.Resync` remet la vitesse connue à zéro, et la barre ne repart qu'au relevé
-  suivant. Le lot 3 passe le relevé en UT (tous les 800 UT, 200 en fin de partie) et calcule la
-  barre avec la vitesse de l'A.M.I., qui est connue.
-- 🔬 **Quitter puis relancer le jeu révèle la vraie jauge** (session du 2026-10-14) : 📖
-  `GameStateGateway.Restore` recale le relevé sur la vérité (`TraceReadout.Resync`). Un aller-retour
-  par le bureau suffit à lever le brouillard. Correctif au lot 3 : sauvegarder l'état du relevé
-  (dernière valeur relevée, UT remplies depuis) et le restaurer tel quel.
 
 ## 1. Bloquant pour une sortie publique
 

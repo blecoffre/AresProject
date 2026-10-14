@@ -1,8 +1,8 @@
 # Persistance — livrée et validée le 2026-08-25
 
-> À jour au 2026-10-14 : format **v12** (refonte « Time Attack », lot 2). Prochaine évolution
-> prévue : l'état du relevé du brouillard (lot 3), puis l'arbre à 20 nœuds (lot 4), qui demandera
-> un nouveau remboursement — voir `etat-des-lieux.md`, feuille de route.
+> À jour au 2026-10-14 : format **v13** (refonte « Time Attack », lot 3). Prochaine évolution
+> prévue : l'arbre à 20 nœuds (lot 4), qui demandera un nouveau remboursement — voir
+> `etat-des-lieux.md`, feuille de route.
 
 ## Règle d'or
 
@@ -29,7 +29,7 @@ SaveScheduler (IAsyncStartable + IDisposable, EntryPoint du Root)
 
 ## Fichiers
 
-- **`Models/SaveData.cs`** — **classe**, pas struct : elle porte deux `List<>`, et une copie de struct partagerait les références en donnant l'illusion d'une copie indépendante. `CurrentVersion = 12`, `EnsureValid()` (répare une désérialisation), `Migrate()` (cas chaînés par `goto case`).
+- **`Models/SaveData.cs`** — **classe**, pas struct : elle porte deux `List<>`, et une copie de struct partagerait les références en donnant l'illusion d'une copie indépendante. `CurrentVersion = 13`, `EnsureValid()` (répare une désérialisation), `Migrate()` (cas chaînés par `goto case`).
   **v1 → v2 (lot 2b-1)** : `ComputerPower` et `TotalComputerPower` retirés. Les TFlops sont devenues une capacité dérivée du parc Hardware, entièrement recalculable depuis `Upgrades` — les sauvegarder créait une seconde source de vérité qui pouvait diverger. Aucun report n'est nécessaire : `JsonUtility` ignore simplement les champs en trop d'un ancien fichier, la migration se contente de tamponner la version.
   **v2 → v3 (prestige sur la run)** : ajout de `RunMoney`, l'argent gagné depuis le début de la run, qui pilote désormais le gain de CPU Cycles. La migration le force à `0` au lieu de recopier le cumul à vie — sinon une run déjà entamée rapporterait un gain immérité au premier Game Over.
   **v3 → v4 (Ghost Cache)** : ajout de `GhostCacheSeconds`, la charge accumulée en secondes d'excédent de dissipation. *Le champ a quitté le format en v11 avec le Ghost Cache ; la migration v3 → v4 ne fait plus que tamponner la version.* État de RUN malgré sa sauvegarde : le wipe l'efface, mais fermer le jeu ne la perd pas — elle représente du temps de jeu investi. Un Overdrive **en cours** n'est délibérément pas sauvegardé ; sinon fermer la fenêtre reviendrait à mettre l'effet en pause, dans un jeu qui n'a aucune progression hors-ligne. La migration part de zéro : la mécanique n'existait pas avant.
@@ -42,6 +42,7 @@ SaveScheduler (IAsyncStartable + IDisposable, EntryPoint du Root)
   ⚠️ **L'ordre de restauration est porteur de sens ici.** `_victory.Restore(data.HasWon)` doit précéder `_upgradeManager.InitializeFromSave` : celui-ci recalcule les totaux et pousse une valeur dans `NetTFlops`, que le `VictorySystem` observe. Poser le drapeau après rejouerait la victoire à chaque chargement.
   **v10 → v11 (refonte « Time Attack », 2026-10-13)** : la jauge passe à 10 000 UT fixes et l'arbre change de nœuds, de prix et d'effets. La migration **efface la run en cours** — sa Trace se comptait sur un plafond de plusieurs millions, la ramener sur 10 000 UT mettrait le joueur au bord de la saisie — et **rend tous les CPU Cycles dépensés dans l'arbre**, qu'elle remet à zéro (racine exceptée). En v10, chaque rang coûtait exactement un point : le remboursement se calcule sur le seul fichier, sans catalogue. Garder un Blindage acheté 1 point qui en coûte désormais 10 serait un cadeau ; perdre les points des nœuds retirés, une punition. Cumul de campagne, points accordés et victoire ne bougent pas. `GhostCacheSeconds` quitte le format : `JsonUtility` ignore le champ resté dans un ancien fichier.
   **v11 → v12 (Data Wiper et écran de fin, 2026-10-14)** : `EmergencyBlockRemainingSeconds` et `EmergencyCooldownRemainingSeconds` quittent le format — le Data Wiper n'a plus ni contrecoup temporaire ni délai, son sacrifice découle du seul `EmergencyUsesInRun`. Ce compteur repart à **zéro** : il valait un nombre de purges à délai, il fixe désormais un sacrifice permanent de 30 % par usage, et le reprendre infligerait d'un coup 60 % à qui avait purgé deux fois. Nouveau bloc `PendingRunEnd` (struct à plat, copie du `RunSummary`) : le bilan de la run terminée tant que le joueur n'a pas relancé. Restauré, il désarme la partie (`GameSessionManager.RestorePendingRunEnd`), et le `GameOverPresenter` rouvre l'écran de fin en `PostStart` — après le `Start` du panneau de prestige, dont il a besoin. Une raison inconnue efface le bloc (`EnsureValid`).
+  **v12 → v13 (brouillard, 2026-10-14)** : nouveau bloc `Readout` (dernier relevé en UT, âge du relevé, sauts connus), restauré tel quel par `TraceReadout.Restore` après la jauge. Jusqu'ici le chargement recalait le relevé sur la vérité, ce qui levait le brouillard à chaque rechargement. Une sauvegarde antérieure reçoit un relevé posé sur sa jauge — ce que faisait le chargement — : le brouillard se reforme au relevé suivant. Un relevé au-dessus de la vérité (fichier édité) est recalé.
 
 - **`Services/Persistence/GameStateGateway.cs`** — `Restore` / `Capture`. Tampon `SaveData` et deux `Dictionary` réutilisés : un autosave n'alloue rien hors la chaîne JSON.
 - **`Services/Persistence/SaveScheduler.cs`** — les trois déclencheurs, plus le retour au menu (`ISaveRequester`). Une demande qui arrive pendant une écriture en vol n'est **jamais jetée** : elle arme **un** tour de rattrapage (`_pendingReason`), qui capture l'état au moment où il s'exécute. Un seul emplacement d'attente, et c'est délibéré : `Capture()` rend un tampon partagé qui continue de muter, une file empilerait N références au même état (corrigé le 2026-08-30, cf. `historique.md`).

@@ -9,43 +9,29 @@ using VContainer.Unity;
 namespace Core.Services.Security
 {
     /// <summary>
-    /// Le capteur imparfait posé sur la jauge de Trace. <b>Il ne ment jamais, il retarde.</b>
+    /// Le capteur imparfait posé sur la jauge de l'A.M.I. <b>Il ne ment jamais, il retarde.</b>
     ///
-    /// <b>Pourquoi il existe.</b> Mesuré : plafond de jauge divisé par 250, et toujours zéro
-    /// saisie sur trente-cinq runs. Ce n'était pas un défaut de réglage mais une impossibilité —
-    /// le joueur contrôle les quatre termes de l'équation (débit, plafond, dissipation, instant
-    /// de sortie) et les observe tous en temps réel. Un compte à rebours déterministe,
-    /// entièrement observable et piloté par celui qu'il menace ne peut pas être dangereux : c'est
-    /// un budget, pas une menace.
+    /// <b>Refonte « Time Attack » (lot 3, 2026-10-14).</b> La jauge est devenue un compte à rebours
+    /// déterministe, et un compte à rebours entièrement observable ne surprend personne. Le
+    /// brouillard reste donc, mais il ne vit plus que dans l'AFFICHAGE : aucune règle de jeu ne le
+    /// lit, le <see cref="ThreatManager"/> reste la seule vérité.
     ///
-    /// Baisser le plafond ne changeait rien, et l'arithmétique dit pourquoi : ça comprime toute
-    /// la courbe uniformément, donc la part d'avertissement reste identique. <b>Une jauge
-    /// linéaire ne peut, par construction, surprendre personne.</b>
+    /// Deux lectures, et deux seulement :
+    /// <list type="bullet">
+    /// <item><b>L'aiguille</b> — le dernier relevé. Elle ne bouge qu'à chaque relevé, et c'est elle
+    /// que lisent les paliers d'extraction, le gain annoncé par le bouton de sortie et les alertes
+    /// sonores : le joueur ne touche jamais moins que ce qu'on lui annonce.</item>
+    /// <item><b>La borne pessimiste</b> — où la jauge peut être, au pire :
+    /// <c>relevé + V_AMI × âge × pessimisme + sauts connus</c>. Elle avance à chaque frame et ne
+    /// passe jamais sous la vérité.</item>
+    /// </list>
     ///
-    /// <b>Ce que fait ce capteur.</b> Il échantillonne la vérité à intervalle variable, et
-    /// <b>l'intervalle s'allonge quand la jauge se remplit vite</b>. Trace tranquille : relevé
-    /// quasi continu. Trace qui s'emballe : la télémétrie bégaie, et le joueur pilote au jugé —
-    /// exactement au moment où le chiffre comptait. L'incertitude n'est pas un paramètre imposé
-    /// au joueur, c'est la <b>conséquence de sa propre gourmandise</b>.
-    ///
-    /// <b>Aucun hasard.</b> La saisie tombe toujours à 100,000 % exactement. Le joueur ne perd
-    /// jamais sur un tirage : il perd sur une estimation qu'il a mal faite, ce qui laisse l'échec
-    /// entièrement à sa charge.
-    ///
-    /// <b>Le capteur s'ACHÈTE.</b> L'incertitude ne vient plus de la seule vitesse de
-    /// remplissage : la capacité de calcul la divise, sur les DEUX versants à la fois — fréquence
-    /// des relevés et pessimisme du bord haut. Run 1, le joueur n'a ni ping ni renifleur de
-    /// paquets, donc il pilote à l'aveugle ; il paie ensuite sa visibilité en Hardware.
-    ///
-    /// C'était la correction que réclamait le modèle précédent : indexer l'incertitude sur la
-    /// vitesse punissait le MILIEU de partie et jamais le début, puisqu'une run lente est une run
-    /// lisible — les premières runs, les plus lentes, étaient donc les plus sûres. Bénéfice
-    /// secondaire : un troisième rôle propre au Hardware, qui n'empiète toujours pas sur les
-    /// Proxies.
-    ///
-    /// <b>Frontière stricte :</b> ce service est en LECTURE SEULE sur le
-    /// <see cref="ThreatManager"/>, qui reste la seule vérité. Aucune règle de jeu ne dépend du
-    /// brouillard — seul l'affichage est incertain.
+    /// <b>Un relevé tous les N UT remplis, pas toutes les N secondes.</b> L'ancien intervalle en
+    /// secondes ne tenait plus face à une vitesse qui varie d'un ordre de grandeur : au départ la
+    /// jauge restait figée une minute entière (session du 2026-10-14), en fin de partie la run
+    /// durait moins qu'un intervalle. En UT, le relevé suit le remplissage de lui-même. Le capteur
+    /// — la puissance de calcul nette — fait passer l'intervalle de 800 à 200 UT et ramène le
+    /// pessimisme de ×3 vers ×1.
     /// </summary>
     public sealed class TraceReadout : ITickable, IDisposable
     {
@@ -54,31 +40,55 @@ namespace Core.Services.Security
         private readonly ITimeSource _time;
         private readonly UpgradeManager _upgrades;
 
+        /// <summary>Vérité à la frame précédente, en UT : sert à mesurer ce qui s'est rempli.</summary>
+        private float _previousTrace;
+
+        /// <summary>Valeur du dernier relevé, en UT.</summary>
+        private float _lastKnownTrace;
+
+        /// <summary>UT remplies depuis le dernier relevé : c'est ce qui déclenche le suivant.</summary>
+        private float _filledSinceSample;
+
+        /// <summary>Secondes écoulées depuis le dernier relevé.</summary>
         private float _sampleAge;
-        private float _previousTrueFraction;
-        private float _lastKnownFillRate;
+
+        /// <summary>
+        /// UT ajoutées d'un coup depuis le dernier relevé, au-delà de ce que la vitesse explique :
+        /// les pénalités d'Overclock. Le joueur les connaît (la console les annonce) ; la borne les
+        /// compte, sans quoi trois appuis rapides la feraient passer sous la vérité.
+        /// </summary>
+        private float _knownJumps;
 
         private readonly ReactiveProperty<float> _lastKnownFraction = new(0f);
         private readonly ReactiveProperty<float> _estimatedMaxFraction = new(0f);
+        private readonly ReactiveProperty<int> _sampleAgeSeconds = new(0);
 
         /// <summary>
-        /// Dernière valeur RELEVÉE de la jauge. C'est elle que l'aiguille affiche : une position
-        /// connue, pas une position actuelle. Elle ne bouge qu'aux relevés, donc elle se fige
-        /// visiblement quand la situation se dégrade.
+        /// Dernière valeur RELEVÉE de la jauge, en fraction : l'aiguille. Paliers, gain du bouton
+        /// de sortie et alertes sonores se lisent ici, jamais sur la vérité.
         /// </summary>
         public ReadOnlyReactiveProperty<float> LastKnownFraction => _lastKnownFraction;
 
         /// <summary>
-        /// Bord haut de la zone d'incertitude : où la Trace peut se trouver au pire, extrapolé
-        /// depuis le dernier débit connu.
-        ///
-        /// <b>Ce n'est pas un chiffre décoratif</b> — c'est l'intervalle réel. Le joueur décide
-        /// contre ce bord, pas contre un nombre, et c'est là que naît la sueur.
+        /// Borne pessimiste : où la jauge peut se trouver au pire. Jamais sous la vérité — c'est
+        /// la seule garantie que le joueur possède.
         /// </summary>
         public ReadOnlyReactiveProperty<float> EstimatedMaxFraction => _estimatedMaxFraction;
 
-        /// <summary>Âge du dernier relevé, en secondes. La vue en fait « il y a 14 s ».</summary>
+        /// <summary>
+        /// Âge du relevé en secondes ENTIÈRES. N'émet qu'une fois par seconde : c'est ce qui permet
+        /// au libellé « relevé il y a N s » de vieillir sans recomposer une chaîne à chaque frame.
+        /// </summary>
+        public ReadOnlyReactiveProperty<int> SampleAgeSeconds => _sampleAgeSeconds;
+
+        /// <summary>Âge du dernier relevé, en secondes.</summary>
         public float SecondsSinceSample => _sampleAge;
+
+        /// <summary>Valeur du dernier relevé, en UT. Sauvegardée, avec l'âge et les sauts connus.</summary>
+        public float LastKnownTrace => _lastKnownTrace;
+
+        /// <summary>Sauts connus depuis le dernier relevé, en UT. Sauvegardés.</summary>
+        public float KnownJumps => _knownJumps;
 
         public TraceReadout(ThreatManager threat,
                             BalancingConfigSO balancing,
@@ -93,118 +103,169 @@ namespace Core.Services.Security
 
         public void Tick()
         {
+            // Pause, menu, écran de fin figé : le brouillard s'arrête avec la simulation.
             float deltaTime = _time.DeltaTime;
             if (deltaTime <= 0f) return;
 
-            float trueFraction = _threat.NormalizedThreat.CurrentValue;
+            float truth = _threat.CurrentTrace.CurrentValue;
 
-            // La Trace ne redescend JAMAIS d'elle-même : une baisse ne peut venir que d'un wipe
-            // de fin de run ou du Data Wiper. Dans les deux cas le joueur voit l'événement, donc
-            // son relevé doit se resynchroniser sur-le-champ — le laisser afficher une valeur
-            // périmée PLUS HAUTE que la réalité serait un mensonge, pas un retard.
-            if (trueFraction < _previousTrueFraction)
+            // La jauge ne redescend que sur un Wipe (Proxy, Data Wiper) ou un wipe de fin de run.
+            // Dans tous ces cas le joueur voit l'événement : le relevé se recale sur-le-champ, et
+            // la borne repart aussitôt de là — elle ne disparaît plus jusqu'au relevé suivant.
+            if (truth < _previousTrace)
             {
-                Resync(trueFraction);
+                Resync(truth);
                 return;
             }
 
-            float fillRate = (trueFraction - _previousTrueFraction) / deltaTime;
-            _previousTrueFraction = trueFraction;
-
-            _sampleAge += deltaTime;
-
-            // Un SEUL calcul par frame, réutilisé par les deux versants du brouillard. Le
-            // recalculer dans chaque méthode paierait deux logarithmes là où un suffit, dans une
-            // boucle qui tourne à chaque frame de la partie.
-            float precision = ResolvePrecisionDivisor();
-
-            if (_sampleAge >= ResolveInterval(fillRate, precision))
+            // Jauge vide et rien encore relevé : la traque n'est pas armée. Le brouillard ne dérive
+            // pas, sinon la borne monterait sur une jauge qui ne bouge pas.
+            if (truth <= 0f && _lastKnownTrace <= 0f)
             {
-                _lastKnownFraction.Value = trueFraction;
-                _lastKnownFillRate = fillRate;
-                _sampleAge = 0f;
+                return;
             }
 
-            // Le bord de la fourchette s'écarte tant qu'aucun relevé ne le ramène. Facteur de
-            // pessimisme au-dessus de 1 : entre deux relevés le débit a pu croître, et une borne
-            // haute qui se ferait dépasser par la réalité ne serait plus une borne.
-            //
-            // Le capteur le RAMÈNE vers 1 sans jamais passer dessous — l'interpolation part de 1
-            // et va vers le réglage, donc la borne reste une borne quelle que soit la puissance
-            // installée. Un pessimisme sous 1 rendrait le bord haut franchissable par la vérité,
-            // ce qui retirerait au joueur la seule garantie qu'il ait.
-            float pessimism = Mathf.Lerp(1f, _balancing.TraceReadoutPessimism, 1f / precision);
+            float delta = truth - _previousTrace;
+            _previousTrace = truth;
 
-            float projected = _lastKnownFraction.CurrentValue
-                            + _lastKnownFillRate * _sampleAge * pessimism;
+            float speed = _threat.CurrentSpeed.CurrentValue;
 
-            _estimatedMaxFraction.Value = Mathf.Clamp01(projected);
+            float expected = speed * deltaTime;
+            if (delta > expected) _knownJumps += delta - expected;
+
+            _filledSinceSample += delta;
+            _sampleAge += deltaTime;
+
+            // Un seul calcul du capteur par frame, réutilisé par l'intervalle et le pessimisme.
+            float precision = ResolvePrecisionDivisor();
+
+            if (_filledSinceSample >= ResolveIntervalUT(precision))
+            {
+                Sample(truth);
+            }
+
+            RefreshBand(speed, precision);
+            RefreshAgeSeconds();
         }
 
         /// <summary>
-        /// Intervalle entre deux relevés, en secondes. Il s'allonge avec la vitesse de
-        /// remplissage, et se raccourcit avec la puissance de calcul installée.
+        /// Recale le relevé sur la vérité, sans délai : jauge qui redescend, nouvelle run.
         /// </summary>
-        private float ResolveInterval(float fillRate, float precisionDivisor)
+        public void Resync(float trueTrace)
         {
-            float reference = Mathf.Max(1e-6f, _balancing.TraceReadoutReferenceFillRate);
-            float blend = Mathf.Clamp01(fillRate / reference);
+            _previousTrace = trueTrace;
+            _lastKnownTrace = trueTrace;
+            _filledSinceSample = 0f;
+            _sampleAge = 0f;
+            _knownJumps = 0f;
 
-            float baseInterval = Mathf.Lerp(_balancing.TraceReadoutMinInterval,
-                                            _balancing.TraceReadoutMaxInterval,
-                                            blend);
-
-            // Le plancher reste le plancher. Sans ce garde-fou un parc de fin de partie
-            // ramènerait l'intervalle sous la durée d'une frame, et TraceReadoutMinInterval
-            // cesserait de vouloir dire ce que son nom annonce — on ne gagnerait rien de
-            // lisible en échange, une aiguille relevée deux fois par seconde étant déjà
-            // continue pour l'œil.
-            return Mathf.Max(_balancing.TraceReadoutMinInterval, baseInterval / precisionDivisor);
+            float fraction = ToFraction(trueTrace);
+            _sampleAgeSeconds.Value = 0;
+            _lastKnownFraction.Value = fraction;
+            _estimatedMaxFraction.Value = fraction;
         }
 
         /// <summary>
-        /// Ce que la capacité de calcul achète en visibilité :
+        /// Restaure le relevé TEL QU'IL ÉTAIT à la fermeture du jeu, et non sur la vérité.
+        ///
+        /// Recaler sur la vérité au chargement — l'ancien comportement — révélait la position
+        /// exacte de la jauge : quitter puis relancer suffisait à lever le brouillard (session du
+        /// 2026-10-14). À appeler après la restauration de la jauge, dont il lit la valeur.
+        /// </summary>
+        public void Restore(float lastKnownTrace, float sampleAge, float knownJumps)
+        {
+            float truth = _threat.CurrentTrace.CurrentValue;
+
+            // Un relevé au-dessus de la vérité est impossible — la jauge ne redescend que par un
+            // événement qui recale le relevé. Fichier abîmé ou édité : on recale.
+            if (lastKnownTrace < 0f || lastKnownTrace > truth || sampleAge < 0f || knownJumps < 0f)
+            {
+                Resync(truth);
+                return;
+            }
+
+            _previousTrace = truth;
+            _lastKnownTrace = lastKnownTrace;
+            _filledSinceSample = truth - lastKnownTrace;
+            _sampleAge = sampleAge;
+            _knownJumps = knownJumps;
+
+            _lastKnownFraction.Value = ToFraction(lastKnownTrace);
+            RefreshBand(_threat.CurrentSpeed.CurrentValue, ResolvePrecisionDivisor());
+            RefreshAgeSeconds();
+        }
+
+        private void Sample(float truth)
+        {
+            // L'âge AVANT la valeur : les abonnés de l'aiguille relisent l'âge pour composer leur
+            // libellé, et ils doivent lire celui du relevé qui vient d'être pris.
+            _lastKnownTrace = truth;
+            _filledSinceSample = 0f;
+            _sampleAge = 0f;
+            _knownJumps = 0f;
+            _sampleAgeSeconds.Value = 0;
+            _lastKnownFraction.Value = ToFraction(truth);
+        }
+
+        /// <summary>
+        /// <c>borne = relevé + V_AMI × âge × pessimisme + sauts connus</c>.
+        ///
+        /// Jamais sous la vérité : la vérité vaut relevé + Σ(vitesse × dt) + sauts, la vitesse ne
+        /// baisse jamais pendant une run, et le pessimisme ne descend pas sous 1. Le capteur le
+        /// RAMÈNE vers 1 sans jamais passer dessous — l'interpolation part de 1 et va vers le
+        /// réglage —, ce qui garde la borne honnête quelle que soit la puissance installée.
+        /// </summary>
+        private void RefreshBand(float speed, float precision)
+        {
+            float pessimism = Mathf.Lerp(1f, _balancing.TraceReadoutPessimism, 1f / precision);
+            float projected = _lastKnownTrace + speed * _sampleAge * pessimism + _knownJumps;
+
+            _estimatedMaxFraction.Value = ToFraction(projected);
+        }
+
+        private void RefreshAgeSeconds()
+        {
+            int seconds = (int)_sampleAge;
+            if (seconds != _sampleAgeSeconds.CurrentValue) _sampleAgeSeconds.Value = seconds;
+        }
+
+        /// <summary>
+        /// UT à remplir entre deux relevés : de 800 au départ à 200 avec un parc conséquent. Le
+        /// plancher reste le plancher — sous lui, l'aiguille serait continue pour l'œil et le
+        /// brouillard n'existerait plus.
+        /// </summary>
+        private float ResolveIntervalUT(float precisionDivisor)
+        {
+            return Mathf.Max(_balancing.TraceReadoutMinIntervalUT,
+                             _balancing.TraceReadoutMaxIntervalUT / precisionDivisor);
+        }
+
+        /// <summary>
+        /// Ce que la capacité de calcul NETTE achète en visibilité :
         /// <c>1 + puissance × log10(1 + TFlops / échelle)</c>. Vaut 1 à zéro TFlop — aucune aide,
         /// le brouillard nominal — et ne descend jamais dessous.
         ///
-        /// <b>L'échelle n'est pas cosmétique.</b> Sans elle, le logarithme concentrait tout le
-        /// rachat sur les tout premiers TFlops : mesuré le 2026-09-16, quatre Hardware de niveau 5
-        /// — quelques minutes de jeu — ramenaient le brouillard de 60 s à 16,8 s, et l'écart entre
-        /// la vérité et le relevé tombait à trois points de jauge, soit six pixels. Le joueur
-        /// achetait sa clarté avant même de s'être rendu compte qu'il y avait du brouillard, ce
-        /// qui est l'exact inverse de l'intention.
+        /// Les TFlops NETTES, à dessein : le sacrifice du Data Wiper aveugle aussi le capteur, et
+        /// la méta-progression (P_DATAM, Noyau) aide à voir clair.
         /// </summary>
         private float ResolvePrecisionDivisor()
         {
-            // NetTFlops est la capacité EFFECTIVE : l'UpgradeManager lui a déjà appliqué la
-            // tranche immobilisée par le Data Wiper. Purger la Trace aveugle donc le capteur
-            // pendant tout le contrecoup. Ce n'est pas un effet de bord subi mais le contrecoup
-            // qui s'étend à ce que les TFlops alimentent, comme il le fait déjà sur la
-            // compression des cycles et sur la dissipation des Proxies — le joueur qui efface
-            // ses traces perd la vue au moment précis où il vient de prendre un risque.
             float tflops = Mathf.Max(0f, (float)_upgrades.NetTFlops.CurrentValue);
             float reference = Mathf.Max(1f, _balancing.TraceReadoutSensorReferenceTFlops);
 
             return 1f + _balancing.TraceReadoutSensorPower * Mathf.Log10(1f + tflops / reference);
         }
 
-        /// <summary>
-        /// Recale le relevé sur la vérité, sans délai. Appelé quand la jauge redescend — wipe de
-        /// fin de run, Data Wiper — et à la restauration d'une sauvegarde.
-        /// </summary>
-        public void Resync(float trueFraction)
+        private float ToFraction(float trace)
         {
-            _previousTrueFraction = trueFraction;
-            _lastKnownFraction.Value = trueFraction;
-            _estimatedMaxFraction.Value = trueFraction;
-            _lastKnownFillRate = 0f;
-            _sampleAge = 0f;
+            return Mathf.Clamp01(trace / _threat.TraceCap);
         }
 
         public void Dispose()
         {
             _lastKnownFraction.Dispose();
             _estimatedMaxFraction.Dispose();
+            _sampleAgeSeconds.Dispose();
         }
     }
 }

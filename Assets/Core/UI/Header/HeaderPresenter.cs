@@ -96,6 +96,15 @@ namespace Core.UI.Header
                 .Subscribe(p => _view.SetTierColors(p.TierReached, p.TierUncertain, p.TierUpcoming, p.TierLocked))
                 .AddTo(ref _disposables);
 
+            // « Relevé il y a N s » vieillit une fois par seconde. Jusqu'au 2026-10-14 le libellé ne
+            // se recomposait qu'aux relevés, et lisait l'âge AVANT sa remise à zéro : il affichait
+            // la durée du relevé précédent, puis ne bougeait plus. Skip(1) : le premier rendu est
+            // déjà fait par l'abonnement de l'aiguille.
+            _traceReadout.SampleAgeSeconds
+                .Skip(1)
+                .Subscribe(_ => RenderReadout(_traceReadout.LastKnownFraction.CurrentValue))
+                .AddTo(ref _disposables);
+
             // Langue changée à chaud : tous les libellés du header se recomposent. Skip(1) : le
             // premier rendu est fait par les abonnements ci-dessus.
             _loc.CurrentLanguage

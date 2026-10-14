@@ -17,11 +17,10 @@ MonoBehaviour:
   _amiTFlopsFactor: 0.05
   _amiSpeedExponent: 0.1
   _victoryTFlops: 500000000000
-  _traceReadoutMinInterval: 0.5
-  _traceReadoutMaxInterval: 60
-  _traceReadoutReferenceFillRate: 0.001
+  _traceReadoutMaxIntervalUT: 800
+  _traceReadoutMinIntervalUT: 200
   _traceReadoutPessimism: 3
-  _traceReadoutSensorPower: 1
+  _traceReadoutSensorPower: 0.5
   _traceReadoutSensorReferenceTFlops: 1000
   _tflopsTimeCompression: 0.05
   _tflopsCompressionExponent: 0.25

@@ -10,7 +10,7 @@
 > | les décisions de design — elles font foi | `game-design.md` |
 > | ce qui a déjà été réglé, et comment | `historique.md` |
 >
-> Dernière mise à jour : **2026-10-14** — lot 1 joué, lot 2 livré, branche
+> Dernière mise à jour : **2026-10-14** — lot 1 joué, lots 2 et 3 livrés, branche
 > `chantier/refonte-time-attack`.
 
 ---
@@ -31,17 +31,17 @@ sauvegarde ne bougent pas.
 | Domaine | État | Vu fonctionner en jeu ? |
 |---|---|---|
 | Boucle de base — 60 générateurs (25 Scripts, 20 Hardware, 15 Proxies), cycles, achat multiple | Livré | Oui |
-| **Jauge de l'A.M.I.** — 10 000 UT fixes, vitesse sur les TFlops brutes, Blindage | **Refonte lot 1, livré le 2026-10-13** | Oui (2026-10-14) — illisible sous l'ancien brouillard (lot 3) |
+| **Jauge de l'A.M.I.** — 10 000 UT fixes, vitesse sur les TFlops brutes, Blindage | **Refonte lot 1, livré le 2026-10-13** | Oui (2026-10-14) ; lisibilité à revoir avec le brouillard du lot 3 |
 | **Proxies** — Wipe en secondes de survie à l'achat, Interception | **Refonte lot 1** | Oui (2026-10-14) ; valeurs de base du GD du 2026-10-13 |
 | **Overclock** — avance + pénalité de 5 s de survie, rien sans cycle, 0,1 s entre deux appuis | **Refonte lot 1** | Oui (2026-10-14) |
-| Capteur de Trace (brouillard) | Ancien réglage, **refonte au lot 3** | Partiellement (septembre) |
+| **Brouillard** — relevé en UT (800 → 200), borne sur la vitesse de l'A.M.I., relevé sauvegardé | **Refonte lot 3, livré le 2026-10-14** | **Non** |
 | Paliers d'extraction, leur affichage, verrou du 90 % | Livré le 2026-09-16 ; valeurs d'Extraction au lot 4 | Oui (2026-10-14) |
 | Points de prestige — cumul de campagne, modèle des boîtes, saisie à 30 % | Livré le 2026-10-02, inchangé par la refonte | Oui (2026-10-14) |
 | Arbre de prestige — 140 nœuds (20 utiles + 120 ciblés) | **Refonte au lot 4** : 21 nœuds, Noyau Compilé | Interface oui (août) |
 | Zéro-Day Exploit / Ghost Cache | **Retirés** le 2026-10-13 | — |
 | **Data Wiper** — −2 500 UT, sacrifice de 30 % des TFlops nettes par usage, trois usages | **Refonte lot 2, livré le 2026-10-14** | **Non** |
 | Victoire — 1e12 TFlops nettes | Livrée le 2026-09-16, **seuil provisoire à 5e11** | Séquence oui ; écran jamais vu (objet éteint dans la scène, corrigé le 2026-10-14, à rejouer) |
-| Sauvegarde — `SaveData` **v12**, écriture atomique, autosave, fermeture, écran de fin rouvert | Livrée ; v11 le 2026-10-13, v12 le 2026-10-14 | v10 oui ; **migrations v11 et v12 non** |
+| Sauvegarde — `SaveData` **v13**, écriture atomique, autosave, fermeture, écran de fin rouvert, relevé conservé | Livrée ; v11 le 2026-10-13, v12 et v13 le 2026-10-14 | v10 oui ; **migrations v11 à v13 non** |
 | Menu principal, options en trois onglets, pause, langue à chaud | Livré le 2026-10-02 | Oui — touches et build vus le 2026-10-13 |
 | Daltonisme — quatre palettes | Livré le 2026-10-02 | Oui (outil de contrôle + Play Mode) |
 | Audio — musiques, clics, événements | Livré le 2026-10-12 | Oui (GD) |
@@ -60,8 +60,8 @@ Chaque lot se termine par son protocole de test (`a-tester.md`), sur la branche
 |---|---|---|---|
 | R1 | **Jauge, Overclock, Proxies** | Jauge de l'A.M.I. à 10 000 UT, TFlops brutes / nettes, Proxies en Wipe, Overclock pénalisé, branches Blindage / Interception / Overclock, retrait du Ghost Cache, du Zéro-Day, de `P_STEALTH`, du réveil et de la barre d'espace, `SaveData` v11, suppression du harnais | ✅ livré le 2026-10-13, joué le 2026-10-14 ; restent la migration v11 et la lisibilité (`a-tester.md` § 0) |
 | R2 | **Data Wiper** | Sans délai, −2 500 UT, sacrifice de +30 % des TFlops nettes par usage jusqu'à 90 % (trois usages), permanent pour la run ; la vitesse de l'A.M.I. lit les TFlops brutes, donc ne ralentit pas. **Et la sauvegarde de l'écran de fin de run**, dans le même changement de format (v12) | ✅ livré le 2026-10-14, **à jouer** (`a-tester.md` § 0 bis) |
-| R3 | **Brouillard** — *suivant* | Relevé tous les 800 UT remplis (200 en fin de partie, via les TFlops nettes) ; aiguille + borne pessimiste `relevé + V_AMI × âge × pessimisme` ; paliers et gain du bouton sur l'aiguille ; état du relevé sauvegardé (contre la triche du rechargement) | à faire |
-| R4 | **Arbre** | Retrait des 120 nœuds ciblés et de leur générateur ; Noyau Compilé (coût × 0,99^points, plancher 0,05 ; rendement + 1 % par point, Datas et TFlops) affiché dans les panneaux ; `P_CORE_OVERRIDE` infini ; `P_REFAC`, `P_DATAM`, Extraction (+0,5 par rang, trois paliers) ; `P_INTERCEPT_3` et `_4` rabotés (GD, 2026-10-14) ; chaînes « parent au max » ; disposition ; nouvelle migration | à faire |
+| R3 | **Brouillard** | Relevé tous les 800 UT remplis (200 en fin de partie, via les TFlops nettes) ; aiguille + borne pessimiste `relevé + V_AMI × âge × pessimisme` ; paliers et gain du bouton sur l'aiguille ; état du relevé sauvegardé (contre la triche du rechargement) | ✅ livré le 2026-10-14, **à jouer** (`a-tester.md` § 0 ter) |
+| R4 | **Arbre** — *suivant* | Retrait des 120 nœuds ciblés et de leur générateur ; Noyau Compilé (coût × 0,99^points, plancher 0,05 ; rendement + 1 % par point, Datas et TFlops) affiché dans les panneaux ; `P_CORE_OVERRIDE` infini ; `P_REFAC`, `P_DATAM`, Extraction (+0,5 par rang, trois paliers) ; `P_INTERCEPT_3` et `_4` rabotés (GD, 2026-10-14) ; chaînes « parent au max » ; disposition ; nouvelle migration | à faire |
 | R5 | **Nettoyage** | Code mort restant (bonus ciblés, champs obsolètes, clés orphelines), réglages inutilisés, doc | à faire |
 
 Après la refonte, la feuille de route d'avant reprend : **session de jeu « chiffres »** (une
@@ -148,7 +148,10 @@ _overclockWarpSeconds         0.5      avance de base d'un Overclock
 _overclockPenaltySeconds      5        coût d'un Overclock, en secondes de survie
 _overclockMinIntervalSeconds  0.1      délai minimal entre deux appuis
 _victoryTFlops                5e+11    ⚠️ PROVISOIRE — la cible est 1e12
-_traceReadoutMaxInterval      60       brouillard AU DÉPART (ancien réglage, lot 3)
+_traceReadoutMaxIntervalUT    800      UT entre deux relevés AU DÉPART (~24 s)
+_traceReadoutMinIntervalUT    200      plancher, atteint vers 1e9 TFlops nettes
+_traceReadoutPessimism        3        avance de la borne sur la vitesse, au départ
+_traceReadoutSensorPower      0.5      ce que les TFlops nettes achètent en visibilité
 _prestigeFirstThresholdDatas  2e+06    première boîte
 _prestigeThresholdGrowth      1.12     +12 % par boîte suivante
 _seizedContributionRatio      0.3      part de la contribution versée par une saisie

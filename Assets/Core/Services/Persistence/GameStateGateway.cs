@@ -136,10 +136,10 @@ namespace Core.Services.Persistence
             // plus rien à recomposer avant de restaurer la jauge.
             _threatManager.RestoreTrace(Mathf.Min(data.CurrentTrace, _threatManager.TraceCap * MaxRestorableThreat));
 
-            // Le capteur se recale sur la valeur restaurée, sans délai. Sans ça il croirait voir
-            // la Trace bondir de zéro à sa valeur sauvegardée en une frame, en déduirait un débit
-            // délirant, et laisserait le joueur aveugle dès l'ouverture du jeu.
-            _traceReadout.Resync(_threatManager.NormalizedThreat.CurrentValue);
+            // Le relevé reprend TEL QU'IL ÉTAIT, et non sur la vérité : recaler au chargement
+            // révélait la position exacte de la jauge — fermer puis rouvrir levait le brouillard
+            // (session du 2026-10-14). Après la jauge, dont il vérifie qu'il ne la dépasse pas.
+            _traceReadout.Restore(data.Readout.LastKnownTrace, data.Readout.SampleAge, data.Readout.KnownJumps);
             // APRÈS les générateurs : le sacrifice du Data Wiper ampute les TFlops qu'ils fournissent.
             _emergencyProtocol.Restore(data.EmergencyUsesInRun);
             _sessionManager.RestoreElapsed(data.RunElapsedSeconds);
@@ -195,6 +195,9 @@ namespace Core.Services.Persistence
             _buffer.TotalDetections = _currencies.TotalNumberOfDetections.CurrentValue;
 
             _buffer.CurrentTrace = _threatManager.CurrentTrace.CurrentValue;
+            _buffer.Readout.LastKnownTrace = _traceReadout.LastKnownTrace;
+            _buffer.Readout.SampleAge = _traceReadout.SecondsSinceSample;
+            _buffer.Readout.KnownJumps = _traceReadout.KnownJumps;
             _buffer.EmergencyUsesInRun = _emergencyProtocol.UsesInCurrentRun;
             _buffer.RunElapsedSeconds = _sessionManager.RunElapsedSeconds;
 

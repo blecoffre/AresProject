@@ -42,8 +42,6 @@ les montées, **la console fait foi** ; les baisses, elles, se voient tout de su
 | # | Quoi | Comment | Ce qu'on doit voir |
 |---|---|---|---|
 | 0.1 | **Migration v10 → v11** — *non éprouvée le 14/10 : la sauvegarde avait été supprimée* | Copier une sauvegarde v10, lancer depuis RootScene, « Continuer ». | Run neuve : générateurs au niveau 0, 10 $, jauge à 0 %. Le compteur de Cycles de l'en-tête a grossi des points qui étaient dépensés. Arbre (P, ou « [ NOYAU IA — ARBRE ] ») vide hors la racine. Aucune erreur en console. |
-| 0.3 | **Vitesse de l'A.M.I.** — *illisible le 14/10 : relevé toutes les 60 s ; à refaire après le lot 3 (brouillard)* | Sans Hardware ni Proxy, laisser tourner. | ~20 % par minute, saisie vers 5 min. La jauge monte au même rythme quoi que produisent les Scripts. |
-| 0.4 | **Overclock à vide** — *console OK le 14/10, jauge illisible ; à refaire après le lot 3* | Avant de lancer le moindre cycle (ou entre deux cycles manuels), appuyer sur Espace, puis sur le bouton « Overclock ». | Console : « Overclock sans effet : aucun cycle en cours. » La jauge ne bouge pas. |
 | 0.15 | **La rangée d'actions** — *trou constaté le 14/10, corrigé le jour même* | Regarder la rangée d'actions de l'écran de jeu, sous la console. | Deux lignes pleine largeur : « Overclock », puis le Data Wiper. Plus de bouton Ghost Cache, aucun vide à droite. |
 
 
@@ -71,13 +69,31 @@ du Data Wiper repart à zéro.
 | 2.9 | **Écran de fin rouvert après fermeture** | Finir une run (saisie ou sortie), rester sur l'écran de fin, **fermer le jeu** (croix ou Alt+F4), relancer, « Continuer ». | L'écran de fin revient, avec le même bilan et l'arbre. Un nœud s'achète. « [ NOUVELLE INTRUSION ] » lance bien une run neuve. |
 | 2.10 | **Écran de fin rouvert depuis le menu** | Sur l'écran de fin : Échap, « Menu principal », puis « Continuer ». | Même chose qu'en 2.9 : écran de fin et arbre, pas de run neuve. |
 
+## 0 ter. Refonte « Time Attack », lot 3 — le brouillard
+
+Livré le 2026-10-14, compilé (Unity, zéro erreur), **jamais joué**. La jauge de l'en-tête porte deux
+choses : **l'aiguille** (le remplissage, avec son libellé « N % · relevé il y a N s ») et **la barre
+rouge** devant elle (la borne pessimiste). La sauvegarde passe en v13 au premier lancement.
+
+| # | Quoi | Comment | Ce qu'on doit voir |
+|---|---|---|---|
+| 3.1 | **Vitesse de l'A.M.I.** (ex-0.3) | Sans Hardware ni Proxy, laisser tourner une run après la première Data. | L'aiguille avance par à-coups d'environ **8 %** toutes les ~24 s ; le libellé compte « relevé il y a 1 s, 2 s… » entre deux. ~20 % par minute, saisie vers 5 min. |
+| 3.2 | **La barre rouge avance en continu** | Même run, regarder la barre rouge devant l'aiguille. | Elle avance à chaque instant, plus vite que l'aiguille (×3), et retombe sur l'aiguille à chaque relevé. Elle n'est jamais **derrière** l'aiguille. |
+| 3.3 | **Overclock à vide** (ex-0.4) | Sans cycle en cours, Espace. | Console « Overclock sans effet » ; ni l'aiguille ni la barre ne bougent. |
+| 3.4 | **Overclock en rafale** | Cycles en cours, quatre ou cinq appuis rapides. | La barre rouge **saute** à chaque appui retenu ; l'aiguille suit au relevé suivant, qui arrive plus tôt (la pénalité remplit la jauge). |
+| 3.5 | **Après un Proxy** | Jauge à 20 % ou plus, acheter un « VPN Public Décentralisé » (`PRX_01`). | L'aiguille recule aussitôt ; la barre rouge repart **immédiatement** de là — elle ne disparaît plus. |
+| 3.6 | **Le rechargement ne lève plus le brouillard** | En pleine run, noter l'aiguille et le « relevé il y a N s ». Fermer le jeu, relancer, « Continuer ». | Même aiguille, même âge de relevé qu'à la fermeture : la vraie jauge n'est pas révélée. |
+| 3.7 | **Le capteur s'achète** | Monter les TFlops (Hardware) au fil d'une run longue, ou éditer la sauvegarde pour posséder un gros parc. | Les relevés se rapprochent (l'aiguille saute de moins en moins loin) et la barre rouge colle davantage à l'aiguille. |
+| 3.8 | **Paliers et gain sur l'aiguille** | Approcher 50 % de jauge en regardant le bouton « [PRÊT] WIPE SYSTÈME » et le trait des 50 %. | Le trait passe à l'ambre pulsant quand la barre rouge l'enjambe, au vert quand l'**aiguille** le franchit ; le gain du bouton saute au même moment, pas avant. |
+| 3.9 | **Pause** | Échap 30 s en pleine run. | Ni l'aiguille, ni la barre, ni le « relevé il y a N s » ne bougent. |
+
 ## 1. Fin de partie et économie — d'avant la refonte, jamais jouées
 
 Tout ce bloc vient de `bf490c6` (2026-09-22), dont le message dit : « Rien de tout cela n'a été
 éprouvé en Play Mode », et de `a772e67` (2026-10-02). C'est une session **« ressenti et bugs »** :
 on regarde si ça marche et si ça se lit, pas si les chiffres sont bons. ⚠️ La refonte « Time
-Attack » réécrit le brouillard (lot 3) : ne pas s'attarder sur son ressenti avant. L'ex-1.1
-(départ de la traque) est devenue 0.2 ; il ne reste ici que la victoire, à rejouer.
+Attack » a réécrit le brouillard (lot 3, § 0 ter). L'ex-1.1 (départ de la traque) est devenue
+0.2 ; il ne reste ici que la victoire, à rejouer.
 
 | # | Quoi | Comment | Ce qu'on doit voir |
 |---|---|---|---|
@@ -108,7 +124,6 @@ soldés dans `historique.md`. Rien en attente.
 
 | Après | Quoi |
 |---|---|
-| Refonte, lot 3 (brouillard) | Relevé tous les 800 UT au départ, 200 en fin de partie ; aiguille et borne pessimiste ; paliers et gain du bouton lus sur l'aiguille. |
 | Refonte, lot 4 (arbre) | Arbre à 21 nœuds, Noyau Compilé affiché dans les panneaux, `P_CORE_OVERRIDE` infini, nouvelle migration avec remboursement. Puis session de jeu « chiffres » sur une campagne : durée des runs, points par run, part de l'arbre à la victoire. Victoire remise à 1e12. |
 | Steam | Lisibilité sur un écran 1280×800. Navigation complète à la manette, sans souris. Overlay Steam. Synchronisation cloud entre deux machines. |
 | Traductions | **Langue à chaud** (ex-2.5) : basculer de langue en pleine partie, parcourir tous les écrans ; aucun texte ne doit rester dans l'ancienne langue, hors lignes déjà écrites dans la console. **Premier lancement** : l'écran de choix propose toutes les langues, celle du système présélectionnée. D'ici là, la technique du `zz.json` (chaque valeur de `fr.json` préfixée « ZZ· ») permet de traquer les textes en dur ; supprimer le fichier et sa `.meta` après. |

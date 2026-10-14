@@ -27,6 +27,23 @@ namespace Core.Models
         public float ElapsedSeconds;
     }
 
+    /// <summary>
+    /// L'état du relevé de Trace — ce que le joueur VOIT de la jauge. Sauvegardé depuis la v13 :
+    /// recaler le relevé sur la vérité au chargement révélait la position exacte de la jauge.
+    /// </summary>
+    [Serializable]
+    public struct TraceReadoutSave
+    {
+        /// <summary>Valeur du dernier relevé, en UT : l'aiguille.</summary>
+        public float LastKnownTrace;
+
+        /// <summary>Secondes écoulées depuis ce relevé.</summary>
+        public float SampleAge;
+
+        /// <summary>UT ajoutées d'un coup depuis ce relevé (pénalités d'Overclock).</summary>
+        public float KnownJumps;
+    }
+
     [Serializable]
     public struct UpgradeSaveEntry
     {
@@ -56,7 +73,7 @@ namespace Core.Models
         /// correspondant dans Migrate(). Sans ça, le premier changement post-lancement casse
         /// silencieusement les sauvegardes des joueurs.
         /// </summary>
-        public const int CurrentVersion = 12;
+        public const int CurrentVersion = 13;
 
         /// <summary>
         /// Id de la racine de l'arbre, seul nœud gratuit de la v10. Recopié ici plutôt que lu
@@ -151,6 +168,12 @@ namespace Core.Models
         /// antérieures illisibles, et le joueur repartirait de zéro sans un mot.
         /// </summary>
         public float NormalizedThreat;
+
+        /// <summary>
+        /// Le relevé de la jauge tel que le joueur le voyait (v13). Restauré tel quel : le
+        /// brouillard ne doit pas se lever en fermant puis rouvrant le jeu.
+        /// </summary>
+        public TraceReadoutSave Readout;
 
         public int EmergencyUsesInRun;
 
@@ -248,6 +271,12 @@ namespace Core.Models
             if (EmergencyUsesInRun < 0) EmergencyUsesInRun = 0;
 
             if (RunElapsedSeconds < 0f) RunElapsedSeconds = 0f;
+
+            // Borne basse seulement : le TraceReadout vérifie lui-même qu'un relevé ne dépasse pas
+            // la vérité, et se recale sinon.
+            if (Readout.LastKnownTrace < 0f) Readout.LastKnownTrace = 0f;
+            if (Readout.SampleAge < 0f) Readout.SampleAge = 0f;
+            if (Readout.KnownJumps < 0f) Readout.KnownJumps = 0f;
 
             // Un bilan à la raison inconnue (fichier édité, binaire plus récent) ne rouvre pas
             // l'écran de fin : mieux vaut une run neuve qu'un écran qui affiche n'importe quoi.
@@ -407,6 +436,14 @@ namespace Core.Models
                     goto case 12;
 
                 case 12:
+                    // v12 -> v13 : le relevé de Trace est sauvegardé. Une sauvegarde antérieure
+                    // n'en a pas : on le pose sur la jauge, ce que faisait le chargement jusqu'ici.
+                    // Le brouillard ne se reformera qu'au relevé suivant, une fois.
+                    data.Readout = new TraceReadoutSave { LastKnownTrace = data.CurrentTrace };
+                    data.Version = 13;
+                    goto case 13;
+
+                case 13:
                     // Format courant : rien à faire.
                     break;
 
@@ -431,6 +468,7 @@ namespace Core.Models
             data.Money = LegacyStartingMoney;
             data.RunMoney = 0d;
             data.CurrentTrace = 0f;
+            data.Readout = default;
             data.EmergencyUsesInRun = 0;
             data.RunElapsedSeconds = 0f;
             data.Upgrades.Clear();

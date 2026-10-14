@@ -165,7 +165,10 @@ OverclockSystem (Scene) — appui sur Espace ou sur le bouton
    → ScriptCycleRunner.AdvanceAllActive(0,5 s + Σ Overclock) ; rien ne tourne → ni effet ni coût
    → ThreatManager.ApplyOverclockPenalty()     jauge += V_AMI × 5 s
 
-TraceReadout (Root) — échantillonne la vérité à intervalle variable : ce que l'UI affiche
+TraceReadout (Root) — ce que l'UI affiche, en lecture seule sur le ThreatManager
+   → un relevé tous les 800 à 200 UT remplis (capteur : TFlops NETTES) → l'aiguille
+   → borne = relevé + V_AMI × âge × pessimisme + sauts connus     → la barre rouge
+   → sauvegardé (v13) et restauré tel quel
 
 Fin de run, deux chemins vers GameSessionManager.ResolveRunEnd :
    ThreatManager à 100 %  → OnCriticalLockdown → HandleGameOver   (saisie : contribution × 30 %)

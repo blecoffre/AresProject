@@ -11,6 +11,152 @@
 
 ---
 
+## Refonte « Time Attack », lot 3 — l'ancien brouillard retiré du GDD (2026-10-14)
+
+Remplacé par le relevé en UT et la borne calculée sur la vitesse de l'A.M.I. (voir
+`game-design.md`, « Le brouillard »). Retirés du code : l'intervalle en secondes et sa vitesse de
+référence (`_traceReadoutMinInterval`, `_traceReadoutMaxInterval`, `_traceReadoutReferenceFillRate`),
+le débit mesuré du relevé, le recalage sur la vérité au chargement.
+
+Entrées du backlog soldées par ce lot : la jauge illisible (relevé toutes les 60 s) et la barre
+rouge qui disparaissait après un achat de Proxy ; le rechargement qui révélait la vraie jauge. Et,
+trouvé en route : le libellé « relevé il y a N s » lisait l'âge avant sa remise à zéro, affichait
+la durée du relevé précédent, puis ne bougeait plus.
+
+La section du GDD, telle qu'elle était :
+
+### Le relevé de Trace — le danger vient de l'INCERTITUDE (tranché le 2026-09-10)
+
+**Le constat qui a forcé ce modèle.** Plafond de jauge divisé par 250, et toujours **zéro saisie
+sur trente-cinq runs**. Ce n'était pas un défaut de réglage mais une impossibilité : le joueur
+contrôle les quatre termes de l'équation — débit, plafond, dissipation, instant de sortie — et les
+observe tous en temps réel. Un compte à rebours déterministe, entièrement observable et piloté par
+celui qu'il menace ne peut pas être dangereux. C'est un budget, pas une menace. Et baisser le
+plafond n'y change rien : ça comprime toute la courbe uniformément, donc la part d'avertissement
+reste identique. **Une jauge linéaire ne peut, par construction, surprendre personne.**
+
+**La réponse : un capteur imparfait.** `TraceReadout` échantillonne la vérité à intervalle
+variable, et **l'intervalle s'allonge quand la jauge se remplit vite**. Trace tranquille, relevé
+quasi continu ; Trace qui s'emballe, la télémétrie bégaie et le joueur pilote au jugé — exactement
+au moment où le chiffre comptait. L'incertitude n'est pas imposée au joueur, c'est la **conséquence
+de sa propre gourmandise**.
+
+L'interface affiche donc deux choses : la dernière position **relevée** (l'aiguille, qui se fige
+visiblement quand ça se dégrade) et le **bord haut de la fourchette**, extrapolé depuis le dernier
+débit connu. Le joueur décide contre un intervalle, jamais contre un nombre.
+
+**Aucun hasard.** La saisie tombe toujours à 100,000 % exactement. On ne perd jamais sur un tirage,
+on perd sur une estimation qu'on a mal faite — l'échec reste entièrement à la charge du joueur.
+
+**Frontière stricte.** `TraceReadout` est en LECTURE SEULE sur le `ThreatManager`, qui reste la
+seule vérité. **Aucune règle de jeu ne dépend du brouillard** : seul l'affichage est incertain.
+
+#### Les quatre réglages, et pourquoi ils sont si extrêmes
+
+| Réglage | Valeur | Pourquoi |
+|---|---|---|
+| `TraceReadoutMaxInterval` | **60 s** | Épaisseur du brouillard **au départ**, avant rachat. Mesuré le 2026-09-16 : à 25 s le capteur rachetait tout, et la posture agressive ne mourait plus jamais ; à 60 s elle meurt 2 fois sur 11 runs et boucle quand même l'arbre. |
+| `TraceReadoutSensorPower` | **1** | Ce que la capacité de calcul achète en visibilité — voir la section suivante. À 0, la mécanique est éteinte et le brouillard redevient fonction de la seule vitesse. |
+| `TraceReadoutReferenceFillRate` | **0,001/s** | À 0,005, la cécité n'arrivait qu'à sept fois le débit réel d'une run — donc jamais. |
+| `TraceReadoutPessimism` | **3** | À 1,5, la « borne haute » passait **sous** la vérité (le prudent croyait sortir à 90 %, sortait à 93,8 %). La projection est linéaire alors que la production accélère. C'est la valeur **à zéro TFlop** : le capteur la ramène vers 1, jamais en dessous. |
+
+⚠️ **Ce document a annoncé 120 s pendant que l'asset portait 25.** La dérive n'a été vue que le
+2026-09-16. `BalancingConfig.asset` fait foi sur les valeurs ; ce document fait foi sur les
+intentions. Quand les deux divergent, c'est un bug de l'un ou de l'autre, jamais une nuance.
+
+⚠️ **Le pessimisme est un réglage de game design, pas un détail d'affichage.** C'est lui qui écarte
+le joueur prudent du bord. Trop bas, prudence et gourmandise se rejoignent à 94 % de jauge et il
+n'y a plus rien à arbitrer — les deux postures jouent le même jeu.
+
+Le brouillard seul ne suffit pourtant pas : il crée le danger, pas la tentation. Il ne devient une
+mécanique qu'associé aux **paliers d'extraction**, décrits plus bas — l'un rend le bord dangereux,
+l'autre le rend désirable.
+
+⚠️ **Limite connue, mesurée le 2026-09-10.** Indexer l'incertitude sur la vitesse de remplissage
+faisait punir le MILIEU de partie et jamais le début : une run lente est une run lisible, donc les
+premières runs — les plus lentes — étaient les plus sûres, et les saisies tombaient aux runs 6 à 8.
+
+La **traque passive** a corrigé la moitié du problème par effet de bord : la jauge monte désormais
+vite dès la première minute, donc le relevé bégaie aussi dès la première minute. Il reste que
+l'épaisseur du brouillard n'est toujours pas un CHOIX du joueur — et c'est ce qui manque pour que
+les saisies tombent quand il faut.
+
+#### Le CAPTEUR s'achète — livré le 2026-09-16
+
+L'incertitude ne vient plus de la seule vitesse : **la capacité de calcul la divise**. Run 1, le
+joueur est aveugle parce qu'il n'a ni ping ni renifleur de paquets ; il achète ensuite sa
+visibilité avec le Hardware.
+
+```
+Diviseur = 1 + TraceReadoutSensorPower × log10(1 + TFlops / TraceReadoutSensorReferenceTFlops)
+```
+
+⚠️ **L'échelle a été ajoutée le 2026-09-16, après une session de jeu.** Sans elle, le logarithme
+concentrait tout le rachat sur les tout premiers TFlops : quatre Hardware de niveau 5 — quelques
+minutes — ramenaient le brouillard de 60 s à 16,8 s. Mesuré sur cette run, l'écart entre la vérité
+et le relevé valait **0,6 à 3,2 points de jauge**, soit six pixels : le joueur a rapporté n'avoir
+« rien vu » du brouillard, et il avait raison. Il l'avait acheté sans s'en apercevoir.
+
+Avec l'échelle à **1000 TFlops**, la même run garde 52,7 s de brouillard et des écarts de **1,8 à
+10,9 points**, la fourchette courant jusqu'à trente points devant l'aiguille.
+
+Il agit sur les **deux** versants du brouillard à la fois : il raccourcit l'intervalle entre deux
+relevés, et ramène le pessimisme vers 1.
+
+| TFlops | Intervalle |
+|---|---|
+| 0 *(run 1)* | 60,0 s |
+| 377 *(4 Hardware niveau 5)* | 52,7 s |
+| 1e4 | 29,4 s |
+| 1e6 | 15,0 s |
+| 1e9 | 8,6 s |
+| 1e12 *(pic de campagne)* | 6,0 s |
+
+**Le logarithme n'est pas décoratif.** Une proportionnalité directe rendrait le capteur parfait dès
+le premier Hardware sérieux ; le log étale le rachat sur les douze ordres de grandeur que traverse
+une campagne, et le premier achat se ressent quand même — `HW_01` au niveau 3 divise déjà le
+brouillard par deux.
+
+**Le pessimisme est interpolé DE 1 VERS le réglage, jamais en dessous.** Une borne haute que la
+vérité franchirait ne serait plus une borne : c'est la seule garantie que le joueur possède, et
+elle tient quelle que soit la puissance installée.
+
+**Le plancher reste le plancher.** L'intervalle est borné par `TraceReadoutMinInterval` : sans ce
+garde-fou, un parc de fin de partie le ramènerait sous la durée d'une frame, sans rien gagner de
+lisible — une aiguille relevée deux fois par seconde est déjà continue pour l'œil.
+
+⚠️ **Le sacrifice du Data Wiper aveugle aussi le capteur, et c'est voulu.** Les TFlops nettes sont la
+capacité EFFECTIVE : l'`UpgradeManager` leur a déjà retiré la part sacrifiée. Purger sa Trace
+fait donc perdre de la vue jusqu'à la fin de la run — le sacrifice s'étend à tout ce que les
+TFlops nettes alimentent, comme il le fait déjà sur la compression des cycles.
+
+**Mesuré le 2026-09-16, posture agressive (palier 90 %), campagnes tronquées :**
+
+| | Sans capteur | Capteur, brouillard 25 s | **Capteur, brouillard 60 s** |
+|---|---|---|---|
+| Saisies | 15 sur 18 runs | 0 | **2 sur 11** |
+| Arbre de prestige | 2,7 % | complet | **complet** |
+| Contenu atteint | SCR_16 / 25 | SCR_25 / 25 | **SCR_25 / 25** |
+| Pic de TFlops | 3,27e7 | 6,44e11 | **6,44e11** |
+
+C'est la **spirale du chantier 1 qui se referme** : le téméraire meurt parfois et boucle quand même
+sa campagne. À 25 s il ne mourait plus du tout — le capteur rachetait l'intégralité du brouillard,
+et le pari disparaissait avec lui.
+
+Le prudent, lui, ne bouge pas : palier 50 %, 169 runs / 10,07 h contre 170 / 10,16 h. **Le capteur
+ne compte qu'au bord**, ce qui est sa raison d'être.
+
+⚠️ **Reste à faire.** La posture 90 % sort en réalité à ~68 % de jauge : elle meurt en visant un
+palier qu'elle n'atteint presque jamais, et n'encaisse donc que le bonus +15 %. À arbitrer avec la
+seconde piste du chantier 1 (verrouiller le dernier palier). La **branche de prestige dédiée aux
+capteurs** n'existe pas non plus : la visibilité ne s'achète aujourd'hui qu'en Hardware.
+
+*Au 2026-10-13 : le dernier palier est verrouillé depuis le 2026-09-16 (voir « Le palier 90 % est
+VERROUILLÉ »), mais le constat des ~68 % n'a pas été remesuré depuis. La branche capteurs n'existe
+toujours pas.*
+
+---
+
 ## Refonte « Time Attack », lot 2 — l'ancien Data Wiper retiré du GDD (2026-10-14)
 
 Remplacé par le sacrifice permanent de TFlops (voir `game-design.md`, « Le Data Wiper »). Retirés du

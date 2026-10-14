@@ -61,64 +61,41 @@ namespace Core.Models.Economy
         [SerializeField, Min(1f)] private double _victoryTFlops = 1e12d;
 
         // ------------------------------------------------------------------
-        // Relevé de Trace — le brouillard de guerre
+        // Relevé de Trace — le brouillard de guerre (refonte « Time Attack », lot 3)
         // ------------------------------------------------------------------
         [Header("Relevé de Trace (incertitude)")]
-        [Tooltip("Intervalle MINIMUM entre deux relevés de la jauge, en secondes. C'est la " +
-                 "précision dont dispose un joueur dont la Trace monte doucement.")]
-        [SerializeField, Range(0.1f, 10f)] private float _traceReadoutMinInterval = 0.5f;
+        [Tooltip("UT à remplir entre deux relevés, AU DÉPART (zéro TFlop). À 800 et 33 UT/s, " +
+                 "l'aiguille se met à jour toutes les ~24 s.\n\n" +
+                 "En UT et non en secondes depuis le 2026-10-14 : la vitesse de l'A.M.I. variant " +
+                 "d'un ordre de grandeur sur la partie, un intervalle en secondes figeait la jauge " +
+                 "une minute au départ et durait plus qu'une run en fin de partie. MONTER cette " +
+                 "valeur épaissit le brouillard.")]
+        [SerializeField, Min(1f)] private float _traceReadoutMaxIntervalUT = 800f;
 
-        [Tooltip("Intervalle MAXIMUM entre deux relevés, atteint quand la jauge se remplit à la " +
-                 "vitesse de référence ci-dessous.\n\n" +
-                 "C'est le cœur du modèle de risque : plus le joueur pousse, plus sa télémétrie " +
-                 "bégaie, et plus il pilote au jugé. MONTER cette valeur rend la gourmandise " +
-                 "aveuglante.")]
-        [SerializeField, Range(1f, 300f)] private float _traceReadoutMaxInterval = 120f;
+        [Tooltip("UT entre deux relevés, PLANCHER atteint avec un parc conséquent. Sous lui, " +
+                 "l'aiguille deviendrait continue pour l'œil et le brouillard n'existerait plus.")]
+        [SerializeField, Min(1f)] private float _traceReadoutMinIntervalUT = 200f;
 
-        [Tooltip("Vitesse de remplissage, en fraction de jauge par seconde, à laquelle " +
-                 "l'intervalle atteint son maximum. À 0,005, la cécité totale s'installe quand " +
-                 "la jauge se remplirait en 200 secondes.")]
-        [SerializeField, Range(0.0001f, 0.05f)] private float _traceReadoutReferenceFillRate = 0.001f;
-
-        [Tooltip("Facteur de pessimisme du bord haut de la fourchette. Au-dessus de 1 parce " +
-                 "qu'entre deux relevés le débit a pu croître : une borne haute que la réalité " +
-                 "dépasse ne serait plus une borne.\n\n" +
-                 "Il en faut BEAUCOUP plus que l'intuition ne suggère. La projection est " +
-                 "linéaire — dernier débit connu × âge du relevé — alors que la production d'une " +
-                 "run accélère. À 1,5, mesuré : le joueur prudent croyait sortir à 90 % et " +
-                 "sortait en réalité à 93,8 %. Sa « borne haute » passait SOUS la vérité, donc " +
-                 "prudence et gourmandise se rejoignaient au bord du gouffre et il n'y avait " +
-                 "plus rien à arbitrer. À 3, il sort à 91,6 % et paie enfin sa prudence d'une " +
-                 "run supplémentaire — le choix redevient un choix.")]
+        [Tooltip("Pessimisme de la borne haute AU DÉPART : borne = relevé + V_AMI × âge × " +
+                 "pessimisme + sauts connus. Le capteur le ramène vers 1, jamais en dessous — sous " +
+                 "1 la borne passerait sous la vérité et ne serait plus une borne.\n\n" +
+                 "À 3 et 800 UT, juste avant un relevé, la borne devance la vérité d'au plus 24 % " +
+                 "de jauge au départ. C'est l'écart entre prudence et gourmandise.")]
         [SerializeField, Range(1f, 4f)] private float _traceReadoutPessimism = 3f;
 
-        [Tooltip("Puissance du CAPTEUR : ce que la capacité de calcul achète en visibilité. Le " +
-                 "diviseur de brouillard vaut 1 + puissance × log10(1 + TFlops). Il RACCOURCIT " +
-                 "l'intervalle entre deux relevés et RAPPROCHE le pessimisme de 1, les deux " +
-                 "versants du brouillard à la fois.\n\n" +
-                 "À 1 : zéro TFlop ne divise rien — run 1 se joue à l'aveugle, exactement comme " +
-                 "aujourd'hui — 99 TFlops divisent par 3, 1e12 par 13. Le logarithme est là pour " +
-                 "que l'effet s'adoucisse en fin de partie, où les TFlops montent à douze " +
-                 "chiffres ; une proportionnalité directe rendrait le capteur parfait dès le " +
-                 "premier Hardware sérieux.\n\n" +
-                 "MONTER cette valeur rend le Hardware plus payant en lisibilité, donc les " +
-                 "derniers pour-cent de jauge plus jouables. À 0 la mécanique est DÉSACTIVÉE et " +
-                 "le brouillard redevient fonction de la seule vitesse de remplissage : c'est le " +
-                 "réglage qui permet de comparer les deux modèles en jouant, sans toucher au " +
-                 "code — même intention que DynamicTraceCap.")]
-        [SerializeField, Range(0f, 3f)] private float _traceReadoutSensorPower = 1f;
+        [Tooltip("Puissance du CAPTEUR : ce que les TFlops NETTES achètent en visibilité. Le " +
+                 "diviseur vaut 1 + puissance × log10(1 + TFlops / échelle) ; il divise " +
+                 "l'intervalle (jusqu'au plancher) et ramène le pessimisme vers 1.\n\n" +
+                 "À 0,5 (2026-10-14) et une échelle de 1000, le plancher de 200 UT tombe vers 1e9 " +
+                 "TFlops — en fin de partie, comme le veut le GD. À 1, il tombait dès 1e6. À 0 la " +
+                 "mécanique est DÉSACTIVÉE : brouillard nominal à tous les stades.")]
+        [SerializeField, Range(0f, 3f)] private float _traceReadoutSensorPower = 0.5f;
 
         [Tooltip("ÉCHELLE du capteur, en TFlops : la capacité en dessous de laquelle acheter du " +
-                 "Hardware n'achète PAS de visibilité. Le diviseur vaut " +
-                 "1 + puissance × log10(1 + TFlops / échelle).\n\n" +
-                 "Sans elle, le logarithme concentrait tout l'effet sur les premiers TFlops : " +
-                 "mesuré le 2026-09-16, quatre Hardware de niveau 5 (377 TFlops) ramenaient déjà " +
-                 "le brouillard de 60 s à 16,8 s, soit l'essentiel du rachat consommé en quelques " +
-                 "minutes. L'écart entre la vérité et le relevé tombait à 0,6-3 points de jauge — " +
-                 "six pixels — et le joueur ne voyait plus rien du brouillard. C'est l'inverse de " +
-                 "l'intention : run 1 doit se jouer à l'aveugle.\n\n" +
-                 "À 1000, la même run garde 52,6 s de brouillard, et la clarté s'achète vraiment " +
-                 "en milieu de partie. MONTER cette valeur repousse le rachat plus tard encore.")]
+                 "Hardware n'achète presque PAS de visibilité. Sans elle, le logarithme " +
+                 "concentrait tout le rachat sur les premiers TFlops (mesuré le 2026-09-16 : le " +
+                 "joueur achetait sa clarté avant même de voir le brouillard). MONTER cette valeur " +
+                 "repousse le rachat plus tard.")]
         [SerializeField, Min(1f)] private float _traceReadoutSensorReferenceTFlops = 1000f;
 
         // ------------------------------------------------------------------
@@ -309,14 +286,17 @@ namespace Core.Models.Economy
         }
 #endif
 
-        public float TraceReadoutMinInterval => _traceReadoutMinInterval;
-        public float TraceReadoutMaxInterval => _traceReadoutMaxInterval;
-        public float TraceReadoutReferenceFillRate => _traceReadoutReferenceFillRate;
+        /// <summary>UT à remplir entre deux relevés, au départ.</summary>
+        public float TraceReadoutMaxIntervalUT => _traceReadoutMaxIntervalUT;
+
+        /// <summary>UT entre deux relevés, plancher atteint avec un parc conséquent.</summary>
+        public float TraceReadoutMinIntervalUT => _traceReadoutMinIntervalUT;
         public float TraceReadoutPessimism => _traceReadoutPessimism;
 
         /// <summary>
         /// Puissance du capteur : le brouillard est divisé par
-        /// <c>1 + TraceReadoutSensorPower × log10(1 + TFlops)</c>. À 0, la mécanique est éteinte.
+        /// <c>1 + TraceReadoutSensorPower × log10(1 + TFlops nettes / échelle)</c>. À 0, la
+        /// mécanique est éteinte.
         /// </summary>
         public float TraceReadoutSensorPower => _traceReadoutSensorPower;
 
