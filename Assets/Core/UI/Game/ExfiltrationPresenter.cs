@@ -155,8 +155,8 @@ namespace Core.UI.Game
             _view.ApplyState(
                 _loc.GetText(
                     "UI_EXFIL_READY",
-                    CurrencyFormatter.Format(cycles),
-                    CurrencyFormatter.FormatCost(_exfiltration.GetNextCycleThreshold(multiplier))),
+                    CurrencyFormatter.Format(cycles, _loc.Culture),
+                    CurrencyFormatter.FormatCost(_exfiltration.GetNextCycleThreshold(multiplier), _loc.Culture)),
                 interactable: clickable,
                 showProgress: false,
                 progress: 1f);

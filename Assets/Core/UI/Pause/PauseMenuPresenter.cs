@@ -6,7 +6,6 @@ using Core.UI.Options;
 using Cysharp.Threading.Tasks;
 using R3;
 using System;
-using System.Threading;
 using UnityEngine;
 using VContainer.Unity;
 
@@ -119,14 +118,18 @@ namespace Core.UI.Pause
         }
 
         /// <summary>
-        /// <see cref="CancellationToken.None"/>, à dessein : ce presenter vit dans la scène que la
-        /// transition décharge (voir <c>SceneLoader</c>).
+        /// Le jeton de fermeture du jeu, jamais celui de ce presenter : il vit dans la scène que
+        /// la transition décharge (voir <c>SceneLoader</c>).
         /// </summary>
         private async UniTaskVoid LoadMainMenuAsync()
         {
             try
             {
-                await _sceneLoader.LoadMainMenuSceneAsync(CancellationToken.None);
+                await _sceneLoader.LoadMainMenuSceneAsync(Application.exitCancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                // Le jeu se ferme pendant la transition : rien à signaler.
             }
             catch (Exception ex)
             {

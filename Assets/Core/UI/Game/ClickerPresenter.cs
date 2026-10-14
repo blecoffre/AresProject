@@ -30,7 +30,7 @@ namespace Core.UI.Game
                     _consolePresenter.Log(
                         _loc.GetText(
                             "LOG_MANUAL_OVERCLOCK",
-                            result.SecondsGained.ToString("0.#"),
+                            result.SecondsGained,
                             result.TracePenalty),
                         ConsoleLogType.Success);
                     break;

@@ -181,7 +181,7 @@ namespace Core.UI.Upgrades
             PurchaseQuote quote = _upgradeManager.GetQuote(_model.Config.Id, quantity, money);
 
             _view.UpdateCost(
-                _loc.GetText("UI_GENERATOR_COST", CurrencyFormatter.FormatCost(quote.TotalCost)));
+                _loc.GetText("UI_GENERATOR_COST", CurrencyFormatter.FormatCost(quote.TotalCost, _loc.Culture)));
 
             // Clé DISTINCTE pour le lot, et non la même avec un argument de plus : GetText passe
             // par string.Format, donc un gabarit portant {0} lèverait une FormatException sur
@@ -248,10 +248,13 @@ namespace Core.UI.Upgrades
                 // string.Format, donc un gabarit portant {1} lèverait une FormatException sur
                 // l'appel à un seul argument des onglets Hardware et Proxy.
                 // Pour un Script, la donnée utile est le versement et la cadence, pas un débit abstrait.
+                // La durée passe brute : son format (« 0.## ») vit dans la clé, et GetText
+                // l'applique avec la culture de la langue — « 1,5 s » en français, « 1.5 s » en
+                // anglais, quel que soit le Windows du joueur.
                 return _loc.GetText(
                     "UI_GENERATES_DATAS_CYCLE",
-                    CurrencyFormatter.Format(_model.GetCurrentYield()),
-                    _model.GetCurrentCycleDuration().ToString("0.##"));
+                    CurrencyFormatter.Format(_model.GetCurrentYield(), _loc.Culture),
+                    _model.GetCurrentCycleDuration());
             }
 
             // Un Proxy ne produit rien : ce qu'il vaut, c'est le répit qu'il achète. Annoncé en
@@ -262,10 +265,12 @@ namespace Core.UI.Upgrades
                 double seconds = _model.GetWipeSecondsForNextLevels(1)
                                * (1d + _prestige.TotalInterceptBonus.CurrentValue);
 
-                return _loc.GetText("UI_PROXY_WIPE", seconds.ToString("0.#"));
+                return _loc.GetText("UI_PROXY_WIPE", seconds);
             }
 
-            return _loc.GetText("UI_GENERATES_DATAS", CurrencyFormatter.Format(_model.GetCurrentYield()));
+            // Un Hardware ne verse rien : son rendement EST sa capacité, en TFlops brutes. Jusqu'au
+            // 2026-10-14 il s'annonçait « Génère X Datas par cycle », la phrase d'un Script.
+            return _loc.GetText("UI_GENERATES_TFLOPS", CurrencyFormatter.Format(_model.GetCurrentYield(), _loc.Culture));
         }
 
         private void HandleBuyRequest()

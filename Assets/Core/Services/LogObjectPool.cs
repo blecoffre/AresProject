@@ -1,60 +1,57 @@
-﻿using System.Collections.Generic;
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 
 namespace Core.Services.Console
 {
+    /// <summary>
+    /// Les lignes de la console : un anneau de N lignes instanciées une fois. La N+1-ième ligne
+    /// recycle la plus ancienne (« effet tapis roulant »).
+    ///
+    /// Tampon circulaire depuis le 2026-10-14, en O(1). Il recyclait par une liste
+    /// (<c>RemoveAt(0)</c>, linéaire) doublée d'une file, à l'époque où une ligne pouvait encore
+    /// revenir au pool ; plus rien ne la rend depuis le retrait de <c>ReturnToPool</c>, si bien
+    /// que les lignes s'utilisent toujours dans le même ordre — exactement un anneau.
+    /// </summary>
     public class LogObjectPool
     {
-        private readonly TextMeshProUGUI _prefab;
-        private readonly Transform _container;
-        private readonly Queue<TextMeshProUGUI> _pool;
-        private readonly List<TextMeshProUGUI> _activeItems;
-        private readonly int _maxPoolSize;
+        private readonly TextMeshProUGUI[] _items;
+
+        /// <summary>La prochaine ligne à servir : neuve au premier tour, la plus ancienne ensuite.</summary>
+        private int _next;
 
         public LogObjectPool(TextMeshProUGUI prefab, Transform container, int poolSize = 30)
         {
-            _prefab = prefab;
-            _container = container;
-            _maxPoolSize = poolSize;
-            _pool = new Queue<TextMeshProUGUI>(poolSize);
-            _activeItems = new List<TextMeshProUGUI>(poolSize);
+            int size = poolSize > 0 ? poolSize : 1;
+            _items = new TextMeshProUGUI[size];
 
-            InitializePool();
-        }
-
-        private void InitializePool()
-        {
-            for (int i = 0; i < _maxPoolSize; i++)
+            for (int i = 0; i < size; i++)
             {
-                TextMeshProUGUI item = Object.Instantiate(_prefab, _container);
+                TextMeshProUGUI item = Object.Instantiate(prefab, container);
                 item.gameObject.SetActive(false);
-                _pool.Enqueue(item);
+                _items[i] = item;
             }
         }
 
         /// <summary>
-        /// Récupère un élément du pool, ou recycle le plus ancien si le pool est plein (Effet Tapis Roulant).
-        /// Zéro instanciation à chaud.
+        /// La ligne suivante. Zéro instanciation et zéro allocation à chaud.
         /// </summary>
         public TextMeshProUGUI GetOrCreate()
         {
-            TextMeshProUGUI item;
+            TextMeshProUGUI item = _items[_next];
+            _next = (_next + 1) % _items.Length;
 
-            if (_pool.Count > 0)
+            // Déjà affichée : c'est la plus ancienne, qu'on recycle. Elle passe en bas de la liste
+            // visuelle, sous la ligne la plus récente. Au premier tour, les lignes sont activées
+            // dans l'ordre où elles ont été instanciées, donc déjà au bon rang.
+            if (item.gameObject.activeSelf)
             {
-                item = _pool.Dequeue();
+                item.transform.SetAsLastSibling();
             }
             else
             {
-                // Si tous les éléments sont actifs, on prend le plus ancien (le premier de la liste active)
-                item = _activeItems[0];
-                _activeItems.RemoveAt(0);
-                item.transform.SetAsLastSibling(); // Remet en bas de la liste visuelle
+                item.gameObject.SetActive(true);
             }
 
-            item.gameObject.SetActive(true);
-            _activeItems.Add(item);
             return item;
         }
     }

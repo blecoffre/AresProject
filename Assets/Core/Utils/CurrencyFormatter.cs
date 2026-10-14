@@ -1,12 +1,18 @@
 using System;
-using System.Globalization;
 
 namespace Core.Utils
 {
+    /// <summary>
+    /// Formate les montants du jeu (K, M, B, T).
+    ///
+    /// <b>La culture est un paramètre, et c'est celle de la langue du jeu</b> :
+    /// <c>ILocalizationService.Culture</c>. Jusqu'au 2026-10-14 ce formateur forçait la culture
+    /// invariante (« 1.5K ») pendant que les durées suivaient celle de Windows (« 1,5 s ») : deux
+    /// séparateurs sur le même écran. Désormais un joueur francophone lit « 1,5K » et « 1,5 s », un
+    /// anglophone « 1.5K » et « 1.5 s », quel que soit son système.
+    /// </summary>
     public static class CurrencyFormatter
     {
-        private static readonly CultureInfo Culture = CultureInfo.InvariantCulture;
-
         /// <summary>
         /// Précision affichée au-delà du millier : trois décimales, soit « 1,234K ».
         /// </summary>
@@ -27,19 +33,19 @@ namespace Core.Utils
         ///
         /// <b>Ne pas utiliser pour un prix</b> — voir <see cref="FormatCost"/>.
         /// </summary>
-        public static string Format(double value)
+        public static string Format(double value, IFormatProvider culture)
         {
             if (value >= 1_000_000_000_000d)
-                return (value / 1_000_000_000_000d).ToString("0.###", Culture) + "T";
+                return (value / 1_000_000_000_000d).ToString("0.###", culture) + "T";
             if (value >= 1_000_000_000d)
-                return (value / 1_000_000_000d).ToString("0.###", Culture) + "B";
+                return (value / 1_000_000_000d).ToString("0.###", culture) + "B";
             if (value >= 1_000_000d)
-                return (value / 1_000_000d).ToString("0.###", Culture) + "M";
+                return (value / 1_000_000d).ToString("0.###", culture) + "M";
             if (value >= 1_000d)
-                return (value / 1_000d).ToString("0.###", Culture) + "K";
+                return (value / 1_000d).ToString("0.###", culture) + "K";
 
             // En dessous de 1000, on affiche l'entier
-            return Math.Floor(value).ToString("0", Culture);
+            return Math.Floor(value).ToString("0", culture);
         }
 
         /// <summary>
@@ -51,18 +57,18 @@ namespace Core.Utils
         /// exactement 10 Datas lisait le prix, voyait le bouton rester gris, et concluait que le
         /// jeu était cassé. Un prix affiché doit être un montant qui SUFFIT toujours.
         /// </summary>
-        public static string FormatCost(double value)
+        public static string FormatCost(double value, IFormatProvider culture)
         {
             if (value >= 1_000_000_000_000d)
-                return CeilSubUnit(value / 1_000_000_000_000d) + "T";
+                return CeilSubUnit(value / 1_000_000_000_000d, culture) + "T";
             if (value >= 1_000_000_000d)
-                return CeilSubUnit(value / 1_000_000_000d) + "B";
+                return CeilSubUnit(value / 1_000_000_000d, culture) + "B";
             if (value >= 1_000_000d)
-                return CeilSubUnit(value / 1_000_000d) + "M";
+                return CeilSubUnit(value / 1_000_000d, culture) + "M";
             if (value >= 1_000d)
-                return CeilSubUnit(value / 1_000d) + "K";
+                return CeilSubUnit(value / 1_000d, culture) + "K";
 
-            return Math.Ceiling(Math.Round(value, NoiseDigits)).ToString("0", Culture);
+            return Math.Ceiling(Math.Round(value, NoiseDigits)).ToString("0", culture);
         }
 
         /// <summary>
@@ -70,11 +76,11 @@ namespace Core.Utils
         /// ne suffirait pas : « 1,234K » masque déjà 999 unités, et arrondir vers le bas cette
         /// décimale-là reproduirait exactement le défaut d'origine, un cran plus haut.
         /// </summary>
-        private static string CeilSubUnit(double scaledValue)
+        private static string CeilSubUnit(double scaledValue, IFormatProvider culture)
         {
             double ceiled = Math.Ceiling(Math.Round(scaledValue * SubUnitFactor, NoiseDigits)) / SubUnitFactor;
 
-            return ceiled.ToString("0.###", Culture);
+            return ceiled.ToString("0.###", culture);
         }
     }
 }

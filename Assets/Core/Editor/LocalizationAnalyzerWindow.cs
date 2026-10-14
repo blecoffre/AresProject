@@ -117,7 +117,7 @@ namespace Core.Editor
         private void ScanPrefabsAndScene()
         {
             // 1. Scan de la scène active
-            LocalizedText[] sceneTexts = FindObjectsOfType<LocalizedText>(true);
+            LocalizedText[] sceneTexts = FindObjectsByType<LocalizedText>(FindObjectsInactive.Include, FindObjectsSortMode.InstanceID);
             foreach (var loc in sceneTexts)
             {
                 ExtractKeyFromComponent(loc);
@@ -174,10 +174,13 @@ namespace Core.Editor
         }
 
         // --- Structures internes pour désérialiser ---
+        // Remplies par JsonUtility, par réflexion : le CS0649 est faux ici, et seulement ici.
+#pragma warning disable CS0649
         [System.Serializable]
         private class LocalizationData { public List<LocalizationItem> Items; }
 
         [System.Serializable]
         private class LocalizationItem { public string Key; public string Value; }
+#pragma warning restore CS0649
     }
 }

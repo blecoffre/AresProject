@@ -11,6 +11,62 @@
 
 ---
 
+## Correctifs du backlog — 2026-10-14
+
+Huit entrées soldées dans un même lot, avant la passe de test de la refonte :
+
+- **Libellé du Hardware** : « Génère X Datas par cycle » devient « Fournit X TFlops »
+  (`UI_GENERATES_TFLOPS`, qui remplace `UI_GENERATES_DATAS`, devenue sans usage).
+- **Pluriel** du bouton de sortie : « (Cycles CPU : +{0}) », juste au singulier comme au pluriel.
+- **Séparateur décimal** : tranché par Bertrand, **la culture de la langue du jeu**, jamais celle de
+  Windows. `ILocalizationService.Culture` (« fr » → fr-FR, mise à jour avant l'émission de
+  `CurrentLanguage`) ; `GetText` formate avec elle ; `CurrencyFormatter` la reçoit en paramètre ;
+  les trois `ToString("0.#")` des presenters sont passés dans les clés (`{0:0.#}`). Effet visible
+  en français : les montants passent de « 1.5K » à « 1,5K », comme les durées. L'en-tête repeint
+  désormais ses montants au changement de langue.
+- **Rechargement de scène suivi** : l'écran de fin jetait la tâche (`_ = …`) ; une exception y
+  disparaissait. Tâche suivie et loguée, double clic ignoré. L'écran de fin, le menu principal et
+  le menu de pause passent `Application.exitCancellationToken` au lieu de `CancellationToken.None`
+  (jamais leur propre jeton : ils vivent dans la scène que la transition décharge).
+- **`HeaderPresenter`** : ses quatre abonnements du constructeur passent dans `Start()`.
+- **`Currency`** : `Add` ignore tout montant non strictement positif ou non fini ; `TryRemove`
+  refuse NaN et l'infini ; `Reset` ramène un NaN à zéro.
+- **`LogObjectPool`** : tampon circulaire en O(1), sans liste ni file.
+- **Les 9 warnings** : trois `CS0649` de chaque DTO JSON (`#pragma` local, la réflexion de
+  `JsonUtility` remplit ces champs) et trois `CS0618` (`FindObjectsByType` /
+  `FindFirstObjectByType`, tri par InstanceID pour garder l'ordre d'avant). `dotnet build` : 0
+  warning.
+
+Les entrées du backlog, telles qu'elles étaient :
+
+- 📖 **Faux libellé sur l'onglet Hardware.** `GeneratorPresenter.BuildStatsText` affiche « Génère
+  X Datas par cycle » (`UI_GENERATES_DATAS`) pour un Hardware, qui fournit des TFlops. L'onglet
+  Proxy, lui, annonce son répit en secondes depuis le 2026-10-13.
+- 📖 **Pluriel non géré** : `UI_EXFIL_READY` dit « +1 **Cycles** CPU ». Reformuler la clé suffit ;
+  une vraie pluralisation demanderait un mécanisme dans `ILocalizationService`.
+- 📖 **Séparateur décimal dépendant de la machine**, trois endroits : `ClickerPresenter`
+  (`SecondsGained.ToString("0.#")`), et deux dans `GeneratorPresenter.BuildStatsText`
+  (`GetCurrentCycleDuration().ToString("0.##")`, et les secondes de répit d'un Proxy en `"0.#"`). Ils utilisent `CurrentCulture` — « 1,5 s » ici,
+  « 1.5 s » ailleurs — alors que `CurrencyFormatter` force `InvariantCulture`. Trancher une
+  politique unique, et la trancher avant les traductions.
+- 📖 **`GameOverPresenter.cs:183`** : `_ = _sceneLoader.LoadGameSceneAsync(CancellationToken.None)`.
+  Il manque le `.Forget()` — une exception y disparaîtrait sans log, et le joueur resterait bloqué
+  sur l'écran de fin — et `CancellationToken.None` rompt la chaîne d'annulation.
+  `MainMenuPresenter.cs:95` attend proprement mais passe aussi `None`.
+- 📖 **`HeaderPresenter` s'abonne dans son constructeur** (quatre abonnements) en plus de `Start()`,
+  contre la règle de `architecture.md` § R3.
+- 📖 **`Currency.Add()`** est public et sans garde contre les valeurs négatives ; les gardes sont
+  dans `UserCurrencies`, mais `Currency` est exposé.
+- 📖 **`LogObjectPool`** recycle par `_activeItems.RemoveAt(0)` et teste par un `Contains`
+  linéaire. Un tampon circulaire le rendrait O(1).
+- 📖 **3 warnings `CS0649`** dans `JsonLocalizationService` (champs remplis par `JsonUtility`) :
+  bénins, mais ils brouillent la règle « zéro warning nouveau ». À faire taire localement.
+- 📖 **3 warnings `CS0618` dormants** en code éditeur : `LocalizationAnalyzerWindow.cs:120` et
+  `LocalizationAutoInjectorEditor.cs:38,46` (`FindObjectOfType` / `FindObjectsOfType`, dépréciés
+  en Unity 6). Ils ne remontent qu'à la recompilation de ces fichiers.
+
+---
+
 ## Refonte « Time Attack », lot 5 — le nettoyage (2026-10-14)
 
 Retirés : les treize migrations de sauvegarde v0 → v13, leurs constantes et le champ legacy

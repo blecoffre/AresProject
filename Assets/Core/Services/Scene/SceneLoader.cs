@@ -18,10 +18,12 @@ namespace Core.Services.Scene
     /// Les deux scènes de contenu (menu principal et partie) sont mutuellement exclusives : une
     /// seule est chargée à la fois, en additif par-dessus la RootScene qui porte le métier.
     ///
-    /// ⚠️ Un appelant qui vit DANS la scène qu'il quitte (bouton du menu, écran de fin de run)
-    /// doit passer <see cref="CancellationToken.None"/> : son propre jeton est annulé par le
-    /// déchargement même qu'il demande, ce qui interromprait la transition à mi-chemin et
-    /// laisserait le joueur sans aucune scène.
+    /// ⚠️ Un appelant qui vit DANS la scène qu'il quitte (bouton du menu, écran de fin de run,
+    /// menu de pause) ne doit JAMAIS passer son propre jeton : il est annulé par le déchargement
+    /// même qu'il demande, ce qui interromprait la transition à mi-chemin et laisserait le joueur
+    /// sans aucune scène. Il passe <c>Application.exitCancellationToken</c>, qui ne coupe la
+    /// transition que si le jeu se ferme (depuis le 2026-10-14 ; c'était
+    /// <see cref="CancellationToken.None"/>, qui ne la coupait jamais).
     /// </summary>
     public class SceneLoader : ISceneLoader
     {

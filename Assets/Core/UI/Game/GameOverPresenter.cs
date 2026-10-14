@@ -5,10 +5,11 @@ using Core.Services.Simulation;
 using Core.UI.Prestige;
 using Core.Utils;
 using Core.UI.Theme;
+using Cysharp.Threading.Tasks;
 using R3;
 using System;
 using System.Text;
-using System.Threading;
+using UnityEngine;
 using VContainer.Unity;
 
 namespace Core.UI.Game
@@ -34,6 +35,12 @@ namespace Core.UI.Game
         // Le dernier bilan, pour le réécrire si la langue change pendant l'écran de fin.
         private RunSummary _lastSummary;
         private bool _hasSummary;
+
+        /// <summary>
+        /// Une relance est en cours. Un double clic sur « [ NOUVELLE INTRUSION ] » remettait la
+        /// session à zéro deux fois et lançait deux rechargements de scène concurrents.
+        /// </summary>
+        private bool _isRestarting;
 
         /// <summary>
         /// Réutilisé d'une fin de run à l'autre. Une fin de run est rare, mais le tampon coûte
@@ -141,7 +148,7 @@ namespace Core.UI.Game
 
             _bilan.AppendLine(_loc.GetText(
                 "UI_RUN_END_STAT_DATA",
-                CurrencyFormatter.Format(summary.DataGenerated)));
+                CurrencyFormatter.Format(summary.DataGenerated, _loc.Culture)));
 
             // La Trace atteinte ne dit quelque chose que sur une sortie VOLONTAIRE : après une
             // saisie elle vaut 100 % par définition, et l'afficher serait du bruit.
@@ -170,7 +177,7 @@ namespace Core.UI.Game
 
             _bilan.AppendLine(_loc.GetText(
                 "UI_RUN_END_STAT_CYCLES",
-                CurrencyFormatter.Format(summary.CpuCyclesEarned)));
+                CurrencyFormatter.Format(summary.CpuCyclesEarned, _loc.Culture)));
 
             // L'écart n'est affiché que s'il existe vraiment : un Effacement Propre qui ne
             // rapporte rien de plus — parce que le gain de base est nul — n'a pas de bonus à
@@ -179,7 +186,7 @@ namespace Core.UI.Game
             {
                 _bilan.Append(_loc.GetText(
                     "UI_RUN_END_STAT_CLEAN_BONUS",
-                    CurrencyFormatter.Format(summary.CpuCyclesEarned - summary.CpuCyclesBeforeBonus)));
+                    CurrencyFormatter.Format(summary.CpuCyclesEarned - summary.CpuCyclesBeforeBonus, _loc.Culture)));
             }
 
             // Le symétrique, sur une saisie. Même règle que ci-dessus : rien à annoncer quand
@@ -188,7 +195,7 @@ namespace Core.UI.Game
             {
                 _bilan.Append(_loc.GetText(
                     "UI_RUN_END_STAT_SEIZED_LOSS",
-                    CurrencyFormatter.Format(summary.CpuCyclesBeforeBonus - summary.CpuCyclesEarned)));
+                    CurrencyFormatter.Format(summary.CpuCyclesBeforeBonus - summary.CpuCyclesEarned, _loc.Culture)));
             }
 
             return _bilan.ToString();
@@ -196,8 +203,35 @@ namespace Core.UI.Game
 
         private void HandleRestart()
         {
+            if (_isRestarting) return;
+            _isRestarting = true;
+
             _sessionManager.ResetSession();
-            _ = _sceneLoader.LoadGameSceneAsync(CancellationToken.None);
+            RestartAsync().Forget();
+        }
+
+        /// <summary>
+        /// Recharge la GameScene. La tâche était jetée (<c>_ = …</c>) jusqu'au 2026-10-14 : une
+        /// exception y disparaissait sans un mot, et le joueur restait bloqué sur l'écran de fin.
+        ///
+        /// Le jeton est celui de la fermeture du jeu, jamais celui de ce presenter : il vit dans la
+        /// scène que ce chargement décharge, son jeton serait annulé en pleine transition et le
+        /// joueur se retrouverait sans aucune scène (voir <see cref="ISceneLoader"/>).
+        /// </summary>
+        private async UniTaskVoid RestartAsync()
+        {
+            try
+            {
+                await _sceneLoader.LoadGameSceneAsync(Application.exitCancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                // Le jeu se ferme pendant la transition : rien à signaler.
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GAME OVER] Échec du rechargement de la GameScene : {ex}");
+            }
         }
 
         public void Dispose()

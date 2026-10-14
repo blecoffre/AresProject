@@ -253,7 +253,7 @@ namespace Core.UI.Prestige
         {
             _view.SetCyclesText(_loc.GetText(
                 "UI_PRESTIGE_SCREEN_CYCLES",
-                CurrencyFormatter.Format(_currencies.CpuCycles.Amount.CurrentValue)));
+                CurrencyFormatter.Format(_currencies.CpuCycles.Amount.CurrentValue, _loc.Culture)));
 
             RefreshAll();
         }

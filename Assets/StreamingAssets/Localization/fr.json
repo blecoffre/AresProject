@@ -30,7 +30,7 @@
     },
     {
       "Key": "LOG_MANUAL_OVERCLOCK",
-      "Value": "Overclock : +{0} s sur les cycles en cours. Jauge +{1:0} UT."
+      "Value": "Overclock : +{0:0.#} s sur les cycles en cours. Jauge +{1:0} UT."
     },
     {
       "Key": "LOG_UPGRADE_PURCHASED",
@@ -41,12 +41,12 @@
       "Value": "[NOUVEAU MATÉRIEL DÉTECTÉ] : {0}"
     },
     {
-      "Key": "UI_GENERATES_DATAS",
-      "Value": "Génère {0} Datas par cycle"
+      "Key": "UI_GENERATES_TFLOPS",
+      "Value": "Fournit {0} TFlops"
     },
     {
       "Key": "UI_GENERATES_DATAS_CYCLE",
-      "Value": "Génère {0} Datas toutes les {1} s"
+      "Value": "Génère {0} Datas toutes les {1:0.##} s"
     },
     {
       "Key": "UI_GENERATOR_LEVEL",
@@ -558,7 +558,7 @@
     },
     {
       "Key": "UI_EXFIL_READY",
-      "Value": "> [PRÊT] WIPE SYSTÈME (Gain : +{0} Cycles CPU) → Prochain à {1} Datas"
+      "Value": "> [PRÊT] WIPE SYSTÈME (Cycles CPU : +{0}) → Prochain à {1} Datas"
     },
     {
       "Key": "LOG_PURGE_1",
@@ -1250,7 +1250,7 @@
     },
     {
       "Key": "UI_PROXY_WIPE",
-      "Value": "Efface {0} s de traque par achat"
+      "Value": "Efface {0:0.#} s de traque par achat"
     },
     {
       "Key": "UI_PRESTIGE_EFFECT_HARDEN",

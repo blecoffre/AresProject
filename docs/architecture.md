@@ -60,6 +60,7 @@ La langue change en cours de partie, sans recharger de scène. `ILocalizationSer
 - Un filtre « rien n'a bougé » (ex. `GeneratorPresenter.RefreshPurchaseState`) doit être invalidé au changement de langue.
 - Exception assumée : les lignes déjà écrites dans la console restent dans leur langue d'origine (c'est un historique).
 - `LocalizedText` suit la langue tout seul, mais reste soumis à la liste `autoInjectGameObjects` : préférer un texte écrit par le presenter.
+- **Un nombre affiché suit la culture de la LANGUE du jeu, jamais celle de Windows** (2026-10-14). `ILocalizationService.Culture` la porte (« fr » → fr-FR). Le format vit dans la clé (`{0:0.#}`) et `GetText` l'applique ; un montant passe par `CurrencyFormatter.Format(valeur, _loc.Culture)`. Jamais de `ToString("0.#")` sans culture dans un presenter : il prendrait celle du poste, et un joueur anglais sur un Windows français lirait des virgules. Les montants repeints au changement de langue en font partie.
 
 Les langues proposées sont les fichiers présents dans `StreamingAssets/Localization`. Chaque fichier porte les clés `LANGUAGE_NAME_<CODE>` de **toutes** les langues, écrites dans leur propre langue (« Español »). La langue choisie est mémorisée dans `settings.json` ; vide, elle déclenche l'écran de choix du premier lancement (`LanguagePickerPresenter`, langue du système présélectionnée).
 

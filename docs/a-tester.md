@@ -29,7 +29,7 @@
   `chantier/refonte-time-attack` remplace toute sauvegarde d'un autre format par une partie neuve.
   Copier le fichier AVANT le premier lancement, pour pouvoir revenir sur `main`.
 - **Le test de la refonte se fait d'un bloc, sur une sauvegarde neuve** (Bertrand, 2026-10-14) :
-  § 0 à § 0 quinquies. Supprimer `savegame.json` avant de commencer.
+  § 0 à § 0 sexies. Supprimer `savegame.json` avant de commencer.
 
 ---
 
@@ -121,6 +121,21 @@ que rien d'utile n'est parti avec.
 | 5.3 | **Les générateurs n'ont pas bougé** | Run neuve, regarder « Campagne de Phishing Basique » puis « Vieux PC Recyclé ». | Coûts 10 et 50 ; « Campagne de Phishing Basique » boucle son cycle en ~1,5 s au niveau 1, comme avant. |
 | 5.4 | **L'écran de fin sans le bouton mort** | Finir une run. | Bilan, arbre et « [ NOUVELLE INTRUSION ] » en place ; aucun vide là où dormait l'ancien bouton « [ DÉPENSER — NOYAU IA ] ». Aucune clé brute affichée. |
 | 5.5 | **Les palettes** | Options > Accessibilité, passer par les quatre modes de vision. | Les couleurs de l'arbre et de la jauge changent comme avant ; aucune erreur en console. |
+
+## 0 sexies. Correctifs du backlog (2026-10-14)
+
+Compilés (Unity et `dotnet build`, zéro erreur, **zéro warning**), **jamais joués**. Huit petits
+défauts, testés en passant pendant la session de la refonte.
+
+| # | Quoi | Comment | Ce qu'on doit voir |
+|---|---|---|---|
+| 6.1 | **Libellé du Hardware** | Onglet Hardware, « Vieux PC Recyclé » au niveau 1. | « Fournit 2 TFlops », et plus « Génère … Datas par cycle ». Les Scripts gardent « Génère X Datas toutes les Y s ». |
+| 6.2 | **Pluriel du bouton de sortie** | Une run qui rapporte un seul point, puis plusieurs. | « (Cycles CPU : +1) », puis « (Cycles CPU : +3) » : juste dans les deux cas. |
+| 6.3 | **Virgule partout** | Dépasser 1 000 Datas ; regarder l'en-tête, un coût au-delà de 1 000, la durée d'un Script, le répit d'un Proxy, une ligne d'Overclock en console. | Une virgule partout : « 1,234K », « 1,5 s », « +0,5 s ». Avant, les montants avaient un point (« 1.234K ») et les durées une virgule. |
+| 6.4 | **Relance depuis l'écran de fin** | Finir une run, double-cliquer vite « [ NOUVELLE INTRUSION ] ». | Une seule run neuve, aucune erreur en console. |
+| 6.5 | **Allers-retours de scène** | Échap, « Menu principal », puis « Continuer » ; recommencer deux fois. | Chaque transition aboutit ; aucune erreur en console. |
+| 6.6 | **En-tête au démarrage** | Lancer une partie neuve. | Datas, TFlops, Cycles CPU et « + … /s » s'affichent dès l'arrivée en jeu, comme avant (leurs abonnements ont changé de place). |
+| 6.7 | **Console qui tourne** | Laisser défiler plus de 30 lignes (achats, Overclocks). | Les plus anciennes disparaissent par le haut, la plus récente reste en bas, dans l'ordre. |
 
 ## 1. Fin de partie et économie — d'avant la refonte, jamais jouées
 

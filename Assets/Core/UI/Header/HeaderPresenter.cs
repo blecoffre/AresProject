@@ -45,18 +45,23 @@ namespace Core.UI.Header
             _prestige = prestige;
 
             _disposables = new DisposableBag();
+        }
 
+        /// <summary>
+        /// Tous les abonnements naissent ici, aucun dans le constructeur (règle d'architecture,
+        /// § R3) : un constructeur appelé par le conteneur ne doit pas avoir d'effets de bord.
+        /// Quatre d'entre eux vivaient dans le constructeur jusqu'au 2026-10-14.
+        /// </summary>
+        public void Start()
+        {
             // Le « + … /s » se compose ICI, pas dans la vue : c'est le presenter qui tient la
             // localisation. La vue n'a plus qu'à poser la chaîne.
             _upgradeManager.TotalMoneyYieldPerSecond.Subscribe(RenderYield)
-            .AddTo(ref _disposables);
+                .AddTo(ref _disposables);
 
             // Capacité de calcul dérivée, et non plus une monnaie accumulée.
-            _upgradeManager.NetTFlops.Subscribe(val =>
-            {
-                _view.UpdateComputerPowerDisplay(CurrencyFormatter.Format(val));
-            })
-            .AddTo(ref _disposables);
+            _upgradeManager.NetTFlops.Subscribe(RenderTFlops)
+                .AddTo(ref _disposables);
 
             // L'aiguille suit le RELEVÉ, pas la vérité. Le ThreatManager n'est plus lu ici : la
             // logique du jeu garde sa jauge exacte, l'affichage n'a droit qu'à un capteur qui
@@ -70,10 +75,7 @@ namespace Core.UI.Header
 
             _traceReadout.EstimatedMaxFraction.Subscribe(_view.UpdateTraceBand)
                 .AddTo(ref _disposables);
-        }
 
-        public void Start()
-        {
             // L'unité est un texte statique : écrite ici, pas par un LocalizedText de plus à ne
             // pas oublier dans autoInjectGameObjects.
             RenderUnits();
@@ -113,12 +115,35 @@ namespace Core.UI.Header
                 .AddTo(ref _disposables);
         }
 
+        /// <summary>
+        /// Les montants aussi : leur séparateur décimal suit la langue (« 1,5K » / « 1.5K »).
+        /// Sans les repeindre ici, les TFlops et les Cycles CPU garderaient l'ancien format
+        /// jusqu'à leur prochaine variation, qui peut tarder toute une run.
+        /// </summary>
         private void RefreshLocalizedTexts()
         {
             RenderUnits();
             RenderYield(_upgradeManager.TotalMoneyYieldPerSecond.CurrentValue);
+            RenderTFlops(_upgradeManager.NetTFlops.CurrentValue);
+            RenderMoney(_userCurrencies.Money.Amount.CurrentValue);
+            RenderCpuCycles(_userCurrencies.CpuCycles.Amount.CurrentValue);
             RebuildTierDisplay();
             RenderReadout(_traceReadout.LastKnownFraction.CurrentValue);
+        }
+
+        private void RenderTFlops(double tflops)
+        {
+            _view.UpdateComputerPowerDisplay(CurrencyFormatter.Format(tflops, _loc.Culture));
+        }
+
+        private void RenderMoney(double money)
+        {
+            _view.UpdateMoneyDisplay(CurrencyFormatter.Format(money, _loc.Culture));
+        }
+
+        private void RenderCpuCycles(double cycles)
+        {
+            _view.UpdateCpuCyclesDisplay(CurrencyFormatter.Format(cycles, _loc.Culture));
         }
 
         private void RenderUnits()
@@ -129,7 +154,7 @@ namespace Core.UI.Header
 
         private void RenderYield(double yieldPerSecond)
         {
-            string formattedYield = CurrencyFormatter.Format(yieldPerSecond);
+            string formattedYield = CurrencyFormatter.Format(yieldPerSecond, _loc.Culture);
             _view.UpdateMoneyYieldDisplay(_loc.GetText("UI_YIELD_PER_SECOND", formattedYield));
         }
 
@@ -190,13 +215,12 @@ namespace Core.UI.Header
         {
             // Dès que Datas.Amount change, on le formate et on l'envoie à la vue.
             _userCurrencies.Money.Amount
-                .Subscribe(val => _view.UpdateMoneyDisplay(CurrencyFormatter.Format(val)))
+                .Subscribe(RenderMoney)
                 .AddTo(ref _disposables);
-
 
             // Et les Cycles CPU
             _userCurrencies.CpuCycles.Amount
-                .Subscribe(val => _view.UpdateCpuCyclesDisplay(CurrencyFormatter.Format(val)))
+                .Subscribe(RenderCpuCycles)
                 .AddTo(ref _disposables);
         }
 

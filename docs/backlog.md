@@ -30,8 +30,8 @@ notes de session : le nœud de la barre d'espace, trois changements d'économie,
 Steam Deck.
 
 État de la base au 2026-10-14, après la refonte « Time Attack » (lots 1 à 5) : 113 fichiers
-runtime, 9 fichiers d'éditeur. `dotnet build` : 0 erreur ; 3 warnings `CS0649` dans le code de jeu
-et 6 en code d'éditeur, tous anciens (voir § 7).
+runtime, 9 fichiers d'éditeur. `dotnet build` : **0 erreur, 0 warning** depuis les correctifs du
+2026-10-14 — tout warning est donc nouveau.
 
 ---
 
@@ -80,7 +80,9 @@ Rien de tout cela n'empêche de jouer aujourd'hui. Aucun build public ne doit pa
   apprécié, cf. `audio-licences.md`).
 - 📖 **Déclaration « contenu créé avec une IA »** au questionnaire Steam, tant que les sons
   synthétisés sont en jeu — et les traductions, si elles sont faites par IA comme prévu.
-- 📖 **Traductions EN et ES.** Seul `fr.json` existe (317 clés). Reportées à la fin du contenu,
+- 📖 **Traductions EN et ES.** Seul `fr.json` existe (317 clés). Les nombres suivent déjà la
+  culture de la langue chargée (`ILocalizationService.Culture`, 2026-10-14) : un `en.json` suffira à
+  passer au point décimal. Reportées à la fin du contenu,
   décision du 2026-10-01 : inutile de traduire un texte qui va encore bouger.
 
 ## 2. Du contenu qui s'achète et ne fait rien
@@ -101,16 +103,13 @@ Le détail chiffré et les chantiers d'équilibrage sont dans `etat-des-lieux.md
 
 ## 4. Défauts d'affichage et de texte
 
-- 📖 **Faux libellé sur l'onglet Hardware.** `GeneratorPresenter.BuildStatsText` affiche « Génère
-  X Datas par cycle » (`UI_GENERATES_DATAS`) pour un Hardware, qui fournit des TFlops. L'onglet
-  Proxy, lui, annonce son répit en secondes depuis le 2026-10-13.
-- 📖 **Pluriel non géré** : `UI_EXFIL_READY` dit « +1 **Cycles** CPU ». Reformuler la clé suffit ;
-  une vraie pluralisation demanderait un mécanisme dans `ILocalizationService`.
-- 📖 **Séparateur décimal dépendant de la machine**, trois endroits : `ClickerPresenter`
-  (`SecondsGained.ToString("0.#")`), et deux dans `GeneratorPresenter.BuildStatsText`
-  (`GetCurrentCycleDuration().ToString("0.##")`, et les secondes de répit d'un Proxy en `"0.#"`). Ils utilisent `CurrentCulture` — « 1,5 s » ici,
-  « 1.5 s » ailleurs — alors que `CurrencyFormatter` force `InvariantCulture`. Trancher une
-  politique unique, et la trancher avant les traductions.
+- 🔬 **Un solde s'affiche ARRONDI, pas tronqué** (constaté le 2026-10-14 dans l'éditeur).
+  `CurrencyFormatter.Format` se dit « tronque vers le bas : on n'annonce jamais au joueur plus
+  d'argent qu'il n'en a », mais au-delà de 1 000 il passe par `ToString("0.###")`, qui arrondit :
+  1 234,5 Datas s'affichent « 1,235K ». L'écart vaut au plus une demi-unité de la 3e décimale, soit
+  500 millions à l'échelle des « T ». Un joueur peut donc lire un solde qui suffit et voir le bouton
+  rester gris. Remède : tronquer comme `FormatCost` plafonne (`Math.Floor` à la 3e décimale).
+
 - 🔬📖 **La jauge de l'exfiltration est toujours vide.** `ExfiltrationView._progressFill` vaut
   `{fileID: 0}` dans la GameScene (constaté en jeu le 2026-08-28, relu dans la scène le
   2026-10-13). Le libellé porte encore le pourcentage, mais la barre de progression vers le
@@ -149,17 +148,11 @@ Le détail chiffré et les chantiers d'équilibrage sont dans `etat-des-lieux.md
 
 ## 5. Architecture et cycle de vie
 
-- 📖 **`GameOverPresenter.cs:183`** : `_ = _sceneLoader.LoadGameSceneAsync(CancellationToken.None)`.
-  Il manque le `.Forget()` — une exception y disparaîtrait sans log, et le joueur resterait bloqué
-  sur l'écran de fin — et `CancellationToken.None` rompt la chaîne d'annulation.
-  `MainMenuPresenter.cs:95` attend proprement mais passe aussi `None`.
 - 📖 **`AutoInjectOnInstantiate` est un Service Locator** (`LifetimeScope.Find` dans `Awake()`), et
   🔬 il ne s'exécute pas sur un objet inactif : les générateurs instanciés dans un onglet masqué
   ne sont injectés qu'à l'ouverture de l'onglet (invisible en pratique). Le remède est déjà là :
   `UpgradePanelView._resolver`, injecté et **jamais lu** — `_resolver.Instantiate(prefab, parent)`
   injecte l'arbre entier et rend le composant inutile.
-- 📖 **`HeaderPresenter` s'abonne dans son constructeur** (quatre abonnements) en plus de `Start()`,
-  contre la règle de `architecture.md` § R3.
 - 📖 **La liste `autoInjectGameObjects` de `GameSceneLifetimeScope` se tient à la main.** Un
   `LocalizedText` oublié affiche sa clé brute, sans erreur ni warning. Deux cas trouvés le
   2026-09-22, corrigés le 2026-10-02 ; aucun contrôle automatique n'empêche le suivant. Consigne
@@ -169,8 +162,6 @@ Le détail chiffré et les chantiers d'équilibrage sont dans `etat-des-lieux.md
   **Piste à évaluer au lot Steam** : l'**Auto-Cloud** de Steamworks, réglé sur `savegame.json` seul
   (`settings.json` décrit la machine et ne doit pas voyager), synchronise sans une ligne de code
   — les deux classes deviendraient supprimables. Sinon, voir `persistence.md` § Steam.
-- 📖 **`Currency.Add()`** est public et sans garde contre les valeurs négatives ; les gardes sont
-  dans `UserCurrencies`, mais `Currency` est exposé.
 - 📖 **Namespaces ≠ dossiers**, et deux dossiers pour la sauvegarde (`Services/Persistence` et
   `Services/Save`). Détail dans `architecture.md` § Dette structurelle.
 
@@ -180,9 +171,7 @@ Le jeu tourne sans ralentissement perceptible. Rien ici n'a été profilé.
 
 - 📖 **`ILocalizationService.GetText<T0..T3>`** promet « Zero Boxing » mais passe par
   `string.Format(string, object…)`, qui boxe chaque type valeur (TODO dans
-  `JsonLocalizationService.cs:128`). → `ZString.Format<T>`, déjà disponible avec UniTask.
-- 📖 **`LogObjectPool`** recycle par `_activeItems.RemoveAt(0)` et teste par un `Contains`
-  linéaire. Un tampon circulaire le rendrait O(1).
+  `JsonLocalizationService`). → `ZString.Format<T>`, déjà disponible avec UniTask.
 - ⚖️ **Repeinte de l'arbre** : 21 nœuds × 3 passes par achat de prestige, chacune avec un
   `Math.Pow` et une chaîne par nœud. Jamais mesuré, et probablement sans importance (achat rare,
   écran modal). Le remède, si besoin, est celui de `GeneratorPresenter` : cache et
@@ -196,11 +185,6 @@ Le jeu tourne sans ralentissement perceptible. Rien ici n'a été profilé.
   `PrestigeManager`, `ThreatManager`, `CurrencyFormatter` et `UserCurrencies` ne touchent presque
   pas Unity : c'est le meilleur retour sur investissement du projet. Le défaut corrigé dans
   `a772e67` (deux points et demi comptés pour trois) est exactement ce qu'un test attrape.
-- 📖 **3 warnings `CS0649`** dans `JsonLocalizationService` (champs remplis par `JsonUtility`) :
-  bénins, mais ils brouillent la règle « zéro warning nouveau ». À faire taire localement.
-- 📖 **3 warnings `CS0618` dormants** en code éditeur : `LocalizationAnalyzerWindow.cs:120` et
-  `LocalizationAutoInjectorEditor.cs:38,46` (`FindObjectOfType` / `FindObjectsOfType`, dépréciés
-  en Unity 6). Ils ne remontent qu'à la recompilation de ces fichiers.
 
 ## 8. Accessibilité
 

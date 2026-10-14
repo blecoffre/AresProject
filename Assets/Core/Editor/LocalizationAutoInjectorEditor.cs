@@ -35,7 +35,7 @@ namespace Core.Editor
         private static void ScanAndRegisterInScene()
         {
             // 1. Trouver le LifetimeScope de la scène actuelle
-            LifetimeScope scope = Object.FindObjectOfType<LifetimeScope>();
+            LifetimeScope scope = Object.FindFirstObjectByType<LifetimeScope>();
             if (scope == null)
             {
                 EditorUtility.DisplayDialog("Erreur", "Aucun LifetimeScope trouvé dans cette scène !", "OK");
@@ -43,7 +43,8 @@ namespace Core.Editor
             }
 
             // 2. Trouver tous les LocalizedText présents dans la scène (même désactivés)
-            LocalizedText[] foundLocalizedTexts = Object.FindObjectsOfType<LocalizedText>(true);
+            LocalizedText[] foundLocalizedTexts =
+                Object.FindObjectsByType<LocalizedText>(FindObjectsInactive.Include, FindObjectsSortMode.InstanceID);
 
             // 3. Préparer la liste cible via la réflexion (car le champ AutoInjectGameObjects est sérialisé)
             SerializedObject serializedScope = new SerializedObject(scope);

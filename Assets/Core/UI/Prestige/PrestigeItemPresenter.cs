@@ -113,7 +113,7 @@ namespace Core.UI.Prestige
                 // Jamais acheté, branche ouverte : le prix est la seule information actionnable,
                 // et « Niv. 0 / 10 » n'en est pas une.
                 default:
-                    statusText = _loc.GetText("UI_PRESTIGE_COST", CurrencyFormatter.FormatCost(cost));
+                    statusText = _loc.GetText("UI_PRESTIGE_COST", CurrencyFormatter.FormatCost(cost, _loc.Culture));
                     break;
             }
 

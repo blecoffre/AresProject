@@ -65,7 +65,7 @@ namespace Core.UI.Game
             // La capacité est lue MAINTENANT : c'est celle qui a franchi le seuil, et le joueur
             // voudra voir le chiffre qu'il a atteint, pas le seuil qu'il visait. Mémorisée pour
             // qu'un changement de langue réaffiche le même chiffre.
-            _shownTFlops = CurrencyFormatter.Format(_upgrades.NetTFlops.CurrentValue);
+            _shownTFlops = CurrencyFormatter.Format(_upgrades.NetTFlops.CurrentValue, _loc.Culture);
             _isShown = true;
             Render();
         }

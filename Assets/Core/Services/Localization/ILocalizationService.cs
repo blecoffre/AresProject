@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using R3;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 
 namespace Core.Services.Localization
@@ -14,6 +15,16 @@ namespace Core.Services.Localization
         /// ReactiveProperty — l'abonnement peut donc servir de premier rendu.
         /// </summary>
         ReadOnlyReactiveProperty<string> CurrentLanguage { get; }
+
+        /// <summary>
+        /// La culture de la langue chargée (« fr » → fr-FR) : séparateur décimal et format des
+        /// nombres. <b>Celle de la langue du JEU, jamais celle de Windows</b> — un joueur qui joue
+        /// en anglais sur un Windows français doit lire « 1.5 s », pas « 1,5 s ». Les gabarits de
+        /// <see cref="GetText{T0}"/> l'appliquent d'eux-mêmes ; tout nombre formaté hors gabarit
+        /// (CurrencyFormatter) la reçoit en paramètre. Invariante tant qu'aucune langue n'est
+        /// chargée. Mise à jour AVANT l'émission de <see cref="CurrentLanguage"/>.
+        /// </summary>
+        CultureInfo Culture { get; }
 
         /// <summary>Codes des langues dont un fichier existe, triés.</summary>
         IReadOnlyList<string> AvailableLanguages { get; }
