@@ -12,7 +12,7 @@ contourne.
 > | Lot | Domaine | Ce document |
 > |---|---|---|
 > | 1 | Jauge de l'A.M.I., Proxies, Overclock, branches Blindage / Interception / Overclock, retrait du Ghost Cache | **à jour** |
-> | 2 | Data Wiper | § « Bouton d'Urgence » encore à l'ancien modèle |
+> | 2 | Data Wiper ; écran de fin de run sauvegardé | **à jour** |
 > | 3 | Brouillard réduit à l'affichage, marqueurs de palier | § « Le relevé de Trace » encore à l'ancien modèle |
 > | 4 | Arbre à 20 nœuds, Noyau Compilé, `P_CORE_OVERRIDE`, Extraction, Économie | §§ du prestige encore à l'ancien modèle |
 > | 5 | Nettoyage | — |
@@ -51,8 +51,8 @@ d'économie (`P_DATAM`, le Noyau) un accélérateur de mort. Le prestige doit ac
 cette règle, il deviendrait un soin surpuissant (« Le sacrifice devient un vrai choix punitif » —
 le GD, 2026-10-13).
 
-*Le Noyau et le sacrifice permanent arrivent aux lots 4 et 2. Au lot 1, la tranche immobilisée
-pendant 60 s par l'ancien Data Wiper est retranchée des seules TFlops nettes.*
+*Le Noyau arrive au lot 4. Le sacrifice du Data Wiper (lot 2) est retranché des seules TFlops
+nettes, jusqu'à la fin de la run.*
 
 **Conséquence technique (conservée depuis août) :** `SaveData` ne stocke aucune TFlop, elles se
 recalculent depuis les niveaux d'Upgrades.
@@ -432,9 +432,9 @@ elle tient quelle que soit la puissance installée.
 garde-fou, un parc de fin de partie le ramènerait sous la durée d'une frame, sans rien gagner de
 lisible — une aiguille relevée deux fois par seconde est déjà continue pour l'œil.
 
-⚠️ **Le contrecoup du Data Wiper aveugle aussi le capteur, et c'est voulu.** Les TFlops nettes sont la
-capacité EFFECTIVE : l'`UpgradeManager` lui a déjà retiré la tranche immobilisée. Purger sa Trace
-fait donc perdre la vue pendant les 60 s de contrecoup — le contrecoup s'étend à tout ce que les
+⚠️ **Le sacrifice du Data Wiper aveugle aussi le capteur, et c'est voulu.** Les TFlops nettes sont la
+capacité EFFECTIVE : l'`UpgradeManager` leur a déjà retiré la part sacrifiée. Purger sa Trace
+fait donc perdre de la vue jusqu'à la fin de la run — le sacrifice s'étend à tout ce que les
 TFlops nettes alimentent, comme il le fait déjà sur la compression des cycles.
 
 **Mesuré le 2026-09-16, posture agressive (palier 90 %), campagnes tronquées :**
@@ -572,47 +572,40 @@ pose sur une partie JOUÉE**, jamais sur une sortie de simulateur. Le harnais d'
 simulait l'ancien modèle de Trace, a été supprimé le 2026-10-13 ; il sera refait sur le nouveau
 modèle si le GD a besoin de mesures.
 
-## Bouton d'Urgence — le « Data Wiper »
+## Le Data Wiper — un sacrifice, pas une recharge (lot 2, 2026-10-14)
 
-Refondu le 2026-08-27. L'ancienne version achetait l'effacement avec de l'argent, comme un
-pot-de-vin. La nouvelle ne coûte **rien** : elle **exige** de la puissance de calcul. Effacer ses
-traces, c'est envoyer un ver dans les serveurs fédéraux — il faut de la force brute, pas des
-billets.
+Le bouton d'urgence, débloqué par le nœud `P_EMERG` (« Protocole d'Urgence »). Effacer ses traces,
+c'est envoyer un ver dans les serveurs fédéraux — et la puissance qu'il mobilise ne revient pas.
 
-| Paramètre | Valeur |
+| | Règle |
 |---|---|
-| **Prérequis** | Posséder un palier de TFlops. Rien n'est dépensé |
-| **Escalade du palier** | ×3 par usage sur la run ⚠️ *valeurs provisoires : 50 TFlops de base, ×3 — non chiffrées par le GD* |
-| **Effet** | ~~−20 points ABSOLUS de jauge~~ → depuis le 2026-08-30 : **−25 % de la Trace accumulée** (proportionnel, `EmergencyTraceReduction` = 0,25). À 60 % de jauge on tombe à 45 %. Un retrait absolu ne pesait plus rien face à un plafond de plusieurs millions |
-| **Contrecoup** | **30 % des TFlops immobilisées pendant 60 s**, +10 points par usage (30, 40, 50…), plafonné à 90 % |
-| **Délai** | **5 minutes** entre deux activations |
-| **Déblocage** | Nœud de prestige `P_EMERG` |
+| Effet | **−2 500 UT** sur la jauge (un quart), instantanément. Sous zéro, l'excédent est perdu |
+| Coût | **+30 % de TFlops nettes sacrifiées**, jusqu'à la fin de la run |
+| Plafond | **90 %**, strict : trois usages par run, puis le bouton est épuisé |
+| Délai | **Aucun** : utilisable à tout moment, jauge vide comprise |
+| Prérequis | Le nœud seul. Plus de palier de TFlops à posséder |
+| Wipe de fin de run | Remet le sacrifice et les usages à zéro |
 
-**Le contrecoup est le cœur de la mécanique.** Les TFlops alimentent aussi la dissipation des
-Proxies : purger la Trace **affaiblit la défense juste après**, et la jauge remonte plus vite.
-Mesuré : 52 TFlops → 36,4, dissipation de 163,5 → 154,4, cycle de `SCR_01` de 0,347 s → 0,443 s.
-La tranche s'alourdissant de dix points par usage, le bouton devient de plus en plus dangereux
-à mesure que la run avance — bénéfique en principe, risqué en fin de run.
+```
+TFlops NETTES = (BRUTES + bonus de départ) × P_DATAM × Noyau × (1 − sacrifice)
+```
 
-Le plafond à 90 % n'est pas dans la spécification du GD : sans lui, le septième usage d'une run
-immobiliserait 100 % du parc, donc plus aucune dissipation ni compression de cycle. Le bouton
-deviendrait un suicide pur, ce qui n'est pas un choix mais un piège.
+**Le sacrifice frappe les TFlops NETTES, jamais les brutes** (règle du GD, 2026-10-13). Les Scripts
+ralentissent et rapportent moins — compression et rendement lisent les nettes —, le capteur du
+brouillard s'aveugle, la victoire s'éloigne. La vitesse de l'A.M.I., qui lit les brutes, **ne
+baisse pas**. Si elle baissait, le bouton deviendrait un soin surpuissant : le sacrifice ralentirait
+la menace autant que la production, et la course n'en serait pas affectée. Le GD : *« le sacrifice
+devient un vrai choix punitif. »*
 
-**Mesuré le 2026-09-15 — la fenêtre d'usage fait toute la valeur du bouton.** Déclenché à 85 % de
-jauge, dos au mur, il est franchement NUISIBLE : la posture agressive tombait à 18 runs et mourait
-83 % du temps. Déclenché à 60 %, la même posture tient 95 runs et ne meurt plus que 16 % du temps,
-son arbre passant de 64 à 92 %. Le GDD le disait déjà — « bénéfique en principe, risqué en fin de
-run » — mais l'écart est bien plus violent que la formule ne le laissait entendre.
+⚖️ **Ce que coûte un usage, calculé :** sur un parc de fin de partie, 30 % de TFlops nettes en moins
+ralentissent les cycles de ~8 % et leur rendement de ~5 % ; 90 % les ralentissent de ~44 % et ôtent
+~29 % de rendement. Le premier usage achète un quart de jauge pour peu ; le troisième se paie cher.
+Sans Hardware, le sacrifice ne coûte rien sur le moment — mais il frappera aussi tout Hardware
+acheté ensuite pendant la run.
 
-⚠️ **Le bénéfice est un POURCENTAGE de jauge, le contrecoup un coût FIXE en secondes.** Sur une run
-de 1200 s, 20 points valent 240 secondes gagnées contre 60 secondes de production diminuée. Sur une
-run de 200 s, ils n'en valent plus que 40. Ces constantes ont été calibrées pour des runs de vingt
-à trente minutes : si la durée des runs rebaisse, le bouton redeviendra un piège — et le délai de
-cinq minutes entre deux usages dépasse déjà la durée d'une run de campagne.
-
-Le contrecoup ET le délai sont **sauvegardés** (`SaveData` v5), contrairement à l'Overdrive du
-Ghost Cache. L'asymétrie est volontaire : là-bas, sauvegarder aurait permis de mettre en PAUSE un
-bonus ; ici, ne pas sauvegarder permettrait d'ÉCHAPPER à une pénalité en fermant la fenêtre.
+Le compteur d'usages est **sauvegardé** (`SaveData.EmergencyUsesInRun`), et le sacrifice en découle :
+fermer le jeu ne rend pas la puissance engloutie. *Le modèle précédent — palier de TFlops, −25 % de
+la Trace courante, contrecoup de 60 s, délai de 5 min — est archivé dans `historique.md`.*
 
 ## Les points de prestige — un CUMUL de campagne (tranché le 2026-09-13)
 
@@ -939,6 +932,9 @@ avec les 120 nœuds ciblés.*
 - **`runInBackground` est à `true`** (tranché le 2026-08-26). « Hors-ligne » veut dire *jeu fermé*, pas *fenêtre en arrière-plan* : le joueur peut laisser tourner Ares pendant qu'il fait autre chose, et l'A.M.I. continue de le traquer. Le mettre à `false` offrirait une planque parfaite et gratuite — il suffirait d'alt-tab pour geler la Trace.
   *Note pour les tests : ce réglage ne s'applique qu'au build. Dans l'éditeur, le player loop reste figé tant que la fenêtre Unity n'a pas le focus (`Time.frameCount` ne bouge pas). Pour vérifier un `ITickable` sans focus, appeler `Tick()` à la main plutôt que d'attendre des frames.*
 - Fichier en JSON lisible et éditable à la main — choix assumé jusqu'à la sortie Steam.
+- **Une partie fermée sur l'écran de fin le rouvre** (lot 2, `SaveData` v12) : bilan, arbre et
+  fenêtre d'achat du prestige compris. Avant, elle relançait une run neuve, et le joueur perdait sa
+  seule occasion de dépenser ses points avant la run suivante (session du 2026-10-14).
 - **Le menu principal et le menu de pause figent la simulation** (tranché le 2026-10-01). C'est une planque assumée, la seule : on ne punit pas le joueur qui règle ses options. Elle reste coûteuse en pratique, puisque rien ne progresse pendant qu'il est dessus — ce n'est pas une planque *productive*, contrairement à ce qu'aurait été l'alt-tab. L'arbre de prestige, lui, **ne** met **pas** en pause.
 
 ## Steam

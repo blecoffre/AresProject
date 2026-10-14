@@ -258,32 +258,19 @@ namespace Core.Models.Economy
         // Bouton d'Urgence / Data Wiper
         // ------------------------------------------------------------------
         [Header("Bouton d'Urgence / Data Wiper")]
-        [Tooltip("TFlops à POSSÉDER pour le premier usage de la run. Rien n'est dépensé : c'est " +
-                 "un prérequis. Repère : HW_01 au niveau 10, palier ×2 compris, en fournit 40.")]
-        [SerializeField, Min(1f)] private double _emergencyBaseRequiredTFlops = 50d;
+        [Tooltip("UT retirées de la jauge par chaque usage. 2 500 = un quart de la jauge. La jauge " +
+                 "ne descend pas sous zéro : l'excédent est perdu, comme pour un Proxy.")]
+        [SerializeField, Min(0f)] private float _emergencyTraceRemoval = 2500f;
 
-        [Tooltip("Facteur d'escalade du palier requis à chaque usage sur la run.")]
-        [SerializeField, Min(1.01f)] private double _emergencyRequirementMultiplier = 3d;
+        [Tooltip("Part des TFlops NETTES sacrifiée à chaque usage, définitivement pour la run : " +
+                 "30 %, puis 60 %, puis 90 %. Les Scripts ralentissent et rapportent moins ; la " +
+                 "vitesse de l'A.M.I., qui lit les TFlops BRUTES, ne baisse jamais — sans quoi le " +
+                 "bouton serait un soin gratuit.")]
+        [SerializeField, Range(0.01f, 1f)] private float _emergencySacrificeStep = 0.30f;
 
-        [Tooltip("Points de jauge effacés, en ABSOLU : à 0,2 on passe de 63 % à 43 %.")]
-        [SerializeField, Range(0.01f, 1f)] private float _emergencyTraceReduction = 0.20f;
-
-        [Tooltip("Tranche de TFlops immobilisée au premier usage de la run.")]
-        [SerializeField, Range(0f, 0.95f)] private float _emergencyBaseBlockedFraction = 0.30f;
-
-        [Tooltip("Points de tranche ajoutés à chaque usage : 30 %, puis 40 %, puis 50 %…")]
-        [SerializeField, Range(0f, 0.5f)] private float _emergencyBlockedIncreasePerUse = 0.10f;
-
-        [Tooltip("Plafond de la tranche immobilisée. À 1, un usage tardif couperait 100 % du parc " +
-                 "— plus aucune dissipation ni compression de cycle. Le bouton deviendrait un " +
-                 "suicide pur plutôt qu'un choix.")]
-        [SerializeField, Range(0.1f, 0.99f)] private float _emergencyMaxBlockedFraction = 0.90f;
-
-        [Tooltip("Durée d'immobilisation des TFlops, en secondes.")]
-        [SerializeField, Min(0f)] private float _emergencyBlockDurationSeconds = 60f;
-
-        [Tooltip("Délai entre deux activations, en secondes.")]
-        [SerializeField, Min(0f)] private float _emergencyCooldownSeconds = 300f;
+        [Tooltip("Plafond STRICT du sacrifice. Une fois atteint, le bouton est épuisé jusqu'à la fin " +
+                 "de la run : à 0,9 et 0,3 par usage, trois usages.")]
+        [SerializeField, Range(0.01f, 1f)] private float _emergencyMaxSacrifice = 0.90f;
 
         // ------------------------------------------------------------------
         // Lecture. Propriétés et non champs publics : l'asset est une donnée de
@@ -355,13 +342,8 @@ namespace Core.Models.Economy
         public float OverclockPenaltySeconds => _overclockPenaltySeconds;
         public float OverclockMinIntervalSeconds => _overclockMinIntervalSeconds;
 
-        public double EmergencyBaseRequiredTFlops => _emergencyBaseRequiredTFlops;
-        public double EmergencyRequirementMultiplier => _emergencyRequirementMultiplier;
-        public float EmergencyTraceReduction => _emergencyTraceReduction;
-        public float EmergencyBaseBlockedFraction => _emergencyBaseBlockedFraction;
-        public float EmergencyBlockedIncreasePerUse => _emergencyBlockedIncreasePerUse;
-        public float EmergencyMaxBlockedFraction => _emergencyMaxBlockedFraction;
-        public float EmergencyBlockDurationSeconds => _emergencyBlockDurationSeconds;
-        public float EmergencyCooldownSeconds => _emergencyCooldownSeconds;
+        public float EmergencyTraceRemoval => _emergencyTraceRemoval;
+        public float EmergencySacrificeStep => _emergencySacrificeStep;
+        public float EmergencyMaxSacrifice => _emergencyMaxSacrifice;
     }
 }

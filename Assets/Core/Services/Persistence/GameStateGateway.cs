@@ -1,5 +1,6 @@
 using Core.Models;
 using Core.Models.Economy;
+using Core.Models.Simulation;
 using Core.Services.Economy;
 using Core.Services.Security;
 using Core.Services.Simulation;
@@ -139,11 +140,24 @@ namespace Core.Services.Persistence
             // la Trace bondir de zéro à sa valeur sauvegardée en une frame, en déduirait un débit
             // délirant, et laisserait le joueur aveugle dès l'ouverture du jeu.
             _traceReadout.Resync(_threatManager.NormalizedThreat.CurrentValue);
-            _emergencyProtocol.Restore(
-                data.EmergencyUsesInRun,
-                data.EmergencyBlockRemainingSeconds,
-                data.EmergencyCooldownRemainingSeconds);
+            // APRÈS les générateurs : le sacrifice du Data Wiper ampute les TFlops qu'ils fournissent.
+            _emergencyProtocol.Restore(data.EmergencyUsesInRun);
             _sessionManager.RestoreElapsed(data.RunElapsedSeconds);
+
+            // Partie fermée sur l'écran de fin : la run est déjà effacée, on désarme la partie et
+            // l'écran se rouvrira au chargement de la GameScene, fenêtre d'achat comprise.
+            if (data.PendingRunEnd.IsPending)
+            {
+                PendingRunEndSave pending = data.PendingRunEnd;
+                _sessionManager.RestorePendingRunEnd(new RunSummary(
+                    (RunEndReason)pending.Reason,
+                    pending.CpuCyclesEarned,
+                    pending.CpuCyclesBeforeBonus,
+                    pending.DataGenerated,
+                    pending.ThreatAtEnd,
+                    pending.EmergencyUses,
+                    pending.ElapsedSeconds));
+            }
 
             // 5. Préférences d'interface
             //
@@ -182,9 +196,24 @@ namespace Core.Services.Persistence
 
             _buffer.CurrentTrace = _threatManager.CurrentTrace.CurrentValue;
             _buffer.EmergencyUsesInRun = _emergencyProtocol.UsesInCurrentRun;
-            _buffer.EmergencyBlockRemainingSeconds = _emergencyProtocol.BlockRemaining.CurrentValue;
-            _buffer.EmergencyCooldownRemainingSeconds = _emergencyProtocol.CooldownRemaining.CurrentValue;
             _buffer.RunElapsedSeconds = _sessionManager.RunElapsedSeconds;
+
+            // Struct à plat, assignée champ par champ : aucune allocation à l'autosave.
+            if (_sessionManager.TryGetPendingRunEnd(out RunSummary pending))
+            {
+                _buffer.PendingRunEnd.IsPending = true;
+                _buffer.PendingRunEnd.Reason = (int)pending.Reason;
+                _buffer.PendingRunEnd.CpuCyclesEarned = pending.CpuCyclesEarned;
+                _buffer.PendingRunEnd.CpuCyclesBeforeBonus = pending.CpuCyclesBeforeBonus;
+                _buffer.PendingRunEnd.DataGenerated = pending.DataGenerated;
+                _buffer.PendingRunEnd.ThreatAtEnd = pending.ThreatAtEnd;
+                _buffer.PendingRunEnd.EmergencyUses = pending.EmergencyUses;
+                _buffer.PendingRunEnd.ElapsedSeconds = pending.ElapsedSeconds;
+            }
+            else
+            {
+                _buffer.PendingRunEnd = default;
+            }
 
             _buffer.BuyQuantityMode = _buyQuantity.Capture();
 

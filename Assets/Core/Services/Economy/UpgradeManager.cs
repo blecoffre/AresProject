@@ -85,11 +85,10 @@ namespace Core.Services.Economy
         public Observable<float> OnProxyWipe => _onProxyWipe;
 
         /// <summary>
-        /// Fraction du parc immobilisée par le Bouton d'Urgence, de 0 à 0,9. Le « Data Wiper »
-        /// envoie un ver dans les serveurs fédéraux : la puissance qu'il mobilise n'est plus
-        /// disponible pour le joueur pendant une minute.
+        /// Part des TFlops NETTES sacrifiée par le Data Wiper, de 0 à 0,9, jusqu'à la fin de la run.
+        /// Le ver envoyé dans les serveurs fédéraux engloutit la puissance qu'il mobilise.
         /// </summary>
-        private float _tflopsBlockedFraction;
+        private float _tflopsSacrificedFraction;
 
         public UpgradeManager(
             UpgradeCatalogSO catalog,
@@ -353,18 +352,18 @@ namespace Core.Services.Economy
         }
 
         /// <summary>
-        /// Immobilise une fraction des TFlops NETTES. Réservé au Bouton d'Urgence, qui la porte à
-        /// 0,3 et plus pendant une minute avant de la rendre à zéro.
+        /// Sacrifie une fraction des TFlops NETTES. Réservé au Data Wiper, qui la porte à 0,3, 0,6
+        /// puis 0,9 au fil de ses usages, et la rend à zéro au wipe de fin de run.
         ///
         /// Les TFlops brutes n'y sont pas soumises : la vitesse de l'A.M.I. ne ralentit pas quand
         /// le joueur sacrifie sa puissance, sinon le Data Wiper deviendrait un soin gratuit.
         /// </summary>
-        public void SetTFlopsBlockedFraction(float fraction)
+        public void SetTFlopsSacrificedFraction(float fraction)
         {
             float safe = UnityEngine.Mathf.Clamp01(fraction);
-            if (safe == _tflopsBlockedFraction) return;
+            if (safe == _tflopsSacrificedFraction) return;
 
-            _tflopsBlockedFraction = safe;
+            _tflopsSacrificedFraction = safe;
             RecalculateTotals();
         }
 
@@ -389,9 +388,9 @@ namespace Core.Services.Economy
             double netTFlops = (grossTFlops + _prestigeManager.StartingComputerPower.CurrentValue)
                              * _prestigeManager.GlobalComputeMultiplier.CurrentValue;
 
-            // Immobilisation du Bouton d'Urgence, appliquée en DERNIER : c'est une amputation de
-            // la capacité finale, pas un facteur à composer avec le multiplicateur de prestige.
-            netTFlops *= 1d - _tflopsBlockedFraction;
+            // Sacrifice du Data Wiper, appliqué en DERNIER : c'est une amputation de la capacité
+            // finale, pas un facteur à composer avec le multiplicateur de prestige.
+            netTFlops *= 1d - _tflopsSacrificedFraction;
 
             // Poussée dans les modèles : c'est ce qui invalide leur cache de durée. Seuls les
             // Scripts ont un cycle ; SetTFlops s'auto-garde sur l'égalité.

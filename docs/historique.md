@@ -11,6 +11,65 @@
 
 ---
 
+## Refonte « Time Attack », lot 2 — l'ancien Data Wiper retiré du GDD (2026-10-14)
+
+Remplacé par le sacrifice permanent de TFlops (voir `game-design.md`, « Le Data Wiper »). Retirés du
+code : le palier de TFlops requis, la réduction en pourcentage de la Trace
+(`ThreatManager.ReduceTraceByFraction`), le contrecoup de 60 s et le délai de 5 min, avec leurs deux
+champs de sauvegarde (`SaveData` v12) et les libellés « puissance insuffisante » et « recompilation ».
+
+Entrées du backlog soldées par ce lot : les valeurs provisoires du Data Wiper (palier de 50 TFlops,
+escalade ×3, délai de 5 min plus long qu'une run) ; le tooltip de `_emergencyTraceReduction` qui
+disait « en ABSOLU » ; le libellé « Trace −25 pts » du bouton, qui retirait en fait 25 % de la Trace
+courante ; l'écran de fin de run non sauvegardé (session du 2026-10-14), désormais rouvert au
+chargement.
+
+La section du GDD, telle qu'elle était :
+
+### Bouton d'Urgence — le « Data Wiper »
+
+Refondu le 2026-08-27. L'ancienne version achetait l'effacement avec de l'argent, comme un
+pot-de-vin. La nouvelle ne coûte **rien** : elle **exige** de la puissance de calcul. Effacer ses
+traces, c'est envoyer un ver dans les serveurs fédéraux — il faut de la force brute, pas des
+billets.
+
+| Paramètre | Valeur |
+|---|---|
+| **Prérequis** | Posséder un palier de TFlops. Rien n'est dépensé |
+| **Escalade du palier** | ×3 par usage sur la run ⚠️ *valeurs provisoires : 50 TFlops de base, ×3 — non chiffrées par le GD* |
+| **Effet** | ~~−20 points ABSOLUS de jauge~~ → depuis le 2026-08-30 : **−25 % de la Trace accumulée** (proportionnel, `EmergencyTraceReduction` = 0,25). À 60 % de jauge on tombe à 45 %. Un retrait absolu ne pesait plus rien face à un plafond de plusieurs millions |
+| **Contrecoup** | **30 % des TFlops immobilisées pendant 60 s**, +10 points par usage (30, 40, 50…), plafonné à 90 % |
+| **Délai** | **5 minutes** entre deux activations |
+| **Déblocage** | Nœud de prestige `P_EMERG` |
+
+**Le contrecoup est le cœur de la mécanique.** Les TFlops alimentent aussi la dissipation des
+Proxies : purger la Trace **affaiblit la défense juste après**, et la jauge remonte plus vite.
+Mesuré : 52 TFlops → 36,4, dissipation de 163,5 → 154,4, cycle de `SCR_01` de 0,347 s → 0,443 s.
+La tranche s'alourdissant de dix points par usage, le bouton devient de plus en plus dangereux
+à mesure que la run avance — bénéfique en principe, risqué en fin de run.
+
+Le plafond à 90 % n'est pas dans la spécification du GD : sans lui, le septième usage d'une run
+immobiliserait 100 % du parc, donc plus aucune dissipation ni compression de cycle. Le bouton
+deviendrait un suicide pur, ce qui n'est pas un choix mais un piège.
+
+**Mesuré le 2026-09-15 — la fenêtre d'usage fait toute la valeur du bouton.** Déclenché à 85 % de
+jauge, dos au mur, il est franchement NUISIBLE : la posture agressive tombait à 18 runs et mourait
+83 % du temps. Déclenché à 60 %, la même posture tient 95 runs et ne meurt plus que 16 % du temps,
+son arbre passant de 64 à 92 %. Le GDD le disait déjà — « bénéfique en principe, risqué en fin de
+run » — mais l'écart est bien plus violent que la formule ne le laissait entendre.
+
+⚠️ **Le bénéfice est un POURCENTAGE de jauge, le contrecoup un coût FIXE en secondes.** Sur une run
+de 1200 s, 20 points valent 240 secondes gagnées contre 60 secondes de production diminuée. Sur une
+run de 200 s, ils n'en valent plus que 40. Ces constantes ont été calibrées pour des runs de vingt
+à trente minutes : si la durée des runs rebaisse, le bouton redeviendra un piège — et le délai de
+cinq minutes entre deux usages dépasse déjà la durée d'une run de campagne.
+
+Le contrecoup ET le délai sont **sauvegardés** (`SaveData` v5), contrairement à l'Overdrive du
+Ghost Cache. L'asymétrie est volontaire : là-bas, sauvegarder aurait permis de mettre en PAUSE un
+bonus ; ici, ne pas sauvegarder permettrait d'ÉCHAPPER à une pénalité en fermant la fenêtre.
+
+---
+
 ## Session de test du lot 1 de la refonte — 2026-10-14
 
 Jouée par Bertrand en éditeur, sur `chantier/refonte-time-attack`, sauvegarde supprimée au

@@ -5,6 +5,28 @@ using System.Threading;
 
 namespace Core.Models
 {
+    /// <summary>
+    /// Le bilan d'une run terminée que le joueur n'a pas encore relancée — ce qu'affiche l'écran de
+    /// fin. Copie à plat de <c>RunSummary</c> : ce fichier décrit un FORMAT, il ne dépend pas des
+    /// types vivants du jeu.
+    /// </summary>
+    [Serializable]
+    public struct PendingRunEndSave
+    {
+        /// <summary>Vrai tant que l'écran de fin attend « Nouvelle intrusion ».</summary>
+        public bool IsPending;
+
+        /// <summary>0 = saisie, 1 = sortie propre. Un format de fichier, comme BuyQuantityMode.</summary>
+        public int Reason;
+
+        public double CpuCyclesEarned;
+        public double CpuCyclesBeforeBonus;
+        public double DataGenerated;
+        public float ThreatAtEnd;
+        public int EmergencyUses;
+        public float ElapsedSeconds;
+    }
+
     [Serializable]
     public struct UpgradeSaveEntry
     {
@@ -34,7 +56,7 @@ namespace Core.Models
         /// correspondant dans Migrate(). Sans ça, le premier changement post-lancement casse
         /// silencieusement les sauvegardes des joueurs.
         /// </summary>
-        public const int CurrentVersion = 11;
+        public const int CurrentVersion = 12;
 
         /// <summary>
         /// Id de la racine de l'arbre, seul nœud gratuit de la v10. Recopié ici plutôt que lu
@@ -60,6 +82,9 @@ namespace Core.Models
         /// oblige donc à toucher cette borne consciemment — c'est le but.
         /// </summary>
         private const int MaxBuyQuantityMode = 3;
+
+        /// <summary>Dernière valeur valide de <c>PendingRunEnd.Reason</c> : 1, la sortie propre.</summary>
+        private const int MaxRunEndReason = 1;
 
         public int Version;
 
@@ -132,15 +157,9 @@ namespace Core.Models
         // GhostCacheSeconds a quitté le format en v11, avec le Ghost Cache lui-même. JsonUtility
         // ignore le champ resté dans un ancien fichier : rien à faire pour le lire.
 
-        /// <summary>
-        /// Secondes restantes d'immobilisation des TFlops par le Bouton d'Urgence, et délai
-        /// restant avant sa prochaine activation.
-        ///
-        /// Sauvegardés à dessein : ne pas le faire permettrait d'ÉCHAPPER à une pénalité en
-        /// fermant la fenêtre.
-        /// </summary>
-        public float EmergencyBlockRemainingSeconds;
-        public float EmergencyCooldownRemainingSeconds;
+        // EmergencyBlockRemainingSeconds et EmergencyCooldownRemainingSeconds ont quitté le format
+        // en v12 : le Data Wiper n'a plus ni contrecoup temporaire ni délai. Son sacrifice découle
+        // du seul EmergencyUsesInRun.
 
         /// <summary>
         /// Secondes de JEU écoulées sur la run en cours. Sauvegardée pour qu'une run reprise
@@ -149,6 +168,17 @@ namespace Core.Models
         /// </summary>
         public float RunElapsedSeconds;
         public List<UpgradeSaveEntry> Upgrades;
+
+        // ---------------------------------------------------------------------
+        // Entre deux runs : la run est déjà effacée, l'écran de fin attend.
+        // ---------------------------------------------------------------------
+
+        /// <summary>
+        /// Le bilan affiché par l'écran de fin, tant que le joueur n'a pas relancé. Ajouté en v12 :
+        /// sans lui, quitter le jeu sur l'écran de fin relançait une run neuve au retour, et la
+        /// fenêtre d'achat du prestige — ouverte seulement entre deux runs — était perdue.
+        /// </summary>
+        public PendingRunEndSave PendingRunEnd;
 
         // ---------------------------------------------------------------------
         // Préférences d'interface : ni méta-progression, ni run. Le wipe n'y touche pas —
@@ -195,8 +225,6 @@ namespace Core.Models
             RunMoney = 0d,
             CurrentTrace = 0f,
             EmergencyUsesInRun = 0,
-            EmergencyBlockRemainingSeconds = 0f,
-            EmergencyCooldownRemainingSeconds = 0f,
             RunElapsedSeconds = 0f,
             Upgrades = new List<UpgradeSaveEntry>(),
 
@@ -219,10 +247,11 @@ namespace Core.Models
             if (CurrentTrace < 0f) CurrentTrace = 0f;
             if (EmergencyUsesInRun < 0) EmergencyUsesInRun = 0;
 
-            // Bornes hautes laissées à l'EmergencyProtocolSystem, seul détenteur des durées.
-            if (EmergencyBlockRemainingSeconds < 0f) EmergencyBlockRemainingSeconds = 0f;
-            if (EmergencyCooldownRemainingSeconds < 0f) EmergencyCooldownRemainingSeconds = 0f;
             if (RunElapsedSeconds < 0f) RunElapsedSeconds = 0f;
+
+            // Un bilan à la raison inconnue (fichier édité, binaire plus récent) ne rouvre pas
+            // l'écran de fin : mieux vaut une run neuve qu'un écran qui affiche n'importe quoi.
+            if (PendingRunEnd.Reason < 0 || PendingRunEnd.Reason > MaxRunEndReason) PendingRunEnd = default;
 
             // Le mode d'achat vient d'un fichier que le joueur peut avoir édité, ou d'un binaire
             // plus récent : tout ce qui n'est pas un mode connu retombe sur x1 plutôt que de
@@ -283,11 +312,8 @@ namespace Core.Models
                     goto case 4;
 
                 case 4:
-                    // v4 -> v5 : le Bouton d'Urgence passe au « Data Wiper » et gagne deux
-                    // compteurs. Une sauvegarde antérieure n'a ni contrecoup ni délai en cours ;
-                    // son EmergencyUsesInRun, lui, reste valide et n'est pas touché.
-                    data.EmergencyBlockRemainingSeconds = 0f;
-                    data.EmergencyCooldownRemainingSeconds = 0f;
+                    // v4 -> v5 : le Bouton d'Urgence passait au « Data Wiper » et gagnait deux
+                    // compteurs, sortis du format en v12. Il ne reste qu'à tamponner la version.
                     data.Version = 5;
                     goto case 5;
 
@@ -366,6 +392,21 @@ namespace Core.Models
                     goto case 11;
 
                 case 11:
+                    // v11 -> v12 : Data Wiper du lot 2 et écran de fin sauvegardé.
+                    //
+                    // Le compteur d'usages change de sens : il valait un nombre de purges à délai,
+                    // il fixe désormais un SACRIFICE PERMANENT de TFlops (30 % par usage). Le
+                    // reprendre tel quel infligerait d'un coup 60 % de sacrifice à qui avait purgé
+                    // deux fois sous l'ancien modèle : on repart de zéro.
+                    //
+                    // Aucun bilan en attente : une sauvegarde v11 ne savait pas qu'elle était
+                    // fermée sur l'écran de fin.
+                    data.EmergencyUsesInRun = 0;
+                    data.PendingRunEnd = default;
+                    data.Version = 12;
+                    goto case 12;
+
+                case 12:
                     // Format courant : rien à faire.
                     break;
 
@@ -391,8 +432,6 @@ namespace Core.Models
             data.RunMoney = 0d;
             data.CurrentTrace = 0f;
             data.EmergencyUsesInRun = 0;
-            data.EmergencyBlockRemainingSeconds = 0f;
-            data.EmergencyCooldownRemainingSeconds = 0f;
             data.RunElapsedSeconds = 0f;
             data.Upgrades.Clear();
         }

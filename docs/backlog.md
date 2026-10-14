@@ -60,8 +60,6 @@ La feuille de route des lots est dans `etat-des-lieux.md`. Ici, les points ouver
   `GameStateGateway.Restore` recale le relevé sur la vérité (`TraceReadout.Resync`). Un aller-retour
   par le bureau suffit à lever le brouillard. Correctif au lot 3 : sauvegarder l'état du relevé
   (dernière valeur relevée, UT remplies depuis) et le restaurer tel quel.
-- 📖 **Le Data Wiper est encore à l'ancien modèle** (délai de 5 min, contrecoup de 60 s, −25 % de
-  la Trace courante). Le lot 2 le passe en sacrifice permanent de TFlops, −2 500 UT, trois usages.
 
 ## 1. Bloquant pour une sortie publique
 
@@ -116,14 +114,7 @@ Le détail chiffré et les chantiers d'équilibrage sont dans `etat-des-lieux.md
 - 📖 **120 des 140 nœuds sont du remplissage généré.** Deux par générateur (réduction de coût,
   boost de rendement), tous identiques : 1 rang, coût 1, bonus 1,0. Ils disparaissent au lot 4 de
   la refonte « Time Attack », remplacés par le Noyau Compilé.
-- 📖 **Valeurs provisoires du Data Wiper** : palier de 50 TFlops et escalade ×3 « non chiffrées
-  par le GD » (GDD). ⚖️ Et son délai de 5 min **dépasse la durée d'une run** de campagne
-  (3,5 à 6,3 min) : le bouton ne sert qu'une fois par run, alors que ses constantes ont été
-  calibrées pour des runs de vingt à trente minutes.
-- 📖 **Trois textes de développeur mentent** sur le code qu'ils décrivent :
-  - le tooltip de `_emergencyTraceReduction` dit « en ABSOLU : à 0,2 on passe de 63 % à 43 % » ;
-    le code retire une **fraction** de la Trace accumulée (`ReduceTraceByFraction`, depuis le
-    2026-08-30) et l'asset vaut 0,25 ;
+- 📖 **Deux textes de développeur mentent** sur le code qu'ils décrivent :
   - le commentaire de `UserCurrencies.BankRunContribution` dit « une saisie n'appelle rien du
     tout » ; elle l'appelle avec 30 % de sa contribution depuis `a772e67` ;
   - `ExfiltrationUnlockDatas` (4e5) n'est plus lu depuis le 2026-09-16, mais reste dans l'asset
@@ -134,11 +125,6 @@ Le détail chiffré et les chantiers d'équilibrage sont dans `etat-des-lieux.md
 - 📖 **Faux libellé sur l'onglet Hardware.** `GeneratorPresenter.BuildStatsText` affiche « Génère
   X Datas par cycle » (`UI_GENERATES_DATAS`) pour un Hardware, qui fournit des TFlops. L'onglet
   Proxy, lui, annonce son répit en secondes depuis le 2026-10-13.
-- 📖 **Le bouton du Data Wiper ment sur son effet.** `UI_EMERGENCY_READY` annonce
-  « Trace −**25 pts** » (`EmergencyPresenter.cs:156`), mais le code retire **25 % de la Trace
-  courante** (`ThreatManager.ReduceTraceByFraction`) : à 60 % de jauge, le joueur perd 15 points,
-  pas 25. Le libellé date du temps où l'effet était absolu (avant le 2026-08-30). Même cause que le
-  tooltip du § 3.
 - 📖 **Pluriel non géré** : `UI_EXFIL_READY` dit « +1 **Cycles** CPU ». Reformuler la clé suffit ;
   une vraie pluralisation demanderait un mécanisme dans `ILocalizationService`.
 - 📖 **Séparateur décimal dépendant de la machine**, trois endroits : `ClickerPresenter`
@@ -194,13 +180,6 @@ Le détail chiffré et les chantiers d'équilibrage sont dans `etat-des-lieux.md
   s'appelle lui aussi `PrestigeButton` — nom hérité — et sert bien.
 
 ## 5. Architecture et cycle de vie
-
-- 🔬 **L'écran de fin de run n'est pas sauvegardé** (session du 2026-10-14, défaut antérieur à la
-  refonte). Quitter le jeu sur l'écran de fin, arbre ouvert, relance une run neuve au retour : 📖
-  `GameSessionManager.IsGameActive` repart à vrai, la fenêtre d'achat du prestige se ferme, et le
-  joueur ne peut plus dépenser ses points avant la fin de la run suivante. Décision du
-  2026-10-14 : corrigé **avec le lot 2**, dont le changement de format de sauvegarde accueillera
-  l'état « entre deux runs » et le bilan affiché.
 
 - 📖 **`GameOverPresenter.cs:183`** : `_ = _sceneLoader.LoadGameSceneAsync(CancellationToken.None)`.
   Il manque le `.Forget()` — une exception y disparaîtrait sans log, et le joueur resterait bloqué

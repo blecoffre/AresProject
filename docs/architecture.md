@@ -157,6 +157,10 @@ SimulationTicker (ITickable, Scene) — si la run est active et la traque armée
                                       (première Data volée, ou Hardware possédé)
    → ThreatManager.Advance(Δt)                 jauge += V_AMI × Δt, saisie à 10 000 UT
 
+EmergencyProtocolSystem (Root) — clic sur le Data Wiper, trois fois par run au plus
+   → ThreatManager.Wipe(2 500 UT)
+   → UpgradeManager.SetTFlopsSacrificedFraction(30 / 60 / 90 %)   TFlops NETTES seules
+
 OverclockSystem (Scene) — appui sur Espace ou sur le bouton
    → ScriptCycleRunner.AdvanceAllActive(0,5 s + Σ Overclock) ; rien ne tourne → ni effet ni coût
    → ThreatManager.ApplyOverclockPenalty()     jauge += V_AMI × 5 s
@@ -168,6 +172,8 @@ Fin de run, deux chemins vers GameSessionManager.ResolveRunEnd :
    bouton « Terre Brûlée » → ExfiltrationSystem → sortie propre    (contribution × bonus de palier)
         → UserCurrencies.BankRunContribution → points par le modèle des boîtes
         → wipe de la run, PUIS OnSessionEnded → GameOverPresenter + SaveScheduler
+        → le bilan reste en attente (TryGetPendingRunEnd) jusqu'à « Nouvelle intrusion » :
+          sauvegardé (v12), il rouvre l'écran de fin au chargement (GameOverPresenter.PostStart)
 ```
 
 Le wipe a lieu **avant** la notification, et ce n'est pas un détail : la sauvegarde de fin de run

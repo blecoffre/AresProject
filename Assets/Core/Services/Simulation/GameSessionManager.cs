@@ -38,6 +38,16 @@ namespace Core.Services.Simulation
         /// <summary>Durée de la run en cours, en secondes. Fait partie de l'état sauvegardé.</summary>
         public float RunElapsedSeconds => _runElapsedSeconds;
 
+        /// <summary>
+        /// Le bilan de la run qui vient de se terminer, tant que le joueur n'a pas relancé.
+        ///
+        /// Gardé ICI, et sauvegardé, parce que l'écran de fin est le seul moment où l'on peut
+        /// dépenser ses points : avant, quitter le jeu sur cet écran relançait une run neuve au
+        /// retour, et la fenêtre d'achat du prestige était perdue (session du 2026-10-14).
+        /// </summary>
+        private RunSummary _pendingRunEnd;
+        private bool _hasPendingRunEnd;
+
         public Subject<RunSummary> OnSessionEnded { get; }
         public ReactiveProperty<bool> IsGameActive { get; }
 
@@ -272,7 +282,30 @@ namespace Core.Services.Simulation
             // rendait tous les générateurs au niveau max, avec zéro Trace. Une run gratuite.
             WipeRun();
 
-            return new RunSummary(reason, pendingPrestige, baseCycles, dataGenerated, threatAtEnd, emergencyUses, elapsed);
+            _pendingRunEnd = new RunSummary(reason, pendingPrestige, baseCycles, dataGenerated, threatAtEnd, emergencyUses, elapsed);
+            _hasPendingRunEnd = true;
+            return _pendingRunEnd;
+        }
+
+        /// <summary>
+        /// Le bilan affiché par l'écran de fin, si une run est terminée et pas encore relancée.
+        /// L'écran le relit à son chargement : c'est ce qui le rouvre après une fermeture du jeu.
+        /// </summary>
+        public bool TryGetPendingRunEnd(out RunSummary summary)
+        {
+            summary = _pendingRunEnd;
+            return _hasPendingRunEnd && !IsGameActive.CurrentValue;
+        }
+
+        /// <summary>
+        /// Restaure une partie fermée sur l'écran de fin : run déjà effacée, partie désarmée,
+        /// fenêtre d'achat du prestige ouverte. Réservé au GameStateGateway.
+        /// </summary>
+        public void RestorePendingRunEnd(RunSummary summary)
+        {
+            _pendingRunEnd = summary;
+            _hasPendingRunEnd = true;
+            IsGameActive.Value = false;
         }
 
         /// <summary>
@@ -299,6 +332,7 @@ namespace Core.Services.Simulation
         public void ResetSession()
         {
             WipeRun();
+            _hasPendingRunEnd = false;
             IsGameActive.Value = true;
         }
 

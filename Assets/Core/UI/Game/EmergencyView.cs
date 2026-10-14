@@ -17,13 +17,12 @@ namespace Core.UI.Game
         [Header("Interaction")]
         [SerializeField] private Button _button;
 
-        [Tooltip("Libellé du bouton. Porte les quatre états : verrouillé, puissance insuffisante, " +
-                 "en recharge, et prêt.")]
+        [Tooltip("Libellé du bouton. Porte les trois états : verrouillé, prêt, épuisé.")]
         [SerializeField] private TextMeshProUGUI _label;
 
         [Header("Jauge")]
-        [Tooltip("Image en Filled. Montre l'avancement du délai de recharge, puis reste pleine " +
-                 "une fois le bouton disponible.")]
+        [Tooltip("Image en Filled. Montre la part des usages encore disponibles sur la run ; " +
+                 "pleine, à la couleur du sacrifice, une fois le bouton épuisé.")]
         [SerializeField] private Image _fill;
 
         // Les couleurs de la jauge viennent de la palette du mode de vision (EmergencyPresenter).

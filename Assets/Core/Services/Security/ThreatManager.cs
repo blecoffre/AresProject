@@ -20,7 +20,7 @@ namespace Core.Services.Security
     /// Fédérale.
     ///
     /// <b>Seul ce service modifie la jauge.</b> Les trois actions qui la bousculent passent par
-    /// ses méthodes : la pénalité d'Overclock, le Wipe d'un Proxy acheté, le Data Wiper. Le
+    /// ses méthodes : la pénalité d'Overclock, le Wipe d'un Proxy acheté, le Data Wiper (−2 500 UT). Le
     /// temps, lui, est poussé par le SimulationTicker — l'inverse créerait une dépendance
     /// circulaire avec le GameSessionManager, qui seul sait si une run est en cours.
     ///
@@ -132,18 +132,6 @@ namespace Core.Services.Security
             _currentTrace.Value = after;
             RefreshNormalized();
             return before - after;
-        }
-
-        /// <summary>
-        /// Efface une FRACTION de la Trace accumulée. Réservé au Data Wiper, jusqu'à sa refonte.
-        /// </summary>
-        public void ReduceTraceByFraction(float fraction)
-        {
-            float safe = Mathf.Clamp01(fraction);
-            if (safe <= 0f) return;
-
-            _currentTrace.Value = _currentTrace.CurrentValue * (1f - safe);
-            RefreshNormalized();
         }
 
         /// <summary>Vide la jauge. Réservé au wipe de fin de run.</summary>

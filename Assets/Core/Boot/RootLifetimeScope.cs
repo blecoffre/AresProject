@@ -151,8 +151,8 @@ namespace Core.Infrastructure
             // Le capteur imparfait posé sur la jauge. AsImplementedInterfaces pour son ITickable :
             // il doit s'écouler même quand rien d'autre ne bouge, sinon l'âge du relevé se fige.
             builder.Register<TraceReadout>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
-            // ITickable depuis la refonte « Data Wiper » : il fait s'écouler l'immobilisation
-            // des TFlops et le délai entre deux activations.
+            // Le Data Wiper : trois usages par run, chacun sacrifiant 30 % des TFlops nettes jusqu'au
+            // wipe. Plus de délai ni de contrecoup qui s'écoule : ce n'est plus un ITickable.
             builder.Register<EmergencyProtocolSystem>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
             builder.Register<GameSessionManager>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
 

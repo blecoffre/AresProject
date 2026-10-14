@@ -47,13 +47,37 @@ les montées, **la console fait foi** ; les baisses, elles, se voient tout de su
 | 0.15 | **La rangée d'actions** — *trou constaté le 14/10, corrigé le jour même* | Regarder la rangée d'actions de l'écran de jeu, sous la console. | Deux lignes pleine largeur : « Overclock », puis le Data Wiper. Plus de bouton Ghost Cache, aucun vide à droite. |
 
 
+## 0 bis. Refonte « Time Attack », lot 2 — Data Wiper et écran de fin sauvegardé
+
+Livré le 2026-10-14, compilé (Unity, zéro erreur), **jamais joué**. Pour débloquer le Data Wiper, il
+faut le nœud **« Protocole d'Urgence »** (1 point), relié à la racine de l'arbre. Sans point en
+réserve : jeu fermé, monter `CpuCycles` dans `savegame.json` (par exemple à 5), puis relancer.
+Les achats de l'arbre ne se font qu'entre deux runs, sur l'écran de fin. Pour finir une run vite,
+en éditeur, le bouton « [PRÊT] WIPE SYSTÈME » de la console est toujours cliquable.
+
+La sauvegarde passe en v12 au premier lancement : la run en cours est conservée, seul le compteur
+du Data Wiper repart à zéro.
+
+| # | Quoi | Comment | Ce qu'on doit voir |
+|---|---|---|---|
+| 2.1 | **Verrouillé** | Sans le nœud « Protocole d'Urgence », regarder le bouton sous « Overclock ». | « [VERROUILLÉ] Data Wiper — requiert le nœud Protocole d'Urgence », grisé. |
+| 2.2 | **Prêt** | Acheter « Protocole d'Urgence » sur l'écran de fin, « [ NOUVELLE INTRUSION ] ». | « [PRÊT] DATA WIPER — Jauge −2500 UT / TFlops sacrifiées : 30 % · usages restants : 3 ». Cliquable, sans aucune condition de TFlops. |
+| 2.3 | **Premier usage** | Posséder du Hardware (noter les TFlops de l'en-tête), laisser la jauge dépasser 25 %, cliquer le Data Wiper. | Console : « > wiper.sh --inject : … Jauge −2500 UT, 30 % des TFlops englouties jusqu'à la fin de la run. » L'aiguille de la jauge recule aussitôt d'environ 25 points. Les TFlops de l'en-tête tombent à 70 %. Le bouton annonce maintenant 60 % et 2 usages restants. |
+| 2.4 | **La menace ne ralentit pas** | Juste avant et juste après le premier usage, un Overclock pendant un cycle. | La console annonce la **même** pénalité en UT avant et après (« Jauge +N UT ») : le sacrifice n'a pas touché la vitesse de l'A.M.I. |
+| 2.5 | **Épuisé** | Deux usages de plus. | Après le troisième : « [ÉPUISÉ] DATA WIPER — 90 % des TFlops sacrifiées jusqu'à la fin de la run », grisé, jauge pleine de la couleur du sacrifice. TFlops de l'en-tête à 10 % de leur valeur de départ ; les barres des Scripts sont nettement plus lentes. |
+| 2.6 | **Usage à vide** | Run neuve, avant toute Data volée : cliquer le Data Wiper. | Console : « Jauge −0 UT » ; l'usage est consommé quand même (2 restants). |
+| 2.7 | **Le sacrifice survit à la fermeture** | Deux usages, puis fermer le jeu (croix) et relancer, « Continuer ». | Le bouton annonce 1 usage restant ; les TFlops de l'en-tête sont toujours à 40 %. |
+| 2.8 | **Le wipe le rend** | Finir la run, « [ NOUVELLE INTRUSION ] ». | Trois usages de nouveau ; plus aucune TFlop sacrifiée. Au bilan de la run précédente : « Data Wiper déployé … N fois ». |
+| 2.9 | **Écran de fin rouvert après fermeture** | Finir une run (saisie ou sortie), rester sur l'écran de fin, **fermer le jeu** (croix ou Alt+F4), relancer, « Continuer ». | L'écran de fin revient, avec le même bilan et l'arbre. Un nœud s'achète. « [ NOUVELLE INTRUSION ] » lance bien une run neuve. |
+| 2.10 | **Écran de fin rouvert depuis le menu** | Sur l'écran de fin : Échap, « Menu principal », puis « Continuer ». | Même chose qu'en 2.9 : écran de fin et arbre, pas de run neuve. |
+
 ## 1. Fin de partie et économie — d'avant la refonte, jamais jouées
 
 Tout ce bloc vient de `bf490c6` (2026-09-22), dont le message dit : « Rien de tout cela n'a été
 éprouvé en Play Mode », et de `a772e67` (2026-10-02). C'est une session **« ressenti et bugs »** :
 on regarde si ça marche et si ça se lit, pas si les chiffres sont bons. ⚠️ La refonte « Time
-Attack » réécrit le brouillard (1.2 à 1.5, 1.10 : lot 3) et le Data Wiper (1.11 : lot 2) : ne pas
-s'attarder sur leur ressenti avant ces lots. L'ex-1.1 (départ de la traque) est devenue 0.2.
+Attack » réécrit le brouillard (lot 3) : ne pas s'attarder sur son ressenti avant. L'ex-1.1
+(départ de la traque) est devenue 0.2 ; il ne reste ici que la victoire, à rejouer.
 
 | # | Quoi | Comment | Ce qu'on doit voir |
 |---|---|---|---|
@@ -84,7 +108,6 @@ soldés dans `historique.md`. Rien en attente.
 
 | Après | Quoi |
 |---|---|
-| Refonte, lot 2 (Data Wiper) | Trois usages par run, −2 500 UT chacun, sacrifice de 30 / 60 / 90 % des TFlops nettes jusqu'à la fin de la run ; la vitesse de l'A.M.I. ne baisse pas. |
 | Refonte, lot 3 (brouillard) | Relevé tous les 800 UT au départ, 200 en fin de partie ; aiguille et borne pessimiste ; paliers et gain du bouton lus sur l'aiguille. |
 | Refonte, lot 4 (arbre) | Arbre à 21 nœuds, Noyau Compilé affiché dans les panneaux, `P_CORE_OVERRIDE` infini, nouvelle migration avec remboursement. Puis session de jeu « chiffres » sur une campagne : durée des runs, points par run, part de l'arbre à la victoire. Victoire remise à 1e12. |
 | Steam | Lisibilité sur un écran 1280×800. Navigation complète à la manette, sans souris. Overlay Steam. Synchronisation cloud entre deux machines. |

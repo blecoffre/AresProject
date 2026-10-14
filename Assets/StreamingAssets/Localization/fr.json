@@ -633,16 +633,8 @@
       "Value": "[VERROUILLÉ] Data Wiper — requiert le nœud Protocole d'Urgence"
     },
     {
-      "Key": "UI_EMERGENCY_INSUFFICIENT",
-      "Value": "[PUISSANCE INSUFFISANTE] Data Wiper : {0} / {1} TFlops"
-    },
-    {
-      "Key": "UI_EMERGENCY_COOLDOWN",
-      "Value": "[RECOMPILATION] Data Wiper disponible dans {0} s"
-    },
-    {
       "Key": "UI_EMERGENCY_READY",
-      "Value": "[PRÊT] DATA WIPER — Trace −{0} pts / {1} % des TFlops hors ligne {2} s"
+      "Value": "[PRÊT] DATA WIPER — Jauge −{0:0} UT / TFlops sacrifiées : {1} % · usages restants : {2}"
     },
     {
       "Key": "PRESTIGE_P_OVERCLOCK_POWER_1_NAME",
@@ -670,7 +662,7 @@
     },
     {
       "Key": "LOG_EMERGENCY_WIPE",
-      "Value": "> wiper.sh --inject : ver déployé sur les serveurs fédéraux. Dossier partiellement effacé."
+      "Value": "> wiper.sh --inject : ver déployé sur les serveurs fédéraux. Jauge −{0:0} UT, {1} % des TFlops englouties jusqu'à la fin de la run."
     },
     {
       "Key": "PRESTIGE_P_ROOT_NAME",
@@ -1331,6 +1323,10 @@
     {
       "Key": "UI_PRESTIGE_EFFECT_OVERCLOCK",
       "Value": "> Avance de l'Overclock : +{0:0.##} s par niveau"
+    },
+    {
+      "Key": "UI_EMERGENCY_EXHAUSTED",
+      "Value": "[ÉPUISÉ] DATA WIPER — {0} % des TFlops sacrifiées jusqu'à la fin de la run"
     }
   ]
 }

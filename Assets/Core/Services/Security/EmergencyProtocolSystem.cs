@@ -1,204 +1,129 @@
 using Core.Models.Economy;
 using Core.Services.Economy;
-using Core.Services.Platform;
 using R3;
 using System;
 using UnityEngine;
-using VContainer.Unity;
 
 namespace Core.Services.Security
 {
     /// <summary>
-    /// Le Bouton d'Urgence, refondu le 2026-08-27 : « Data Wiper ».
+    /// Le Bouton d'Urgence : « Data Wiper ».
     ///
-    /// L'ancienne version achetait l'effacement avec de l'argent, comme un pot-de-vin. La nouvelle
-    /// ne coûte RIEN : elle <b>exige</b> une puissance de calcul. Effacer partiellement ses traces,
-    /// c'est envoyer un ver dans les serveurs fédéraux — il faut de la force brute, pas des
-    /// billets. Le palier requis grimpe à chaque usage, l'agence durcissant ses défenses.
+    /// <b>Refonte « Time Attack » (lot 2, 2026-10-14).</b> Plus de délai, plus de palier de TFlops,
+    /// plus de contrecoup qui se dissipe : chaque usage retire <b>2 500 UT</b> de la jauge et
+    /// <b>sacrifie 30 % des TFlops nettes jusqu'à la fin de la run</b>, dans la limite stricte de
+    /// 90 % — trois usages. Effacer ses traces, c'est envoyer un ver dans les serveurs fédéraux, et
+    /// la puissance qu'il mobilise ne revient pas.
     ///
-    /// Le contrecoup est le cœur de la mécanique : l'opération <b>immobilise une tranche des
-    /// TFlops</b> pendant une minute. Or les TFlops alimentent aussi la dissipation des Proxies —
-    /// purger la Trace affaiblit donc la défense juste après, et la jauge remonte plus vite. La
-    /// tranche immobilisée s'alourdit de dix points par usage, ce qui rend le bouton de plus en
-    /// plus dangereux à mesure que la run avance.
+    /// Le sacrifice frappe les TFlops NETTES, celles de l'économie : les Scripts ralentissent et
+    /// rapportent moins, le capteur du brouillard s'aveugle. La vitesse de l'A.M.I., qui lit les
+    /// TFlops BRUTES, ne baisse jamais : sans cette règle du GD, le bouton deviendrait un soin
+    /// gratuit au lieu d'un choix punitif.
     ///
-    /// Les deux compteurs s'écoulent dans Tick(), sans allocation : deux soustractions de float.
+    /// Plus rien ne s'écoule dans le temps : ce système n'est plus un ITickable.
     /// </summary>
-    public class EmergencyProtocolSystem : ITickable, IDisposable
+    public class EmergencyProtocolSystem : IDisposable
     {
-        private readonly ITimeSource _time;
         private readonly ThreatManager _threatManager;
         private readonly UpgradeManager _upgradeManager;
         private readonly PrestigeManager _prestigeManager;
         private readonly BalancingConfigSO _balancing;
 
         private readonly ReactiveProperty<int> _timesUsedInCurrentRun = new(0);
-        private readonly ReactiveProperty<float> _blockRemaining = new(0f);
-        private readonly ReactiveProperty<float> _cooldownRemaining = new(0f);
 
-        /// <summary>
-        /// Palier de TFlops à atteindre pour l'activation suivante.
-        ///
-        /// Propriété CALCULÉE et non ReactiveProperty, volontairement : une chaîne R3 dérivée du
-        /// compteur d'usages ne se réévalue qu'à chaque usage, donc régler le palier dans
-        /// l'inspecteur en Play Mode restait sans effet jusqu'au prochain déclenchement — ce qui
-        /// vide de son sens l'équilibrage à chaud. Les abonnés écoutent
-        /// <see cref="UsesInCurrentRun"/>, qui est la seule chose qui bouge en jeu.
-        /// </summary>
-        public double RequiredTFlops => _balancing.EmergencyBaseRequiredTFlops
-            * Math.Pow(_balancing.EmergencyRequirementMultiplier, _timesUsedInCurrentRun.CurrentValue);
-
-        /// <summary>Nombre d'usages, observable. C'est lui qui pilote le rafraîchissement de la vue.</summary>
+        /// <summary>Nombre d'usages sur la run, observable. C'est lui qui pilote la vue.</summary>
         public ReadOnlyReactiveProperty<int> Uses => _timesUsedInCurrentRun;
 
-        /// <summary>Secondes restantes d'immobilisation des TFlops. Vaut 0 hors contrecoup.</summary>
-        public ReadOnlyReactiveProperty<float> BlockRemaining => _blockRemaining;
-
-        /// <summary>Secondes restantes avant la prochaine activation possible.</summary>
-        public ReadOnlyReactiveProperty<float> CooldownRemaining => _cooldownRemaining;
-
         /// <summary>
-        /// Nombre d'utilisations sur la run en cours. Fait partie de l'état sauvegardé : sans lui,
-        /// fermer et rouvrir le jeu remettrait le palier du bouton à son plancher.
+        /// Nombre d'usages sur la run en cours. Fait partie de l'état sauvegardé : c'est de lui que
+        /// découle le sacrifice, qui ne doit pas s'effacer en fermant le jeu.
         /// </summary>
         public int UsesInCurrentRun => _timesUsedInCurrentRun.CurrentValue;
 
         /// <summary>Le nœud de prestige a-t-il été acheté.</summary>
         public bool IsUnlocked => _prestigeManager.IsEmergencyUnlocked.CurrentValue;
 
-        /// <summary>Tranche de TFlops que la PROCHAINE activation immobilisera.</summary>
-        public float NextBlockedFraction => Mathf.Min(
-            _balancing.EmergencyMaxBlockedFraction,
-            _balancing.EmergencyBaseBlockedFraction
-                + _balancing.EmergencyBlockedIncreasePerUse * _timesUsedInCurrentRun.CurrentValue);
+        /// <summary>
+        /// Usages permis par run : le plafond du sacrifice divisé par son pas. La marge absorbe
+        /// l'erreur du float — 0,9 / 0,3 vaut 2,9999998 en simple précision, et trois usages
+        /// deviendraient deux.
+        /// </summary>
+        public int MaxUses => _balancing.EmergencySacrificeStep <= 0f
+            ? 0
+            : Mathf.FloorToInt(_balancing.EmergencyMaxSacrifice / _balancing.EmergencySacrificeStep + 1e-4f);
 
-        /// <summary>Le parc atteint-il le palier requis. Lu sur la capacité EFFECTIVE, immobilisation comprise.</summary>
-        public bool HasEnoughPower => _upgradeManager.NetTFlops.CurrentValue >= RequiredTFlops;
+        /// <summary>Usages encore possibles sur cette run.</summary>
+        public int RemainingUses => Mathf.Max(0, MaxUses - UsesInCurrentRun);
 
-        public bool IsOnCooldown => _cooldownRemaining.CurrentValue > 0f;
+        /// <summary>Part des TFlops nettes sacrifiée en ce moment, de 0 au plafond.</summary>
+        public float SacrificedFraction => SacrificeFor(UsesInCurrentRun);
 
-        /// <summary>Durée totale du délai, pour que la vue puisse en tirer une progression.</summary>
-        public float TotalCooldownSeconds => _balancing.EmergencyCooldownSeconds;
+        /// <summary>Part qui sera sacrifiée APRÈS le prochain usage, pour que la vue l'annonce.</summary>
+        public float NextSacrificedFraction => SacrificeFor(UsesInCurrentRun + 1);
 
-        /// <summary>Points de jauge effacés par une activation, pour l'affichage.</summary>
-        public float TraceReduction => _balancing.EmergencyTraceReduction;
+        /// <summary>UT retirées par un usage, pour l'affichage.</summary>
+        public float TraceRemoval => _balancing.EmergencyTraceRemoval;
 
-        /// <summary>Durée d'immobilisation, pour l'affichage.</summary>
-        public float BlockDuration => _balancing.EmergencyBlockDurationSeconds;
+        public bool IsExhausted => RemainingUses <= 0;
 
         public EmergencyProtocolSystem(
             ThreatManager threatManager,
             UpgradeManager upgradeManager,
             PrestigeManager prestigeManager,
-            BalancingConfigSO balancing,
-            ITimeSource time)
+            BalancingConfigSO balancing)
         {
             _threatManager = threatManager;
             _upgradeManager = upgradeManager;
             _prestigeManager = prestigeManager;
             _balancing = balancing;
-            _time = time;
-        }
-
-        public void Tick()
-        {
-            // Volontairement NON gardé par IsGameActive : le contrecoup et le délai doivent
-            // continuer de s'écouler pendant l'écran de fin. Le wipe les remet à zéro de toute
-            // façon, mais les figer donnerait un état incohérent si la run reprenait.
-            float deltaTime = _time.DeltaTime;
-
-            if (_blockRemaining.CurrentValue > 0f)
-            {
-                float remaining = _blockRemaining.CurrentValue - deltaTime;
-
-                if (remaining <= 0f)
-                {
-                    _blockRemaining.Value = 0f;
-                    _upgradeManager.SetTFlopsBlockedFraction(0f);
-                }
-                else
-                {
-                    _blockRemaining.Value = remaining;
-                }
-            }
-
-            if (_cooldownRemaining.CurrentValue > 0f)
-            {
-                _cooldownRemaining.Value = Mathf.Max(0f, _cooldownRemaining.CurrentValue - deltaTime);
-            }
         }
 
         /// <summary>
-        /// Déclenche la purge. Trois conditions : le nœud de prestige acheté, le délai écoulé, et
-        /// le palier de TFlops atteint. Rien n'est dépensé — c'est un prérequis, pas un coût.
+        /// Déclenche la purge. Deux conditions : le nœud acheté, et un usage restant. Utilisable à
+        /// tout moment, même jauge vide — l'excédent est alors perdu, comme pour un Proxy.
         ///
-        /// Retourne false si l'une des trois manque ; la vue grise le bouton, mais elle n'est
-        /// pas la garde.
+        /// Retourne les UT réellement retirées, ou une valeur négative si l'usage est refusé ; la
+        /// vue grise le bouton, mais elle n'est pas la garde.
         /// </summary>
-        public bool TryTriggerEmergency()
+        public float TryTriggerEmergency()
         {
-            if (!IsUnlocked) return false;
-            if (IsOnCooldown) return false;
-            if (!HasEnoughPower) return false;
+            if (!IsUnlocked || IsExhausted) return -1f;
 
-            _threatManager.ReduceTraceByFraction(_balancing.EmergencyTraceReduction);
+            float wiped = _threatManager.Wipe(_balancing.EmergencyTraceRemoval);
 
-            // La tranche est calculée AVANT l'incrément : le premier usage d'une run en
-            // immobilise 30 %, pas 40 %.
-            _upgradeManager.SetTFlopsBlockedFraction(NextBlockedFraction);
-
-            _blockRemaining.Value = _balancing.EmergencyBlockDurationSeconds;
-            _cooldownRemaining.Value = _balancing.EmergencyCooldownSeconds;
             _timesUsedInCurrentRun.Value++;
+            _upgradeManager.SetTFlopsSacrificedFraction(SacrificedFraction);
 
-            Debug.Log("[EMERGENCY] Data Wiper lancé. Trace −" + (_balancing.EmergencyTraceReduction * 100f)
-                      + " pts, TFlops immobilisées pendant " + _balancing.EmergencyBlockDurationSeconds + " s.");
-            return true;
+            Debug.Log("[EMERGENCY] Data Wiper lancé. Jauge −" + wiped + " UT, TFlops nettes sacrifiées à "
+                      + (SacrificedFraction * 100f) + " %.");
+            return wiped;
         }
 
         /// <summary>
-        /// Restaure l'état depuis une sauvegarde. Le contrecoup ET le délai sont sauvegardés,
-        /// contrairement à l'Overdrive du Ghost Cache — et l'asymétrie est volontaire : là-bas,
-        /// sauvegarder aurait permis de mettre en PAUSE un bonus ; ici, ne pas sauvegarder
-        /// permettrait d'ÉCHAPPER à une pénalité en fermant la fenêtre.
+        /// Restaure l'état depuis une sauvegarde : le compteur d'usages, et le sacrifice qui en
+        /// découle. À appeler APRÈS la restauration des générateurs, dont il ampute les TFlops.
         /// </summary>
-        public void Restore(int uses, float blockRemaining, float cooldownRemaining)
+        public void Restore(int uses)
         {
-            _timesUsedInCurrentRun.Value = uses < 0 ? 0 : uses;
-            _cooldownRemaining.Value = Mathf.Clamp(cooldownRemaining, 0f, _balancing.EmergencyCooldownSeconds);
-
-            float block = Mathf.Clamp(blockRemaining, 0f, _balancing.EmergencyBlockDurationSeconds);
-            _blockRemaining.Value = block;
-
-            // La tranche à réappliquer est celle de l'usage PRÉCÉDENT, d'où le −1 : le compteur
-            // a déjà été incrémenté au moment du déclenchement.
-            if (block > 0f && uses > 0)
-            {
-                _upgradeManager.SetTFlopsBlockedFraction(Mathf.Min(
-                    _balancing.EmergencyMaxBlockedFraction,
-                    _balancing.EmergencyBaseBlockedFraction
-                        + _balancing.EmergencyBlockedIncreasePerUse * (uses - 1)));
-            }
-            else
-            {
-                _upgradeManager.SetTFlopsBlockedFraction(0f);
-            }
+            _timesUsedInCurrentRun.Value = Mathf.Clamp(uses, 0, MaxUses);
+            _upgradeManager.SetTFlopsSacrificedFraction(SacrificedFraction);
         }
 
         /// <summary>Remet le système à neuf. Appelé par le wipe : tout ceci est de l'état de run.</summary>
         public void ResetSystem()
         {
             _timesUsedInCurrentRun.Value = 0;
-            _blockRemaining.Value = 0f;
-            _cooldownRemaining.Value = 0f;
-            _upgradeManager.SetTFlopsBlockedFraction(0f);
+            _upgradeManager.SetTFlopsSacrificedFraction(0f);
+        }
+
+        private float SacrificeFor(int uses)
+        {
+            return Mathf.Min(_balancing.EmergencyMaxSacrifice, _balancing.EmergencySacrificeStep * uses);
         }
 
         public void Dispose()
         {
             _timesUsedInCurrentRun.Dispose();
-            _blockRemaining.Dispose();
-            _cooldownRemaining.Dispose();
         }
     }
 }

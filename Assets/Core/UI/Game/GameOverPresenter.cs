@@ -20,7 +20,7 @@ namespace Core.UI.Game
     /// reçoit qu'un texte déjà assemblé : elle n'a aucune raison de connaître les statistiques
     /// d'une run, ni de décider lesquelles méritent d'apparaître.
     /// </summary>
-    public class GameOverPresenter : IStartable, IDisposable
+    public class GameOverPresenter : IStartable, IPostStartable, IDisposable
     {
         private readonly GameOverView _view;
         private readonly GameSessionManager _sessionManager;
@@ -79,6 +79,23 @@ namespace Core.UI.Game
                 .Skip(1)
                 .Subscribe(_ => RenderLocalizedTexts())
                 .AddTo(_disposables);
+        }
+
+        /// <summary>
+        /// Une run terminée et pas encore relancée : la partie a été fermée sur l'écran de fin, ou
+        /// on y revient depuis le menu. On le rouvre tel quel, arbre compris — sans quoi le joueur
+        /// perdait sa fenêtre d'achat du prestige.
+        ///
+        /// En PostStart et non en Start : l'écran appartient au panneau de prestige, dont
+        /// l'inspecteur n'existe qu'une fois son propre Start passé — et ce presenter-ci est
+        /// enregistré avant lui.
+        /// </summary>
+        public void PostStart()
+        {
+            if (_sessionManager.TryGetPendingRunEnd(out RunSummary pending))
+            {
+                Show(pending);
+            }
         }
 
         private void Show(RunSummary summary)

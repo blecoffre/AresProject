@@ -10,7 +10,7 @@
 > | les décisions de design — elles font foi | `game-design.md` |
 > | ce qui a déjà été réglé, et comment | `historique.md` |
 >
-> Dernière mise à jour : **2026-10-14** — lot 1 de la refonte « Time Attack » joué, branche
+> Dernière mise à jour : **2026-10-14** — lot 1 joué, lot 2 livré, branche
 > `chantier/refonte-time-attack`.
 
 ---
@@ -39,9 +39,9 @@ sauvegarde ne bougent pas.
 | Points de prestige — cumul de campagne, modèle des boîtes, saisie à 30 % | Livré le 2026-10-02, inchangé par la refonte | Oui (2026-10-14) |
 | Arbre de prestige — 140 nœuds (20 utiles + 120 ciblés) | **Refonte au lot 4** : 21 nœuds, Noyau Compilé | Interface oui (août) |
 | Zéro-Day Exploit / Ghost Cache | **Retirés** le 2026-10-13 | — |
-| Data Wiper | Ancien modèle, **refonte au lot 2** | Oui (août), valeurs provisoires |
+| **Data Wiper** — −2 500 UT, sacrifice de 30 % des TFlops nettes par usage, trois usages | **Refonte lot 2, livré le 2026-10-14** | **Non** |
 | Victoire — 1e12 TFlops nettes | Livrée le 2026-09-16, **seuil provisoire à 5e11** | Séquence oui ; écran jamais vu (objet éteint dans la scène, corrigé le 2026-10-14, à rejouer) |
-| Sauvegarde — `SaveData` **v11**, écriture atomique, autosave, fermeture | Livrée ; v11 le 2026-10-13 | v10 oui ; **migration v11 non** |
+| Sauvegarde — `SaveData` **v12**, écriture atomique, autosave, fermeture, écran de fin rouvert | Livrée ; v11 le 2026-10-13, v12 le 2026-10-14 | v10 oui ; **migrations v11 et v12 non** |
 | Menu principal, options en trois onglets, pause, langue à chaud | Livré le 2026-10-02 | Oui — touches et build vus le 2026-10-13 |
 | Daltonisme — quatre palettes | Livré le 2026-10-02 | Oui (outil de contrôle + Play Mode) |
 | Audio — musiques, clics, événements | Livré le 2026-10-12 | Oui (GD) |
@@ -59,8 +59,8 @@ Chaque lot se termine par son protocole de test (`a-tester.md`), sur la branche
 | # | Lot | Contenu | Statut |
 |---|---|---|---|
 | R1 | **Jauge, Overclock, Proxies** | Jauge de l'A.M.I. à 10 000 UT, TFlops brutes / nettes, Proxies en Wipe, Overclock pénalisé, branches Blindage / Interception / Overclock, retrait du Ghost Cache, du Zéro-Day, de `P_STEALTH`, du réveil et de la barre d'espace, `SaveData` v11, suppression du harnais | ✅ livré le 2026-10-13, joué le 2026-10-14 ; restent la migration v11 et la lisibilité (`a-tester.md` § 0) |
-| R2 | **Data Wiper** | Sans délai, −2 500 UT, sacrifice de +30 % des TFlops nettes par usage jusqu'à 90 % (trois usages), permanent pour la run ; la vitesse de l'A.M.I. lit les TFlops brutes, donc ne ralentit pas. **Et la sauvegarde de l'écran de fin de run** (`backlog.md` § 5), dans le même changement de format | **suivant** (choix du 2026-10-14) |
-| R3 | **Brouillard** | Relevé tous les 800 UT remplis (200 en fin de partie, via les TFlops nettes) ; aiguille + borne pessimiste `relevé + V_AMI × âge × pessimisme` ; paliers et gain du bouton sur l'aiguille ; état du relevé sauvegardé (contre la triche du rechargement) | à faire |
+| R2 | **Data Wiper** | Sans délai, −2 500 UT, sacrifice de +30 % des TFlops nettes par usage jusqu'à 90 % (trois usages), permanent pour la run ; la vitesse de l'A.M.I. lit les TFlops brutes, donc ne ralentit pas. **Et la sauvegarde de l'écran de fin de run**, dans le même changement de format (v12) | ✅ livré le 2026-10-14, **à jouer** (`a-tester.md` § 0 bis) |
+| R3 | **Brouillard** — *suivant* | Relevé tous les 800 UT remplis (200 en fin de partie, via les TFlops nettes) ; aiguille + borne pessimiste `relevé + V_AMI × âge × pessimisme` ; paliers et gain du bouton sur l'aiguille ; état du relevé sauvegardé (contre la triche du rechargement) | à faire |
 | R4 | **Arbre** | Retrait des 120 nœuds ciblés et de leur générateur ; Noyau Compilé (coût × 0,99^points, plancher 0,05 ; rendement + 1 % par point, Datas et TFlops) affiché dans les panneaux ; `P_CORE_OVERRIDE` infini ; `P_REFAC`, `P_DATAM`, Extraction (+0,5 par rang, trois paliers) ; `P_INTERCEPT_3` et `_4` rabotés (GD, 2026-10-14) ; chaînes « parent au max » ; disposition ; nouvelle migration | à faire |
 | R5 | **Nettoyage** | Code mort restant (bonus ciblés, champs obsolètes, clés orphelines), réglages inutilisés, doc | à faire |
 
@@ -152,6 +152,8 @@ _traceReadoutMaxInterval      60       brouillard AU DÉPART (ancien réglage, l
 _prestigeFirstThresholdDatas  2e+06    première boîte
 _prestigeThresholdGrowth      1.12     +12 % par boîte suivante
 _seizedContributionRatio      0.3      part de la contribution versée par une saisie
-_emergencyTraceReduction      0.25     Data Wiper : FRACTION de la Trace courante (ancien modèle, lot 2)
+_emergencyTraceRemoval        2500     Data Wiper : UT retirées par usage
+_emergencySacrificeStep       0.3      part des TFlops NETTES sacrifiée par usage, jusqu'au wipe
+_emergencyMaxSacrifice        0.9      plafond strict : trois usages
 paliers d'extraction          50 % → +15 % · 75 % → +30 % · 90 % → +50 % (sous P_EXTRACT_HIGHRISK)
 ```

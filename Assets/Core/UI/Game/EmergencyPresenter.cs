@@ -2,7 +2,6 @@ using Core.Models.Console;
 using Core.Services.Economy;
 using Core.Services.Localization;
 using Core.Services.Security;
-using Core.Utils;
 using Core.UI.Theme;
 using R3;
 using System;
@@ -14,16 +13,15 @@ namespace Core.UI.Game
     /// <summary>
     /// Pilote le bouton du Data Wiper et raconte la purge dans la console.
     ///
-    /// Quatre états, dans un ordre de priorité qui n'est pas arbitraire : verrouillé d'abord,
-    /// puis le délai de recharge, puis la puissance manquante, et prêt en dernier. Un joueur
-    /// qui vient de purger doit lire « en recharge » et non « puissance insuffisante », alors
-    /// que les deux sont vrais — c'est le contrecoup qui vient de lui prendre ses TFlops.
+    /// Trois états depuis la refonte « Time Attack » (lot 2) : verrouillé (nœud non acheté), prêt
+    /// (il reste des usages), épuisé (le sacrifice a atteint son plafond). La jauge du bouton
+    /// montre les usages restants ; épuisé, elle prend la couleur du sacrifice, qui court jusqu'à
+    /// la fin de la run.
     /// </summary>
     public class EmergencyPresenter : IStartable, IDisposable
     {
         private readonly EmergencyView _view;
         private readonly EmergencyProtocolSystem _emergency;
-        private readonly UpgradeManager _upgradeManager;
         private readonly PrestigeManager _prestige;
         private readonly ConsolePresenter _console;
         private readonly ILocalizationService _loc;
@@ -34,7 +32,6 @@ namespace Core.UI.Game
         public EmergencyPresenter(
             EmergencyView view,
             EmergencyProtocolSystem emergency,
-            UpgradeManager upgradeManager,
             PrestigeManager prestige,
             ConsolePresenter console,
             ILocalizationService loc,
@@ -42,7 +39,6 @@ namespace Core.UI.Game
         {
             _view = view;
             _emergency = emergency;
-            _upgradeManager = upgradeManager;
             _prestige = prestige;
             _console = console;
             _loc = loc;
@@ -53,34 +49,9 @@ namespace Core.UI.Game
         {
             _view.OnEmergencyClicked += HandleClicked;
 
-            // Le délai est ramené à un ENTIER de seconde : sans ce filtre, le libellé serait
-            // reconstruit — donc une chaîne allouée — à chaque frame pendant cinq minutes.
-            _emergency.CooldownRemaining
-                .Select(Mathf.CeilToInt)
-                .DistinctUntilChanged()
-                .Subscribe(_ => Refresh())
-                .AddTo(ref _disposables);
-
-            // Le contrecoup fait chuter puis remonter les TFlops : les deux bords changent l'état
-            // affiché, puisque la puissance disponible conditionne la disponibilité du bouton.
-            _emergency.BlockRemaining
-                .Select(Mathf.CeilToInt)
-                .DistinctUntilChanged()
-                .Subscribe(_ => Refresh())
-                .AddTo(ref _disposables);
-
-            // On écoute le COMPTEUR d'usages et non le palier : celui-ci est désormais calculé
-            // à la volée depuis le BalancingConfigSO, pour suivre un réglage à chaud.
+            // Le compteur d'usages est la seule chose qui bouge en jeu : le sacrifice, les usages
+            // restants et l'état du bouton en découlent. Il émet aussi au wipe de fin de run.
             _emergency.Uses
-                .Subscribe(_ => Refresh())
-                .AddTo(ref _disposables);
-
-            // Franchir le palier requis doit rendre le bouton cliquable à l'achat du Hardware,
-            // pas à la seconde suivante. On filtre sur le SEUIL et non sur la valeur : les
-            // TFlops bougent à chaque achat, l'état du bouton bien plus rarement.
-            _upgradeManager.NetTFlops
-                .Select(_ => _emergency.HasEnoughPower)
-                .DistinctUntilChanged()
                 .Subscribe(_ => Refresh())
                 .AddTo(ref _disposables);
 
@@ -94,8 +65,8 @@ namespace Core.UI.Game
                 .Subscribe(_ => Refresh())
                 .AddTo(ref _disposables);
 
-            // Langue changée à chaud : le libellé se recompose dans la nouvelle langue. Skip(1) :
-            // le Refresh() ci-dessous fait déjà le premier rendu.
+            // Langue changée à chaud : le libellé se recompose. Skip(1) : le Refresh() ci-dessous
+            // fait déjà le premier rendu.
             _loc.CurrentLanguage
                 .Skip(1)
                 .Subscribe(_ => Refresh())
@@ -106,67 +77,59 @@ namespace Core.UI.Game
 
         private void Refresh()
         {
+            UiPaletteSO palette = _palette.Current.CurrentValue;
+
             if (!_emergency.IsUnlocked)
             {
                 _view.ApplyState(
                     _loc.GetText("UI_EMERGENCY_LOCKED"),
                     interactable: false,
                     fillAmount: 0f,
-                    fillColor: _palette.Current.CurrentValue.EmergencyUnavailable);
+                    fillColor: palette.EmergencyUnavailable);
 
                 return;
             }
 
-            if (_emergency.IsOnCooldown)
-            {
-                float remaining = _emergency.CooldownRemaining.CurrentValue;
-                float blockRemaining = _emergency.BlockRemaining.CurrentValue;
-
-                // Tant que les TFlops sont immobilisées, la jauge le dit par sa couleur : c'est
-                // la fenêtre où le joueur est le plus vulnérable, et il doit la voir passer.
-                _view.ApplyState(
-                    _loc.GetText("UI_EMERGENCY_COOLDOWN", Mathf.CeilToInt(remaining)),
-                    interactable: false,
-                    fillAmount: 1f - remaining / _emergency.TotalCooldownSeconds,
-                    fillColor: blockRemaining > 0f ? _palette.Current.CurrentValue.EmergencyBlocked : _palette.Current.CurrentValue.EmergencyUnavailable);
-
-                return;
-            }
-
-            if (!_emergency.HasEnoughPower)
+            if (_emergency.IsExhausted)
             {
                 _view.ApplyState(
-                    _loc.GetText(
-                        "UI_EMERGENCY_INSUFFICIENT",
-                        CurrencyFormatter.Format(_upgradeManager.NetTFlops.CurrentValue),
-                        CurrencyFormatter.FormatCost(_emergency.RequiredTFlops)),
+                    _loc.GetText("UI_EMERGENCY_EXHAUSTED", Mathf.RoundToInt(_emergency.SacrificedFraction * 100f)),
                     interactable: false,
-                    fillAmount: (float)(_upgradeManager.NetTFlops.CurrentValue
-                                        / _emergency.RequiredTFlops),
-                    fillColor: _palette.Current.CurrentValue.EmergencyUnavailable);
+                    fillAmount: 1f,
+                    fillColor: palette.EmergencyBlocked);
 
                 return;
             }
 
-            // Les trois nombres viennent des constantes et de l'état, jamais du texte : sinon un
+            // Les nombres viennent des réglages et de l'état, jamais du texte : sinon un
             // rééquilibrage laisserait le bouton mentir au joueur.
+            int maxUses = _emergency.MaxUses;
+            int remaining = _emergency.RemainingUses;
+
             _view.ApplyState(
                 _loc.GetText(
                     "UI_EMERGENCY_READY",
-                    Mathf.RoundToInt(_emergency.TraceReduction * 100f),
-                    Mathf.RoundToInt(_emergency.NextBlockedFraction * 100f),
-                    Mathf.RoundToInt(_emergency.BlockDuration)),
+                    _emergency.TraceRemoval,
+                    Mathf.RoundToInt(_emergency.NextSacrificedFraction * 100f),
+                    remaining),
                 interactable: true,
-                fillAmount: 1f,
-                fillColor: _palette.Current.CurrentValue.EmergencyReady);
+                fillAmount: maxUses > 0 ? (float)remaining / maxUses : 0f,
+                fillColor: palette.EmergencyReady);
         }
 
         private void HandleClicked()
         {
-            if (!_emergency.TryTriggerEmergency()) return;
+            float wiped = _emergency.TryTriggerEmergency();
+            if (wiped < 0f) return;
 
-            _console.Log(_loc.GetText("LOG_EMERGENCY_WIPE"), ConsoleLogType.Narrative);
-            Refresh();
+            _console.Log(
+                _loc.GetText(
+                    "LOG_EMERGENCY_WIPE",
+                    wiped,
+                    Mathf.RoundToInt(_emergency.SacrificedFraction * 100f)),
+                ConsoleLogType.Narrative);
+
+            // Le compteur d'usages vient d'émettre : la vue est déjà à jour.
         }
 
         public void Dispose()
