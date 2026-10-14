@@ -25,6 +25,17 @@ namespace Core.Boot
         [Tooltip("Le CanvasScaler de la scène, sur lequel s'applique l'échelle d'interface.")]
         [SerializeField] private CanvasScaler _canvasScaler;
 
+        /// <summary>
+        /// Sans RootScene — Play lancé depuis cette scène —, rien ne se construit : voir
+        /// <see cref="RootSceneGuard"/>.
+        /// </summary>
+        protected override void Awake()
+        {
+            if (!RootSceneGuard.IsRootSceneLoaded(this)) return;
+
+            base.Awake();
+        }
+
         protected override void Configure(IContainerBuilder builder)
         {
             builder.RegisterComponent(_mainMenuView);

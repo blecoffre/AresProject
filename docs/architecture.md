@@ -30,6 +30,10 @@ Le panneau d'options est **un prefab** (`Data/Prefabs/UI/OptionsPanel.prefab`) p
 
 `SceneLoader` charge la MainMenuScene ou la GameScene (jamais les deux) en additif avec `LifetimeScope.EnqueueParent`, ce qui rattache automatiquement le scope de scène au Root.
 
+Les deux scopes de scène passent par `RootSceneGuard` avant de se construire : sans RootScene chargée (Play lancé depuis la scène elle-même), ils ne construisent rien et le disent en une erreur `[BOOT]`, au lieu de l'erreur VContainer qui accusait la localisation.
+
+**Un prefab instancié au runtime passe par le conteneur** : `IObjectResolver.Instantiate(prefab, parent)`, qui injecte toute la hiérarchie AVANT les `Awake` — y compris sous un parent inactif. Jamais un composant qui cherche son scope lui-même (`LifetimeScope.Find`) : c'était `AutoInjectOnInstantiate`, un Service Locator supprimé le 2026-10-15.
+
 ## Séquence de démarrage
 
 ```

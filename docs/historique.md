@@ -11,6 +11,72 @@
 
 ---
 
+## Correctifs du backlog, suite — 2026-10-15
+
+Bertrand : « ne te gêne pas pour les fixs ». Cinq entrées soldées, et deux défauts trouvés en route :
+
+- **Soldes tronqués, plus arrondis.** `CurrencyFormatter.Format` tronque désormais en pas
+  entiers comptés sur la valeur BRUTE (1 Data en K, 1 000 en M…), sans marge de bruit : le bouton
+  d'achat compare ce même double au prix, l'affichage ne peut donc plus le dépasser. 1 234,5
+  Datas : « 1,234K » (était « 1,235K ») ; 999 999,9 : « 999,999K » (était « 1000K »).
+- **Trouvé en route — les prix au bord d'un palier.** `FormatCost` choisissait son palier AVANT
+  de plafonner : 999,9 s'affichait « 1000 » et 999 999,9 « 1000K ». Le palier se choisit
+  désormais après : « 1K », « 1M ».
+- **Trouvé en route — la marge de bruit des prix.** Six décimales fixes du millième d'unité
+  absorbaient 500 Datas au palier T : un prix de 1 000 000 000 400 s'affichait « 1T ». Marge
+  désormais relative (1e-12). Vérifié dans l'éditeur sur 200 000 montants tirés entre 1 et 2e15 :
+  aucun solde affiché au-dessus du montant, aucun prix en dessous, aucun « 1000K ».
+- **Jauge de l'exfiltration** : une barre de 4 px, rouge comme le cadre du bouton, en bas de
+  « PrestigeButton » — copie de celle du Data Wiper —, câblée sur `_progressFill`.
+- **Inspecteur de nœud** : les six textes perdent l'auto-sizing (nom en 36, le reste en 25, les
+  tailles des générateurs) ; les trois `VerticalLayoutGroup` contrôlent la hauteur de leurs
+  enfants sans les étirer ; les deux `ContentSizeFitter`, qui se battaient avec le groupe parent,
+  sont retirés. Mesuré dans l'éditeur sur « Extraction Haut Risque » : les blocs s'empilent sans
+  chevauchement (616 unités sur 810). Reste ouvert : rien ne défile si la colonne déborde
+  (`backlog.md` § 4).
+- **Générateurs injectés par le conteneur** : `UpgradePanelView` instancie par
+  `_resolver.Instantiate`, qui injecte AVANT l'Awake, onglet visible ou non.
+  `AutoInjectOnInstantiate`, le Service Locator, est supprimé.
+- **Trouvé en route — le bouton d'achat avait deux auteurs.** Son texte portait un
+  `LocalizedText` (clé `BUY`, « Acheter ») en plus du presenter (« ACHETER », « ACHETER x10 ») :
+  le `Start` du premier, qui passe après le premier rendu du second, réécrivait « Acheter »
+  jusqu'au prochain changement de quantité achetable. `LocalizedText` retiré, clé `BUY` supprimée
+  (316 clés).
+- **Garde de la RootScene** : `RootSceneGuard`, appelé par les scopes de la GameScene et de la
+  MainMenuScene avant leur construction. Sans RootScene, une erreur `[BOOT]` dit quoi faire, et
+  le conteneur n'est pas construit.
+
+Les entrées du backlog, telles qu'elles étaient :
+
+- 🔬 **Un solde s'affiche ARRONDI, pas tronqué** (constaté le 2026-10-14 dans l'éditeur).
+  `CurrencyFormatter.Format` se dit « tronque vers le bas : on n'annonce jamais au joueur plus
+  d'argent qu'il n'en a », mais au-delà de 1 000 il passe par `ToString("0.###")`, qui arrondit :
+  1 234,5 Datas s'affichent « 1,235K ». L'écart vaut au plus une demi-unité de la 3e décimale, soit
+  500 millions à l'échelle des « T ». Un joueur peut donc lire un solde qui suffit et voir le bouton
+  rester gris. Remède : tronquer comme `FormatCost` plafonne (`Math.Floor` à la 3e décimale).
+
+- 🔬📖 **La jauge de l'exfiltration est toujours vide.** `ExfiltrationView._progressFill` vaut
+  `{fileID: 0}` dans la GameScene (constaté en jeu le 2026-08-28, relu dans la scène le
+  2026-10-13). Le libellé porte encore le pourcentage, mais la barre de progression vers le
+  premier point a disparu au rework UI.
+
+- 🔬 **L'inspecteur de nœud se chevauche** — reconfirmé par Bertrand le 2026-10-13, et plus
+  nettement encore le 2026-10-14 au-delà de 120 % de taille d'interface (nom, description et effet
+  imprimés les uns sur les autres). Auto-sizing et
+  `ContentSizeFitter` s'annulent : `Name_Desc_Effects` et `Prerequisite` ont un `ContentSizeFitter`
+  en *PreferredSize* mais un `VerticalLayoutGroup` à `childControlHeight = false`, donc le groupe
+  additionne des hauteurs figées à 50 px alors que la description en demande 500. ⚠️ **Basculer
+  `childControlHeight` à true ne suffit PAS — essayé le 2026-08-30, c'est pire** : les six textes
+  ont `enableAutoSizing`, et la boucle fitter/auto-size part en fonte géante. Il faut d'abord
+  désactiver l'auto-sizing et fixer une taille.
+- 📖 **`AutoInjectOnInstantiate` est un Service Locator** (`LifetimeScope.Find` dans `Awake()`), et
+  🔬 il ne s'exécute pas sur un objet inactif : les générateurs instanciés dans un onglet masqué
+  ne sont injectés qu'à l'ouverture de l'onglet (invisible en pratique). Le remède est déjà là :
+  `UpgradePanelView._resolver`, injecté et **jamais lu** — `_resolver.Instantiate(prefab, parent)`
+  injecte l'arbre entier et rend le composant inutile.
+- (Pièges à retenir) **Lancer le Play Mode depuis la GameScene est cassé par construction.** […]
+  Une garde explicite dans `GameSceneLifetimeScope` éviterait le diagnostic à chaque fois.
+
 ## Correctifs du backlog — 2026-10-14
 
 Huit entrées soldées dans un même lot, avant la passe de test de la refonte :

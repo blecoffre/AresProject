@@ -80,7 +80,7 @@ Rien de tout cela n'empêche de jouer aujourd'hui. Aucun build public ne doit pa
   apprécié, cf. `audio-licences.md`).
 - 📖 **Déclaration « contenu créé avec une IA »** au questionnaire Steam, tant que les sons
   synthétisés sont en jeu — et les traductions, si elles sont faites par IA comme prévu.
-- 📖 **Traductions EN et ES.** Seul `fr.json` existe (317 clés). Les nombres suivent déjà la
+- 📖 **Traductions EN et ES.** Seul `fr.json` existe (316 clés). Les nombres suivent déjà la
   culture de la langue chargée (`ILocalizationService.Culture`, 2026-10-14) : un `en.json` suffira à
   passer au point décimal. Reportées à la fin du contenu,
   décision du 2026-10-01 : inutile de traduire un texte qui va encore bouger.
@@ -103,18 +103,6 @@ Le détail chiffré et les chantiers d'équilibrage sont dans `etat-des-lieux.md
 
 ## 4. Défauts d'affichage et de texte
 
-- 🔬 **Un solde s'affiche ARRONDI, pas tronqué** (constaté le 2026-10-14 dans l'éditeur).
-  `CurrencyFormatter.Format` se dit « tronque vers le bas : on n'annonce jamais au joueur plus
-  d'argent qu'il n'en a », mais au-delà de 1 000 il passe par `ToString("0.###")`, qui arrondit :
-  1 234,5 Datas s'affichent « 1,235K ». L'écart vaut au plus une demi-unité de la 3e décimale, soit
-  500 millions à l'échelle des « T ». Un joueur peut donc lire un solde qui suffit et voir le bouton
-  rester gris. Remède : tronquer comme `FormatCost` plafonne (`Math.Floor` à la 3e décimale).
-
-- 🔬📖 **La jauge de l'exfiltration est toujours vide.** `ExfiltrationView._progressFill` vaut
-  `{fileID: 0}` dans la GameScene (constaté en jeu le 2026-08-28, relu dans la scène le
-  2026-10-13). Le libellé porte encore le pourcentage, mais la barre de progression vers le
-  premier point a disparu au rework UI.
-
 - 🔬 **Les boutons du bas du panneau d'options chevauchent les réglages** — « [ PAR DÉFAUT ] » et
   « [ RETOUR ] ». Constaté par Bertrand le 2026-10-13, en build, en 3840×2160 plein écran ;
   reconfirmé le 2026-10-14 au-delà de 120 % de taille d'interface.
@@ -134,25 +122,18 @@ Le détail chiffré et les chantiers d'équilibrage sont dans `etat-des-lieux.md
   boutons) n'y tient pas même parfaitement empilé. Il faudra choisir : panneau compact, défilement,
   ou plafond plus bas pour la taille d'interface. Et les autres écrans n'ont jamais été regardés
   au-delà de 100 % (`a-tester.md` 2.8).
-- 🔬 **L'inspecteur de nœud se chevauche** — reconfirmé par Bertrand le 2026-10-13, et plus
-  nettement encore le 2026-10-14 au-delà de 120 % de taille d'interface (nom, description et effet
-  imprimés les uns sur les autres). Auto-sizing et
-  `ContentSizeFitter` s'annulent : `Name_Desc_Effects` et `Prerequisite` ont un `ContentSizeFitter`
-  en *PreferredSize* mais un `VerticalLayoutGroup` à `childControlHeight = false`, donc le groupe
-  additionne des hauteurs figées à 50 px alors que la description en demande 500. ⚠️ **Basculer
-  `childControlHeight` à true ne suffit PAS — essayé le 2026-08-30, c'est pire** : les six textes
-  ont `enableAutoSizing`, et la boucle fitter/auto-size part en fonte géante. Il faut d'abord
-  désactiver l'auto-sizing et fixer une taille.
+- ⚖️ **L'inspecteur de nœud peut atteindre son bouton à grande taille d'interface.** Le
+  chevauchement des textes entre eux est corrigé (2026-10-15, `historique.md`) : ils s'empilent à
+  taille fixe. Mais la colonne n'a pas de défilement. Mesuré dans l'éditeur, le nœud le plus
+  bavard (« Extraction Haut Risque » : nom sur deux lignes, description sur six) occupe 616
+  unités pour 810 disponibles au-dessus du bouton ; la marge fond quand la taille d'interface
+  monte. Jamais regardé au-delà de 100 % (`a-tester.md` 2.8). Même arbitrage que le panneau
+  d'options : défilement, textes plus courts ou plafond de taille d'interface.
 - 🔬 **Le trait des nœuds verrouillés n'est pas pointillé** comme sur la maquette (le sprite du
   cadre est plein ; constat du 2026-08-30). Les liens, eux, le sont depuis le 2026-08-30.
 
 ## 5. Architecture et cycle de vie
 
-- 📖 **`AutoInjectOnInstantiate` est un Service Locator** (`LifetimeScope.Find` dans `Awake()`), et
-  🔬 il ne s'exécute pas sur un objet inactif : les générateurs instanciés dans un onglet masqué
-  ne sont injectés qu'à l'ouverture de l'onglet (invisible en pratique). Le remède est déjà là :
-  `UpgradePanelView._resolver`, injecté et **jamais lu** — `_resolver.Instantiate(prefab, parent)`
-  injecte l'arbre entier et rend le composant inutile.
 - 📖 **La liste `autoInjectGameObjects` de `GameSceneLifetimeScope` se tient à la main.** Un
   `LocalizedText` oublié affiche sa clé brute, sans erreur ni warning. Deux cas trouvés le
   2026-09-22, corrigés le 2026-10-02 ; aucun contrôle automatique n'empêche le suivant. Consigne
@@ -171,7 +152,11 @@ Le jeu tourne sans ralentissement perceptible. Rien ici n'a été profilé.
 
 - 📖 **`ILocalizationService.GetText<T0..T3>`** promet « Zero Boxing » mais passe par
   `string.Format(string, object…)`, qui boxe chaque type valeur (TODO dans
-  `JsonLocalizationService`). → `ZString.Format<T>`, déjà disponible avec UniTask.
+  `JsonLocalizationService`). ⚠️ La piste notée jusqu'ici, « `ZString.Format<T>`, déjà
+  disponible avec UniTask », est fausse : ZString est un paquet distinct, **absent du projet**
+  (vérifié le 2026-10-15 dans `Packages/manifest.json`). Et le remède devra formater avec
+  `ILocalizationService.Culture` (règle du 2026-10-14) : vérifier qu'il accepte un
+  `IFormatProvider` avant de l'adopter.
 - ⚖️ **Repeinte de l'arbre** : 21 nœuds × 3 passes par achat de prestige, chacune avec un
   `Math.Pow` et une chaîne par nœud. Jamais mesuré, et probablement sans importance (achat rare,
   écran modal). Le remède, si besoin, est celui de `GeneratorPresenter` : cache et
@@ -221,12 +206,14 @@ Pas des bugs : des arbitrages que seul le GD peut rendre. Les trancher débloque
 - **Unity n'appelle pas `Awake()` sur un objet inactif dans la hiérarchie.** Tout composant dont
   une méthode est appelée pendant la construction d'un panneau masqué doit résoudre ses
   références en **lazy**, jamais dans `Awake`. C'est ce qui avait cassé l'arbre de prestige, et
-  c'est ce qui rend les onglets masqués non injectés.
+  ce qui laissait les générateurs des onglets masqués non injectés jusqu'au 2026-10-15 (ils
+  naissent désormais injectés, par `IObjectResolver.Instantiate`).
 - **Lancer le Play Mode depuis la GameScene est cassé par construction.** Sans `RootScene`, le
-  scope de scène n'a pas de parent et aucun service n'est résoluble. VContainer accuse alors un
-  `LocalizedText` (« No such registration of type: ILocalizationService »), ce qui se lit comme
-  un bug de localisation. Toujours partir de `Assets/Data/Scenes/RootScene.unity`. Une garde
-  explicite dans `GameSceneLifetimeScope` éviterait le diagnostic à chaque fois.
+  scope de scène n'a pas de parent et aucun service n'est résoluble. Toujours partir de
+  `Assets/Data/Scenes/RootScene.unity`. Depuis le 2026-10-15, `RootSceneGuard` le dit en une
+  erreur `[BOOT]` et la scène reste inerte (GameScene comme MainMenuScene) ; avant, VContainer
+  accusait un `LocalizedText` (« No such registration of type: ILocalizationService »), ce qui se
+  lisait comme un bug de localisation.
 - **Les valeurs de `PrestigeBonusType` s'appendent en FIN d'enum.** L'index est sérialisé dans les
   `.asset` : une insertion au milieu redéfinit silencieusement des nœuds existants. Déjà arrivé.
   Retirer une valeur n'est permis qu'en relançant **dans la foulée** le générateur de l'arbre,

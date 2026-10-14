@@ -17,10 +17,6 @@
       "Value": "Overclock"
     },
     {
-      "Key": "BUY",
-      "Value": "Acheter"
-    },
-    {
       "Key": "LOG_NETWORK_CONNECTED",
       "Value": "Connexion au réseau local établie..."
     },

@@ -5,6 +5,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using VContainer;
+using VContainer.Unity;
 
 namespace Core.UI.Upgrades
 {
@@ -74,6 +75,12 @@ namespace Core.UI.Upgrades
         public event Action<UpgradeType> OnTabClicked;
         public event Action<BuyQuantity> OnBuyQuantityClicked;
 
+        /// <summary>
+        /// Le conteneur de la scène, pour instancier les générateurs DÉJÀ injectés. Jusqu'au
+        /// 2026-10-15 il n'était jamais lu : chaque générateur cherchait lui-même son scope
+        /// (<c>AutoInjectOnInstantiate</c>, un Service Locator), et ne le trouvait qu'à son Awake —
+        /// soit à l'ouverture de l'onglet pour ceux qui naissaient dans un onglet masqué.
+        /// </summary>
         private IObjectResolver _resolver;
 
         [Inject]
@@ -151,7 +158,8 @@ namespace Core.UI.Upgrades
                 _ => _scriptContainer
             };
 
-            return Instantiate(_generatorPrefab, targetContainer);
+            // Injecté AVANT son Awake, que l'onglet soit visible ou non.
+            return _resolver.Instantiate(_generatorPrefab, targetContainer);
         }
 
         public void ShowTab(UpgradeType type)
@@ -189,12 +197,7 @@ namespace Core.UI.Upgrades
             target.gameObject.SetActive(isActive);
         }
 
-        /// <summary>
-        /// Allume le bouton du mode d'achat courant et éteint les trois autres. Les quatre sont
-        /// notifiés, pas seulement le nouveau — c'est ce qui éteint celui qu'on quitte, exactement
-        /// comme pour les onglets.
-        /// </summary>
-        /// <summary>Libellés des sélecteurs de quantité, résolus par le presenter.</summary>
+        /// <summary>Libellés des trois onglets, résolus par le presenter.</summary>
         public void SetTabLabels(string script, string hardware, string proxy)
         {
             if (_scriptTabVisual != null) _scriptTabVisual.SetLabel(script);
@@ -208,6 +211,7 @@ namespace Core.UI.Upgrades
             CoreSummaryText.Apply(_coreSummaryText, text);
         }
 
+        /// <summary>Libellés des sélecteurs de quantité, résolus par le presenter.</summary>
         public void SetBuyQuantityLabels(string x1, string x10, string x100, string max)
         {
             if (_buyX1Visual != null) _buyX1Visual.SetLabel(x1);
@@ -216,6 +220,11 @@ namespace Core.UI.Upgrades
             if (_buyMaxVisual != null) _buyMaxVisual.SetLabel(max);
         }
 
+        /// <summary>
+        /// Allume le bouton du mode d'achat courant et éteint les trois autres. Les quatre sont
+        /// notifiés, pas seulement le nouveau — c'est ce qui éteint celui qu'on quitte, exactement
+        /// comme pour les onglets.
+        /// </summary>
         public void ShowBuyQuantity(BuyQuantity quantity)
         {
             if (_buyX1Visual != null) _buyX1Visual.SetActiveState(quantity == BuyQuantity.X1);

@@ -153,6 +153,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Core.UI.Theme.UiClickSound
   _channel: {fileID: 11400000, guid: 5671b6ce40361394da07437e70578ba0, type: 2}
   _soundSetOverride: {fileID: 0}
+  _refusalSound: 1
 --- !u!1 &756837999438004137
 GameObject:
   m_ObjectHideFlags: 0
@@ -288,6 +289,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Core.UI.Theme.UiClickSound
   _channel: {fileID: 11400000, guid: 5671b6ce40361394da07437e70578ba0, type: 2}
   _soundSetOverride: {fileID: 0}
+  _refusalSound: 1
 --- !u!1 &1488494086681600088
 GameObject:
   m_ObjectHideFlags: 0
@@ -373,7 +375,6 @@ GameObject:
   m_Component:
   - component: {fileID: 8500576013259001365}
   - component: {fileID: 2899073343633919779}
-  - component: {fileID: 2957440375534472073}
   m_Layer: 5
   m_Name: ActionPrefab
   m_TagString: Untagged
@@ -429,18 +430,6 @@ MonoBehaviour:
   _buyButton: {fileID: 3356447077186908584}
   _runButton: {fileID: 1424997338531184327}
   _buyLabelText: {fileID: 4447927400310386409}
---- !u!114 &2957440375534472073
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2032697497874280933}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fd680ec027be6e843a1e2dc136461162, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Core.Utils.AutoInjectOnInstantiate
 --- !u!1 &2447892127783910497
 GameObject:
   m_ObjectHideFlags: 0
@@ -664,7 +653,6 @@ GameObject:
   - component: {fileID: 577537005243838593}
   - component: {fileID: 5584661839452153034}
   - component: {fileID: 4447927400310386409}
-  - component: {fileID: 8637330353771628499}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -791,19 +779,6 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!114 &8637330353771628499
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3709424408099321446}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1c7459760db97204084545a93a93fbbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Core.UI.Localization.LocalizedText
-  _localizationKey: BUY
 --- !u!1 &5529443115903089496
 GameObject:
   m_ObjectHideFlags: 0

@@ -29,7 +29,7 @@
   `chantier/refonte-time-attack` remplace toute sauvegarde d'un autre format par une partie neuve.
   Copier le fichier AVANT le premier lancement, pour pouvoir revenir sur `main`.
 - **Le test de la refonte se fait d'un bloc, sur une sauvegarde neuve** (Bertrand, 2026-10-14) :
-  § 0 à § 0 sexies. Supprimer `savegame.json` avant de commencer.
+  § 0 à § 0 septies. Supprimer `savegame.json` avant de commencer.
 
 ---
 
@@ -137,6 +137,20 @@ défauts, testés en passant pendant la session de la refonte.
 | 6.6 | **En-tête au démarrage** | Lancer une partie neuve. | Datas, TFlops, Cycles CPU et « + … /s » s'affichent dès l'arrivée en jeu, comme avant (leurs abonnements ont changé de place). |
 | 6.7 | **Console qui tourne** | Laisser défiler plus de 30 lignes (achats, Overclocks). | Les plus anciennes disparaissent par le haut, la plus récente reste en bas, dans l'ordre. |
 
+## 0 septies. Correctifs du backlog, suite (2026-10-15)
+
+Compilés (Unity et `dotnet build`, zéro erreur, zéro warning), **jamais joués**. Le formatage des
+montants a été vérifié dans l'éditeur sur 200 000 valeurs ; la mise en page de l'inspecteur,
+mesurée dans l'éditeur, jamais regardée à l'écran.
+
+| # | Quoi | Comment | Ce qu'on doit voir |
+|---|---|---|---|
+| 7.1 | **Solde tronqué** | Attendre qu'un générateur coûte plus de 1 000 Datas (« Coût : 1,2K » ou plus), puis regarder le solde de l'en-tête rattraper ce prix. | Dès que l'en-tête affiche un montant égal ou supérieur au prix, le bouton « ACHETER » de ce générateur est actif — jamais gris. Aucun montant ne s'écrit « 1000K » ou « 1000M » : l'affichage passe de « 999,999K » à « 1M ». |
+| 7.2 | **Bouton d'achat des générateurs** | Partie neuve : regarder le bouton du premier Script dès l'arrivée en jeu. Passer en x10, puis ouvrir les onglets Hardware et Proxy. | « ACHETER » en capitales dès l'arrivée (avant : « Acheter » jusqu'au premier changement), « ACHETER x10 » en x10, partout. Aucune erreur en console à l'ouverture des onglets. |
+| 7.3 | **Jauge de l'exfiltration** | Partie neuve, bouton « > [VERROUILLÉ] Compilation du 1er Cycle CPU : N % », en bas de la console. | Une fine barre rouge en bas du bouton, qui avance avec le pourcentage. Elle disparaît quand le bouton passe à « > [PRÊT] WIPE SYSTÈME ». En éditeur, le bouton reste cliquable verrouillé (triche de test) : c'est normal. |
+| 7.4 | **Inspecteur de nœud** | Écran de fin, arbre : cliquer « Extraction Haut Risque » (la plus longue description), puis la racine, puis « Cage de Faraday ». | Nom (plus gros), description, effet, puis prérequis, coût et avertissement s'empilent sans se chevaucher, à taille fixe — plus de texte géant ni minuscule. Rien n'atteint le bouton d'achat à 100 % de taille d'interface. |
+| 7.5 | **Play lancé depuis la mauvaise scène** | Éditeur : ouvrir la GameScene seule et lancer le Play. Stop, puis Play depuis la RootScene. | La première erreur en console est « [BOOT] … : la RootScene n'est pas chargée, … Lancer le Play depuis Assets/Data/Scenes/RootScene.unity. », et plus l'erreur VContainer sur `ILocalizationService`. Depuis la RootScene, tout fonctionne. |
+
 ## 1. Fin de partie et économie — d'avant la refonte, jamais jouées
 
 Tout ce bloc vient de `bf490c6` (2026-09-22), dont le message dit : « Rien de tout cela n'a été
@@ -157,7 +171,7 @@ Restent :
 
 | # | Quoi | Comment | Ce qu'on doit voir |
 |---|---|---|---|
-| 2.8 | **Taille d'interface au-dessus de 100 %** — *14/10 : options et inspecteur de nœud se chevauchent au-delà de 120 % (`backlog.md` § 4)* | Options > Affichage > Taille d'interface à 110 %, puis 150 %. Parcourir le menu, les options, la pause, l'écran de jeu, l'arbre, l'écran de fin. | Rien ne se chevauche, rien ne sort de l'écran. ⚠️ Le panneau d'options se chevauche par construction dès 110 % (`backlog.md` § 4) ; les autres écrans n'ont jamais été regardés au-delà de 100 %. |
+| 2.8 | **Taille d'interface au-dessus de 100 %** — *14/10 : options et inspecteur de nœud se chevauchent au-delà de 120 % (`backlog.md` § 4) ; l'inspecteur est refait le 15/10, à revoir* | Options > Affichage > Taille d'interface à 110 %, puis 150 %. Parcourir le menu, les options, la pause, l'écran de jeu, l'arbre, l'écran de fin. | Rien ne se chevauche, rien ne sort de l'écran. ⚠️ Le panneau d'options se chevauche par construction dès 110 % (`backlog.md` § 4) ; les autres écrans n'ont jamais été regardés au-delà de 100 %. |
 
 ## 3. Uniquement dans un build
 
