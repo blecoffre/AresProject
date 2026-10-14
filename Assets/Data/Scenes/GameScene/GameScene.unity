@@ -7506,7 +7506,6 @@ GameObject:
   - component: {fileID: 1266021681}
   - component: {fileID: 1266021682}
   - component: {fileID: 1266021683}
-  - component: {fileID: 1266021684}
   - component: {fileID: 1266021685}
   m_Layer: 0
   m_Name: UI
@@ -7714,21 +7713,6 @@ MonoBehaviour:
   _progressFill: {fileID: 0}
   _interactionBlocker: {fileID: 1819197885}
   _lineDelaySeconds: 0.33
---- !u!114 &1266021684
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1266021675}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8ddc37acf6d0cdd4986549f4873cdf4e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Core.UI.Game.GhostCacheView
-  _button: {fileID: 0}
-  _label: {fileID: 0}
-  _fill: {fileID: 0}
 --- !u!114 &1266021685
 MonoBehaviour:
   m_ObjectHideFlags: 0
