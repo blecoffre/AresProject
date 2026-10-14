@@ -208,7 +208,12 @@ Ces sommes sont exposées par le `PrestigeManager` (`TotalHardenBonus`, `TotalIn
 ⚖️ **Interception au maximum (×102), calculé :** en fin de partie Blindage max (jauge de ~330 s),
 `PRX_01` niveau 1 retire 78 % de la jauge et **tout Proxy à partir de `PRX_02` la vide
 entièrement**. Le dosage fin d'un Proxy de milieu de liste, décrit par le GD, n'existe donc
-qu'avec une Interception partielle. À regarder en jeu (`backlog.md` § 0).
+qu'avec une Interception partielle.
+
+**Tranché par le GD le 2026-10-14 :** les valeurs de base des Proxies sont bonnes, c'est
+l'inflation de l'arbre qui écrase le choix. Les apports de `P_INTERCEPT_3` et `P_INTERCEPT_4`
+(+4 et +15 par rang) seront **rabotés drastiquement au lot 4**, valeurs fixées en jouant, pour que
+le multiplicateur final oblige encore à racheter des Proxies chers pour survivre.
 
 **Retirés de l'arbre au lot 1 :** `P_STEALTH` (réduction passive de Trace, qui n'a plus d'objet),
 toute la branche Zéro-Day (`P_EXPLOIT_CHARGES`, `_MULT`, `_TRACE_REDUC`), `P_OVERCLOCK_AWAKE`,

@@ -43,8 +43,9 @@ La feuille de route des lots est dans `etat-des-lieux.md`. Ici, les points ouver
   valeurs de base du GD). À ×102, en fin de partie Blindage max (jauge de ~330 s), `PRX_01`
   niveau 1 retire 78 % de la jauge et tout Proxy à partir de `PRX_02` la vide entièrement. Le
   choix que décrit le GD — purge aveugle d'un `PRX_15` contre dosage fin d'un lot de `PRX_06` ou
-  `_07` — n'existe qu'avec une Interception partielle. À regarder en jeu ; si ça se confirme, le
-  levier est la branche Interception (+0,2 / +1 / +4 / +15 par rang), pas les Proxies.
+  `_07` — n'existe qu'avec une Interception partielle. **Le GD confirme (2026-10-14)** : les
+  valeurs de base des Proxies restent, et `P_INTERCEPT_3` / `_4` (+4 et +15 par rang) seront
+  rabotés drastiquement **au lot 4**, valeurs fixées pendant ses tests.
 - 📖 **Les 15 nœuds « Opti Prod » des Proxies ne font plus rien** (`P_UPG_PRX_xx_PROD`) : le Wipe
   ignore les bonus ciblés. Ils disparaissent au lot 4 avec les 120 nœuds ciblés.
 - 📖 **`P_EXTRACT_2` et `_3` exigent encore leur parent au niveau 3**, alors que la règle du GD est
@@ -262,7 +263,6 @@ Pas des bugs : des arbitrages que seul le GD peut rendre. Les trancher débloque
 
 | Question | Entrée liée |
 |---|---|
-| Interception au maximum : tout Proxy vide la jauge en fin de partie — voulu ? | § 0 |
 | Quand remonter la victoire à 1e12 ? | § 1 |
 | L'écran méta masque la jauge de Trace pendant une run : ajouter un rappel de Trace dans son header ? | — |
 | Brouillard sur les nœuds verrouillés : le nom reste visible (choix de Bertrand, pour planifier). À rediscuter si le GD tient au mystère. | — |
