@@ -80,7 +80,7 @@ namespace Core.UI.Prestige
 
         private void Awake()
         {
-            // L'arbre se CONSTRUIT au démarrage mais reste caché : les 116 nœuds et leurs liens
+            // L'arbre se CONSTRUIT au démarrage mais reste caché : les nœuds et leurs liens
             // sont instanciés une fois pour toutes, l'ouverture n'est plus qu'un SetActive.
             //
             // Attention : Awake() ne s'exécute pas sur un objet inactif dans la hiérarchie. Ce

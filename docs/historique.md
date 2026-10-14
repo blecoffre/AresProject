@@ -11,6 +11,55 @@
 
 ---
 
+## Refonte « Time Attack », lot 5 — le nettoyage (2026-10-14)
+
+Retirés : les treize migrations de sauvegarde v0 → v13, leurs constantes et le champ legacy
+`NormalizedThreat` (Bertrand, seul joueur, supprime sa sauvegarde à chaque changement de format) ;
+`minCycleDuration` et `durationReductionPerLevel` (code, générateur, 60 entrées JSON) ; le `costMult`
+inerte des nœuds de prestige ; `ExfiltrationUnlockDatas` ; l'attribut `FormerlySerializedAs` de
+`UpgradeConfigSO` ; la détection de l'ancien format de Trace dans le générateur d'upgrades ;
+`UpgradeModel.GetCurrentCost` et `LevelUp`, `LogObjectPool.ReturnToPool`,
+`PrestigeRequirement.RawRequiredLevel`, `GeneratorView.SetVisible` et son appel redondant (le
+prefab est déjà actif) ; le bouton `GameOverPanel/PrestigeButton` et son entrée dans la liste
+`autoInjectGameObjects` ; les couleurs du Ghost Cache restées dans les quatre palettes ; les clés
+`MONEY`, `TRACE` et `UI_RUN_END_PRESTIGE_BUTTON` ; 25 sprites et un preset jamais référencés,
+présents depuis le commit initial ; le dossier vide `UI/Uppgrades`. Conservées : les deux classes
+Steam Cloud, en attente du lot Steam (Auto-Cloud ou API).
+
+Entrées du backlog soldées par ce lot : les deux textes de développeur qui mentaient
+(`BankRunContribution` et `ExfiltrationUnlockDatas`) ; les clés orphelines ; le bouton mort de
+l'écran de fin ; le code mort de `LogObjectPool` et d'`UpgradePanelPresenter` ; le dossier fantôme ;
+les commentaires « 116 / 134 nœuds » de l'interface de l'arbre ; la migration v10 → v11 jamais
+éprouvée (`a-tester.md` 0.1), devenue sans objet.
+
+L'entrée du backlog sur le bouton mort, telle qu'elle était :
+
+- 📖 **Un bouton mort traîne dans l'écran de fin : `GameOverPanel/PrestigeButton`.** C'était le
+  « [ DÉPENSER — NOYAU IA ] » qui ouvrait l'arbre depuis l'écran de fin, quand l'arbre vivait
+  encore à part. Depuis que l'arbre est DANS cet écran, il ne sert plus : son handler a été retiré
+  et l'objet désactivé le 2026-08-29, sans être supprimé. Relu dans la scène le 2026-10-13 : il est
+  toujours là, inactif, avec un `LocalizedText` qui porte la clé `UI_RUN_END_PRESTIGE_BUTTON`.
+  À supprimer dans Unity (pas dans le YAML), puis retirer la clé de `fr.json`. ⚠️ Ne pas le
+  confondre avec le bouton « Terre Brûlée » du panneau de la console (`ConsoleLogs`), qui
+  s'appelle lui aussi `PrestigeButton` — nom hérité — et sert bien.
+
+L'historique des migrations, tel que `persistence.md` le décrivait :
+
+  **v1 → v2 (lot 2b-1)** : `ComputerPower` et `TotalComputerPower` retirés. Les TFlops sont devenues une capacité dérivée du parc Hardware, entièrement recalculable depuis `Upgrades` — les sauvegarder créait une seconde source de vérité qui pouvait diverger. Aucun report n'est nécessaire : `JsonUtility` ignore simplement les champs en trop d'un ancien fichier, la migration se contente de tamponner la version.
+  **v2 → v3 (prestige sur la run)** : ajout de `RunMoney`, l'argent gagné depuis le début de la run, qui pilote désormais le gain de CPU Cycles. La migration le force à `0` au lieu de recopier le cumul à vie — sinon une run déjà entamée rapporterait un gain immérité au premier Game Over.
+  **v3 → v4 (Ghost Cache)** : ajout de `GhostCacheSeconds`, la charge accumulée en secondes d'excédent de dissipation. *Le champ a quitté le format en v11 avec le Ghost Cache ; la migration v3 → v4 ne fait plus que tamponner la version.* État de RUN malgré sa sauvegarde : le wipe l'efface, mais fermer le jeu ne la perd pas — elle représente du temps de jeu investi. Un Overdrive **en cours** n'est délibérément pas sauvegardé ; sinon fermer la fenêtre reviendrait à mettre l'effet en pause, dans un jeu qui n'a aucune progression hors-ligne. La migration part de zéro : la mécanique n'existait pas avant.
+  **v4 → v5 (Data Wiper)** : le Bouton d'Urgence passe du coût en argent au prérequis en TFlops et gagne `EmergencyBlockRemainingSeconds` et `EmergencyCooldownRemainingSeconds`. Les deux sont sauvegardés alors qu'un Overdrive en cours ne l'est pas, et l'asymétrie est délibérée : sauvegarder l'Overdrive aurait permis de mettre en PAUSE un bonus en fermant la fenêtre, ne pas sauvegarder le contrecoup permettrait d'ÉCHAPPER à une pénalité par le même geste. `EmergencyUsesInRun` existait déjà et n'est pas touché par la migration.
+  **v5 → v6 (durée de run)** : ajout de `RunElapsedSeconds`. Cumulée frame par frame dans `GameSessionManager.Tick()` et non déduite d'un `Time.time` de départ — celui-ci repart de zéro à chaque lancement, et une run reprise le lendemain afficherait la durée de la seule session en cours. Sauvegardée pour la même raison ; le temps passé fenêtre close n'est jamais crédité, le compteur n'avance que dans `Tick()`. La migration part de zéro : les anciennes sauvegardes n'ont pas mesuré leur temps de jeu.
+  **v6 → v7 (jauge absolue)** : `NormalizedThreat` (une fraction) devient `CurrentTrace`, en points **absolus** — le plafond de jauge cesse d'être fixe à 100 (il suit le parc Hardware depuis le 2026-08-30, la puissance du joueur depuis le 2026-09-15), donc une fraction ne disait plus quelle quantité de trace restaurer. L'ancien champ est **conservé dans la classe** : `JsonUtility` ne lit un champ que s'il existe encore, le retirer rendrait toutes les sauvegardes antérieures illisibles. La conversion multiplie la fraction par le plafond **historique** de 100, jamais par le plafond courant — sinon un joueur équipé se verrait rendre une trace bien plus lourde que celle qu'il avait. *(Entrée rétablie le 2026-10-13 ; détail du lot dans `historique.md`.)*
+  **v7 → v8 (achat multiple)** : ajout de `BuyQuantityMode`, le mode d'achat sélectionné (0 = x1, 1 = x10, 2 = x100, 3 = MAX). Premier champ du fichier qui n'est **ni de la méta-progression ni de la run** : c'est une préférence d'interface, et le wipe n'y touche pas — perdre son mode d'achat parce qu'on s'est fait repérer n'aurait aucun sens. Stocké en `int` et non en `BuyQuantity` : les valeurs de l'enum sont désormais un format de fichier, les réordonner redéfinirait silencieusement la préférence de tous les joueurs installés. `EnsureValid()` fait retomber sur x1 tout ce qui sort du domaine. L'état vit dans `BuyQuantitySelector`, service du scope **racine** : le gateway le restaure avant que la GameScene n'existe, et il survit à son rechargement.
+  **v8 → v9 (cumul de campagne)** : `CampaignDatasBanked` et `CpuCyclesAwarded` pilotent désormais les points de prestige, à la place de l'argent de la seule run. La migration remet **les deux** à zéro : le joueur garde ses Cycles et ses nœuds, et son prochain palier sera simplement le premier. N'en remettre qu'un à zéro lui bloquerait la progression jusqu'à ce qu'il rattrape son ancien total. *(Décision décrite dans `game-design.md` — cette entrée manquait ici.)*
+  **v9 → v10 (victoire)** : ajout de `HasWon`. De la **méta-progression** : la victoire est un fait acquis de la campagne, insensible au wipe. Elle n'est sauvegardée que pour ne pas rejouer sa mise en scène à chaque ouverture du jeu — la partie continue normalement après. La migration part à **faux** même sur un parc qui dépasse déjà le seuil : ces sauvegardes n'ont jamais pu déclencher la victoire, et le joueur la recevra au premier recalcul des totaux. `VictorySystem.Restore` ne prend d'ailleurs jamais la valeur faux, pour qu'un fichier abîmé ne puisse pas effacer une victoire acquise.
+  **v10 → v11 (refonte « Time Attack », 2026-10-13)** : la jauge passe à 10 000 UT fixes et l'arbre change de nœuds, de prix et d'effets. La migration **efface la run en cours** — sa Trace se comptait sur un plafond de plusieurs millions, la ramener sur 10 000 UT mettrait le joueur au bord de la saisie — et **rend tous les CPU Cycles dépensés dans l'arbre**, qu'elle remet à zéro (racine exceptée). En v10, chaque rang coûtait exactement un point : le remboursement se calcule sur le seul fichier, sans catalogue. Garder un Blindage acheté 1 point qui en coûte désormais 10 serait un cadeau ; perdre les points des nœuds retirés, une punition. Cumul de campagne, points accordés et victoire ne bougent pas. `GhostCacheSeconds` quitte le format : `JsonUtility` ignore le champ resté dans un ancien fichier.
+  **v11 → v12 (Data Wiper et écran de fin, 2026-10-14)** : `EmergencyBlockRemainingSeconds` et `EmergencyCooldownRemainingSeconds` quittent le format — le Data Wiper n'a plus ni contrecoup temporaire ni délai, son sacrifice découle du seul `EmergencyUsesInRun`. Ce compteur repart à **zéro** : il valait un nombre de purges à délai, il fixe désormais un sacrifice permanent de 30 % par usage, et le reprendre infligerait d'un coup 60 % à qui avait purgé deux fois. Nouveau bloc `PendingRunEnd` (struct à plat, copie du `RunSummary`) : le bilan de la run terminée tant que le joueur n'a pas relancé. Restauré, il désarme la partie (`GameSessionManager.RestorePendingRunEnd`), et le `GameOverPresenter` rouvre l'écran de fin en `PostStart` — après le `Start` du panneau de prestige, dont il a besoin. Une raison inconnue efface le bloc (`EnsureValid`).
+  **v12 → v13 (brouillard, 2026-10-14)** : nouveau bloc `Readout` (dernier relevé en UT, âge du relevé, sauts connus), restauré tel quel par `TraceReadout.Restore` après la jauge. Jusqu'ici le chargement recalait le relevé sur la vérité, ce qui levait le brouillard à chaque rechargement. Une sauvegarde antérieure reçoit un relevé posé sur sa jauge — ce que faisait le chargement — : le brouillard se reforme au relevé suivant. Un relevé au-dessus de la vérité (fichier édité) est recalé.
+
+---
+
 ## Refonte « Time Attack », lot 4 — l'arbre à 140 nœuds retiré du GDD (2026-10-14)
 
 Remplacé par l'arbre à 21 nœuds et le Noyau Compilé (voir `game-design.md`, « L'arbre de

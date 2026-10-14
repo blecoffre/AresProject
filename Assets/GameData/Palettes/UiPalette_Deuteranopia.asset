@@ -31,9 +31,6 @@ MonoBehaviour:
   TierLocked: {r: 0.6, g: 0.6, b: 0.6, a: 1}
   RunEndSeized: {r: 1, g: 0.18039216, b: 0.53333336, a: 1}
   RunEndCleanExit: {r: 0.29, g: 0.96, b: 0.15, a: 1}
-  GhostCharging: {r: 0.3019608, g: 0.3019608, b: 0.6, a: 1}
-  GhostReady: {r: 0.7882353, g: 0.627451, b: 1, a: 1}
-  GhostOverdrive: {r: 1, g: 0.18039216, b: 0.53333336, a: 1}
   EmergencyUnavailable: {r: 0.34901962, g: 0.34901962, b: 0.4, a: 1}
   EmergencyReady: {r: 1, g: 1, b: 1, a: 1}
   EmergencyBlocked: {r: 1, g: 0.18039216, b: 0.53333336, a: 1}

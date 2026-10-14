@@ -162,8 +162,6 @@ namespace Core.UI.Upgrades
                 model, viewInstance, _upgradeManager, _cycleRunner, _currencies, _buyQuantity, _prestige, _threat, _console, _loc);
 
             _childPresenters.Add(model, presenter);
-
-            viewInstance.SetVisible(true);
         }
 
         public void Dispose()

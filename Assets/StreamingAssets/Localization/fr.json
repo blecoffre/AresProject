@@ -1,14 +1,6 @@
 {
   "Items": [
     {
-      "Key": "MONEY",
-      "Value": "Money"
-    },
-    {
-      "Key": "TRACE",
-      "Value": "Trace"
-    },
-    {
       "Key": "UI_TRACE_READOUT",
       "Value": "{0:F1} %  ·  relevé il y a {1:F0} s"
     },
@@ -803,10 +795,6 @@
     {
       "Key": "UI_RUN_END_STAT_SEIZED_LOSS",
       "Value": "  perdu à la saisie ........ -{0}"
-    },
-    {
-      "Key": "UI_RUN_END_PRESTIGE_BUTTON",
-      "Value": "[ DÉPENSER — NOYAU IA ]"
     },
     {
       "Key": "UI_RUN_END_STAT_DURATION",

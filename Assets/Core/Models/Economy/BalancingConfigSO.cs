@@ -8,7 +8,7 @@ namespace Core.Models.Economy
     /// Source unique de tous les réglages d'équilibrage.
     ///
     /// Avant ce ScriptableObject, ces valeurs étaient des `const` éparpillées dans huit fichiers :
-    /// changer le multiplicateur du Zéro-Day Exploit ou le coût du Data Wiper demandait d'éditer
+    /// changer un multiplicateur ou le coût du Data Wiper demandait d'éditer
     /// du C# et de recompiler. Un game designer ne pouvait rien régler seul, et une session
     /// d'équilibrage coûtait une recompilation par essai.
     ///
@@ -154,16 +154,6 @@ namespace Core.Models.Economy
         [Header("Run et prestige")]
         [Tooltip("Argent de départ d'une run neuve.")]
         [SerializeField, Min(0f)] private double _baseStartingMoney = 10d;
-
-        [Tooltip("⚠️ CE RÉGLAGE N'EST PLUS LU — abandonné le 2026-09-16.\n\n" +
-                 "Il portait le seuil de Datas qui déverrouillait l'exfiltration. L'exfiltration " +
-                 "s'ouvre désormais sur la condition que le GDD énonce depuis l'origine : la run " +
-                 "rapporte AU MOINS UN POINT de prestige. Constaté en jeu, une run de 7 min 38 " +
-                 "pouvait sortir en n'en rapportant aucun, alors que le bouton s'annonçait " +
-                 "« Compilation du 1er Cycle CPU ».\n\n" +
-                 "Le champ survit pour ne pas perdre la valeur déjà écrite, comme " +
-                 "minCycleDuration et durationReductionPerLevel. Le régler n'a aucun effet.")]
-        [SerializeField, Min(1f)] private double _exfiltrationUnlockDatas = 400000d;
 
         [Tooltip("Prix de la PREMIÈRE boîte, en Datas. C'est ce qu'il faut exfiltrer pour décrocher " +
                  "le premier point de prestige.\n\n" +
@@ -339,7 +329,6 @@ namespace Core.Models.Economy
         public float CoreYieldPerPoint => _coreYieldPerPoint;
 
         public double BaseStartingMoney => _baseStartingMoney;
-        public double ExfiltrationUnlockDatas => _exfiltrationUnlockDatas;
         public double PrestigeFirstThresholdDatas => _prestigeFirstThresholdDatas;
         public double PrestigeThresholdGrowth => _prestigeThresholdGrowth;
         public double SeizedContributionRatio => _seizedContributionRatio;

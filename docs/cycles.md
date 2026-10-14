@@ -13,7 +13,7 @@
 - **L'auto-démarrage se fait par test dans `Tick`** (`IsOwned && IsAutomated`), pas par abonnement : vingt-cinq tests par frame coûtent moins qu'un abonnement par modèle à maintenir à travers chaque wipe.
 - Deux flux réactifs par Script : `GetProgress(id)` pour la barre, `GetRunning(id)` pour réactiver le bouton de relance quand un cycle manuel se termine — sans scruter l'état à chaque frame.
 
-**`UpgradeModel`** — versement, durée et coût sont **mis en cache**, recalculés uniquement au `LevelUp()`. C'était la source du problème de performance : un `Math.Pow` et un parcours de paliers par générateur affiché, à chaque tick d'argent.
+**`UpgradeModel`** — versement, durée et coût sont **mis en cache**, recalculés uniquement à la montée de niveau (`AddLevels`) et quand les TFlops ou le prestige changent. C'était la source du problème de performance : un `Math.Pow` et un parcours de paliers par générateur affiché, à chaque tick d'argent.
 
 **`GeneratorPresenter`** — l'abordabilité passe par `Select(...).DistinctUntilChanged()` : la vue n'est réveillée qu'au passage « pas assez » → « assez ».
 
@@ -37,8 +37,6 @@ La **durée réelle** d'un cycle ne vient plus des paliers seuls : les TFlops la
   "costMultiplier": 1.15,
   "baseProductionYield": 1.0,
   "baseCycleDuration": 1.5,
-  "durationReductionPerLevel": 0.01,
-  "minCycleDuration": 0.2,
   "automationLevel": 10,
   "milestones": [
     { "level": 10, "effect": "DurationMultiplier", "factor": 0.8 },
@@ -56,8 +54,8 @@ La **durée réelle** d'un cycle ne vient plus des paliers seuls : les TFlops la
   avant paliers et branche Interception. Converties en UT à la vitesse de l'A.M.I. au moment de
   l'achat (GDD, « Les Proxies »). Le générateur avertit pour un Proxy qui n'en porte pas.
 - **Plus aucune Trace dans les upgrades** depuis la refonte « Time Attack » (2026-10-13) :
-  `traceGeneratedPerSecond` et `traceCapIncrease` ont quitté les trois fichiers. Un JSON qui les
-  porterait encore est signalé par le générateur, et le champ ignoré.
+  `traceGeneratedPerSecond` et `traceCapIncrease` ont quitté les trois fichiers ; un champ inconnu
+  est ignoré par `JsonUtility`.
 - `effect` vaut `YieldMultiplier`, `DurationMultiplier` ou **`WipeMultiplier`** (ex-`TraceMultiplier`,
   même index).
 - **`WipeMultiplier` est réservé aux Proxies** : il multiplie leurs secondes de survie, niveau par
@@ -68,12 +66,12 @@ La **durée réelle** d'un cycle ne vient plus des paliers seuls : les TFlops la
 - Les paliers sont triés par niveau à la génération.
 - `automationLevel` et `milestones` sont **optionnels** : sans eux, versement linéaire et seuil d'automatisation à 10. L'automatisation au niveau 10 est **conservée** (GD, 2026-10-13), contrairement à l'intention du 2026-09-25.
 
-**Champs obsolètes, toujours recopiés dans le ScriptableObject pour ne pas perdre la donnée, mais
-plus lus par le jeu :** `durationReductionPerLevel` (remplacé par les paliers) et
-`minCycleDuration` (remplacé par la compression des TFlops et le plancher absolu).
+**Retirés le 2026-10-14 (lot 5)** : `durationReductionPerLevel` (remplacé par les paliers) et
+`minCycleDuration` (remplacé par la compression des TFlops et le plancher absolu), qui n'étaient
+plus lus depuis août.
 
 Modifier ces JSON n'a **aucun effet** tant que `Tools/Core/Générer Catalogue Upgrades depuis JSON`
-n'a pas été relancé — suivi des deux autres générateurs (voir `etat-des-lieux.md`, Outillage).
+n'a pas été relancé (voir `etat-des-lieux.md`, Outillage).
 
 ## Bug de pipeline corrigé dans ce lot
 

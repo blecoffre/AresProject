@@ -20,8 +20,7 @@ namespace Core.Models.Economy
     public struct PrestigeRequirement
     {
         /// <summary>
-        /// Valeur sentinelle de <see cref="RawRequiredLevel"/> : « le niveau MAXIMUM du parent,
-        /// quel qu'il soit ».
+        /// Valeur sentinelle du niveau exigé : « le niveau MAXIMUM du parent, quel qu'il soit ».
         ///
         /// Auto-maintenue, et c'est tout l'intérêt : passer un nœud de cinq à dix rangs déplace
         /// automatiquement l'exigence de ses enfants. Un entier écrit en dur, lui, aurait
@@ -40,12 +39,6 @@ namespace Core.Models.Economy
 
         /// <summary>Un nœud sans parent est une racine : il est ouvert d'emblée.</summary>
         public bool HasNode => _node != null;
-
-        /// <summary>
-        /// La valeur brute telle qu'elle est sérialisée, sentinelle comprise. Réservée à
-        /// l'outillage d'éditeur, qui doit pouvoir distinguer « 0 » de sa résolution.
-        /// </summary>
-        public int RawRequiredLevel => _requiredLevel;
 
         /// <summary>
         /// Le niveau réellement exigé sur le parent, sentinelle résolue.

@@ -8,8 +8,6 @@
       "costMultiplier": 1.23,
       "baseProductionYield": 2.0,
       "baseCycleDuration": 0.0,
-      "durationReductionPerLevel": 0.0,
-      "minCycleDuration": 0.0,
       "milestones": [
         {
           "level": 10,
@@ -41,8 +39,6 @@
       "costMultiplier": 1.242,
       "baseProductionYield": 5.86325,
       "baseCycleDuration": 0.0,
-      "durationReductionPerLevel": 0.0,
-      "minCycleDuration": 0.0,
       "milestones": [
         {
           "level": 10,
@@ -74,8 +70,6 @@
       "costMultiplier": 1.254,
       "baseProductionYield": 17.1889,
       "baseCycleDuration": 0.0,
-      "durationReductionPerLevel": 0.0,
-      "minCycleDuration": 0.0,
       "milestones": [
         {
           "level": 10,
@@ -107,8 +101,6 @@
       "costMultiplier": 1.266,
       "baseProductionYield": 50.3913,
       "baseCycleDuration": 0.0,
-      "durationReductionPerLevel": 0.0,
-      "minCycleDuration": 0.0,
       "milestones": [
         {
           "level": 10,
@@ -140,8 +132,6 @@
       "costMultiplier": 1.278,
       "baseProductionYield": 147.728,
       "baseCycleDuration": 0.0,
-      "durationReductionPerLevel": 0.0,
-      "minCycleDuration": 0.0,
       "milestones": [
         {
           "level": 10,
@@ -173,8 +163,6 @@
       "costMultiplier": 1.291,
       "baseProductionYield": 433.084,
       "baseCycleDuration": 0.0,
-      "durationReductionPerLevel": 0.0,
-      "minCycleDuration": 0.0,
       "milestones": [
         {
           "level": 10,
@@ -206,8 +194,6 @@
       "costMultiplier": 1.303,
       "baseProductionYield": 1269.64,
       "baseCycleDuration": 0.0,
-      "durationReductionPerLevel": 0.0,
-      "minCycleDuration": 0.0,
       "milestones": [
         {
           "level": 10,
@@ -239,8 +225,6 @@
       "costMultiplier": 1.315,
       "baseProductionYield": 3722.11,
       "baseCycleDuration": 0.0,
-      "durationReductionPerLevel": 0.0,
-      "minCycleDuration": 0.0,
       "milestones": [
         {
           "level": 10,
@@ -272,8 +256,6 @@
       "costMultiplier": 1.327,
       "baseProductionYield": 10911.8,
       "baseCycleDuration": 0.0,
-      "durationReductionPerLevel": 0.0,
-      "minCycleDuration": 0.0,
       "milestones": [
         {
           "level": 10,
@@ -305,8 +287,6 @@
       "costMultiplier": 1.339,
       "baseProductionYield": 31989.4,
       "baseCycleDuration": 0.0,
-      "durationReductionPerLevel": 0.0,
-      "minCycleDuration": 0.0,
       "milestones": [
         {
           "level": 10,
@@ -338,8 +318,6 @@
       "costMultiplier": 1.351,
       "baseProductionYield": 93781.0,
       "baseCycleDuration": 0.0,
-      "durationReductionPerLevel": 0.0,
-      "minCycleDuration": 0.0,
       "milestones": [
         {
           "level": 10,
@@ -371,8 +349,6 @@
       "costMultiplier": 1.363,
       "baseProductionYield": 274931.0,
       "baseCycleDuration": 0.0,
-      "durationReductionPerLevel": 0.0,
-      "minCycleDuration": 0.0,
       "milestones": [
         {
           "level": 10,
@@ -404,8 +380,6 @@
       "costMultiplier": 1.375,
       "baseProductionYield": 805994.0,
       "baseCycleDuration": 0.0,
-      "durationReductionPerLevel": 0.0,
-      "minCycleDuration": 0.0,
       "milestones": [
         {
           "level": 10,
@@ -437,8 +411,6 @@
       "costMultiplier": 1.387,
       "baseProductionYield": 2362870.0,
       "baseCycleDuration": 0.0,
-      "durationReductionPerLevel": 0.0,
-      "minCycleDuration": 0.0,
       "milestones": [
         {
           "level": 10,
@@ -470,8 +442,6 @@
       "costMultiplier": 1.399,
       "baseProductionYield": 6927060.0,
       "baseCycleDuration": 0.0,
-      "durationReductionPerLevel": 0.0,
-      "minCycleDuration": 0.0,
       "milestones": [
         {
           "level": 10,
@@ -503,8 +473,6 @@
       "costMultiplier": 1.412,
       "baseProductionYield": 20307500.0,
       "baseCycleDuration": 0.0,
-      "durationReductionPerLevel": 0.0,
-      "minCycleDuration": 0.0,
       "milestones": [
         {
           "level": 10,
@@ -536,8 +504,6 @@
       "costMultiplier": 1.424,
       "baseProductionYield": 59534100.0,
       "baseCycleDuration": 0.0,
-      "durationReductionPerLevel": 0.0,
-      "minCycleDuration": 0.0,
       "milestones": [
         {
           "level": 10,
@@ -569,8 +535,6 @@
       "costMultiplier": 1.436,
       "baseProductionYield": 174532000.0,
       "baseCycleDuration": 0.0,
-      "durationReductionPerLevel": 0.0,
-      "minCycleDuration": 0.0,
       "milestones": [
         {
           "level": 10,
@@ -602,8 +566,6 @@
       "costMultiplier": 1.448,
       "baseProductionYield": 511662000.0,
       "baseCycleDuration": 0.0,
-      "durationReductionPerLevel": 0.0,
-      "minCycleDuration": 0.0,
       "milestones": [
         {
           "level": 10,
@@ -635,8 +597,6 @@
       "costMultiplier": 1.46,
       "baseProductionYield": 1500000000.0,
       "baseCycleDuration": 0.0,
-      "durationReductionPerLevel": 0.0,
-      "minCycleDuration": 0.0,
       "milestones": [
         {
           "level": 10,

@@ -163,9 +163,10 @@ namespace Core.Models.Economy
         /// Verse la contribution d'une run réussie au cumul de campagne et crédite les points
         /// qu'elle débloque.
         ///
-        /// Appelé UNIQUEMENT à l'exfiltration. Une saisie n'appelle rien du tout : ni versement,
-        /// ni point. Les deux sont résolus au même instant, ce qui rend impossible d'encaisser un
-        /// palier sans faire monter le seuil suivant.
+        /// Appelé à chaque fin de run : une sortie verse sa contribution bonus de palier compris,
+        /// une saisie 30 % seulement (`SeizedContributionRatio`, depuis le 2026-10-02). Versement
+        /// et points sont résolus au même instant, ce qui rend impossible d'encaisser un palier
+        /// sans faire monter le seuil suivant.
         /// </summary>
         public double BankRunContribution(double contribution)
         {

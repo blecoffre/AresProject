@@ -207,5 +207,4 @@ l'écran de fin sauvegarderait les générateurs au niveau max avec zéro Trace 
 
 - **Aucun `.asmdef`** : tout `Assets/Core` recompile avec le reste du projet, et rien n'empêche une dépendance de `Models` vers `UI`.
 - **Namespaces ≠ dossiers** : `Services/GameSceneLifetimeScope.cs` déclare `Core.Boot` ; `Models/Economy/*CatalogSO.cs` déclarent `Core.Economy.Data` ; `Services/LogObjectPool.cs` déclare `Core.Services.Console` ; `SteamManager` est dans le namespace global. Deux dossiers pour la sauvegarde (`Services/Persistence` et `Services/Save`).
-- **Dossier fantôme** `UI/Uppgrades` (faute de frappe, vide) à côté de `UI/Upgrades`.
 - **`SteamManager`** est un Singleton statique (boilerplate Steamworks.NET du domaine public — ne pas le modifier). L'appel statique `SteamManager.Initialized` depuis `SteamCloudSaveService` doit être encapsulé derrière un `ISteamRuntime` injecté.

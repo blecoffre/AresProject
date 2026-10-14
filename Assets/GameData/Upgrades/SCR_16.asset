@@ -22,8 +22,6 @@ MonoBehaviour:
   _baseProductionYield: 6522760
   _wipeSeconds: 0
   _baseCycleDuration: 194.412
-  _minCycleDuration: 19.3236
-  _durationReductionPerLevel: 2.05048
   _automationLevel: 10
   _milestones:
   - Level: 10

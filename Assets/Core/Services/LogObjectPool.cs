@@ -57,15 +57,5 @@ namespace Core.Services.Console
             _activeItems.Add(item);
             return item;
         }
-
-        public void ReturnToPool(TextMeshProUGUI item)
-        {
-            item.gameObject.SetActive(false);
-            if (_activeItems.Contains(item))
-            {
-                _activeItems.Remove(item);
-            }
-            _pool.Enqueue(item);
-        }
     }
 }

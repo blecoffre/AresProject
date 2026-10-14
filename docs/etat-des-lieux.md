@@ -41,7 +41,7 @@ sauvegarde ne bougent pas.
 | Zéro-Day Exploit / Ghost Cache | **Retirés** le 2026-10-13 | — |
 | **Data Wiper** — −2 500 UT, sacrifice de 30 % des TFlops nettes par usage, trois usages | **Refonte lot 2, livré le 2026-10-14** | **Non** |
 | Victoire — 1e12 TFlops nettes | Livrée le 2026-09-16, **seuil provisoire à 5e11** | Séquence oui ; écran jamais vu (objet éteint dans la scène, corrigé le 2026-10-14, à rejouer) |
-| Sauvegarde — `SaveData` **v13**, écriture atomique, autosave, fermeture, écran de fin rouvert, relevé conservé | Livrée ; v11 le 2026-10-13, v12 et v13 le 2026-10-14 | v10 oui ; **migrations v11 à v13 non** |
+| Sauvegarde — `SaveData` **v13**, écriture atomique, autosave, fermeture, écran de fin rouvert, relevé conservé | Livrée ; **plus de migration** pendant le développement (lot 5 de la refonte) | v10 oui ; **format v13 non** |
 | Menu principal, options en trois onglets, pause, langue à chaud | Livré le 2026-10-02 | Oui — touches et build vus le 2026-10-13 |
 | Daltonisme — quatre palettes | Livré le 2026-10-02 | Oui (outil de contrôle + Play Mode) |
 | Audio — musiques, clics, événements | Livré le 2026-10-12 | Oui (GD) |
@@ -62,10 +62,10 @@ Chaque lot se termine par son protocole de test (`a-tester.md`), sur la branche
 | R2 | **Data Wiper** | Sans délai, −2 500 UT, sacrifice de +30 % des TFlops nettes par usage jusqu'à 90 % (trois usages), permanent pour la run ; la vitesse de l'A.M.I. lit les TFlops brutes, donc ne ralentit pas. **Et la sauvegarde de l'écran de fin de run**, dans le même changement de format (v12) | ✅ livré le 2026-10-14, **à jouer** (`a-tester.md` § 0 bis) |
 | R3 | **Brouillard** | Relevé tous les 800 UT remplis (200 en fin de partie, via les TFlops nettes) ; aiguille + borne pessimiste `relevé + V_AMI × âge × pessimisme` ; paliers et gain du bouton sur l'aiguille ; état du relevé sauvegardé (contre la triche du rechargement) | ✅ livré le 2026-10-14, **à jouer** (`a-tester.md` § 0 ter) |
 | R4 | **Arbre** | Retrait des 120 nœuds ciblés et de leur générateur ; Noyau Compilé (coût × 0,99^points, plancher 0,05 ; rendement + 1 % par point, Datas et TFlops nettes) affiché dans les panneaux ; `P_CORE_OVERRIDE` infini ; `P_REFAC` 10 rangs, `P_DATAM` à 2 points, Extraction (+0,5 par rang, trois paliers) ; `P_INTERCEPT_3` et `_4` rabotés à +1 et +1,5 ; chaînes « parent au max » ; éventail. **Pas de migration** : Bertrand repart d'une sauvegarde neuve | ✅ livré le 2026-10-14, **à jouer** (`a-tester.md` § 0 quater) |
-| R5 | **Nettoyage** — *suivant* | Code mort restant (champs obsolètes des générateurs, `ExfiltrationUnlockDatas`, clés orphelines, panneau de fin mort), commentaires périmés, doc, dossier partagé du GD | à faire |
+| R5 | **Nettoyage** | Migrations de sauvegarde v0 → v13 ; champs inertes des générateurs et du prestige (`minCycleDuration`, `durationReductionPerLevel`, `costMult`), `ExfiltrationUnlockDatas` ; méthodes sans appelant ; bouton mort de l'écran de fin ; couleurs du Ghost Cache restées dans les palettes ; trois clés de localisation ; 25 sprites et un preset jamais utilisés ; commentaires périmés ; dossier partagé du GD réécrit | ✅ livré le 2026-10-14, **à jouer** (`a-tester.md` § 0 quinquies) |
 
-**Bertrand joue l'ensemble des lots d'un bloc**, une fois le lot 5 livré (décidé le 2026-10-14) :
-`a-tester.md` § 0 à § 0 quater forme le protocole complet.
+**La refonte est livrée. Bertrand la joue d'un bloc** (décidé le 2026-10-14), sur une sauvegarde
+neuve : `a-tester.md` § 0 à § 0 quinquies forme le protocole complet.
 
 Après la refonte, la feuille de route d'avant reprend : **session de jeu « chiffres »** (une
 campagne complète, victoire remise à 1e12), **dette technique groupée** (`backlog.md` § 4 à 7),

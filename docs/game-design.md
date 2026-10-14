@@ -4,10 +4,10 @@ Validées par Bertrand le 2026-08-25, refondues avec le GD le 2026-10-13 (refont
 Ne pas réinventer ces règles ; si l'une pose problème, le signaler avant d'écrire du code qui la
 contourne.
 
-> **Refonte « Time Attack » en cours.** Décidée avec le GD le 2026-10-13, sur la base de deux
-> documents hors dépôt (`GDD_Refonte_Ares.pdf`, `GDDV2.pdf`) et de ses arbitrages écrits du même
-> jour, tous consignés ici. Le document est réécrit **lot par lot** ; ce qu'il remplace part dans
-> `historique.md`, section « Refonte Time Attack ».
+> **Refonte « Time Attack » livrée le 2026-10-14, jamais jouée d'un bloc.** Décidée avec le GD le
+> 2026-10-13, sur la base de deux documents hors dépôt (`GDD_Refonte_Ares.pdf`, `GDDV2.pdf`) et de
+> ses arbitrages écrits, tous consignés ici. Le document a été réécrit **lot par lot** ; ce qu'il
+> remplace est dans `historique.md`, sections « Refonte Time Attack ».
 >
 > | Lot | Domaine | Ce document |
 > |---|---|---|
@@ -15,7 +15,7 @@ contourne.
 > | 2 | Data Wiper ; écran de fin de run sauvegardé | **à jour** |
 > | 3 | Brouillard : relevé en UT, borne sur la vitesse de l'A.M.I., relevé sauvegardé | **à jour** |
 > | 4 | Arbre à 21 nœuds, Noyau Compilé, `P_CORE_OVERRIDE`, Extraction, Économie | **à jour** |
-> | 5 | Nettoyage | — |
+> | 5 | Nettoyage : code, données et réglages morts, migrations de sauvegarde | **à jour** (rien à décider) |
 
 ## Les quatre ressources
 
@@ -295,8 +295,8 @@ Datas par cycle = BaseProductionYield × niveau × paliers × (1 + TFlopsNettes)
 ```
 
 La compression est asymptotique, jamais nulle ; elle a remplacé le mur `minCycleDuration`
-(2026-08-31), qui saturait dès quelques dizaines de TFlops et tuait le pilier. Ce champ n'est plus
-lu ; un plancher **absolu** unique (`AbsoluteMinCycleDuration`, 0,05 s) sert de garde-fou de boucle.
+(2026-08-31), qui saturait dès quelques dizaines de TFlops et tuait le pilier. Ce champ a quitté
+les données au lot 5 de la refonte ; un plancher **absolu** unique (`AbsoluteMinCycleDuration`, 0,05 s) sert de garde-fou de boucle.
 
 Le boost de rendement est **réservé aux Scripts** : chez un Hardware le rendement EST la capacité
 en TFlops, le brancher là créerait une boucle divergente.
@@ -594,8 +594,9 @@ depuis le début de la campagne** ne retombe jamais à zéro, et le Nième point
 
 **Pourquoi.** L'ancienne conversion rendait 28 points dès la première run, et elle était pilotée
 par la même valeur que le déblocage de l'exfiltration : raréfier les points rendait mécaniquement
-la sortie inatteignable. Les deux sont désormais deux réglages distincts,
-`PrestigeFirstThresholdDatas` et `ExfiltrationUnlockDatas`.
+la sortie inatteignable. Les deux ont d'abord été découplés en deux réglages,
+`PrestigeFirstThresholdDatas` et `ExfiltrationUnlockDatas` ; le second a ensuite été abandonné
+(voir « Exfiltration volontaire ») et retiré le 2026-10-14.
 
 **Aucune run n'est perdue.** Une run qui n'atteint pas le palier suivant compte quand même : ce
 qu'elle a rapporté reste au cumul. C'est un gain de ressenti considérable pour un coût nul.
@@ -693,7 +694,7 @@ Chaque rang d'un nœud coûte son `baseCost`, **quel que soit le rang** : 1 poin
 **1, 3, 6 et 10** pour les quatre nœuds du Blindage, **2** par rang pour `P_DATAM` (lot 4). La
 courbe `BaseCost × CostMultiplier^niveau` a été supprimée le 2026-09-12 — elle était recopiée dans
 quatre fichiers indépendants, et l'arbre s'était déjà retrouvé 152 fois trop cher pour une erreur
-sur un seul terme. `costMult` reste dans les données, inerte.
+sur un seul terme. `costMult`, resté inerte dans les données, en a été retiré au lot 5.
 
 Les points dépensés — ce que lit le Noyau Compilé — se comptent sur la même règle
 (`PrestigeConfigSO.GetTotalCostOfLevels`) : une courbe réintroduite devrait l'être aux deux endroits.
@@ -836,8 +837,8 @@ deux fois la dérivation a survécu à la formule qui la produisait :
   2026-09-16 : une run de 7 min 38 sortait en rapportant **zéro point**, sur un bouton qui
   s'annonçait pourtant « Compilation du 1er Cycle CPU ».
 
-Le code lit désormais la condition elle-même — `PendingCycles >= 1` — et le réglage
-`ExfiltrationUnlockDatas` n'est plus lu.
+Le code lit désormais la condition elle-même — `PendingCycles >= 1`. Le réglage
+`ExfiltrationUnlockDatas`, qui n'était plus lu, a été retiré du `BalancingConfig` le 2026-10-14.
 
 **Le découplage d'origine reste respecté.** Il existait parce que points et déblocage partageaient
 la même valeur : raréfier les uns rendait l'autre inatteignable. Ce n'est plus le cas depuis que les
@@ -906,6 +907,8 @@ La question du pooling et de la virtualisation de l'arbre a disparu avec les 120
 - **`runInBackground` est à `true`** (tranché le 2026-08-26). « Hors-ligne » veut dire *jeu fermé*, pas *fenêtre en arrière-plan* : le joueur peut laisser tourner Ares pendant qu'il fait autre chose, et l'A.M.I. continue de le traquer. Le mettre à `false` offrirait une planque parfaite et gratuite — il suffirait d'alt-tab pour geler la Trace.
   *Note pour les tests : ce réglage ne s'applique qu'au build. Dans l'éditeur, le player loop reste figé tant que la fenêtre Unity n'a pas le focus (`Time.frameCount` ne bouge pas). Pour vérifier un `ITickable` sans focus, appeler `Tick()` à la main plutôt que d'attendre des frames.*
 - Fichier en JSON lisible et éditable à la main — choix assumé jusqu'à la sortie Steam.
+- **Aucune migration de format pendant le développement** (Bertrand, 2026-10-14) : une sauvegarde
+  d'une autre version ouvre une partie neuve. La règle s'inverse au premier build public.
 - **Une partie fermée sur l'écran de fin le rouvre** (lot 2, `SaveData` v12) : bilan, arbre et
   fenêtre d'achat du prestige compris. Avant, elle relançait une run neuve, et le joueur perdait sa
   seule occasion de dépenser ses points avant la run suivante (session du 2026-10-14).

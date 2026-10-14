@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Core.Models.Economy
 {
@@ -17,11 +16,8 @@ namespace Core.Models.Economy
         [Header("Identifiants & Catégorisation")]
         [SerializeField] private string _id;
 
-        // Renommage assumé : le champ contenait un libellé français, il contient désormais une
-        // CLÉ de localisation. FormerlySerializedAs évite de perdre la valeur des .asset déjà
-        // sérialisés le temps que les générateurs soient relancés.
         [Tooltip("Clé de localisation, dérivée de l'id : UPG_<id>_NAME. Écrite par le générateur.")]
-        [SerializeField, FormerlySerializedAs("_displayName")] private string _displayNameKey;
+        [SerializeField] private string _displayNameKey;
 
         [Tooltip("Clé de localisation, dérivée de l'id : UPG_<id>_DESC. Écrite par le générateur.")]
         [SerializeField] private string _displayDescriptionKey;
@@ -47,13 +43,9 @@ namespace Core.Models.Economy
         [SerializeField] private double _wipeSeconds;
 
         [Header("Cycle (Scripts uniquement)")]
+        [Tooltip("Durée d'un cycle au niveau 1, avant paliers et TFlops. Le plancher est global : " +
+                 "BalancingConfig.AbsoluteMinCycleDuration.")]
         [SerializeField] private float _baseCycleDuration = 1f;
-        [Tooltip("Plancher absolu : aucun palier ni bonus ne peut descendre sous cette durée")]
-        [SerializeField] private float _minCycleDuration = 0.1f;
-
-        [Tooltip("OBSOLÈTE : la réduction se fait désormais par paliers, plus par niveau. " +
-                 "Champ conservé pour ne pas perdre les valeurs déjà écrites dans le JSON.")]
-        [SerializeField] private float _durationReductionPerLevel = 0.01f;
 
         [Header("Automatisation")]
         [Tooltip("Niveau à partir duquel ce générateur relance ses cycles tout seul. " +
@@ -76,19 +68,7 @@ namespace Core.Models.Economy
         /// <summary>Secondes de survie rendues par niveau de Proxy acheté, avant bonus. Nul ailleurs.</summary>
         public double WipeSeconds => _wipeSeconds;
         public float BaseCycleDuration => _baseCycleDuration;
-        /// <summary>
-        /// OBSOLÈTE depuis le 2026-08-31 : plus lu nulle part. C'était un mur par générateur, et
-        /// c'est lui qui tuait le pilier Hardware — la compression butait dessus dès quelques
-        /// dizaines de TFlops. Le plancher est désormais unique et global
-        /// (<c>BalancingConfigSO.AbsoluteMinCycleDuration</c>). Conservé comme
-        /// <c>DurationReductionPerLevel</c> : ne pas perdre la donnée déjà écrite.
-        /// </summary>
-        [System.Obsolete("Remplacé par AbsoluteMinCycleDuration, unique et global.")]
-        public float MinCycleDuration => _minCycleDuration;
         public int AutomationLevel => _automationLevel;
         public IReadOnlyList<UpgradeMilestone> Milestones => _milestones;
-
-        [System.Obsolete("Remplacé par le système de paliers (Milestones). Conservé pour ne pas perdre la donnée.")]
-        public float DurationReductionPerLevel => _durationReductionPerLevel;
     }
 }

@@ -69,27 +69,12 @@ namespace Core.Models
     public class SaveData
     {
         /// <summary>
-        /// Version du schéma. À incrémenter à CHAQUE changement de format, en ajoutant le cas
-        /// correspondant dans Migrate(). Sans ça, le premier changement post-lancement casse
-        /// silencieusement les sauvegardes des joueurs.
+        /// Version du schéma. À incrémenter à CHAQUE changement de format. Pendant le
+        /// développement, une sauvegarde d'une autre version ouvre une partie neuve (voir
+        /// <see cref="Migrate"/>) ; après le premier build public, chaque incrément devra
+        /// s'accompagner de sa migration — sans quoi il casserait les sauvegardes des joueurs.
         /// </summary>
         public const int CurrentVersion = 13;
-
-        /// <summary>
-        /// Id de la racine de l'arbre, seul nœud gratuit de la v10. Recopié ici plutôt que lu
-        /// dans le catalogue : la migration v10 → v11 décrit un FORMAT figé, pas l'arbre vivant.
-        /// </summary>
-        private const string LegacyRootNodeId = "P_ROOT";
-
-        /// <summary>Argent de départ d'une run neuve en v10, pour la remise à neuf de la v11.</summary>
-        private const double LegacyStartingMoney = 10d;
-
-        /// <summary>
-        /// Le plafond de Trace tel qu'il était FIGÉ jusqu'en v6. Sert uniquement à convertir
-        /// l'ancienne fraction en points absolus lors de la migration ; il ne doit jamais suivre
-        /// le plafond courant, devenu dynamique.
-        /// </summary>
-        private const float LegacyTraceCap = 100f;
 
         /// <summary>
         /// Dernière valeur valide de <c>BuyQuantityMode</c>, soit BuyQuantity.Max.
@@ -116,8 +101,9 @@ namespace Core.Models
 
         /// <summary>
         /// Datas exfiltrées depuis le début de la campagne. Ne retombe jamais à zéro entre deux
-        /// runs — c'est ce compteur qui décroche les points de prestige, et une saisie ne
-        /// l'alimente pas.
+        /// runs — c'est ce compteur qui décroche les points de prestige. Une sortie y verse la
+        /// contribution de la run, bonus de palier compris ; une saisie, 30 % seulement
+        /// (`SeizedContributionRatio`, depuis le 2026-10-02).
         /// </summary>
         public double CampaignDatasBanked;
 
@@ -142,11 +128,9 @@ namespace Core.Models
         // La Trace et le compteur d'urgence en font partie — sans eux, fermer et rouvrir
         // le jeu vide la jauge gratuitement, ce qui rend le Bouton d'Urgence inutile.
         // ---------------------------------------------------------------------
-        // Note : ni ComputerPower ni TotalComputerPower ne figurent plus ici. Les TFlops sont
-        // devenues une capacité DÉRIVÉE du parc Hardware possédé, donc entièrement recalculable
-        // depuis Upgrades. Les sauvegarder revenait à stocker une valeur qui pouvait diverger de
-        // l'état réel — et le total cumulé n'avait plus de sens pour une grandeur qu'on
-        // n'accumule pas. Retirés en v2.
+        // Note : aucune TFlop ici. C'est une capacité DÉRIVÉE du parc Hardware possédé, donc
+        // entièrement recalculable depuis Upgrades ; la sauvegarder stockerait une valeur qui
+        // pourrait diverger de l'état réel.
         public double Money;
 
         /// <summary>
@@ -156,18 +140,10 @@ namespace Core.Models
         public double RunMoney;
 
         /// <summary>
-        /// Trace accumulée, en points ABSOLUS. Remplace la fraction normalisée en v7 : le
-        /// plafond étant devenu dynamique, une fraction ne veut plus rien dire hors du parc
-        /// Hardware qui l'a produite — acheter une machine aurait rescalé la trace en silence.
+        /// La jauge de l'A.M.I., en UT (0 à 10 000) : la VÉRITÉ, que le joueur ne voit qu'à
+        /// travers le relevé ci-dessous.
         /// </summary>
         public float CurrentTrace;
-
-        /// <summary>
-        /// OBSOLÈTE depuis la v7, conservé pour la seule migration. JsonUtility ne peut lire un
-        /// champ que s'il existe encore dans la classe : le retirer rendrait les sauvegardes
-        /// antérieures illisibles, et le joueur repartirait de zéro sans un mot.
-        /// </summary>
-        public float NormalizedThreat;
 
         /// <summary>
         /// Le relevé de la jauge tel que le joueur le voyait (v13). Restauré tel quel : le
@@ -175,14 +151,11 @@ namespace Core.Models
         /// </summary>
         public TraceReadoutSave Readout;
 
+        /// <summary>
+        /// Usages du Data Wiper dans la run. Le sacrifice de TFlops en découle (30 % par usage) :
+        /// le sauvegarder empêche qu'une fermeture rende la puissance engloutie.
+        /// </summary>
         public int EmergencyUsesInRun;
-
-        // GhostCacheSeconds a quitté le format en v11, avec le Ghost Cache lui-même. JsonUtility
-        // ignore le champ resté dans un ancien fichier : rien à faire pour le lire.
-
-        // EmergencyBlockRemainingSeconds et EmergencyCooldownRemainingSeconds ont quitté le format
-        // en v12 : le Data Wiper n'a plus ni contrecoup temporaire ni délai. Son sacrifice découle
-        // du seul EmergencyUsesInRun.
 
         /// <summary>
         /// Secondes de JEU écoulées sur la run en cours. Sauvegardée pour qu'une run reprise
@@ -299,8 +272,17 @@ namespace Core.Models
         }
 
         /// <summary>
-        /// Amène une sauvegarde d'un format ancien vers le format courant.
-        /// Les cas s'enchaînent sans "break" pour qu'une sauvegarde v1 traverse v2, v3, etc.
+        /// Amène une sauvegarde lue sur disque au format courant, ou la remplace par une partie
+        /// neuve.
+        ///
+        /// <b>Aucune migration tant que le jeu n'a pas de joueurs externes</b> (Bertrand,
+        /// 2026-10-14). Le seul joueur supprime sa sauvegarde à chaque changement de format :
+        /// treize migrations écrites pendant le développement (v0 → v13) n'ont jamais servi qu'une
+        /// fois chacune, et ont été retirées au lot 5 de la refonte — elles restent dans
+        /// l'historique git. Une sauvegarde d'un autre format ouvre donc une partie neuve.
+        ///
+        /// La première migration publique s'écrira ici : un <c>switch</c> sur la version, des cas
+        /// chaînés par <c>goto case</c>, et le cas courant qui ne fait rien.
         /// </summary>
         public static SaveData Migrate(SaveData data)
         {
@@ -308,190 +290,14 @@ namespace Core.Models
 
             data.EnsureValid();
 
-            switch (data.Version)
-            {
-                case 0:
-                    // Fichiers antérieurs à l'introduction du versionnement : ils ne portaient ni
-                    // Trace, ni compteur d'urgence, ni prestige. Les valeurs par défaut de
-                    // EnsureValid() suffisent, on se contente de tamponner la version.
-                    data.Version = 1;
-                    goto case 1;
+            if (data.Version == CurrentVersion) return data;
 
-                case 1:
-                    // v1 -> v2 : ComputerPower et TotalComputerPower disparaissent. Les TFlops
-                    // sont désormais recalculées depuis les niveaux d'Upgrades, donc il n'y a
-                    // rien à reporter — JsonUtility ignore simplement les champs en trop d'un
-                    // ancien fichier. On se contente de tamponner la version.
-                    data.Version = 2;
-                    goto case 2;
-
-                case 2:
-                    // v2 -> v3 : RunMoney apparaît. Une sauvegarde antérieure ne distinguait pas
-                    // l'argent de la run du cumul à vie ; on repart de zéro pour la run en cours
-                    // plutôt que de recopier le cumul, ce qui offrirait un gain de prestige
-                    // immérité pour une run déjà entamée.
-                    data.RunMoney = 0d;
-                    data.Version = 3;
-                    goto case 3;
-
-                case 3:
-                    // v3 -> v4 : le Ghost Cache apparaissait. Son champ a quitté le format en
-                    // v11 ; il ne reste qu'à tamponner la version.
-                    data.Version = 4;
-                    goto case 4;
-
-                case 4:
-                    // v4 -> v5 : le Bouton d'Urgence passait au « Data Wiper » et gagnait deux
-                    // compteurs, sortis du format en v12. Il ne reste qu'à tamponner la version.
-                    data.Version = 5;
-                    goto case 5;
-
-                case 5:
-                    // v5 -> v6 : la durée de la run apparaît. Une sauvegarde antérieure n'a pas
-                    // mesuré son temps de jeu ; on repart de zéro plutôt que d'inventer une durée.
-                    data.RunElapsedSeconds = 0f;
-                    data.Version = 6;
-                    goto case 6;
-
-                case 6:
-                    // v6 -> v7 : la jauge passe de la FRACTION à la valeur absolue.
-                    //
-                    // L'ancien champ valait trace / plafond, avec un plafond alors figé à 100.
-                    // La conversion est donc une multiplication par ce plafond historique — et
-                    // NON par le plafond courant, que le parc Hardware du joueur a pu élever :
-                    // on rendrait sinon une trace bien plus lourde que celle qu'il avait.
-                    data.CurrentTrace = data.NormalizedThreat * LegacyTraceCap;
-                    data.NormalizedThreat = 0f;
-                    data.Version = 7;
-                    goto case 7;
-
-                case 7:
-                    // v7 -> v8 : l'achat multiple apparaît, et avec lui la préférence de
-                    // quantité. Une sauvegarde antérieure n'a par définition rien choisi ; on
-                    // part de x1, qui est aussi le seul comportement qu'elle a connu.
-                    data.BuyQuantityMode = 0;
-                    data.Version = 8;
-                    goto case 8;
-
-                case 8:
-                    // v8 -> v9 : les points de prestige se décrochent désormais sur un cumul de
-                    // Datas exfiltrées à l'échelle de la campagne, plus sur l'argent de la seule
-                    // run. Une sauvegarde antérieure n'a aucun cumul à reprendre : on repart de
-                    // zéro sur les DEUX compteurs à la fois.
-                    //
-                    // Les mettre tous les deux à zéro est volontaire et sans perte : le joueur
-                    // garde ses CPU Cycles et ses nœuds déjà achetés, et son prochain palier
-                    // sera simplement le premier. Ne remettre à zéro que le cumul en gardant les
-                    // points versés lui bloquerait la progression jusqu'à ce qu'il rattrape son
-                    // ancien total.
-                    data.CampaignDatasBanked = 0d;
-                    data.CpuCyclesAwarded = 0d;
-                    data.Version = 9;
-                    goto case 9;
-
-                case 9:
-                    // v9 -> v10 : la victoire existe enfin dans le jeu, et pas seulement dans le
-                    // harnais de mesure. Une sauvegarde antérieure n'a jamais pu la déclencher,
-                    // donc elle part à FAUX même si son parc dépasse déjà le seuil : le joueur
-                    // verra sa séquence au prochain recalcul des totaux, ce qui est exactement ce
-                    // qu'on veut — il l'a méritée, il ne l'avait simplement jamais reçue.
-                    data.HasWon = false;
-                    data.Version = 10;
-                    goto case 10;
-
-                case 10:
-                    // v10 -> v11 : refonte « Time Attack ». La jauge passe à 10 000 UT fixes et
-                    // l'arbre de prestige change de nœuds, de prix et d'effets.
-                    //
-                    // La RUN en cours est effacée : sa Trace se comptait sur un plafond de
-                    // plusieurs millions, et la ramener sur 10 000 UT la mettrait au bord de la
-                    // saisie.
-                    //
-                    // L'ARBRE est remis à zéro et chaque point dépensé RENDU : des nœuds ont
-                    // disparu (Furtivité, Zéro-Day, réveil, barre d'espace), d'autres ont changé
-                    // de prix — garder un Blindage acheté 1 point qui en coûte désormais 10 serait
-                    // un cadeau, perdre les points des nœuds retirés une punition. En v10, tout
-                    // rang coûtait exactement 1 point, sauf la racine, gratuite.
-                    //
-                    // Le cumul de campagne, les points déjà accordés et la victoire, eux, ne
-                    // bougent pas : le joueur garde tout ce qu'il a gagné, il le redépense.
-                    WipeRunForFormatChange(data);
-                    RefundPrestigeTree(data);
-                    data.Version = 11;
-                    goto case 11;
-
-                case 11:
-                    // v11 -> v12 : Data Wiper du lot 2 et écran de fin sauvegardé.
-                    //
-                    // Le compteur d'usages change de sens : il valait un nombre de purges à délai,
-                    // il fixe désormais un SACRIFICE PERMANENT de TFlops (30 % par usage). Le
-                    // reprendre tel quel infligerait d'un coup 60 % de sacrifice à qui avait purgé
-                    // deux fois sous l'ancien modèle : on repart de zéro.
-                    //
-                    // Aucun bilan en attente : une sauvegarde v11 ne savait pas qu'elle était
-                    // fermée sur l'écran de fin.
-                    data.EmergencyUsesInRun = 0;
-                    data.PendingRunEnd = default;
-                    data.Version = 12;
-                    goto case 12;
-
-                case 12:
-                    // v12 -> v13 : le relevé de Trace est sauvegardé. Une sauvegarde antérieure
-                    // n'en a pas : on le pose sur la jauge, ce que faisait le chargement jusqu'ici.
-                    // Le brouillard ne se reformera qu'au relevé suivant, une fois.
-                    data.Readout = new TraceReadoutSave { LastKnownTrace = data.CurrentTrace };
-                    data.Version = 13;
-                    goto case 13;
-
-                case 13:
-                    // Format courant : rien à faire.
-                    break;
-
-                default:
-                    // Sauvegarde plus récente que le binaire (rollback de build, partage de fichier).
-                    // On ne tente pas de la deviner : mieux vaut une partie neuve qu'un état incohérent.
-                    UnityEngine.Debug.LogError(
-                        $"[SAVE] Version de sauvegarde inconnue ({data.Version}, binaire en v{CurrentVersion}). Nouvelle partie créée.");
-                    return CreateNew();
-            }
-
-            return data;
-        }
-
-        /// <summary>
-        /// Remet la run au départ : générateurs, argent, Trace, Data Wiper et chronomètre. Ce que
-        /// fait le wipe de fin de run, transcrit sur le FORMAT — la migration tourne avant que les
-        /// services n'existent.
-        /// </summary>
-        private static void WipeRunForFormatChange(SaveData data)
-        {
-            data.Money = LegacyStartingMoney;
-            data.RunMoney = 0d;
-            data.CurrentTrace = 0f;
-            data.Readout = default;
-            data.EmergencyUsesInRun = 0;
-            data.RunElapsedSeconds = 0f;
-            data.Upgrades.Clear();
-        }
-
-        /// <summary>
-        /// Vide l'arbre et rend au solde de CPU Cycles tout ce qui y a été dépensé, au tarif de la
-        /// v10 : un point par rang, la racine exceptée. La racine reste acquise.
-        /// </summary>
-        private static void RefundPrestigeTree(SaveData data)
-        {
-            double refund = 0d;
-
-            for (int i = data.PrestigeUpgrades.Count - 1; i >= 0; i--)
-            {
-                UpgradeSaveEntry entry = data.PrestigeUpgrades[i];
-                if (entry.Id == LegacyRootNodeId) continue;
-
-                if (entry.Level > 0) refund += entry.Level;
-                data.PrestigeUpgrades.RemoveAt(i);
-            }
-
-            data.CpuCycles += refund;
+            // Plus ancienne pendant le développement, plus récente après un retour en arrière de
+            // build : dans les deux cas, on ne devine pas un format qu'on ne connaît pas.
+            UnityEngine.Debug.LogWarning(
+                $"[SAVE] Sauvegarde au format v{data.Version}, binaire en v{CurrentVersion} : aucune " +
+                "migration pendant le développement. Nouvelle partie créée.");
+            return CreateNew();
         }
     }
 

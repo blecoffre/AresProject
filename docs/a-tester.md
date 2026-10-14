@@ -25,13 +25,11 @@
   la valeur d'origine** (5e11, provisoire).
 - **La sauvegarde est du JSON lisible**, dans
   `%userprofile%\AppData\LocalLow\DeathtreakCorp\HackTheKey\savegame.json`. En faire une copie
-  avant de la retoucher, et avant tout test de migration. ⚠️ **Le premier lancement de la branche
-  `chantier/refonte-time-attack` migre la sauvegarde en v11** : run effacée, arbre remis à zéro,
-  points rendus. Copier le fichier AVANT, pour pouvoir revenir sur `main`.
+  avant de la retoucher. ⚠️ **Plus aucune migration** (lot 5) : la branche
+  `chantier/refonte-time-attack` remplace toute sauvegarde d'un autre format par une partie neuve.
+  Copier le fichier AVANT le premier lancement, pour pouvoir revenir sur `main`.
 - **Le test de la refonte se fait d'un bloc, sur une sauvegarde neuve** (Bertrand, 2026-10-14) :
-  § 0 à § 0 quater, une fois le lot 5 livré. Supprimer `savegame.json` avant de commencer — le
-  lot 4 n'a pas de migration, et un nœud d'une ancienne sauvegarde absent du nouvel arbre serait
-  simplement ignoré.
+  § 0 à § 0 quinquies. Supprimer `savegame.json` avant de commencer.
 
 ---
 
@@ -45,7 +43,6 @@ les montées, **la console fait foi** ; les baisses, elles, se voient tout de su
 
 | # | Quoi | Comment | Ce qu'on doit voir |
 |---|---|---|---|
-| 0.1 | **Migration v10 → v11** — *non éprouvée le 14/10 : la sauvegarde avait été supprimée. Facultative : Bertrand repart d'une sauvegarde neuve, il n'y a plus de v10 à migrer* | Copier une sauvegarde v10, lancer depuis RootScene, « Continuer ». | Run neuve : générateurs au niveau 0, 10 $, jauge à 0 %. Le compteur de Cycles de l'en-tête a grossi des points qui étaient dépensés. Arbre (P, ou « [ NOYAU IA — ARBRE ] ») vide hors la racine. Aucune erreur en console. |
 | 0.15 | **La rangée d'actions** — *trou constaté le 14/10, corrigé le jour même* | Regarder la rangée d'actions de l'écran de jeu, sous la console. | Deux lignes pleine largeur : « Overclock », puis le Data Wiper. Plus de bouton Ghost Cache, aucun vide à droite. |
 
 
@@ -56,9 +53,6 @@ faut le nœud **« Protocole d'Urgence »** (1 point), relié à la racine de l'
 réserve : jeu fermé, monter `CpuCycles` dans `savegame.json` (par exemple à 5), puis relancer.
 Les achats de l'arbre ne se font qu'entre deux runs, sur l'écran de fin. Pour finir une run vite,
 en éditeur, le bouton « [PRÊT] WIPE SYSTÈME » de la console est toujours cliquable.
-
-La sauvegarde passe en v12 au premier lancement : la run en cours est conservée, seul le compteur
-du Data Wiper repart à zéro.
 
 | # | Quoi | Comment | Ce qu'on doit voir |
 |---|---|---|---|
@@ -77,7 +71,7 @@ du Data Wiper repart à zéro.
 
 Livré le 2026-10-14, compilé (Unity, zéro erreur), **jamais joué**. La jauge de l'en-tête porte deux
 choses : **l'aiguille** (le remplissage, avec son libellé « N % · relevé il y a N s ») et **la barre
-rouge** devant elle (la borne pessimiste). La sauvegarde passe en v13 au premier lancement.
+rouge** devant elle (la borne pessimiste).
 
 | # | Quoi | Comment | Ce qu'on doit voir |
 |---|---|---|---|
@@ -113,6 +107,20 @@ de suite. Pour simuler beaucoup de points dépensés sans cliquer : jeu fermé, 
 | 4.10 | **Extraction** | Deux rangs de « Sortie répétée », run neuve. | Sur la jauge, les paliers annoncent **+30 %** (50 %) et **+60 %** (75 %) au lieu de +15 % et +30 %. Le 90 % reste « [VERROUILLÉ] » sans « Extraction Haut Risque ». |
 | 4.11 | **Interception rabotée** | Inspecteur de « Relais fantômes », puis de « Nuage de témoins ». | « +100 % par niveau », puis « +150 % par niveau » (au lieu de +400 % et +1 500 %). |
 | 4.12 | **La racine** | Cliquer « Noyau Compromis ». | « > Aucun effet : l'ancre de tout l'arbre ». Aucune erreur en console. |
+
+## 0 quinquies. Refonte « Time Attack », lot 5 — le nettoyage
+
+Livré le 2026-10-14, compilé (Unity, zéro erreur), catalogues régénérés, **jamais joué**. Le lot ne
+change aucune règle : il retire du code, des données et des réglages morts. Ce qui se vérifie, c'est
+que rien d'utile n'est parti avec.
+
+| # | Quoi | Comment | Ce qu'on doit voir |
+|---|---|---|---|
+| 5.1 | **Sauvegarde d'un autre format** | Jeu fermé, dans `savegame.json`, passer `"Version"` à 12. Relancer depuis RootScene. | Le menu propose « Commencer » : partie neuve. Console : « [SAVE] Sauvegarde au format v12, binaire en v13 : aucune migration pendant le développement. Nouvelle partie créée. » Aucune erreur. |
+| 5.2 | **Sauvegarde au format courant** | Jouer une minute, fermer, relancer, « Continuer ». | La partie reprend telle quelle : argent, niveaux, jauge, arbre. |
+| 5.3 | **Les générateurs n'ont pas bougé** | Run neuve, regarder « Campagne de Phishing Basique » puis « Vieux PC Recyclé ». | Coûts 10 et 50 ; « Campagne de Phishing Basique » boucle son cycle en ~1,5 s au niveau 1, comme avant. |
+| 5.4 | **L'écran de fin sans le bouton mort** | Finir une run. | Bilan, arbre et « [ NOUVELLE INTRUSION ] » en place ; aucun vide là où dormait l'ancien bouton « [ DÉPENSER — NOYAU IA ] ». Aucune clé brute affichée. |
+| 5.5 | **Les palettes** | Options > Accessibilité, passer par les quatre modes de vision. | Les couleurs de l'arbre et de la jauge changent comme avant ; aucune erreur en console. |
 
 ## 1. Fin de partie et économie — d'avant la refonte, jamais jouées
 
@@ -151,6 +159,6 @@ soldés dans `historique.md`. Rien en attente.
 
 | Après | Quoi |
 |---|---|
-| Refonte, lot 5 (nettoyage) | Le test d'ensemble des § 0 à § 0 quater. Puis session de jeu « chiffres » sur une campagne : durée des runs, points par run, part de l'arbre à la victoire, valeurs de l'Interception. Victoire remise à 1e12. |
+| Le test d'ensemble de la refonte (§ 0 à § 0 quinquies) | Session de jeu « chiffres » sur une campagne : durée des runs, points par run, part de l'arbre à la victoire, valeurs de l'Interception. Victoire remise à 1e12. |
 | Steam | Lisibilité sur un écran 1280×800. Navigation complète à la manette, sans souris. Overlay Steam. Synchronisation cloud entre deux machines. |
 | Traductions | **Langue à chaud** (ex-2.5) : basculer de langue en pleine partie, parcourir tous les écrans ; aucun texte ne doit rester dans l'ancienne langue, hors lignes déjà écrites dans la console. **Premier lancement** : l'écran de choix propose toutes les langues, celle du système présélectionnée. D'ici là, la technique du `zz.json` (chaque valeur de `fr.json` préfixée « ZZ· ») permet de traquer les textes en dur ; supprimer le fichier et sa `.meta` après. |

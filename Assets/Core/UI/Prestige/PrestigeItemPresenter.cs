@@ -10,9 +10,10 @@ namespace Core.UI.Prestige
     /// <summary>
     /// Un nœud de l'arbre. Traduit l'état du modèle en code couleur et en deux lignes de texte.
     ///
-    /// <b>N'a aucun abonnement.</b> C'est délibéré : l'arbre compte 116 nœuds, et leur faire
-    /// écouter chacun les trois mêmes sources — la monnaie, l'arbre, la fenêtre d'achat — coûtait
-    /// 348 abonnements pour trois signaux. Le panneau écoute une fois et rediffuse.
+    /// <b>N'a aucun abonnement.</b> C'est délibéré : faire écouter à chaque nœud les trois mêmes
+    /// sources — la monnaie, l'arbre, la fenêtre d'achat — multipliait les abonnements par le
+    /// nombre de nœuds (348 quand l'arbre en comptait 116) pour trois signaux. Le panneau écoute
+    /// une fois et rediffuse.
     /// </summary>
     public class PrestigeItemPresenter
     {
@@ -40,8 +41,8 @@ namespace Core.UI.Prestige
             _onSelected = onSelected;
 
             // Initialisation statique. Le nom ne change qu'avec la langue : il est résolu ici et
-            // dans RefreshLocalizedTexts(), jamais depuis Refresh() qui tourne pour chacun des
-            // 116 nœuds à chaque variation de CPU Cycles.
+            // dans RefreshLocalizedTexts(), jamais depuis Refresh() qui tourne pour chaque nœud
+            // à chaque variation de CPU Cycles.
             _view.InitializeStaticData(PrestigeLabels.ResolveName(config, loc));
 
             _view.OnNodeClicked += HandleClicked;
@@ -118,8 +119,8 @@ namespace Core.UI.Prestige
 
             // Le nœud débloquable respire dans tous les cas ; la fenêtre de compilation ne décide
             // que de l'insistance. Pendant une run l'achat est impossible, mais c'est aussi le
-            // moment où l'on consulte l'arbre pour planifier — et sur 134 nœuds, on repère les
-            // actionnables du coin de l'œil, pas en lisant les libellés.
+            // moment où l'on consulte l'arbre pour planifier — et on repère les actionnables du
+            // coin de l'œil, pas en lisant les libellés.
             bool canPurchaseNow = _prestigeManager.ArePurchasesAllowed.CurrentValue;
 
             _view.Render(statusText, state, canPurchaseNow);
@@ -127,8 +128,8 @@ namespace Core.UI.Prestige
 
         /// <summary>
         /// Un clic SÉLECTIONNE, il n'achète pas. L'achat vit dans l'inspecteur, derrière un
-        /// bouton qui dit ce qu'il fait : sur un arbre de 116 nœuds, un clic qui dépense
-        /// immédiatement une monnaie gagnée en une run entière est un piège.
+        /// bouton qui dit ce qu'il fait : un clic qui dépense immédiatement une monnaie gagnée
+        /// en une run entière est un piège.
         /// </summary>
         private void HandleClicked()
         {

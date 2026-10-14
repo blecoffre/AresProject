@@ -71,11 +71,6 @@ namespace Core.UI.Upgrades
             if (_statsText != null) _statsText.text = stats;
         }
 
-        public void SetVisible(bool isVisible)
-        {
-            gameObject.SetActive(isVisible);
-        }
-
         public void UpdateSweepProgress(float normalizedProgress)
         {
             if (_sweepBackgroundImage != null) _sweepBackgroundImage.fillAmount = normalizedProgress;

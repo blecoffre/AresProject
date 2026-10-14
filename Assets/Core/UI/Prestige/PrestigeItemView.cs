@@ -93,7 +93,7 @@ namespace Core.UI.Prestige
         ///
         /// L'arbre est construit alors que son écran est encore désactivé, et Unity n'appelle pas
         /// Awake() sur un objet inactif : un repli placé là ne se serait jamais exécuté, et
-        /// SetNodePosition serait resté un no-op silencieux laissant les 116 nœuds empilés à
+        /// SetNodePosition serait resté un no-op silencieux laissant tous les nœuds empilés à
         /// l'origine. Le GetComponent n'a lieu qu'une fois, puis la référence est en cache.
         /// </summary>
         private RectTransform Rect
@@ -124,15 +124,15 @@ namespace Core.UI.Prestige
 
         /// <summary>
         /// La pulsation ambre. Ce composant se DÉSACTIVE lui-même dès qu'un nœud n'a plus à
-        /// pulser (voir <see cref="Render"/>) : sur 134 nœuds, laisser 134 Update() tourner pour
-        /// que 3 d'entre eux respirent serait payer le pire des deux mondes.
+        /// pulser (voir <see cref="Render"/>) : laisser un Update() tourner par nœud pour que
+        /// trois d'entre eux respirent serait payer le pire des deux mondes.
         ///
         /// `unscaledTime` et non `time` : toutes les branches ouvertes battent alors en phase,
         /// ce qui donne un balayage de terminal plutôt qu'un sapin de Noël.
         ///
         /// <b>C'est aussi le seul canal accessible à TOUS les daltonismes.</b> Le mouvement est
         /// perçu indépendamment de la teinte, et c'est ce qui permet de repérer un nœud
-        /// actionnable parmi 134 sans lire un seul libellé.
+        /// actionnable sans lire un seul libellé.
         /// </summary>
         private void Update()
         {
@@ -199,7 +199,7 @@ namespace Core.UI.Prestige
 
         /// <summary>
         /// Le nœud consulté dans l'inspecteur. Le voile réutilise l'Image du bouton, déjà
-        /// présente et transparente : rien de neuf à instancier sur 116 nœuds.
+        /// présente et transparente : rien de neuf à instancier par nœud.
         /// </summary>
         public void SetSelected(bool isSelected)
         {

@@ -91,8 +91,8 @@ namespace Core.Models.Economy
         [SerializeField] private int _maxLevel = 1;
 
         [Header("Économie (Coût en CPU Cycles)")]
+        [Tooltip("Coût de CHAQUE rang, quel que soit le rang : le coût est plat depuis le 2026-09-12.")]
         [SerializeField] private double _baseCost = 1d;
-        [SerializeField] private double _costMultiplier = 1.5d;
 
         [Header("Puissance du Bonus")]
         [Tooltip("La valeur ajoutée par niveau. Ex: 0.1 pour 10%")]
@@ -124,7 +124,6 @@ namespace Core.Models.Economy
         public int MaxLevel => _maxLevel > 0 ? _maxLevel : int.MaxValue;
 
         public double BaseCost => _baseCost;
-        public double CostMultiplier => _costMultiplier;
 
         /// <summary>
         /// Coût du PROCHAIN niveau de ce nœud, en CPU Cycles.
@@ -133,7 +132,7 @@ namespace Core.Models.Economy
         /// <see cref="BaseCost"/> — 1 point par rang presque partout, 2 pour `P_DATAM`, 1 à 10
         /// pour le Blindage. Le joueur n'a qu'à choisir lequel.
         ///
-        /// Ce que ça supprime. La courbe <c>BaseCost × CostMultiplier^niveau</c> était recopiée
+        /// Ce que ça supprime. La courbe <c>BaseCost × multiplicateur^niveau</c> était recopiée
         /// dans QUATRE fichiers qui n'en savaient rien les uns des autres, et l'arbre s'était
         /// déjà retrouvé 152 fois trop cher pour une erreur sur un seul de ces termes. Elle
         /// créait surtout un piège invisible : mesuré, un joueur qui achetait naturellement le

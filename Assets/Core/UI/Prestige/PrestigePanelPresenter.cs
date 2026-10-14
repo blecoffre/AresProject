@@ -15,9 +15,9 @@ namespace Core.UI.Prestige
     /// <summary>
     /// Construit l'arbre, tient la sélection, et rediffuse les signaux du modèle.
     ///
-    /// <b>C'est ici que vivent TOUS les abonnements de l'écran.</b> Les 116 nœuds et l'inspecteur
+    /// <b>C'est ici que vivent TOUS les abonnements de l'écran.</b> Les nœuds et l'inspecteur
     /// réagissent aux trois mêmes sources ; les leur faire écouter chacun coûtait 351 abonnements
-    /// pour trois signaux, et surtout laissait la fraîcheur de l'affichage dépendre d'un détail
+    /// pour trois signaux quand l'arbre comptait 116 nœuds, et surtout laissait la fraîcheur de l'affichage dépendre d'un détail
     /// d'implémentation de chaque enfant.
     /// </summary>
     public class PrestigePanelPresenter : IStartable, IDisposable
@@ -64,7 +64,7 @@ namespace Core.UI.Prestige
             IReadOnlyList<PrestigeConfigSO> configs = _catalog.GetAllUpgrades();
 
             // Boucles indexées et collections dimensionnées d'avance : la construction de l'arbre
-            // instancie déjà ~116 nœuds, inutile d'y ajouter des redimensionnements de listes.
+            // instancie déjà tous ses nœuds, inutile d'y ajouter des redimensionnements de listes.
             _childPresenters.Capacity = configs.Count;
             _nodePositions = new Dictionary<string, Vector2>(configs.Count);
 
@@ -108,14 +108,14 @@ namespace Core.UI.Prestige
                 .Subscribe(_ => RefreshAll())
                 .AddTo(_disposables);
 
-            // Mode daltonien changé à chaud : les 116 nœuds, leurs liens et l'inspecteur se
+            // Mode daltonien changé à chaud : les nœuds, leurs liens et l'inspecteur se
             // repeignent. Rare, donc une passe complète.
             _palette.Current
                 .Skip(1)
                 .Subscribe(ApplyPalette)
                 .AddTo(_disposables);
 
-            // Langue changée à chaud : les 116 noms de nœuds, le budget et l'inspecteur. Une
+            // Langue changée à chaud : les noms des nœuds, le budget et l'inspecteur. Une
             // passe complète, mais un changement de langue n'arrive presque jamais.
             _loc.CurrentLanguage
                 .Skip(1)
@@ -259,7 +259,7 @@ namespace Core.UI.Prestige
         }
 
         /// <summary>
-        /// Repeint l'arbre entier et l'inspecteur. Une boucle indexée sur 116 nœuds à chaque
+        /// Repeint l'arbre entier et l'inspecteur. Une boucle indexée sur tous les nœuds à chaque
         /// achat : c'est le prix d'un affichage qui ne peut pas mentir, et un achat de prestige
         /// n'arrive que quelques fois par run.
         ///
@@ -283,7 +283,7 @@ namespace Core.UI.Prestige
         /// </summary>
         private void BuildNodes(IReadOnlyList<PrestigeConfigSO> configs)
         {
-            // Une seule allocation de délégué pour les 116 nœuds, plutôt qu'une par nœud.
+            // Une seule allocation de délégué pour tous les nœuds, plutôt qu'une par nœud.
             Action<PrestigeItemPresenter> onSelected = HandleNodeSelected;
 
             for (int i = 0; i < configs.Count; i++)

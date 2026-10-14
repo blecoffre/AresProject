@@ -42,15 +42,8 @@ namespace Core.Economy.Editor
         // Proxies : secondes de survie rendues par niveau acheté (refonte « Time Attack »).
         public double wipeSeconds;
 
-        // Champs de l'ancien modèle de Trace, conservés uniquement pour DÉTECTER un fichier resté
-        // à l'ancien format : la Trace n'est plus générée par les upgrades depuis le 2026-10-13.
-        public double traceGeneratedPerSecond;
-        public double traceCapIncrease;
-
         // Cycle
         public float baseCycleDuration;
-        public float minCycleDuration;
-        public float durationReductionPerLevel; // Obsolète, recopié pour ne pas perdre la donnée.
 
         // Automatisation et paliers
         public int automationLevel;
@@ -65,7 +58,6 @@ namespace Core.Economy.Editor
 
         /// <summary>Valeurs de repli quand le JSON ne renseigne pas le champ (fichiers antérieurs).</summary>
         private const float DefaultCycleDuration = 1f;
-        private const float DefaultMinCycleDuration = 0.1f;
         private const int DefaultAutomationLevel = 10;
 
         [MenuItem("Tools/Core/Générer Catalogue Upgrades depuis JSON")]
@@ -172,29 +164,16 @@ namespace Core.Economy.Editor
             so.FindProperty("_baseProductionYield").doubleValue = data.baseProductionYield;
             so.FindProperty("_wipeSeconds").doubleValue = data.wipeSeconds;
 
-            if (data.traceGeneratedPerSecond != 0d || data.traceCapIncrease != 0d)
-            {
-                Debug.LogWarning(
-                    $"[UpgradeGenerator] '{data.id}' porte encore traceGeneratedPerSecond ou traceCapIncrease. " +
-                    "Ces champs sont IGNORÉS depuis la refonte « Time Attack » : la Trace ne vient plus des " +
-                    "upgrades. Pour un Proxy, le répit se règle dans wipeSeconds.");
-            }
-
             if (type == UpgradeType.Proxy && data.wipeSeconds <= 0d)
             {
                 Debug.LogWarning(
                     $"[UpgradeGenerator] Le Proxy '{data.id}' n'a pas de wipeSeconds : l'acheter ne retirera rien à la jauge.");
             }
 
-            // Ces trois champs étaient déjà écrits dans les JSON mais n'étaient jamais recopiés :
-            // tous les générateurs héritaient donc de la durée par défaut du ScriptableObject.
+            // Ces champs étaient déjà écrits dans les JSON mais n'étaient jamais recopiés : tous
+            // les générateurs héritaient donc de la durée par défaut du ScriptableObject.
             so.FindProperty("_baseCycleDuration").floatValue =
                 data.baseCycleDuration > 0f ? data.baseCycleDuration : DefaultCycleDuration;
-
-            so.FindProperty("_minCycleDuration").floatValue =
-                data.minCycleDuration > 0f ? data.minCycleDuration : DefaultMinCycleDuration;
-
-            so.FindProperty("_durationReductionPerLevel").floatValue = data.durationReductionPerLevel;
 
             so.FindProperty("_automationLevel").intValue =
                 data.automationLevel > 0 ? data.automationLevel : DefaultAutomationLevel;

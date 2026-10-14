@@ -29,9 +29,9 @@ du 13/10 a trouvé des points ouverts consignés seulement dans un message de co
 notes de session : le nœud de la barre d'espace, trois changements d'économie, tout le volet
 Steam Deck.
 
-État de la base au 2026-10-13, après le lot 1 de la refonte : 113 fichiers runtime, 10 fichiers
-d'éditeur (le harnais d'équilibrage est supprimé). `dotnet build` : 0 erreur ; 3 warnings `CS0649`
-dans le code de jeu (voir § 7).
+État de la base au 2026-10-14, après la refonte « Time Attack » (lots 1 à 5) : 113 fichiers
+runtime, 9 fichiers d'éditeur. `dotnet build` : 0 erreur ; 3 warnings `CS0649` dans le code de jeu
+et 6 en code d'éditeur, tous anciens (voir § 7).
 
 ---
 
@@ -46,9 +46,6 @@ La feuille de route des lots est dans `etat-des-lieux.md`. Ici, les points ouver
 - ⚖️ **La disposition de l'arbre en éventail est provisoire** (lot 4) : Bertrand veut voir en jeu si
   elle ne fait pas trop « arbre de talents de RPG ». À zoom 1, l'écran ne montre que trois des
   sept colonnes ; il faut dézoomer à la molette.
-- 📖 **Commentaires périmés dans l'interface de l'arbre** : `PrestigePanelPresenter`,
-  `PrestigeItemPresenter`, `PrestigeItemView` et `PrestigePanelView` justifient encore leurs choix
-  par « 116 » ou « 134 nœuds ». Les choix tiennent toujours ; les chiffres sont faux. Lot 5.
 
 ## 1. Bloquant pour une sortie publique
 
@@ -83,14 +80,15 @@ Rien de tout cela n'empêche de jouer aujourd'hui. Aucun build public ne doit pa
   apprécié, cf. `audio-licences.md`).
 - 📖 **Déclaration « contenu créé avec une IA »** au questionnaire Steam, tant que les sons
   synthétisés sont en jeu — et les traductions, si elles sont faites par IA comme prévu.
-- 📖 **Traductions EN et ES.** Seul `fr.json` existe (333 clés). Reportées à la fin du contenu,
+- 📖 **Traductions EN et ES.** Seul `fr.json` existe (317 clés). Reportées à la fin du contenu,
   décision du 2026-10-01 : inutile de traduire un texte qui va encore bouger.
 
 ## 2. Du contenu qui s'achète et ne fait rien
 
 Visible par le joueur : il dépense un point de prestige pour rien.
 
-- 📖 **Les 15 nœuds « Opti Prod » des Proxies** — voir § 0.
+Rien à ce jour : les 15 nœuds « Opti Prod » des Proxies sont partis avec les 120 nœuds ciblés
+(lot 4 de la refonte).
 
 ## 3. Équilibrage et données
 
@@ -100,11 +98,6 @@ Le détail chiffré et les chantiers d'équilibrage sont dans `etat-des-lieux.md
   — rattrapé dans le GDD le 2026-10-13 : modèle des boîtes pour les points, premier point
   abaissé de 5e6 à 2e6, saisie versant 30 % au lieu de rien. ⚖️ **Aucune campagne n'a été
   remesurée depuis** — voir `etat-des-lieux.md`, chantier 1.
-- 📖 **Deux textes de développeur mentent** sur le code qu'ils décrivent :
-  - le commentaire de `UserCurrencies.BankRunContribution` dit « une saisie n'appelle rien du
-    tout » ; elle l'appelle avec 30 % de sa contribution depuis `a772e67` ;
-  - `ExfiltrationUnlockDatas` (4e5) n'est plus lu depuis le 2026-09-16, mais reste dans l'asset
-    avec son tooltip.
 
 ## 4. Défauts d'affichage et de texte
 
@@ -122,8 +115,6 @@ Le détail chiffré et les chantiers d'équilibrage sont dans `etat-des-lieux.md
   `{fileID: 0}` dans la GameScene (constaté en jeu le 2026-08-28, relu dans la scène le
   2026-10-13). Le libellé porte encore le pourcentage, mais la barre de progression vers le
   premier point a disparu au rework UI.
-- 📖 **Clés de localisation orphelines** : `MONEY`, `TRACE`. Les `LANGUAGE_NAME_*` ne sont pas
-  orphelines : elles se construisent depuis le code de langue (`LocalizationKeys.LanguageName`).
 
 - 🔬 **Les boutons du bas du panneau d'options chevauchent les réglages** — « [ PAR DÉFAUT ] » et
   « [ RETOUR ] ». Constaté par Bertrand le 2026-10-13, en build, en 3840×2160 plein écran ;
@@ -155,14 +146,6 @@ Le détail chiffré et les chantiers d'équilibrage sont dans `etat-des-lieux.md
   désactiver l'auto-sizing et fixer une taille.
 - 🔬 **Le trait des nœuds verrouillés n'est pas pointillé** comme sur la maquette (le sprite du
   cadre est plein ; constat du 2026-08-30). Les liens, eux, le sont depuis le 2026-08-30.
-- 📖 **Un bouton mort traîne dans l'écran de fin : `GameOverPanel/PrestigeButton`.** C'était le
-  « [ DÉPENSER — NOYAU IA ] » qui ouvrait l'arbre depuis l'écran de fin, quand l'arbre vivait
-  encore à part. Depuis que l'arbre est DANS cet écran, il ne sert plus : son handler a été retiré
-  et l'objet désactivé le 2026-08-29, sans être supprimé. Relu dans la scène le 2026-10-13 : il est
-  toujours là, inactif, avec un `LocalizedText` qui porte la clé `UI_RUN_END_PRESTIGE_BUTTON`.
-  À supprimer dans Unity (pas dans le YAML), puis retirer la clé de `fr.json`. ⚠️ Ne pas le
-  confondre avec le bouton « Terre Brûlée » du panneau de la console (`ConsoleLogs`), qui
-  s'appelle lui aussi `PrestigeButton` — nom hérité — et sert bien.
 
 ## 5. Architecture et cycle de vie
 
@@ -188,12 +171,8 @@ Le détail chiffré et les chantiers d'équilibrage sont dans `etat-des-lieux.md
   — les deux classes deviendraient supprimables. Sinon, voir `persistence.md` § Steam.
 - 📖 **`Currency.Add()`** est public et sans garde contre les valeurs négatives ; les gardes sont
   dans `UserCurrencies`, mais `Currency` est exposé.
-- 📖 **Namespaces ≠ dossiers**, deux dossiers pour la sauvegarde (`Services/Persistence` et
-  `Services/Save`), et le dossier fantôme vide `Assets/Core/UI/Uppgrades`. Détail dans
-  `architecture.md` § Dette structurelle.
-- 📖 **Code mort** : `LogObjectPool.ReturnToPool()` sans appelant ; le
-  `viewInstance.SetVisible(true)` d'`UpgradePanelPresenter` sur un prefab déjà actif *(relevé en
-  août, non revérifié)*.
+- 📖 **Namespaces ≠ dossiers**, et deux dossiers pour la sauvegarde (`Services/Persistence` et
+  `Services/Save`). Détail dans `architecture.md` § Dette structurelle.
 
 ## 6. Performance
 

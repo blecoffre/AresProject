@@ -39,7 +39,6 @@ namespace Core.Economy.Editor
         public int maxLevel = 1;
 
         public double baseCost;
-        public double costMult;
         public float bonus;
         public float posX;
         public float posY;
@@ -230,7 +229,6 @@ namespace Core.Economy.Editor
             so.FindProperty("_bonusType").enumValueIndex = (int)type;
             so.FindProperty("_maxLevel").intValue = data.maxLevel;
             so.FindProperty("_baseCost").doubleValue = data.baseCost;
-            so.FindProperty("_costMultiplier").doubleValue = data.costMult;
             so.FindProperty("_bonusPerLevel").floatValue = data.bonus;
             so.FindProperty("_uiPosition").vector2Value = new Vector2(data.posX, data.posY);
 

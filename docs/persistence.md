@@ -1,8 +1,7 @@
 # Persistance — livrée et validée le 2026-08-25
 
-> À jour au 2026-10-14 : format **v13** (refonte « Time Attack », lot 3). Prochaine évolution
-> prévue : l'arbre à 20 nœuds (lot 4), qui demandera un nouveau remboursement — voir
-> `etat-des-lieux.md`, feuille de route.
+> À jour au 2026-10-14 : format **v13**. **Plus aucune migration pendant le développement**
+> (lot 5 de la refonte « Time Attack ») : une sauvegarde d'un autre format ouvre une partie neuve.
 
 ## Règle d'or
 
@@ -29,20 +28,27 @@ SaveScheduler (IAsyncStartable + IDisposable, EntryPoint du Root)
 
 ## Fichiers
 
-- **`Models/SaveData.cs`** — **classe**, pas struct : elle porte deux `List<>`, et une copie de struct partagerait les références en donnant l'illusion d'une copie indépendante. `CurrentVersion = 13`, `EnsureValid()` (répare une désérialisation), `Migrate()` (cas chaînés par `goto case`).
-  **v1 → v2 (lot 2b-1)** : `ComputerPower` et `TotalComputerPower` retirés. Les TFlops sont devenues une capacité dérivée du parc Hardware, entièrement recalculable depuis `Upgrades` — les sauvegarder créait une seconde source de vérité qui pouvait diverger. Aucun report n'est nécessaire : `JsonUtility` ignore simplement les champs en trop d'un ancien fichier, la migration se contente de tamponner la version.
-  **v2 → v3 (prestige sur la run)** : ajout de `RunMoney`, l'argent gagné depuis le début de la run, qui pilote désormais le gain de CPU Cycles. La migration le force à `0` au lieu de recopier le cumul à vie — sinon une run déjà entamée rapporterait un gain immérité au premier Game Over.
-  **v3 → v4 (Ghost Cache)** : ajout de `GhostCacheSeconds`, la charge accumulée en secondes d'excédent de dissipation. *Le champ a quitté le format en v11 avec le Ghost Cache ; la migration v3 → v4 ne fait plus que tamponner la version.* État de RUN malgré sa sauvegarde : le wipe l'efface, mais fermer le jeu ne la perd pas — elle représente du temps de jeu investi. Un Overdrive **en cours** n'est délibérément pas sauvegardé ; sinon fermer la fenêtre reviendrait à mettre l'effet en pause, dans un jeu qui n'a aucune progression hors-ligne. La migration part de zéro : la mécanique n'existait pas avant.
-  **v4 → v5 (Data Wiper)** : le Bouton d'Urgence passe du coût en argent au prérequis en TFlops et gagne `EmergencyBlockRemainingSeconds` et `EmergencyCooldownRemainingSeconds`. Les deux sont sauvegardés alors qu'un Overdrive en cours ne l'est pas, et l'asymétrie est délibérée : sauvegarder l'Overdrive aurait permis de mettre en PAUSE un bonus en fermant la fenêtre, ne pas sauvegarder le contrecoup permettrait d'ÉCHAPPER à une pénalité par le même geste. `EmergencyUsesInRun` existait déjà et n'est pas touché par la migration.
-  **v5 → v6 (durée de run)** : ajout de `RunElapsedSeconds`. Cumulée frame par frame dans `GameSessionManager.Tick()` et non déduite d'un `Time.time` de départ — celui-ci repart de zéro à chaque lancement, et une run reprise le lendemain afficherait la durée de la seule session en cours. Sauvegardée pour la même raison ; le temps passé fenêtre close n'est jamais crédité, le compteur n'avance que dans `Tick()`. La migration part de zéro : les anciennes sauvegardes n'ont pas mesuré leur temps de jeu.
-  **v6 → v7 (jauge absolue)** : `NormalizedThreat` (une fraction) devient `CurrentTrace`, en points **absolus** — le plafond de jauge cesse d'être fixe à 100 (il suit le parc Hardware depuis le 2026-08-30, la puissance du joueur depuis le 2026-09-15), donc une fraction ne disait plus quelle quantité de trace restaurer. L'ancien champ est **conservé dans la classe** : `JsonUtility` ne lit un champ que s'il existe encore, le retirer rendrait toutes les sauvegardes antérieures illisibles. La conversion multiplie la fraction par le plafond **historique** de 100, jamais par le plafond courant — sinon un joueur équipé se verrait rendre une trace bien plus lourde que celle qu'il avait. *(Entrée rétablie le 2026-10-13 ; détail du lot dans `historique.md`.)*
-  **v7 → v8 (achat multiple)** : ajout de `BuyQuantityMode`, le mode d'achat sélectionné (0 = x1, 1 = x10, 2 = x100, 3 = MAX). Premier champ du fichier qui n'est **ni de la méta-progression ni de la run** : c'est une préférence d'interface, et le wipe n'y touche pas — perdre son mode d'achat parce qu'on s'est fait repérer n'aurait aucun sens. Stocké en `int` et non en `BuyQuantity` : les valeurs de l'enum sont désormais un format de fichier, les réordonner redéfinirait silencieusement la préférence de tous les joueurs installés. `EnsureValid()` fait retomber sur x1 tout ce qui sort du domaine. L'état vit dans `BuyQuantitySelector`, service du scope **racine** : le gateway le restaure avant que la GameScene n'existe, et il survit à son rechargement.
-  **v8 → v9 (cumul de campagne)** : `CampaignDatasBanked` et `CpuCyclesAwarded` pilotent désormais les points de prestige, à la place de l'argent de la seule run. La migration remet **les deux** à zéro : le joueur garde ses Cycles et ses nœuds, et son prochain palier sera simplement le premier. N'en remettre qu'un à zéro lui bloquerait la progression jusqu'à ce qu'il rattrape son ancien total. *(Décision décrite dans `game-design.md` — cette entrée manquait ici.)*
-  **v9 → v10 (victoire)** : ajout de `HasWon`. De la **méta-progression** : la victoire est un fait acquis de la campagne, insensible au wipe. Elle n'est sauvegardée que pour ne pas rejouer sa mise en scène à chaque ouverture du jeu — la partie continue normalement après. La migration part à **faux** même sur un parc qui dépasse déjà le seuil : ces sauvegardes n'ont jamais pu déclencher la victoire, et le joueur la recevra au premier recalcul des totaux. `VictorySystem.Restore` ne prend d'ailleurs jamais la valeur faux, pour qu'un fichier abîmé ne puisse pas effacer une victoire acquise.
+- **`Models/SaveData.cs`** — **classe**, pas struct : elle porte deux `List<>`, et une copie de struct partagerait les références en donnant l'illusion d'une copie indépendante. `CurrentVersion = 13`, `EnsureValid()` (répare une désérialisation), `Migrate()`.
+  **Pas de migration tant que le jeu n'a pas de joueurs externes** (Bertrand, 2026-10-14) : le seul
+  joueur supprime sa sauvegarde à chaque changement de format. `Migrate()` rend la sauvegarde telle
+  quelle si sa version est la courante, et sinon une partie neuve, avec un avertissement
+  `[SAVE]` en console. Les treize migrations v0 → v13 écrites pendant le développement ont été
+  retirées au lot 5 ; leur historique est archivé dans `historique.md`. **Après le premier build
+  public, la règle s'inverse** : chaque incrément de version devra porter sa migration, sous peine
+  de casser les sauvegardes des joueurs.
+  `HasWon` (méta-progression) : la victoire n'est sauvegardée que pour ne pas rejouer sa mise en
+  scène à chaque ouverture ; `VictorySystem.Restore` ne prend jamais la valeur faux, pour qu'un
+  fichier abîmé ne puisse pas effacer une victoire acquise.
   ⚠️ **L'ordre de restauration est porteur de sens ici.** `_victory.Restore(data.HasWon)` doit précéder `_upgradeManager.InitializeFromSave` : celui-ci recalcule les totaux et pousse une valeur dans `NetTFlops`, que le `VictorySystem` observe. Poser le drapeau après rejouerait la victoire à chaque chargement.
-  **v10 → v11 (refonte « Time Attack », 2026-10-13)** : la jauge passe à 10 000 UT fixes et l'arbre change de nœuds, de prix et d'effets. La migration **efface la run en cours** — sa Trace se comptait sur un plafond de plusieurs millions, la ramener sur 10 000 UT mettrait le joueur au bord de la saisie — et **rend tous les CPU Cycles dépensés dans l'arbre**, qu'elle remet à zéro (racine exceptée). En v10, chaque rang coûtait exactement un point : le remboursement se calcule sur le seul fichier, sans catalogue. Garder un Blindage acheté 1 point qui en coûte désormais 10 serait un cadeau ; perdre les points des nœuds retirés, une punition. Cumul de campagne, points accordés et victoire ne bougent pas. `GhostCacheSeconds` quitte le format : `JsonUtility` ignore le champ resté dans un ancien fichier.
-  **v11 → v12 (Data Wiper et écran de fin, 2026-10-14)** : `EmergencyBlockRemainingSeconds` et `EmergencyCooldownRemainingSeconds` quittent le format — le Data Wiper n'a plus ni contrecoup temporaire ni délai, son sacrifice découle du seul `EmergencyUsesInRun`. Ce compteur repart à **zéro** : il valait un nombre de purges à délai, il fixe désormais un sacrifice permanent de 30 % par usage, et le reprendre infligerait d'un coup 60 % à qui avait purgé deux fois. Nouveau bloc `PendingRunEnd` (struct à plat, copie du `RunSummary`) : le bilan de la run terminée tant que le joueur n'a pas relancé. Restauré, il désarme la partie (`GameSessionManager.RestorePendingRunEnd`), et le `GameOverPresenter` rouvre l'écran de fin en `PostStart` — après le `Start` du panneau de prestige, dont il a besoin. Une raison inconnue efface le bloc (`EnsureValid`).
-  **v12 → v13 (brouillard, 2026-10-14)** : nouveau bloc `Readout` (dernier relevé en UT, âge du relevé, sauts connus), restauré tel quel par `TraceReadout.Restore` après la jauge. Jusqu'ici le chargement recalait le relevé sur la vérité, ce qui levait le brouillard à chaque rechargement. Une sauvegarde antérieure reçoit un relevé posé sur sa jauge — ce que faisait le chargement — : le brouillard se reforme au relevé suivant. Un relevé au-dessus de la vérité (fichier édité) est recalé.
+  `EmergencyUsesInRun` : le sacrifice de TFlops du Data Wiper en découle (30 % par usage) ; le
+  sauvegarder empêche qu'une fermeture rende la puissance engloutie.
+  `PendingRunEnd` (struct à plat, copie du `RunSummary`) : le bilan de la run terminée tant que le
+  joueur n'a pas relancé. Restauré, il désarme la partie (`GameSessionManager.RestorePendingRunEnd`),
+  et le `GameOverPresenter` rouvre l'écran de fin en `PostStart` — après le `Start` du panneau de
+  prestige, dont il a besoin. Une raison inconnue efface le bloc (`EnsureValid`).
+  `Readout` (dernier relevé en UT, âge du relevé, sauts connus) : restauré tel quel par
+  `TraceReadout.Restore` après la jauge, pour que le brouillard ne se lève pas au rechargement. Un
+  relevé au-dessus de la vérité (fichier édité) est recalé.
 
 - **`Services/Persistence/GameStateGateway.cs`** — `Restore` / `Capture`. Tampon `SaveData` et deux `Dictionary` réutilisés : un autosave n'alloue rien hors la chaîne JSON.
 - **`Services/Persistence/SaveScheduler.cs`** — les trois déclencheurs, plus le retour au menu (`ISaveRequester`). Une demande qui arrive pendant une écriture en vol n'est **jamais jetée** : elle arme **un** tour de rattrapage (`_pendingReason`), qui capture l'état au moment où il s'exécute. Un seul emplacement d'attente, et c'est délibéré : `Capture()` rend un tampon partagé qui continue de muter, une file empilerait N références au même état (corrigé le 2026-08-30, cf. `historique.md`).
@@ -68,7 +74,7 @@ Les options (langue, affichage, V-Sync, plafond de FPS, échelle d'interface, mo
 
 ## Points de conception à ne pas défaire
 
-- **`MaxRestorableThreat = 0.99f`** — on ne restaure jamais une jauge pleine (99 % de 10 000 UT), sinon la partie reprend en Game Over avant que l'UI ne soit abonnée. `ThreatManager.RestoreThreat()` ne déclenche **jamais** le lockdown : c'est le rôle exclusif d'`AddThreat`.
+- **`MaxRestorableThreat = 0.99f`** — on ne restaure jamais une jauge pleine (99 % de 10 000 UT), sinon la partie reprend en Game Over avant que l'UI ne soit abonnée. `ThreatManager.RestoreTrace()` ne déclenche **jamais** la saisie : c'est le rôle exclusif de l'avance de la jauge (`Advance`) et de la pénalité d'Overclock.
 - **Verrou `HasRestored`** — sans lui, fermer le jeu pendant le chargement remplace la sauvegarde du joueur par une partie neuve.
 - **Sérialisation synchrone en entrée de `SaveAsync`** — le gateway rend un tampon réutilisé ; le lire après un `await` mélangerait deux états.
 - Les niveaux à 0 ne sont pas écrits dans le fichier.
@@ -78,7 +84,9 @@ Les options (langue, affichage, V-Sync, plafond de FPS, échelle d'interface, mo
 ## Ajouter un champ sauvegardé — procédure
 
 1. Ajouter le champ dans `SaveData`, dans le bon bloc (méta-progression ou run en cours).
-2. Incrémenter `CurrentVersion` et ajouter le `case` correspondant dans `Migrate()`.
+2. Incrémenter `CurrentVersion`. Pendant le développement, rien de plus : une sauvegarde plus
+   ancienne ouvrira une partie neuve. Après le premier build public, écrire aussi sa migration
+   dans `Migrate()` (un `switch` sur la version, cas chaînés par `goto case`).
 3. Le lire dans `GameStateGateway.Restore()`.
 4. L'écrire dans `GameStateGateway.Capture()`.
 5. Le borner dans `EnsureValid()` si la valeur a un domaine.

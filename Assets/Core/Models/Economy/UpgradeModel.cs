@@ -79,7 +79,7 @@ namespace Core.Models.Economy
         /// l'UpgradeManager comme les TFlops, et pour la même raison : elle ne dépend pas de CE
         /// générateur.
         ///
-        /// Elle vit ici plutôt que d'être passée en argument à GetCurrentCost(), comme c'était
+        /// Elle vit ici plutôt que d'être passée en argument au calcul du coût, comme c'était
         /// le cas jusqu'au 2026-08-30. L'argument créait deux vérités : l'UpgradeManager le
         /// passait à l'achat, la vue ne le passait pas à l'affichage — le joueur lisait donc un
         /// prix plus élevé que celui réellement débité, et son bouton restait gris alors que
@@ -154,18 +154,14 @@ namespace Core.Models.Economy
         }
 
         /// <summary>
-        /// Coût du prochain niveau : C(n) = C_base × Noyau × M^n.
+        /// Coût cumulé des <paramref name="levels"/> prochains niveaux, réductions comprises :
+        /// Σ C₀·M^k pour k de 0 à N−1, soit C₀·(M^N − 1)/(M − 1), où C₀ = C_base × Noyau × M^niveau
+        /// est le prix du prochain niveau.
         ///
         /// Deux réductions de prestige distinctes s'appliquent, et il ne faut pas les confondre :
         /// le Noyau Compilé rabote le coût de BASE (le prix d'entrée), `P_REFAC` rabote le
         /// MULTIPLICATEUR M, ce qui aplatit la courbe entière. Les deux sont dans le cache — voir
         /// <see cref="_globalCostMultiplierReduction"/> pour la raison.
-        /// </summary>
-        public double GetCurrentCost() => _cachedCost;
-
-        /// <summary>
-        /// Coût cumulé des <paramref name="levels"/> prochains niveaux, réductions comprises :
-        /// Σ C₀·M^k pour k de 0 à N−1, soit C₀·(M^N − 1)/(M − 1).
         ///
         /// Forme fermée et non une boucle d'achats simulés : un MAX de fin de partie porte
         /// plusieurs centaines de niveaux, et chaque itération coûterait un Math.Pow. La division
@@ -299,11 +295,9 @@ namespace Core.Models.Economy
             return _cachedYield / _cachedCycleDuration;
         }
 
-        public void LevelUp() => AddLevels(1);
-
         /// <summary>
         /// Monte de plusieurs niveaux d'un coup. UN seul recalcul de cache et UNE seule
-        /// notification : appeler LevelUp() en boucle réveillerait la vue N fois, dont N−1 sur
+        /// notification : monter niveau par niveau réveillerait la vue N fois, dont N−1 sur
         /// des états intermédiaires que le joueur ne verra jamais — et sur un MAX à trois cents
         /// niveaux, ce sont trois cents reconstructions de chaînes formatées pour rien.
         /// </summary>

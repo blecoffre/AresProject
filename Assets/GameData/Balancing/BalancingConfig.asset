@@ -30,7 +30,6 @@ MonoBehaviour:
   _coreCostFloor: 0.05
   _coreYieldPerPoint: 0.01
   _baseStartingMoney: 10
-  _exfiltrationUnlockDatas: 400000
   _prestigeFirstThresholdDatas: 2000000
   _prestigeThresholdGrowth: 1.12
   _seizedContributionRatio: 0.3
