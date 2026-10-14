@@ -38,8 +38,8 @@
 Livré le 2026-10-13. **Joué par Bertrand le 2026-10-14** : les lignes vues fonctionner sont
 parties dans `historique.md` ; restent celles-ci. Chiffres
 attendus à 0 TFlop et sans Blindage : vitesse de l'A.M.I. 33 UT/s, jauge pleine en ~5 min. Tout ce
-qui s'affiche sur la jauge passe encore par le brouillard (relevé jusqu'à 60 s au départ) : pour
-les montées, **la console fait foi** ; les baisses, elles, se voient tout de suite.
+qui s'affiche sur la jauge passe par le brouillard (un relevé toutes les ~24 s au départ, § 0 ter) :
+pour les montées, **la console fait foi** ; les baisses, elles, se voient tout de suite.
 
 | # | Quoi | Comment | Ce qu'on doit voir |
 |---|---|---|---|
@@ -127,8 +127,7 @@ que rien d'utile n'est parti avec.
 Tout ce bloc vient de `bf490c6` (2026-09-22), dont le message dit : « Rien de tout cela n'a été
 éprouvé en Play Mode », et de `a772e67` (2026-10-02). C'est une session **« ressenti et bugs »** :
 on regarde si ça marche et si ça se lit, pas si les chiffres sont bons. ⚠️ La refonte « Time
-Attack » a réécrit le brouillard (lot 3, § 0 ter). L'ex-1.1 (départ de la traque) est devenue
-0.2 ; il ne reste ici que la victoire, à rejouer.
+Attack » a réécrit le brouillard (lot 3, § 0 ter) ; il ne reste ici que la victoire, à rejouer.
 
 | # | Quoi | Comment | Ce qu'on doit voir |
 |---|---|---|---|
