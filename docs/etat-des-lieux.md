@@ -20,9 +20,10 @@
 Le gameplay est en **refonte « Time Attack »** depuis le 2026-10-13 : la Trace dynamique laisse la
 place à un compte à rebours fixe, les Proxies deviennent des consommables de survie, l'arbre passe
 à une vingtaine de nœuds. Les cinq lots sont livrés et **joués le 2026-10-15** : tout le protocole est
-passé. Les retours de cette passe (console, rangée d'actions, gain à l'achat, textes du Data Wiper)
-sont corrigés et à rejouer (`a-tester.md` § 0). Reste la session « chiffres ». Le menu, les
-options, la pause, le son et la sauvegarde ne bougent pas.
+passé. Ses retours (console, rangée d'actions, gain à l'achat, textes du Data Wiper) et une
+victoire déclenchée à tort ont été corrigés et rejoués le même jour : **la branche est prête à
+fusionner**. Reste la session « chiffres ». Le menu, les options, la pause, le son et la
+sauvegarde ne bougent pas.
 
 ---
 
@@ -40,7 +41,7 @@ options, la pause, le son et la sauvegarde ne bougent pas.
 | **Arbre de prestige** — 21 nœuds en éventail, Noyau Compilé, `P_CORE_OVERRIDE` infini | **Refonte lot 4, livré le 2026-10-14** | Oui (2026-10-15) ; éventail gardé tel quel |
 | Zéro-Day Exploit / Ghost Cache | **Retirés** le 2026-10-13 | — |
 | **Data Wiper** — −2 500 UT, sacrifice de 30 % des TFlops nettes par usage, trois usages | **Refonte lot 2, livré le 2026-10-14** | Oui (2026-10-15) ; règle gardée, joueur prévenu du sacrifice sur les achats suivants |
-| Victoire — 1e12 TFlops nettes | Livrée le 2026-09-16, **seuil provisoire à 5e11** | Séquence oui ; écran jamais vu (objet éteint dans la scène, corrigé le 2026-10-14, à rejouer) |
+| Victoire — 1e12 TFlops nettes | Livrée le 2026-09-16, **seuil provisoire à 5e11** | Oui (2026-10-15) : séquence, écran, reprise, jamais deux fois ; déclenchement à tort par le Data Wiper corrigé le même jour |
 | Sauvegarde — `SaveData` **v13**, écriture atomique, autosave, fermeture, écran de fin rouvert, relevé conservé | Livrée ; **plus de migration** pendant le développement (lot 5 de la refonte) | Oui, format v13 (2026-10-15) |
 | Menu principal, options en trois onglets, pause, langue à chaud | Livré le 2026-10-02 | Oui — touches et build vus le 2026-10-13 |
 | Daltonisme — quatre palettes | Livré le 2026-10-02 | Oui (outil de contrôle + Play Mode) |
@@ -64,8 +65,8 @@ Chaque lot se termine par son protocole de test (`a-tester.md`), sur la branche
 | R4 | **Arbre** | Retrait des 120 nœuds ciblés et de leur générateur ; Noyau Compilé (coût × 0,99^points, plancher 0,05 ; rendement + 1 % par point, Datas et TFlops nettes) affiché dans les panneaux ; `P_CORE_OVERRIDE` infini ; `P_REFAC` 10 rangs, `P_DATAM` à 2 points, Extraction (+0,5 par rang, trois paliers) ; `P_INTERCEPT_3` et `_4` rabotés à +1 et +1,5 ; chaînes « parent au max » ; éventail. **Pas de migration** : Bertrand repart d'une sauvegarde neuve | ✅ livré le 2026-10-14, joué le 2026-10-15 |
 | R5 | **Nettoyage** | Migrations de sauvegarde v0 → v13 ; champs inertes des générateurs et du prestige (`minCycleDuration`, `durationReductionPerLevel`, `costMult`), `ExfiltrationUnlockDatas` ; méthodes sans appelant ; bouton mort de l'écran de fin ; couleurs du Ghost Cache restées dans les palettes ; trois clés de localisation ; 25 sprites et un preset jamais utilisés ; commentaires périmés ; dossier partagé du GD réécrit | ✅ livré le 2026-10-14, joué le 2026-10-15 |
 
-**La refonte est livrée et jouée** : passe complète le 2026-10-15 (`historique.md`). Ses retours
-sont corrigés le jour même et restent à rejouer (`a-tester.md` § 0).
+**La refonte est livrée et jouée** : passe complète le 2026-10-15 (`historique.md`), retours
+corrigés et rejoués le jour même. **La branche est prête à fusionner** (Bertrand fusionne).
 
 Après la refonte, la feuille de route d'avant reprend : **session de jeu « chiffres »** (une
 campagne complète, victoire remise à 1e12), **dette technique groupée** (`backlog.md` § 4 à 7),

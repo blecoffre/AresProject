@@ -116,6 +116,28 @@ d'une run finie avec deux Data Wiper et un parc au-dessus du seuil sans sacrific
 rendait le sacrifice avant de vider le parc ; le chargement d'une sauvegarde restaurait le parc
 avant le sacrifice. Les deux ordres sont inversés (`a-tester.md` § 0, tests 9.1 à 9.3).
 
+**Correctif de la victoire, victoire et taille d'interface, joués le même jour — tous passés**,
+lignes retirées de `a-tester.md` :
+
+| # | Quoi | Comment | Ce qu'on doit voir |
+|---|---|---|---|
+| 9.1 | **La sortie ne déclenche plus la victoire** | Après la mise en place, « [PRÊT] WIPE SYSTÈME ». | L'écran de fin habituel, **aucune** séquence de victoire. Pas de ligne « [Victory] Seuil atteint » dans la console d'Unity. |
+| 9.2 | **Le rechargement non plus** | Refaire la mise en place sur une nouvelle run, mais au lieu de sortir : arrêter le Play Mode en pleine run, le relancer, « Continuer ». | Aucune victoire au chargement. Le Data Wiper annonce toujours « reste 1 », l'en-tête toujours ~40 % de N. |
+| 9.3 | **La vraie victoire passe toujours** | Run suivante, seuil inchangé : racheter du Hardware, sans Data Wiper, jusqu'à dépasser 0,5 × N. | La victoire se déclenche à l'achat qui franchit le seuil. Enchaîner 1.12 à 1.14 à partir de là, puis **remettre `_victoryTFlops` à 5e11**. |
+| 1.12 | **Victoire : séquence et écran** — *14/10 : séquence OK, écran absent (objet `VictoryPanel` éteint dans la scène), corrigé le jour même ; 15/10 : déclenchée à tort par la sortie, voir § 0* | Abaisser `_victoryTFlops` sous les TFlops courants (cf. « Avant de commencer »). | La console déroule la séquence (« Attaque du chiffrement… C'est un chat. »), puis l'écran « ACCÈS TOTAL » apparaît, textes résolus (aucune clé entre crochets), fond opaque qui capte les clics. La simulation **continue derrière** : la Trace monte. |
+| 1.13 | **Victoire : fermeture** | Cliquer « Reprendre ». | L'écran se ferme, la partie continue où elle en était. |
+| 1.14 | **Victoire : jamais deux fois** | Remettre `_victoryTFlops`, sauvegarder (retour au menu), relancer le jeu, revenir en jeu. | Aucune séquence ni écran de victoire au rechargement. (Vérifié hors Play Mode sur le code ; jamais sur le chemin complet.) |
+| 2.8 | **Taille d'interface au-dessus de 100 %** — *14/10 : options et inspecteur de nœud se chevauchent au-delà de 120 % (`backlog.md` § 4) ; l'inspecteur est refait le 15/10, à revoir* | Options > Affichage > Taille d'interface à 110 %, puis 150 %. Parcourir le menu, les options, la pause, l'écran de jeu, l'arbre, l'écran de fin. | Rien ne se chevauche, rien ne sort de l'écran. ⚠️ Le panneau d'options se chevauche par construction dès 110 % (`backlog.md` § 4) ; les autres écrans n'ont jamais été regardés au-delà de 100 %. |
+
+Remarques de Bertrand :
+
+- Pour ces tests, argent triché et parc de Hardware gonflé : **la traque a démarré sans aucun
+  Script**. Conforme à la règle (GDD, « La traque ne démarre QUE lorsque le joueur s'est
+  manifesté ») : posséder du Hardware suffit à l'armer, comme voler sa première Data.
+- 2.8 « semble ok partout ». L'inspecteur de nœud tient donc à 150 % : son entrée du backlog
+  (« peut atteindre son bouton à grande taille d'interface », ⚖️) est soldée. Celle du panneau
+  d'options, observée deux fois avant, reste ouverte, à reconfirmer.
+
 ## Correctifs du backlog, suite — 2026-10-15
 
 Bertrand : « ne te gêne pas pour les fixs ». Cinq entrées soldées, et deux défauts trouvés en route :
