@@ -25,9 +25,8 @@
   la valeur d'origine** (5e11, provisoire).
 - **La sauvegarde est du JSON lisible**, dans
   `%userprofile%\AppData\LocalLow\DeathtreakCorp\HackTheKey\savegame.json`. En faire une copie
-  avant de la retoucher. ⚠️ **Plus aucune migration** (lot 5) : la branche
-  `chantier/refonte-time-attack` remplace toute sauvegarde d'un autre format par une partie neuve.
-  Copier le fichier AVANT le premier lancement, pour pouvoir revenir sur `main`.
+  avant de la retoucher. ⚠️ **Plus aucune migration** (lot 5 de la refonte) : une sauvegarde d'un
+  autre format est remplacée par une partie neuve. Copier le fichier avant de changer de branche.
 - **La refonte est entièrement jouée** (2026-10-15, `historique.md`) : plus rien en attente de ce
   côté. Prochaine étape, la session « chiffres » (§ 5).
 

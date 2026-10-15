@@ -10,19 +10,18 @@
 > | les décisions de design — elles font foi | `game-design.md` |
 > | ce qui a déjà été réglé, et comment | `historique.md` |
 >
-> Dernière mise à jour : **2026-10-15** — refonte livrée et jouée (lots 1 à 5), branche
-> `chantier/refonte-time-attack`.
+> Dernière mise à jour : **2026-10-15** — refonte livrée, jouée et fusionnée dans `main`.
 
 ---
 
 ## En une phrase
 
-Le gameplay est en **refonte « Time Attack »** depuis le 2026-10-13 : la Trace dynamique laisse la
+Le gameplay a été refondu en **« Time Attack »** du 2026-10-13 au 2026-10-15 : la Trace dynamique laisse la
 place à un compte à rebours fixe, les Proxies deviennent des consommables de survie, l'arbre passe
 à une vingtaine de nœuds. Les cinq lots sont livrés et **joués le 2026-10-15** : tout le protocole est
 passé. Ses retours (console, rangée d'actions, gain à l'achat, textes du Data Wiper) et une
-victoire déclenchée à tort ont été corrigés et rejoués le même jour : **la branche est prête à
-fusionner**. Reste la session « chiffres ». Le menu, les options, la pause, le son et la
+victoire déclenchée à tort ont été corrigés et rejoués le même jour, et la branche a été
+**fusionnée dans `main` le 2026-10-15**. Reste la session « chiffres ». Le menu, les options, la pause, le son et la
 sauvegarde ne bougent pas.
 
 ---
@@ -54,8 +53,8 @@ sauvegarde ne bougent pas.
 
 ## Feuille de route
 
-Chaque lot se termine par son protocole de test (`a-tester.md`), sur la branche
-`chantier/refonte-time-attack`. Bertrand fusionne dans `main`.
+Chaque lot s'est terminé par son protocole de test (`a-tester.md`), sur la branche
+`chantier/refonte-time-attack`, fusionnée dans `main` par Bertrand le 2026-10-15.
 
 | # | Lot | Contenu | Statut |
 |---|---|---|---|
@@ -66,7 +65,7 @@ Chaque lot se termine par son protocole de test (`a-tester.md`), sur la branche
 | R5 | **Nettoyage** | Migrations de sauvegarde v0 → v13 ; champs inertes des générateurs et du prestige (`minCycleDuration`, `durationReductionPerLevel`, `costMult`), `ExfiltrationUnlockDatas` ; méthodes sans appelant ; bouton mort de l'écran de fin ; couleurs du Ghost Cache restées dans les palettes ; trois clés de localisation ; 25 sprites et un preset jamais utilisés ; commentaires périmés ; dossier partagé du GD réécrit | ✅ livré le 2026-10-14, joué le 2026-10-15 |
 
 **La refonte est livrée et jouée** : passe complète le 2026-10-15 (`historique.md`), retours
-corrigés et rejoués le jour même. **La branche est prête à fusionner** (Bertrand fusionne).
+corrigés et rejoués le jour même. **Fusionnée dans `main` le 2026-10-15.**
 
 Après la refonte, la feuille de route d'avant reprend : **session de jeu « chiffres »** (une
 campagne complète, victoire remise à 1e12), **dette technique groupée** (`backlog.md` § 4 à 7),
