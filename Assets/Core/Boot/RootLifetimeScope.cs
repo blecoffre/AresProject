@@ -168,6 +168,14 @@ namespace Core.Infrastructure
             // pour son IStartable, AsSelf pour que le gateway et le presenter puissent l'injecter.
             builder.Register<VictorySystem>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
 
+            // Journal de fin de run, outil de développement (session « chiffres », 2026-10-15) :
+            // une ligne CSV par run, pour caler le bot du harnais sur un joueur réel. Jamais dans
+            // un build de production.
+            if (Debug.isDebugBuild)
+            {
+                builder.RegisterEntryPoint<RunJournal>();
+            }
+
             // 7. Points d'entrée
             // Enregistré en premier : il plafonne la cadence avant que quoi que ce soit ne
             // s'affiche, plutôt que de laisser le jeu tourner libre le temps du chargement.

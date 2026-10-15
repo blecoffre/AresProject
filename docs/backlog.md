@@ -39,10 +39,6 @@ Steam Deck.
 
 La feuille de route des lots est dans `etat-des-lieux.md`. Ici, les points ouverts.
 
-- ⚖️ **Valeurs de l'Interception provisoires** (lot 4, 2026-10-14). `P_INTERCEPT_3` et `_4` passent
-  de +4 et +15 à **+1,0 et +1,5 par rang** (×19,5 au max au lieu de ×102), point de départ choisi
-  par Bertrand ; le GD fixera les valeurs définitives en jouant. Calcul, fin de partie Blindage
-  max : `PRX_01` retire ~15 % de la jauge, `PRX_05` ~59 %, il faut `PRX_07` pour la vider.
 - ⚖️ **La disposition de l'arbre en éventail est provisoire** (lot 4). Vue en jeu le 2026-10-15 :
   « ça fait un peu arbre de RPG, MAIS on va ajouter quelques autres nœuds » — la dispersion se
   décidera avec eux. **Ne rien changer d'ici là** (Bertrand). À zoom 1, l'écran ne montre que trois
@@ -193,7 +189,7 @@ Pas des bugs : des arbitrages que seul le GD peut rendre. Les trancher débloque
 
 | Question | Entrée liée |
 |---|---|
-| Quand remonter la victoire à 1e12 ? | § 1 |
+| Quand remonter la victoire à 1e12 ? — **tranché** : au lot C3 de la session « chiffres », la cible du GD étant 1e12 | § 1 |
 | L'écran méta masque la jauge de Trace pendant une run : ajouter un rappel de Trace dans son header ? | — |
 | Brouillard sur les nœuds verrouillés : le nom reste visible (choix de Bertrand, pour planifier). À rediscuter si le GD tient au mystère. | — |
 | Branche de prestige dédiée aux capteurs : la visibilité ne s'achète aujourd'hui qu'en Hardware (GDD, § Capteur). | — |

@@ -307,7 +307,8 @@ namespace Core.Models.Economy
 
         /// <summary>
         /// Secondes de survie que rendraient les <paramref name="levels"/> PROCHAINS niveaux de
-        /// ce Proxy, avant la branche Interception. Vaut 0 hors Proxy.
+        /// ce Proxy, échelle commune (<see cref="BalancingConfigSO.ProxyWipeScale"/>) comprise,
+        /// avant la branche Interception. Vaut 0 hors Proxy.
         ///
         /// Chaque niveau compte avec les paliers de SON rang : acheter du niveau 8 au niveau 12
         /// paie deux niveaux nus et trois au palier ×1,32 du niveau 10. Un lot ×100 qui franchit
@@ -358,7 +359,10 @@ namespace Core.Models.Economy
                 }
             }
 
-            return Config.WipeSeconds * weightedLevels;
+            // L'échelle commune s'applique ICI, à la source : l'achat (ThreatManager) et la carte
+            // du Proxy (GeneratorPresenter) lisent tous deux cette méthode, ils ne peuvent donc
+            // pas diverger.
+            return Config.WipeSeconds * weightedLevels * _balancing.ProxyWipeScale;
         }
 
         /// <summary>Rendement théorique par seconde si le cycle tourne en continu. Sert à l'affichage.</summary>

@@ -11,6 +11,16 @@
 
 ---
 
+## Session « chiffres », lot 1 — les cibles du GD (2026-10-15)
+
+Le GD a fixé les cibles de la campagne (GDD, « Les cibles de la campagne ») ; son critère
+d'Interception valide les valeurs du lot 4. Entrée du backlog soldée, telle qu'elle était :
+
+- ⚖️ **Valeurs de l'Interception provisoires** (lot 4, 2026-10-14). `P_INTERCEPT_3` et `_4` passent
+  de +4 et +15 à **+1,0 et +1,5 par rang** (×19,5 au max au lieu de ×102), point de départ choisi
+  par Bertrand ; le GD fixera les valeurs définitives en jouant. Calcul, fin de partie Blindage
+  max : `PRX_01` retire ~15 % de la jauge, `PRX_05` ~59 %, il faut `PRX_07` pour la vider.
+
 ## Passe de test de la refonte « Time Attack » — 2026-10-15
 
 Jouée par Bertrand en éditeur, sur `chantier/refonte-time-attack`, sauvegarde neuve : tout le

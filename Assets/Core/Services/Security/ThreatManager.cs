@@ -39,6 +39,7 @@ namespace Core.Services.Security
         private readonly ReactiveProperty<float> _normalizedThreat = new(0f);
         private readonly ReactiveProperty<float> _speed = new(0f);
         private readonly Subject<Unit> _onCriticalLockdown = new();
+        private readonly Subject<float> _onOverclockPenalty = new();
 
         private DisposableBag _disposables;
 
@@ -60,6 +61,13 @@ namespace Core.Services.Security
 
         /// <summary>Émis quand la jauge atteint son plafond.</summary>
         public Observable<Unit> OnCriticalLockdown => _onCriticalLockdown;
+
+        /// <summary>
+        /// Émis à chaque pénalité d'Overclock infligée, avec les UT ajoutées. Lu par le journal de
+        /// fin de run (session « chiffres », 2026-10-15), qui compte les appuis d'un joueur réel
+        /// pour caler le bot du harnais.
+        /// </summary>
+        public Observable<float> OnOverclockPenalty => _onOverclockPenalty;
 
         public ThreatManager(BalancingConfigSO balancing, UpgradeManager upgrades, PrestigeManager prestige)
         {
@@ -113,6 +121,7 @@ namespace Core.Services.Security
         {
             float penalty = _speed.CurrentValue * Mathf.Max(0f, _balancing.OverclockPenaltySeconds);
             AddTrace(penalty);
+            _onOverclockPenalty.OnNext(penalty);
             return penalty;
         }
 
@@ -217,6 +226,7 @@ namespace Core.Services.Security
         {
             _disposables.Dispose();
             _onCriticalLockdown.Dispose();
+            _onOverclockPenalty.Dispose();
             _normalizedThreat.Dispose();
             _currentTrace.Dispose();
             _speed.Dispose();

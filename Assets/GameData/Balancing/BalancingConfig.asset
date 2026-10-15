@@ -46,6 +46,7 @@ MonoBehaviour:
   _overclockWarpSeconds: 0.5
   _overclockPenaltySeconds: 5
   _overclockMinIntervalSeconds: 0.1
+  _proxyWipeScale: 1
   _emergencyTraceRemoval: 2500
   _emergencySacrificeStep: 0.3
   _emergencyMaxSacrifice: 0.9

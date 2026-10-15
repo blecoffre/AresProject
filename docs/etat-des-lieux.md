@@ -67,8 +67,18 @@ Chaque lot s'est terminé par son protocole de test (`a-tester.md`), sur la bran
 **La refonte est livrée et jouée** : passe complète le 2026-10-15 (`historique.md`), retours
 corrigés et rejoués le jour même. **Fusionnée dans `main` le 2026-10-15.**
 
-Après la refonte, la feuille de route d'avant reprend : **session de jeu « chiffres »** (une
-campagne complète, victoire remise à 1e12), **dette technique groupée** (`backlog.md` § 4 à 7),
+### Session « chiffres » — en cours depuis le 2026-10-15
+
+Branche `chantier/session-chiffres`. Le GD a fixé les cibles (GDD, « Les cibles de la campagne ») :
+10 à 12 h, 80 à 100 runs, durée des runs en cloche, premier point à la run 2, arbre fini à 85–90 %.
+
+| # | Lot | Contenu | Statut |
+|---|---|---|---|
+| C1 | **Cibles et calibrage** | Cibles du GD consignées ; `_proxyWipeScale` ; journal de fin de run (`journal-runs.csv`) pour caler le bot sur trois runs jouées | ✅ livré le 2026-10-15, **à jouer** (`a-tester.md` § 0) |
+| C2 | **Harnais** | Les vrais systèmes du jeu sur une horloge virtuelle, un bot « joueur actif moyen » (meilleur gain par Data, Blindage d'abord), un rapport par run et un bilan face aux cibles | à faire |
+| C3 | **Réglage** | Leviers autorisés jusqu'à entrer dans les ±20 %, victoire remise à 1e12, consigné au GDD | à faire |
+
+Ensuite reprend la feuille de route d'avant : **dette technique groupée** (`backlog.md` § 4 à 7),
 **Steam et Steam Deck**, **traductions**.
 
 ⚠️ **Inconnue de planning : y a-t-il une échéance** (démo publique, Steam Next Fest, ouverture de
@@ -90,7 +100,7 @@ dynamique, saturation des Proxies, plafond suivant la puissance). Elles sont arc
 | Overclock | rentable au-delà de ~13 points dans sa branche (avance > 5 s) |
 | Arbre utile (lot 4) | **107 points** : Blindage 20, Interception 20, Overclock 20, Économie 30, Extraction 16, Data Wiper 1 |
 | Noyau Compilé | coûts −66 % et rendement ×2,07 à 107 points ; plancher −95 % vers 299 points |
-| Interception max | ×19,5 — valeurs de départ, à régler en jouant |
+| Interception max | ×19,5 — **validée** par le critère du GD (2026-10-15) |
 | Condition de victoire | **1e12 TFlops nettes** — l'asset porte **5e11**, à titre provisoire |
 | Premier point de prestige | **2e6** de cumul, boîte suivante +12 % (modèle des boîtes) |
 | Saisie | verse **30 %** de sa contribution au cumul |
@@ -124,9 +134,10 @@ sans diviser son bonus multiplie sa puissance par N — c'est ce qui avait satur
 
 Le harnais d'équilibrage Unity (`Tools/Core/Équilibrage/`) et le simulateur Python
 (`tools/balance/`) ont été **supprimés** le 2026-10-13 : ils simulaient l'ancien modèle de Trace
-de bout en bout. Un petit harnais sera refait sur le nouveau modèle si le GD a besoin de mesures ;
-la `SimulationClock` (`ITimeSource`) reste le point d'entrée prévu pour dérouler une campagne hors
-Play Mode.
+de bout en bout. Un nouveau harnais est en cours (session « chiffres », lot C2) ; la
+`SimulationClock` (`ITimeSource`) est son point d'entrée pour dérouler une campagne hors Play Mode.
+Le **journal de fin de run** (`journal-runs.csv`, dans le dossier de la sauvegarde) consigne une
+ligne par run jouée, en éditeur et en build de développement.
 
 **Les générateurs de données**, sous `Tools/Core/`, à relancer après toute modification de
 `GameData/Editor/` — chacun pour ses propres JSON, ils ne dépendent plus l'un de l'autre :
@@ -153,6 +164,7 @@ _tflopsYieldExponent          0.15     boost de rendement des Scripts
 _overclockWarpSeconds         0.5      avance de base d'un Overclock
 _overclockPenaltySeconds      5        coût d'un Overclock, en secondes de survie
 _overclockMinIntervalSeconds  0.1      délai minimal entre deux appuis
+_proxyWipeScale               1        échelle commune du Wipe des Proxies (levier du GD, 2026-10-15)
 _victoryTFlops                5e+11    ⚠️ PROVISOIRE — la cible est 1e12
 _traceReadoutMaxIntervalUT    800      UT entre deux relevés AU DÉPART (~24 s)
 _traceReadoutMinIntervalUT    200      plancher, atteint vers 1e9 TFlops nettes

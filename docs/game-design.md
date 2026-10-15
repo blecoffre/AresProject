@@ -4,7 +4,7 @@ Validées par Bertrand le 2026-08-25, refondues avec le GD le 2026-10-13 (refont
 Ne pas réinventer ces règles ; si l'une pose problème, le signaler avant d'écrire du code qui la
 contourne.
 
-> **Refonte « Time Attack » livrée le 2026-10-14, jamais jouée d'un bloc.** Décidée avec le GD le
+> **Refonte « Time Attack » livrée le 2026-10-14, jouée et fusionnée le 2026-10-15.** Décidée avec le GD le
 > 2026-10-13, sur la base de deux documents hors dépôt (`GDD_Refonte_Ares.pdf`, `GDDV2.pdf`) et de
 > ses arbitrages écrits, tous consignés ici. Le document a été réécrit **lot par lot** ; ce qu'il
 > remplace est dans `historique.md`, sections « Refonte Time Attack ».
@@ -151,6 +151,10 @@ faisaient de chaque achat de fin de liste une remise à zéro de plusieurs jauge
 Interception, un niveau 1 retire au plus 48 % d'une jauge de départ (`PRX_15`), et 44 % d'une
 jauge de victoire Blindage max.
 
+**Une échelle commune** : `_proxyWipeScale` (×1) multiplie le Wipe de tous les Proxies, avant
+l'Interception. Levier d'équilibrage demandé par le GD le 2026-10-15 ; il change aussi ce
+qu'annonce la carte de chaque Proxy.
+
 **Le gaspillage est assumé** (GD) : en fin de partie, les derniers Proxies deviennent des purges
 totales et aveugles, dont l'excédent part dans le vide ; le joueur qui veut économiser dose un lot
 ×10 ou ×100 d'un Proxy de milieu de liste pour ramener la jauge juste sous le seuil critique.
@@ -262,7 +266,7 @@ La racine en haut, sept colonnes en dessous : Interception, Blindage, Data Wiper
 Extraction, Overclock. Chaque chaîne se lit de haut en bas. *Provisoire : Bertrand veut voir en jeu
 si ça ne fait pas trop « arbre de talents de RPG » (2026-10-14).*
 
-### ⚖️ L'Interception rabotée — valeurs de départ, à régler en jouant
+### L'Interception rabotée — validée par le GD (2026-10-15)
 
 À ×102 (+4 et +15 par rang pour `P_INTERCEPT_3` et `_4`), en fin de partie Blindage max (jauge de
 ~330 s), `PRX_01` niveau 1 retirait 78 % de la jauge et **tout Proxy à partir de `PRX_02` la
@@ -272,8 +276,9 @@ que le multiplicateur final oblige encore à racheter des Proxies chers.
 
 **Valeurs de départ (lot 4) : +1,0 et +1,5 par rang**, soit ×19,5 au maximum. Calcul, mêmes
 conditions : `PRX_01` retire ~15 % de la jauge, `PRX_05` ~59 %, et il faut `PRX_07` pour la vider.
-Les apports par rang restent croissants (0,2 · 1 · 1 · 1,5). **Valeurs définitives à fixer en
-jouant** (GD).
+Les apports par rang restent croissants (0,2 · 1 · 1 · 1,5). **Validées le 2026-10-15** par le
+critère du GD : `PRX_05` niveau 1 doit vider 50 à 60 % d'une jauge de fin de partie (« Les cibles
+de la campagne »).
 
 **Retirés de l'arbre au lot 1 :** `P_STEALTH` (réduction passive de Trace, qui n'a plus d'objet),
 toute la branche Zéro-Day (`P_EXPLOIT_CHARGES`, `_MULT`, `_TRACE_REDUC`), `P_OVERCLOCK_AWAKE`,
@@ -548,8 +553,73 @@ dépendent d'aucune formule de Trace :
 
 Et une règle de méthode, apprise à chaque session : **une grandeur exprimée en Datas absolues se
 pose sur une partie JOUÉE**, jamais sur une sortie de simulateur. Le harnais d'équilibrage, qui
-simulait l'ancien modèle de Trace, a été supprimé le 2026-10-13 ; il sera refait sur le nouveau
-modèle si le GD a besoin de mesures.
+simulait l'ancien modèle de Trace, a été supprimé le 2026-10-13 ; il est refait sur le nouveau
+modèle pour la session « chiffres », et la règle tient : il est calé sur des runs jouées (« Les
+cibles de la campagne », La méthode).
+
+## Les cibles de la campagne — session « chiffres » (GD, 2026-10-15)
+
+Fixées par le GD le 2026-10-15. C'est contre elles que la campagne sera mesurée, à **±20 %** près
+sur les temps et les revenus.
+
+| Cible | Valeur |
+|---|---|
+| Durée de la campagne | **10 à 12 h de jeu actif**, de la première connexion à la victoire (1e12 TFlops nettes) |
+| Nombre de runs | **80 à 100** |
+| Durée d'une run | en **cloche asymétrique** : ~5 min au début, 8 à 11 min en milieu de campagne, ~5 min 30 en fin de partie |
+| Premier point de prestige | à la fin de la **run 2** |
+| Arbre utile (107 points) | complété vers **85 à 90 %** de la campagne |
+| Interception | en fin de partie (jauge de ~330 s, Blindage max), `PRX_05` niveau 1 vide **50 à 60 %** de la jauge |
+
+**Une campagne dense, pour le Steam Deck** : 10 à 12 heures sans grind infini, au rythme haché
+d'une console portable.
+
+**La cloche des durées.** Au début, des runs nerveuses de ~5 minutes pour accrocher le joueur. Au
+milieu, le Blindage lui permet de survivre : il creuse l'économie et enchaîne des runs de 8 à 11
+minutes pour s'offrir les nœuds les plus chers. En fin de partie, les TFlops brutes accélèrent
+l'A.M.I. : la run retombe à ~5 min 30, un sprint sous haute tension.
+
+**La run 1 est un tutoriel déguisé** : le joueur découvre l'A.M.I., panique, comprend l'Overclock
+et sort à 50 %. La run 2 introduit l'optimisation et lui fait atteindre son premier point, donc la
+méta-progression. Le seuil de 2 M de Datas peut baisser pour tenir ce rendez-vous.
+
+**L'arbre se finit tard.** Le finir à mi-campagne est un défaut de pacing : `P_CORE_OVERRIDE`
+(« Recompilation Forcée ») ne doit servir de puits qu'au dernier sprint vers la victoire. Si la
+campagne produit ~220 points, comme l'estimait l'ancien modèle, sa génération doit être divisée
+par deux — par le seuil du premier point ou par la croissance des boîtes (voir « Les points de
+prestige »).
+
+**L'Interception est validée.** Le critère tient avec les valeurs du lot 4 : `PRX_05` efface 10 s,
+×19,5 au maximum, soit 195 s, **59,6 %** d'une jauge de ~327 s ; `PRX_07` (19 s) la vide entière, ce
+qui oblige à racheter des Proxies chers pour une purge totale. Les +1,0 et +1,5 par rang ne sont
+plus provisoires.
+
+### Le joueur de référence
+
+Un **joueur actif moyen** : il utilise l'Overclock pour se sortir d'un mauvais pas, ou pour forcer
+un palier juste avant la sortie, et sort majoritairement à **75 %**. Un équilibrage qui exigerait
+un jeu optimal — Overclocks au cadre près, sorties systématiques à 90 % — serait brutal et
+frustrant pour la majorité.
+
+### Les leviers autorisés
+
+Pour entrer dans les cibles, ceux-là et pas d'autres :
+
+- le seuil du premier point, `_prestigeFirstThresholdDatas` ;
+- la croissance des boîtes, `_prestigeThresholdGrowth` (1,12) — **déverrouillée** par le GD ;
+- les coûts et rendements de base des trois premiers Scripts et du premier Hardware, **pour
+  lisser la run 1 seulement** ;
+- les constantes globales de `BalancingConfig` : `_amiSpeedExponent`, et `_proxyWipeScale`, créé
+  pour l'occasion (échelle commune du Wipe des Proxies, ×1 par défaut).
+
+### La méthode
+
+Un **harnais de simulation hors Play Mode**, qui déroule une campagne de cent runs en quelques
+secondes (choix du GD). Il fait tourner les vrais systèmes du jeu, pas une réplique, et il est
+**calé sur des runs jouées** : un bot ne mesure que lui-même. Le journal de fin de run
+(`journal-runs.csv`, à côté de la sauvegarde, en éditeur et en build de développement) consigne
+les runs d'un humain ; le bot est corrigé jusqu'à jouer comme lui. Choix de Bertrand pour le bot :
+le meilleur gain par Data à l'achat des générateurs, le Blindage d'abord dans l'arbre.
 
 ## Le Data Wiper — un sacrifice, pas une recharge (lot 2, 2026-10-14)
 
@@ -651,6 +721,9 @@ mesure, voir la session « chiffres » de la feuille de route, dans `etat-des-li
 
 ### Ce que doit rapporter une première run (tranché le 2026-09-16)
 
+> ⚠️ **Remplacé le 2026-10-15** par la cible du GD : le premier point tombe à la fin de la
+> **run 2**, la run 1 servant de tutoriel (« Les cibles de la campagne »).
+
 > ⚠️ **Le tableau ci-dessous décrit l'ancien calcul** (seuil 5e6, dernière boîte seule). Avec les
 > boîtes et le seuil à 2e6, le calcul donne pour les mêmes runs, bonus de palier non compris :
 > **5** points pour 15,7 M, **3** pour 7,9 M, **2** pour 5,5 M, **1** pour 3 M. Calculé, pas
@@ -692,6 +765,10 @@ points, pas deux de plus. C'est assumé — une bonne run doit se sentir.
 paraît naturel pour élargir la fourchette des premiers points, et il ne faut pas y toucher : à 1,12
 la campagne produit ~232 points pour un arbre qui en coûte 147 ; la passer à 2,0 la ferait tomber à
 39, et l'arbre deviendrait infinissable. **Le seuil est le seul levier libre.**
+
+**Déverrouillé par le GD le 2026-10-15** (session « chiffres ») : l'arbre utile doit se finir vers
+85 à 90 % de la campagne, ce qui demande ~120 points et non ~220. L'avertissement reste valable —
+trop forte, la croissance rend l'arbre infinissable — : toute retouche se mesure au harnais.
 
 ### Un coût plat par rang
 
@@ -879,8 +956,9 @@ Pas de palier d'upgrade ni de seuil de TFlops : verrouiller derrière un achat p
 Depuis le 2026-08-27, l'équilibrage ne demande plus de toucher au C#. Un ScriptableObject unique,
 `Assets/GameData/Balancing/BalancingConfig.asset`, porte **toutes** les valeurs : la jauge de l'A.M.I.
 (plafond, vitesse de base, facteur et exposant des TFlops), la compression et le rendement des
-Scripts, l'Overclock (avance, pénalité en secondes, délai entre deux appuis), le brouillard, la
-victoire, les points de prestige, les paliers d'extraction, le Noyau Compilé et le Data Wiper.
+Scripts, l'Overclock (avance, pénalité en secondes, délai entre deux appuis), l'échelle du Wipe
+des Proxies, le brouillard, la victoire, les points de prestige, les paliers d'extraction, le Noyau
+Compilé et le Data Wiper.
 
 Il est modifiable **en Play Mode** : les systèmes lisent les propriétés à l'usage plutôt que de
 les recopier au démarrage, donc un changement dans l'inspecteur prend effet immédiatement. Deux

@@ -32,10 +32,22 @@
 
 ---
 
-## 0. Refonte « Time Attack »
+## 0. Session « chiffres », lot C1 — les trois runs de calibrage (2026-10-15)
 
-Entièrement jouée le 2026-10-15, retours et correctif de la victoire compris (`historique.md`).
-Rien en attente.
+Compilé (Unity et `dotnet build`, zéro erreur, zéro warning), **jamais joué**. Ces runs servent à
+caler le bot du harnais sur un joueur réel : **jouer naturellement**, comme le « joueur actif
+moyen » du GD (Overclock pour se sortir d'un mauvais pas ou forcer un palier avant la sortie,
+sortie vers 75 % — la run 1 peut sortir plus tôt, c'est le tutoriel). Chaque run d'une traite :
+une fermeture en pleine run fausse ses compteurs.
+
+**Mise en place.** Jeu fermé, dans `%userprofile%\AppData\LocalLow\DeathtreakCorp\HackTheKey\` :
+supprimer `savegame.json` **et** `journal-runs.csv` s'il existe. Lancer depuis la RootScene.
+
+| # | Quoi | Comment | Ce qu'on doit voir |
+|---|---|---|---|
+| 10.1 | **Le journal écrit** | Finir la run 1 (sortie ou saisie). | Console d'Unity : « [JOURNAL] Run 1 consignée dans … ». Le fichier `journal-runs.csv` apparaît, avec une ligne d'en-tête et une ligne de run. |
+| 10.2 | **Trois runs** | Enchaîner les runs 2 et 3, en dépensant les points éventuels sur l'écran de fin. | Trois lignes de run, numérotées 1 à 3. Me transmettre le fichier, ou me dire qu'il est là : je le lis directement. |
+| 10.3 | **L'échelle des Proxies** | En Play Mode, passer `_proxyWipeScale` de `BalancingConfig.asset` à 2, puis cliquer ×10 et ×1 (la carte ne se repeint qu'à un changement) et regarder une carte de Proxy. Remettre ensuite à 1. | La carte annonce le double de secondes (« Efface 5 s » pour le premier Proxy), et l'achat retire deux fois plus de jauge. Remis à 1, tout revient. |
 
 ## 1. Fin de partie et économie
 

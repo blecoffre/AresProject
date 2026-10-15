@@ -239,6 +239,18 @@ namespace Core.Models.Economy
         [SerializeField, Range(0f, 1f)] private float _overclockMinIntervalSeconds = 0.1f;
 
         // ------------------------------------------------------------------
+        // Proxies — l'échelle commune du Wipe
+        // ------------------------------------------------------------------
+        [Header("Proxies")]
+        [Tooltip("Multiplie les secondes de survie effacées par TOUS les Proxies, avant la branche " +
+                 "Interception. À 1, chaque Proxy efface ce que porte son JSON (2,5 s pour le " +
+                 "premier, 10 s pour PRX_05).\n\n" +
+                 "Levier d'équilibrage demandé par le GD (session « chiffres », 2026-10-15) : un " +
+                 "seul chiffre pour régler le poids des Proxies dans la campagne, sans retoucher " +
+                 "quinze générateurs. Il change aussi ce qu'annonce la carte de chaque Proxy.")]
+        [SerializeField, Min(0f)] private float _proxyWipeScale = 1f;
+
+        // ------------------------------------------------------------------
         // Bouton d'Urgence / Data Wiper
         // ------------------------------------------------------------------
         [Header("Bouton d'Urgence / Data Wiper")]
@@ -336,6 +348,9 @@ namespace Core.Models.Economy
         public float OverclockWarpSeconds => _overclockWarpSeconds;
         public float OverclockPenaltySeconds => _overclockPenaltySeconds;
         public float OverclockMinIntervalSeconds => _overclockMinIntervalSeconds;
+
+        /// <summary>Échelle commune du Wipe des Proxies, avant l'Interception.</summary>
+        public float ProxyWipeScale => _proxyWipeScale;
 
         public float EmergencyTraceRemoval => _emergencyTraceRemoval;
         public float EmergencySacrificeStep => _emergencySacrificeStep;
