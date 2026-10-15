@@ -108,7 +108,8 @@ Le détail chiffré et les chantiers d'équilibrage sont dans `etat-des-lieux.md
   « [ RETOUR ] ». Constaté par Bertrand le 2026-10-13, en build, en 3840×2160 plein écran ;
   reconfirmé le 2026-10-14 au-delà de 120 % de taille d'interface. ⚠️ **Contredit le 2026-10-15** :
   au 2.8 rejoué à 110 et 150 %, « semble ok partout ». Rien n'a été modifié dans le panneau entre
-  les deux : à reconfirmer sur l'onglet **Audio** à 150 %, le plus haut des trois.
+  les deux : à reconfirmer sur l'onglet **Audio** à 150 %, le plus haut des trois, quand toute
+  l'interface sera définitive (`a-tester.md` § 5, décision de Bertrand).
   📖 **Cause probable, lue dans `OptionsPanel.prefab`** : le panneau mélange des ancrages
   proportionnels et des tailles fixes. `Pages` est ancré à 64 % de la hauteur avec une hauteur
   fixe de 460 (l'onglet Audio la remplit exactement : 6 lignes de 60 + 5 espaces de 20) ; les deux
@@ -123,8 +124,14 @@ Le détail chiffré et les chantiers d'équilibrage sont dans `etat-des-lieux.md
   cause est ailleurs. **Le remède n'est pas qu'une question d'ancrage** : à 150 %, le canvas ne
   fait plus que 720 unités de haut, et le contenu du panneau (titre, onglets, 460 de réglages,
   boutons) n'y tient pas même parfaitement empilé. Il faudra choisir : panneau compact, défilement,
-  ou plafond plus bas pour la taille d'interface. Les autres écrans, eux, ont été regardés à 110 et
-  150 % le 2026-10-15 : rien à signaler.
+  ou plafond plus bas pour la taille d'interface. Les autres écrans ont été regardés à 110 et 150 %
+  le 2026-10-15, sommairement : rien vu, vérification complète avec l'interface définitive.
+- ⚖️ **L'inspecteur de nœud peut atteindre son bouton à grande taille d'interface.** Ses textes ne
+  se chevauchent plus entre eux (2026-10-15) : ils s'empilent à taille fixe, mais la colonne ne
+  défile pas. Mesuré dans l'éditeur, le nœud le plus bavard (« Extraction Haut Risque ») occupe
+  616 unités pour 810 disponibles au-dessus du bouton ; la marge fond quand la taille d'interface
+  monte. Rien vu au 2.8 sommaire du 2026-10-15 ; à revérifier avec l'interface définitive
+  (`a-tester.md` § 5).
 - 🔬 **Le trait des nœuds verrouillés n'est pas pointillé** comme sur la maquette (le sprite du
   cadre est plein ; constat du 2026-08-30). Les liens, eux, le sont depuis le 2026-08-30.
 

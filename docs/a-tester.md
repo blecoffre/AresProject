@@ -44,8 +44,8 @@ La victoire a été jouée le 2026-10-15 (`historique.md`). Rien en attente.
 
 ## 2. Contrôles et réglages
 
-Les touches, la pause et l'audio ont été éprouvés à la main le 2026-10-13, la taille d'interface
-le 2026-10-15 (`historique.md`). Rien en attente.
+Les touches, la pause et l'audio ont été éprouvés à la main le 2026-10-13 (`historique.md`). La
+taille d'interface au-dessus de 100 % attend que l'interface soit définitive (§ 5).
 
 ## 3. Uniquement dans un build
 
@@ -62,5 +62,6 @@ soldés dans `historique.md`. Rien en attente.
 | Après | Quoi |
 |---|---|
 | Maintenant (refonte jouée le 2026-10-15) | Session de jeu « chiffres » sur une campagne : durée des runs, points par run, part de l'arbre à la victoire, valeurs de l'Interception. Victoire remise à 1e12. |
+| L'interface définitive | **Taille d'interface au-dessus de 100 %** (ex-2.8) — *15/10 : « semble ok partout », vérification sommaire ; Bertrand la garde ouverte jusqu'à ce que toute l'interface soit définitive*. Options > Affichage > Taille d'interface à 110 %, puis 150 %. Parcourir **tous** les écrans : menu, chaque onglet des options (Audio surtout, le plus haut), pause, écran de jeu, arbre et inspecteur de nœud (« Extraction Haut Risque », la plus longue description), écran de fin, victoire. Rien ne doit se chevaucher ni sortir de l'écran (`backlog.md` § 4). |
 | Steam | Lisibilité sur un écran 1280×800. Navigation complète à la manette, sans souris. Overlay Steam. Synchronisation cloud entre deux machines. |
 | Traductions | **Langue à chaud** (ex-2.5) : basculer de langue en pleine partie, parcourir tous les écrans ; aucun texte ne doit rester dans l'ancienne langue, hors lignes déjà écrites dans la console. **Premier lancement** : l'écran de choix propose toutes les langues, celle du système présélectionnée. D'ici là, la technique du `zz.json` (chaque valeur de `fr.json` préfixée « ZZ· ») permet de traquer les textes en dur ; supprimer le fichier et sa `.meta` après. |

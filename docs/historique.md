@@ -134,9 +134,9 @@ Remarques de Bertrand :
 - Pour ces tests, argent triché et parc de Hardware gonflé : **la traque a démarré sans aucun
   Script**. Conforme à la règle (GDD, « La traque ne démarre QUE lorsque le joueur s'est
   manifesté ») : posséder du Hardware suffit à l'armer, comme voler sa première Data.
-- 2.8 « semble ok partout ». L'inspecteur de nœud tient donc à 150 % : son entrée du backlog
-  (« peut atteindre son bouton à grande taille d'interface », ⚖️) est soldée. Celle du panneau
-  d'options, observée deux fois avant, reste ouverte, à reconfirmer.
+- 2.8 « semble ok partout ». Vérification sommaire : Bertrand **garde le contrôle ouvert** jusqu'à
+  ce que toute l'interface soit définitive (`a-tester.md` § 5). Les deux entrées du backlog
+  (panneau d'options, inspecteur de nœud) restent ouvertes d'ici là.
 
 ## Correctifs du backlog, suite — 2026-10-15
 
