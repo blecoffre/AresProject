@@ -43,6 +43,13 @@ namespace Core.UI.Upgrades
         private int _lastModelLevel = -1;
         private BuyQuantity _lastQuantity = (BuyQuantity)(-1);
 
+        /// <summary>
+        /// Nombre de niveaux du lot affiché sur la carte — celui dont le coût est écrit. La ligne
+        /// de stats annonce le gain de CE lot-là, pour que le prix et ce qu'il achète se lisent
+        /// ensemble.
+        /// </summary>
+        private int _displayedLevels = 1;
+
         public GeneratorPresenter(
             UpgradeModel model,
             GeneratorView view,
@@ -82,6 +89,17 @@ namespace Core.UI.Upgrades
             BindPurchaseState();
             BindCycle();
 
+            // TFlops, Noyau ou réduction de coût changés ailleurs : versement, durée, prix et gain
+            // de la carte ont pu bouger sans que son niveau change. On invalide le filtre d'achat,
+            // qui ne regarde que le solde, le mode et le niveau.
+            _model.ExternalFactorsChanged
+                .Subscribe(_ =>
+                {
+                    _lastAffordableLevels = -1;
+                    RefreshPurchaseState();
+                })
+                .AddTo(_disposables);
+
             // Le répit annoncé par un Proxy inclut la branche Interception. Skip(1) : la valeur
             // courante vient d'être rendue.
             if (_isProxy)
@@ -119,10 +137,10 @@ namespace Core.UI.Upgrades
                 .Subscribe(level =>
                 {
                     _view.UpdateLevel(_loc.GetText("UI_GENERATOR_LEVEL", level));
-                    _view.UpdateStats(BuildStatsText());
 
-                    // Le prix du prochain lot vient de changer : il ne s'écrit plus ici mais dans
-                    // le rafraîchissement d'achat, seul endroit qui connaisse le mode courant.
+                    // Le prix du prochain lot et son gain viennent de changer : ils ne s'écrivent
+                    // plus ici mais dans le rafraîchissement d'achat, seul endroit qui connaisse
+                    // le mode courant. Le niveau ayant bougé, son filtre laisse passer.
                     RefreshPurchaseState();
                     RefreshRunButton();
                 })
@@ -154,8 +172,9 @@ namespace Core.UI.Upgrades
         /// chose a réellement bougé.
         ///
         /// Ce filtre remplace le DistinctUntilChanged d'origine et joue le même rôle : sans lui,
-        /// chaque versement de cycle reformaterait deux chaînes par générateur affiché, soit
-        /// quatre-vingt-dix allocations par tick d'argent. Le calcul en amont, lui, est gratuit
+        /// chaque versement de cycle reformaterait trois chaînes par générateur affiché (coût,
+        /// libellé d'achat et, depuis le 2026-10-15, la ligne de stats et son gain), soit plus
+        /// d'une centaine d'allocations par tick d'argent. Le calcul en amont, lui, est gratuit
         /// pour les modes fixes — une comparaison contre une somme fermée — et ne paie un
         /// logarithme qu'en MAX.
         /// </summary>
@@ -179,6 +198,9 @@ namespace Core.UI.Upgrades
             _lastModelLevel = level;
 
             PurchaseQuote quote = _upgradeManager.GetQuote(_model.Config.Id, quantity, money);
+
+            _displayedLevels = quote.Levels;
+            _view.UpdateStats(BuildStatsText());
 
             _view.UpdateCost(
                 _loc.GetText("UI_GENERATOR_COST", CurrencyFormatter.FormatCost(quote.TotalCost, _loc.Culture)));
@@ -240,13 +262,19 @@ namespace Core.UI.Upgrades
                 isInteractable: isOwned && !isAutomated && !_cycleRunner.IsRunning(_model.Config.Id));
         }
 
+        /// <summary>
+        /// La ligne de stats : ce que le générateur rend aujourd'hui, et ce qu'y ajoute le lot
+        /// affiché (<see cref="_displayedLevels"/>, celui dont le coût est écrit). Depuis le
+        /// 2026-10-15 ; avant, un Script ou un Hardware au niveau 0 annonçait « 0 » et rien de ce
+        /// qu'il rapporterait.
+        /// </summary>
         private string BuildStatsText()
         {
             if (_isScript)
             {
                 // Clé DISTINCTE, et non la même avec un argument de plus : GetText passe par
-                // string.Format, donc un gabarit portant {1} lèverait une FormatException sur
-                // l'appel à un seul argument des onglets Hardware et Proxy.
+                // string.Format, donc un gabarit portant {2} lèverait une FormatException sur
+                // l'appel à deux arguments de l'onglet Hardware.
                 // Pour un Script, la donnée utile est le versement et la cadence, pas un débit abstrait.
                 // La durée passe brute : son format (« 0.## ») vit dans la clé, et GetText
                 // l'applique avec la culture de la langue — « 1,5 s » en français, « 1.5 s » en
@@ -254,15 +282,17 @@ namespace Core.UI.Upgrades
                 return _loc.GetText(
                     "UI_GENERATES_DATAS_CYCLE",
                     CurrencyFormatter.Format(_model.GetCurrentYield(), _loc.Culture),
+                    CurrencyFormatter.Format(_model.GetYieldGainForNextLevels(_displayedLevels), _loc.Culture),
                     _model.GetCurrentCycleDuration());
             }
 
             // Un Proxy ne produit rien : ce qu'il vaut, c'est le répit qu'il achète. Annoncé en
             // SECONDES et non en UT — c'est ce qu'il rend quelle que soit la vitesse de l'A.M.I.
-            // Prochain niveau seul : le palier qu'il franchit éventuellement est compris.
+            // Pour le lot affiché, et non plus un seul niveau : en ×10, la ligne annonçait le
+            // répit d'un niveau quand l'achat en effaçait dix. Les paliers franchis sont compris.
             if (_isProxy)
             {
-                double seconds = _model.GetWipeSecondsForNextLevels(1)
+                double seconds = _model.GetWipeSecondsForNextLevels(_displayedLevels)
                                * (1d + _prestige.TotalInterceptBonus.CurrentValue);
 
                 return _loc.GetText("UI_PROXY_WIPE", seconds);
@@ -270,7 +300,10 @@ namespace Core.UI.Upgrades
 
             // Un Hardware ne verse rien : son rendement EST sa capacité, en TFlops brutes. Jusqu'au
             // 2026-10-14 il s'annonçait « Génère X Datas par cycle », la phrase d'un Script.
-            return _loc.GetText("UI_GENERATES_TFLOPS", CurrencyFormatter.Format(_model.GetCurrentYield(), _loc.Culture));
+            return _loc.GetText(
+                "UI_GENERATES_TFLOPS",
+                CurrencyFormatter.Format(_model.GetCurrentYield(), _loc.Culture),
+                CurrencyFormatter.Format(_model.GetYieldGainForNextLevels(_displayedLevels), _loc.Culture));
         }
 
         private void HandleBuyRequest()

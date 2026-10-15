@@ -582,6 +582,11 @@ ralentissent les cycles de ~8 % et leur rendement de ~5 % ; 90 % les ralentissen
 Sans Hardware, le sacrifice ne coûte rien sur le moment — mais il frappera aussi tout Hardware
 acheté ensuite pendant la run.
 
+**Règle gardée, et dite au joueur** (Bertrand, 2026-10-15). À la passe de test, les trois usages
+semblaient gratuits en début de run. La règle ne change pas, mais le jeu prévient : la ligne de
+console du Data Wiper précise « Hardware acheté ensuite compris », et la description de
+« Protocole d'Urgence » le dit en toutes lettres.
+
 Le compteur d'usages est **sauvegardé** (`SaveData.EmergencyUsesInRun`), et le sacrifice en découle :
 fermer le jeu ne rend pas la puissance engloutie. *Le modèle précédent — palier de TFlops, −25 % de
 la Trace courante, contrecoup de 60 s, délai de 5 min — est archivé dans `historique.md`.*

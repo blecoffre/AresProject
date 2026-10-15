@@ -11,6 +11,93 @@
 
 ---
 
+## Passe de test de la refonte « Time Attack » — 2026-10-15
+
+Jouée par Bertrand en éditeur, sur `chantier/refonte-time-attack`, sauvegarde neuve : tout le
+protocole de la refonte (`a-tester.md` § 0 à § 0 septies, 49 lignes). **Tout est passé.** Les
+remarques, et leur suite :
+
+- **0.15** (rangée d'actions) : le Data Wiper étiré sur toute la largeur est « un peu moche ».
+  Bertrand choisit : Overclock sur toute la largeur, Data Wiper et sortie côte à côte dessous, la
+  console jusqu'en bas de l'écran. Fait le jour même, libellés raccourcis sur trois lignes.
+- **2.3, 2.5, 2.7** (Data Wiper sans Hardware) : les trois usages sont presque gratuits en début
+  de run (30 % de 0 TFlops). Aucune décision antérieure de changer la règle n'a été retrouvée
+  (GDD, réponses du GD, conversations). Bertrand : **garder la règle**, mais dire au joueur que le
+  sacrifice frappe aussi le Hardware acheté ensuite — fait dans la ligne de console et la
+  description de « Protocole d'Urgence ».
+- **2.4** (pénalité d'Overclock) : la mention « Jauge +168 UT » n'avait pas été repérée, en partie
+  parce que la dernière ligne de la console était coupée (voir 6.7). 168 et non 165 : un deuxième
+  Vieux PC avait été acheté entre les deux Overclocks, et l'A.M.I. accélère avec les TFlops
+  brutes. À reprendre sans achat entre les deux.
+- **4.1** (éventail) : « ça fait un peu arbre de RPG, MAIS on va ajouter quelques autres nœuds ;
+  ne rien changer pour l'instant ».
+- **4.4** (Noyau) : −40 % et ×1,51 au lieu de −39 % et ×1,50, coût 6 au lieu de 7. Pas un
+  arrondi : **51 points** dépensés et non 50 — un nœud acheté plus tôt dans la passe s'ajoutait
+  aux 50 rangs de la sauvegarde éditée. 0,99⁵¹ = 0,599 ; 10 × 0,599 = 5,99, plafonné à 6.
+- **4.6, 6.1** (TFlops de la carte) : au niveau 0, la carte annonçait « Fournit 0 TFlops ». La
+  ligne montrait la production ACTUELLE. Bertrand : la production actuelle **et** le gain du lot
+  affiché. Fait ; en route, la ligne d'un Script qui restait figée après un achat de Hardware.
+- **4.11** : passé. Les « +400 % et +1 500 % » du protocole étaient les anciennes valeurs ; la
+  phrase prêtait à confusion.
+- **6.7** (console) : les nouvelles lignes apparaissaient « trop bas ». Défaut antérieur à la
+  réécriture du pool : contenu ancré en haut, aucun défilement — une fois la fenêtre pleine, les
+  lignes récentes restaient sous son bord jusqu'à ce qu'une vingtaine d'autres les fassent
+  remonter. Bertrand : défilement de terminal. Fait.
+
+**Vu fonctionner** — lignes retirées de `a-tester.md`, telles qu'elles étaient :
+
+| # | Quoi | Comment | Ce qu'on doit voir |
+|---|---|---|---|
+| 0.15 | **La rangée d'actions** — *trou constaté le 14/10, corrigé le jour même* | Regarder la rangée d'actions de l'écran de jeu, sous la console. | Deux lignes pleine largeur : « Overclock », puis le Data Wiper. Plus de bouton Ghost Cache, aucun vide à droite. |
+| 2.1 | **Verrouillé** | Sans le nœud « Protocole d'Urgence », regarder le bouton sous « Overclock ». | « [VERROUILLÉ] Data Wiper — requiert le nœud Protocole d'Urgence », grisé. |
+| 2.2 | **Prêt** | Acheter « Protocole d'Urgence » sur l'écran de fin, « [ NOUVELLE INTRUSION ] ». | « [PRÊT] DATA WIPER — Jauge −2500 UT / TFlops sacrifiées : 30 % · usages restants : 3 ». Cliquable, sans aucune condition de TFlops. |
+| 2.3 | **Premier usage** | Posséder du Hardware (noter les TFlops de l'en-tête), laisser la jauge dépasser 25 %, cliquer le Data Wiper. | Console : « > wiper.sh --inject : … Jauge −2500 UT, 30 % des TFlops englouties jusqu'à la fin de la run. » L'aiguille de la jauge recule aussitôt d'environ 25 points. Les TFlops de l'en-tête tombent à 70 %. Le bouton annonce maintenant 60 % et 2 usages restants. |
+| 2.4 | **La menace ne ralentit pas** | Juste avant et juste après le premier usage, un Overclock pendant un cycle. | La console annonce la **même** pénalité en UT avant et après (« Jauge +N UT ») : le sacrifice n'a pas touché la vitesse de l'A.M.I. |
+| 2.5 | **Épuisé** | Deux usages de plus. | Après le troisième : « [ÉPUISÉ] DATA WIPER — 90 % des TFlops sacrifiées jusqu'à la fin de la run », grisé, jauge pleine de la couleur du sacrifice. TFlops de l'en-tête à 10 % de leur valeur de départ ; les barres des Scripts sont nettement plus lentes. |
+| 2.6 | **Usage à vide** | Run neuve, avant toute Data volée : cliquer le Data Wiper. | Console : « Jauge −0 UT » ; l'usage est consommé quand même (2 restants). |
+| 2.7 | **Le sacrifice survit à la fermeture** | Deux usages, puis fermer le jeu (croix) et relancer, « Continuer ». | Le bouton annonce 1 usage restant ; les TFlops de l'en-tête sont toujours à 40 %. |
+| 2.8 | **Le wipe le rend** | Finir la run, « [ NOUVELLE INTRUSION ] ». | Trois usages de nouveau ; plus aucune TFlop sacrifiée. Au bilan de la run précédente : « Data Wiper déployé … N fois ». |
+| 2.9 | **Écran de fin rouvert après fermeture** | Finir une run (saisie ou sortie), rester sur l'écran de fin, **fermer le jeu** (croix ou Alt+F4), relancer, « Continuer ». | L'écran de fin revient, avec le même bilan et l'arbre. Un nœud s'achète. « [ NOUVELLE INTRUSION ] » lance bien une run neuve. |
+| 2.10 | **Écran de fin rouvert depuis le menu** | Sur l'écran de fin : Échap, « Menu principal », puis « Continuer ». | Même chose qu'en 2.9 : écran de fin et arbre, pas de run neuve. |
+| 3.1 | **Vitesse de l'A.M.I.** (ex-0.3) | Sans Hardware ni Proxy, laisser tourner une run après la première Data. | L'aiguille avance par à-coups d'environ **8 %** toutes les ~24 s ; le libellé compte « relevé il y a 1 s, 2 s… » entre deux. ~20 % par minute, saisie vers 5 min. |
+| 3.2 | **La barre rouge avance en continu** | Même run, regarder la barre rouge devant l'aiguille. | Elle avance à chaque instant, plus vite que l'aiguille (×3), et retombe sur l'aiguille à chaque relevé. Elle n'est jamais **derrière** l'aiguille. |
+| 3.3 | **Overclock à vide** (ex-0.4) | Sans cycle en cours, Espace. | Console « Overclock sans effet » ; ni l'aiguille ni la barre ne bougent. |
+| 3.4 | **Overclock en rafale** | Cycles en cours, quatre ou cinq appuis rapides. | La barre rouge **saute** à chaque appui retenu ; l'aiguille suit au relevé suivant, qui arrive plus tôt (la pénalité remplit la jauge). |
+| 3.5 | **Après un Proxy** | Jauge à 20 % ou plus, acheter un « VPN Public Décentralisé » (`PRX_01`). | L'aiguille recule aussitôt ; la barre rouge repart **immédiatement** de là — elle ne disparaît plus. |
+| 3.6 | **Le rechargement ne lève plus le brouillard** | En pleine run, noter l'aiguille et le « relevé il y a N s ». Fermer le jeu, relancer, « Continuer ». | Même aiguille, même âge de relevé qu'à la fermeture : la vraie jauge n'est pas révélée. |
+| 3.7 | **Le capteur s'achète** | Monter les TFlops (Hardware) au fil d'une run longue, ou éditer la sauvegarde pour posséder un gros parc. | Les relevés se rapprochent (l'aiguille saute de moins en moins loin) et la barre rouge colle davantage à l'aiguille. |
+| 3.8 | **Paliers et gain sur l'aiguille** | Approcher 50 % de jauge en regardant le bouton « [PRÊT] WIPE SYSTÈME » et le trait des 50 %. | Le trait passe à l'ambre pulsant quand la barre rouge l'enjambe, au vert quand l'**aiguille** le franchit ; le gain du bouton saute au même moment, pas avant. |
+| 3.9 | **Pause** | Échap 30 s en pleine run. | Ni l'aiguille, ni la barre, ni le « relevé il y a N s » ne bougent. |
+| 4.1 | **L'arbre** | Ouvrir l'arbre (P, ou « [ NOYAU IA — ARBRE ] »), dézoomer à la molette. | 21 nœuds. « Noyau Compromis » en haut ; sept colonnes en dessous, de gauche à droite : « Filtrage DNS », « Cage de Faraday », « Protocole d'Urgence », « Recompilation Forcée », « Code Polymorphe », « Sortie répétée », « Surcadencement ». Plus aucun nœud « Opti Coût » ou « Opti Prod ». Aucun lien ne traverse un nœud. Dire si ça fait trop « arbre de talents de RPG ». |
+| 4.2 | **Ligne du Noyau masquée** | Sauvegarde neuve, aucun point dépensé. | Ni sous les boutons ×1 / ×10 / ×100 / MAX, ni en haut de l'arbre : pas de ligne « Noyau : ». Aucun vide gênant sous les boutons de quantité. |
+| 4.3 | **Ligne du Noyau affichée** | Sur l'écran de fin, acheter un rang de « Code Polymorphe », puis « [ NOUVELLE INTRUSION ] ». | « Noyau : coûts −1 %, rendement ×1,01 » en haut de l'arbre dès l'achat, puis sous les boutons de quantité en jeu. |
+| 4.4 | **Le Noyau baisse les prix d'entrée** | Avec 50 rangs de « Recompilation Forcée » (sauvegarde éditée), run neuve. | Ligne « Noyau : coûts −39 %, rendement ×1,50 ». « Campagne de Phishing Basique » affiche un coût de 7 au lieu de 10 (6,05 arrondi au-dessus), « Vieux PC Recyclé » 31 au lieu de 50 (30,25). |
+| 4.5 | **… et pas la menace** | Même run. Overclock pendant un cycle, sans Hardware ; puis un « VPN Public Décentralisé ». | Console : pénalité « Jauge +165 UT », exactement comme sans Noyau. Le Proxy retire ~82 UT (2,5 s × 33 UT/s), comme sans Noyau. |
+| 4.6 | **TFlops nettes** | Même run, acheter un « Vieux PC Recyclé ». | Les TFlops de l'en-tête valent 1,5 fois ce que le Hardware annonce produire. |
+| 4.7 | **Recompilation Forcée sans plafond** | En acheter trois rangs. | Le nœud affiche « Niv. 3 », jamais « / max » ni « MAX ». Inspecteur : « > Niveau actuel : 3 » et « > Chaque niveau compte comme un point de plus dans le Noyau Compilé ». Le pourcentage de la ligne du Noyau monte d'un cran à chaque rang. |
+| 4.8 | **Économie** | Monter « Code Polymorphe » à 9 / 10, puis à 10 / 10. | À 9, « Architecture Distribuée » reste verrouillé, lien en pointillé. À 10, il s'ouvre ; l'inspecteur annonce un coût de **2** CPU et « > TFlops nettes : +10 % par niveau ». « Code Polymorphe » : « > Hausse du prix à chaque niveau acheté : −1 point par niveau ». |
+| 4.9 | **Chaînes au maximum** | Monter « Sortie répétée » à 4 / 5 puis 5 / 5 ; même chose plus bas jusqu'à « Extraction Haut Risque ». | Chaque nœud suivant ne s'ouvre qu'au 5 / 5 du précédent, jamais avant. |
+| 4.10 | **Extraction** | Deux rangs de « Sortie répétée », run neuve. | Sur la jauge, les paliers annoncent **+30 %** (50 %) et **+60 %** (75 %) au lieu de +15 % et +30 %. Le 90 % reste « [VERROUILLÉ] » sans « Extraction Haut Risque ». |
+| 4.11 | **Interception rabotée** | Inspecteur de « Relais fantômes », puis de « Nuage de témoins ». | « +100 % par niveau », puis « +150 % par niveau » (au lieu de +400 % et +1 500 %). |
+| 4.12 | **La racine** | Cliquer « Noyau Compromis ». | « > Aucun effet : l'ancre de tout l'arbre ». Aucune erreur en console. |
+| 5.1 | **Sauvegarde d'un autre format** | Jeu fermé, dans `savegame.json`, passer `"Version"` à 12. Relancer depuis RootScene. | Le menu propose « Commencer » : partie neuve. Console : « [SAVE] Sauvegarde au format v12, binaire en v13 : aucune migration pendant le développement. Nouvelle partie créée. » Aucune erreur. |
+| 5.2 | **Sauvegarde au format courant** | Jouer une minute, fermer, relancer, « Continuer ». | La partie reprend telle quelle : argent, niveaux, jauge, arbre. |
+| 5.3 | **Les générateurs n'ont pas bougé** | Run neuve, regarder « Campagne de Phishing Basique » puis « Vieux PC Recyclé ». | Coûts 10 et 50 ; « Campagne de Phishing Basique » boucle son cycle en ~1,5 s au niveau 1, comme avant. |
+| 5.4 | **L'écran de fin sans le bouton mort** | Finir une run. | Bilan, arbre et « [ NOUVELLE INTRUSION ] » en place ; aucun vide là où dormait l'ancien bouton « [ DÉPENSER — NOYAU IA ] ». Aucune clé brute affichée. |
+| 5.5 | **Les palettes** | Options > Accessibilité, passer par les quatre modes de vision. | Les couleurs de l'arbre et de la jauge changent comme avant ; aucune erreur en console. |
+| 6.1 | **Libellé du Hardware** | Onglet Hardware, « Vieux PC Recyclé » au niveau 1. | « Fournit 2 TFlops », et plus « Génère … Datas par cycle ». Les Scripts gardent « Génère X Datas toutes les Y s ». |
+| 6.2 | **Pluriel du bouton de sortie** | Une run qui rapporte un seul point, puis plusieurs. | « (Cycles CPU : +1) », puis « (Cycles CPU : +3) » : juste dans les deux cas. |
+| 6.3 | **Virgule partout** | Dépasser 1 000 Datas ; regarder l'en-tête, un coût au-delà de 1 000, la durée d'un Script, le répit d'un Proxy, une ligne d'Overclock en console. | Une virgule partout : « 1,234K », « 1,5 s », « +0,5 s ». Avant, les montants avaient un point (« 1.234K ») et les durées une virgule. |
+| 6.4 | **Relance depuis l'écran de fin** | Finir une run, double-cliquer vite « [ NOUVELLE INTRUSION ] ». | Une seule run neuve, aucune erreur en console. |
+| 6.5 | **Allers-retours de scène** | Échap, « Menu principal », puis « Continuer » ; recommencer deux fois. | Chaque transition aboutit ; aucune erreur en console. |
+| 6.6 | **En-tête au démarrage** | Lancer une partie neuve. | Datas, TFlops, Cycles CPU et « + … /s » s'affichent dès l'arrivée en jeu, comme avant (leurs abonnements ont changé de place). |
+| 6.7 | **Console qui tourne** | Laisser défiler plus de 30 lignes (achats, Overclocks). | Les plus anciennes disparaissent par le haut, la plus récente reste en bas, dans l'ordre. |
+| 7.1 | **Solde tronqué** | Attendre qu'un générateur coûte plus de 1 000 Datas (« Coût : 1,2K » ou plus), puis regarder le solde de l'en-tête rattraper ce prix. | Dès que l'en-tête affiche un montant égal ou supérieur au prix, le bouton « ACHETER » de ce générateur est actif — jamais gris. Aucun montant ne s'écrit « 1000K » ou « 1000M » : l'affichage passe de « 999,999K » à « 1M ». |
+| 7.2 | **Bouton d'achat des générateurs** | Partie neuve : regarder le bouton du premier Script dès l'arrivée en jeu. Passer en x10, puis ouvrir les onglets Hardware et Proxy. | « ACHETER » en capitales dès l'arrivée (avant : « Acheter » jusqu'au premier changement), « ACHETER x10 » en x10, partout. Aucune erreur en console à l'ouverture des onglets. |
+| 7.3 | **Jauge de l'exfiltration** | Partie neuve, bouton « > [VERROUILLÉ] Compilation du 1er Cycle CPU : N % », en bas de la console. | Une fine barre rouge en bas du bouton, qui avance avec le pourcentage. Elle disparaît quand le bouton passe à « > [PRÊT] WIPE SYSTÈME ». En éditeur, le bouton reste cliquable verrouillé (triche de test) : c'est normal. |
+| 7.4 | **Inspecteur de nœud** | Écran de fin, arbre : cliquer « Extraction Haut Risque » (la plus longue description), puis la racine, puis « Cage de Faraday ». | Nom (plus gros), description, effet, puis prérequis, coût et avertissement s'empilent sans se chevaucher, à taille fixe — plus de texte géant ni minuscule. Rien n'atteint le bouton d'achat à 100 % de taille d'interface. |
+| 7.5 | **Play lancé depuis la mauvaise scène** | Éditeur : ouvrir la GameScene seule et lancer le Play. Stop, puis Play depuis la RootScene. | La première erreur en console est « [BOOT] … : la RootScene n'est pas chargée, … Lancer le Play depuis Assets/Data/Scenes/RootScene.unity. », et plus l'erreur VContainer sur `ILocalizationService`. Depuis la RootScene, tout fonctionne. |
+
 ## Correctifs du backlog, suite — 2026-10-15
 
 Bertrand : « ne te gêne pas pour les fixs ». Cinq entrées soldées, et deux défauts trouvés en route :

@@ -29,8 +29,8 @@ du 13/10 a trouvé des points ouverts consignés seulement dans un message de co
 notes de session : le nœud de la barre d'espace, trois changements d'économie, tout le volet
 Steam Deck.
 
-État de la base au 2026-10-14, après la refonte « Time Attack » (lots 1 à 5) : 113 fichiers
-runtime, 9 fichiers d'éditeur. `dotnet build` : **0 erreur, 0 warning** depuis les correctifs du
+État de la base au 2026-10-15, après la refonte « Time Attack » (lots 1 à 5) et sa passe de test :
+114 fichiers runtime, 9 fichiers d'éditeur. `dotnet build` : **0 erreur, 0 warning** depuis les correctifs du
 2026-10-14 — tout warning est donc nouveau.
 
 ---
@@ -43,9 +43,10 @@ La feuille de route des lots est dans `etat-des-lieux.md`. Ici, les points ouver
   de +4 et +15 à **+1,0 et +1,5 par rang** (×19,5 au max au lieu de ×102), point de départ choisi
   par Bertrand ; le GD fixera les valeurs définitives en jouant. Calcul, fin de partie Blindage
   max : `PRX_01` retire ~15 % de la jauge, `PRX_05` ~59 %, il faut `PRX_07` pour la vider.
-- ⚖️ **La disposition de l'arbre en éventail est provisoire** (lot 4) : Bertrand veut voir en jeu si
-  elle ne fait pas trop « arbre de talents de RPG ». À zoom 1, l'écran ne montre que trois des
-  sept colonnes ; il faut dézoomer à la molette.
+- ⚖️ **La disposition de l'arbre en éventail est provisoire** (lot 4). Vue en jeu le 2026-10-15 :
+  « ça fait un peu arbre de RPG, MAIS on va ajouter quelques autres nœuds » — la dispersion se
+  décidera avec eux. **Ne rien changer d'ici là** (Bertrand). À zoom 1, l'écran ne montre que trois
+  des sept colonnes ; il faut dézoomer à la molette.
 
 ## 1. Bloquant pour une sortie publique
 

@@ -42,6 +42,18 @@ namespace Core.Models.Economy
         private readonly ReactiveProperty<int> _currentLevel;
         public ReadOnlyReactiveProperty<int> CurrentLevel => _currentLevel;
 
+        private readonly Subject<Unit> _externalFactorsChanged = new();
+
+        /// <summary>
+        /// Émis quand un facteur EXTÉRIEUR au générateur — TFlops, Noyau Compilé, réduction de
+        /// coût — vient de recalculer le cache : versement, durée et prix ont pu changer sans que
+        /// le niveau bouge. Un changement de niveau, lui, passe par <see cref="CurrentLevel"/>.
+        ///
+        /// Ajouté le 2026-10-15 : sans lui, la carte d'un Script gardait le versement et la durée
+        /// d'avant l'achat d'un Hardware tant que son propre niveau ne changeait pas.
+        /// </summary>
+        public Observable<Unit> ExternalFactorsChanged => _externalFactorsChanged;
+
         private double _cachedYield;
         private double _cachedCost;
         private float _cachedCycleDuration;
@@ -121,6 +133,7 @@ namespace Core.Models.Economy
 
             _tflops = safe;
             RecalculateCache();
+            _externalFactorsChanged.OnNext(Unit.Default);
         }
 
         /// <summary>
@@ -135,6 +148,7 @@ namespace Core.Models.Economy
 
             _globalCostMultiplierReduction = safe;
             RecalculateCache();
+            _externalFactorsChanged.OnNext(Unit.Default);
         }
 
         /// <summary>
@@ -151,6 +165,7 @@ namespace Core.Models.Economy
             _coreCostMultiplier = safeCost;
             _coreYieldMultiplier = safeYield;
             RecalculateCache();
+            _externalFactorsChanged.OnNext(Unit.Default);
         }
 
         /// <summary>
@@ -231,6 +246,64 @@ namespace Core.Models.Economy
 
         /// <summary>Durée d'un cycle, paliers inclus, plancher appliqué.</summary>
         public float GetCurrentCycleDuration() => _cachedCycleDuration;
+
+        /// <summary>
+        /// Ce que les <paramref name="levels"/> PROCHAINS niveaux ajouteraient au rendement : le
+        /// versement d'un cycle pour un Script, les TFlops brutes pour un Hardware, 0 pour un
+        /// Proxy. Aux TFlops et au Noyau de l'instant, paliers franchis compris.
+        ///
+        /// Sert à la carte du générateur, qui annonce le gain du lot affiché à côté du rendement
+        /// actuel (choix de Bertrand, 2026-10-15) : au niveau 0, « Fournit 0 TFlops » n'apprenait
+        /// rien au joueur. Pas de cache : lu au rafraîchissement d'achat, jamais par frame.
+        /// </summary>
+        public double GetYieldGainForNextLevels(int levels)
+        {
+            if (levels <= 0) return 0d;
+
+            return ComputeYield(_level + levels) - _cachedYield;
+        }
+
+        /// <summary>
+        /// Rendement au niveau <paramref name="level"/> : niveau × paliers de rendement × base,
+        /// puis, pour un Script seulement, le facteur TFlops et le Noyau Compilé.
+        /// </summary>
+        private double ComputeYield(int level)
+        {
+            // « Puissance » du générateur : niveau × paliers de rendement, rapportée au niveau 1.
+            double power = level;
+
+            var milestones = Config.Milestones;
+            for (int i = 0; i < milestones.Count; i++)
+            {
+                UpgradeMilestone milestone = milestones[i];
+                if (level < milestone.Level) continue;
+
+                if (milestone.Effect == MilestoneEffect.YieldMultiplier)
+                {
+                    power *= milestone.Factor;
+                }
+            }
+
+            double yield = Config.BaseProductionYield * power;
+
+            // Second effet des TFlops sur les Scripts, ajouté le 2026-08-31 : ils multiplient le
+            // RENDEMENT, et pas seulement la vitesse. Sans lui le Hardware était un pilier mort —
+            // la compression butait sur MinCycleDuration entre 4 et 180 TFlops selon le Script,
+            // quand HW_01 niveau 10 en fournit déjà 40.
+            //
+            // Le rendement du Noyau Compilé suit la même restriction, pour la même raison.
+            //
+            // Réservé aux Scripts, et la restriction est vitale : chez un Hardware le rendement
+            // EST la capacité en TFlops — les TFlops BRUTES, celles de la menace. Le Noyau
+            // multiplie les TFlops NETTES dans l'UpgradeManager ; l'appliquer ici le ferait
+            // accélérer l'A.M.I., et brancher le facteur TFlops créerait une boucle divergente.
+            if (Config.Type == UpgradeType.Script)
+            {
+                yield *= Math.Pow(1d + _tflops, _balancing.TFlopsYieldExponent) * _coreYieldMultiplier;
+            }
+
+            return yield;
+        }
 
         /// <summary>
         /// Secondes de survie que rendraient les <paramref name="levels"/> PROCHAINS niveaux de
@@ -320,50 +393,25 @@ namespace Core.Models.Economy
             int level = _level;
 
             // Les paliers puis les TFlops s'appliquent aux valeurs de base, et le plancher tranche
-            // en dernier. « Puissance » du générateur : niveau × paliers de rendement, rapportée
-            // au niveau 1.
-            double power = level;
-
+            // en dernier.
             float duration = Config.BaseCycleDuration;
 
-            // Paliers : effets multiplicatifs, cumulatifs, et définitifs une fois atteints. Les
-            // paliers de Wipe des Proxies n'entrent dans aucun cache : ils se lisent niveau par
-            // niveau, à l'achat (GetWipeSecondsForNextLevels).
+            // Paliers de durée : effets multiplicatifs, cumulatifs, et définitifs une fois
+            // atteints. Ceux de rendement sont lus par ComputeYield ; ceux de Wipe des Proxies
+            // n'entrent dans aucun cache, ils se lisent à l'achat (GetWipeSecondsForNextLevels).
             var milestones = Config.Milestones;
             for (int i = 0; i < milestones.Count; i++)
             {
                 UpgradeMilestone milestone = milestones[i];
                 if (level < milestone.Level) continue;
 
-                switch (milestone.Effect)
+                if (milestone.Effect == MilestoneEffect.DurationMultiplier)
                 {
-                    case MilestoneEffect.YieldMultiplier:
-                        power *= milestone.Factor;
-                        break;
-
-                    case MilestoneEffect.DurationMultiplier:
-                        duration *= milestone.Factor;
-                        break;
+                    duration *= milestone.Factor;
                 }
             }
 
-            double yield = Config.BaseProductionYield * power;
-
-            // Second effet des TFlops sur les Scripts, ajouté le 2026-08-31 : ils multiplient le
-            // RENDEMENT, et pas seulement la vitesse. Sans lui le Hardware était un pilier mort —
-            // la compression butait sur MinCycleDuration entre 4 et 180 TFlops selon le Script,
-            // quand HW_01 niveau 10 en fournit déjà 40.
-            //
-            // Le rendement du Noyau Compilé suit la même restriction, pour la même raison.
-            //
-            // Réservé aux Scripts, et la restriction est vitale : chez un Hardware le rendement
-            // EST la capacité en TFlops — les TFlops BRUTES, celles de la menace. Le Noyau
-            // multiplie les TFlops NETTES dans l'UpgradeManager ; l'appliquer ici le ferait
-            // accélérer l'A.M.I., et brancher le facteur TFlops créerait une boucle divergente.
-            if (Config.Type == UpgradeType.Script)
-            {
-                yield *= Math.Pow(1d + _tflops, _balancing.TFlopsYieldExponent) * _coreYieldMultiplier;
-            }
+            double yield = ComputeYield(level);
 
             // Compression par les TFlops. L'exposant est ce qui a remplacé le mur du 2026-08-30 :
             // à 1 on retrouve la formule linéaire d'origine, qui saturait contre MinCycleDuration
@@ -396,6 +444,7 @@ namespace Core.Models.Economy
         public void Dispose()
         {
             _currentLevel.Dispose();
+            _externalFactorsChanged.Dispose();
         }
     }
 }

@@ -38,11 +38,11 @@
     },
     {
       "Key": "UI_GENERATES_TFLOPS",
-      "Value": "Fournit {0} TFlops"
+      "Value": "Fournit {0} TFlops (+{1})"
     },
     {
       "Key": "UI_GENERATES_DATAS_CYCLE",
-      "Value": "Génère {0} Datas toutes les {1:0.##} s"
+      "Value": "Génère {0} Datas (+{1}) toutes les {2:0.##} s"
     },
     {
       "Key": "UI_GENERATOR_LEVEL",
@@ -550,11 +550,11 @@
     },
     {
       "Key": "UI_EXFIL_LOCKED",
-      "Value": "> [VERROUILLÉ] Compilation du 1er Cycle CPU : {0} %"
+      "Value": "[VERROUILLÉ] WIPE SYSTÈME\n1er Cycle CPU : {0} %"
     },
     {
       "Key": "UI_EXFIL_READY",
-      "Value": "> [PRÊT] WIPE SYSTÈME (Cycles CPU : +{0}) → Prochain à {1} Datas"
+      "Value": "[PRÊT] WIPE SYSTÈME\nCycles CPU : +{0}\nProchain à {1} Datas"
     },
     {
       "Key": "LOG_PURGE_1",
@@ -590,11 +590,11 @@
     },
     {
       "Key": "UI_EMERGENCY_LOCKED",
-      "Value": "[VERROUILLÉ] Data Wiper — requiert le nœud Protocole d'Urgence"
+      "Value": "[VERROUILLÉ] DATA WIPER\nRequiert le nœud\nProtocole d'Urgence"
     },
     {
       "Key": "UI_EMERGENCY_READY",
-      "Value": "[PRÊT] DATA WIPER — Jauge −{0:0} UT / TFlops sacrifiées : {1} % · usages restants : {2}"
+      "Value": "[PRÊT] DATA WIPER · reste {2}\nJauge −{0:0} UT\nTFlops sacrifiées : {1} %"
     },
     {
       "Key": "PRESTIGE_P_OVERCLOCK_POWER_1_NAME",
@@ -622,7 +622,7 @@
     },
     {
       "Key": "LOG_EMERGENCY_WIPE",
-      "Value": "> wiper.sh --inject : ver déployé sur les serveurs fédéraux. Jauge −{0:0} UT, {1} % des TFlops englouties jusqu'à la fin de la run."
+      "Value": "> wiper.sh --inject : ver déployé sur les serveurs fédéraux. Jauge −{0:0} UT, {1} % des TFlops englouties jusqu'à la fin de la run — Hardware acheté ensuite compris."
     },
     {
       "Key": "PRESTIGE_P_ROOT_NAME",
@@ -670,7 +670,7 @@
     },
     {
       "Key": "PRESTIGE_P_EMERG_DESC",
-      "Value": "Débloque le Data Wiper : un ver envoyé dans les serveurs fédéraux, qui efface une part de ton dossier."
+      "Value": "Débloque le Data Wiper : un ver envoyé dans les serveurs fédéraux, qui efface une part de ton dossier. Il engloutit une part de tes TFlops jusqu'à la fin de la run, y compris celles du Hardware que tu achèteras ensuite."
     },
     {
       "Key": "PRESTIGE_P_HARDEN_1_NAME",
@@ -1262,7 +1262,7 @@
     },
     {
       "Key": "UI_EMERGENCY_EXHAUSTED",
-      "Value": "[ÉPUISÉ] DATA WIPER — {0} % des TFlops sacrifiées jusqu'à la fin de la run"
+      "Value": "[ÉPUISÉ] DATA WIPER\n{0} % des TFlops sacrifiées\njusqu'à la fin de la run"
     }
   ]
 }
