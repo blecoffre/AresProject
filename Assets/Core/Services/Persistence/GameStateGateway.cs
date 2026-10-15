@@ -124,6 +124,14 @@ namespace Core.Services.Persistence
             // ouverture du jeu.
             _victory.Restore(data.HasWon);
 
+            // ⚠️ Le sacrifice du Data Wiper se restaure lui aussi AVANT les générateurs, pour la
+            // même raison. Le VictorySystem écoute déjà (IStartable, avant ce chargement
+            // asynchrone) : restauré après, le parc serait d'abord compté sans sacrifice, et une
+            // partie fermée en pleine run, deux usages au compteur, pouvait déclencher la victoire
+            // à la réouverture. Le sacrifice est une fraction tenue par l'UpgradeManager : il
+            // s'applique à tous les générateurs recréés ensuite.
+            _emergencyProtocol.Restore(data.EmergencyUsesInRun);
+
             // 2. Générateurs de la run
             FillLevels(data.Upgrades, _upgradeLevels);
             _upgradeManager.InitializeFromSave(_upgradeLevels);
@@ -140,8 +148,6 @@ namespace Core.Services.Persistence
             // révélait la position exacte de la jauge — fermer puis rouvrir levait le brouillard
             // (session du 2026-10-14). Après la jauge, dont il vérifie qu'il ne la dépasse pas.
             _traceReadout.Restore(data.Readout.LastKnownTrace, data.Readout.SampleAge, data.Readout.KnownJumps);
-            // APRÈS les générateurs : le sacrifice du Data Wiper ampute les TFlops qu'ils fournissent.
-            _emergencyProtocol.Restore(data.EmergencyUsesInRun);
             _sessionManager.RestoreElapsed(data.RunElapsedSeconds);
 
             // Partie fermée sur l'écran de fin : la run est déjà effacée, on désarme la partie et

@@ -55,7 +55,7 @@ Rien de tout cela n'empêche de jouer aujourd'hui. Aucun build public ne doit pa
 - 📖 **La victoire est réglée à 5e11, à titre PROVISOIRE.** `BalancingConfig.asset` porte
   `_victoryTFlops: 5e11`, le défaut du code et le GDD disent 1e12. Abaissée par le GD le
   2026-09-16 pour éprouver la fin de campagne sans grinder. À remonter après la session de jeu
-  « chiffres » (lot 3). Si on l'oublie, le jeu se termine à mi-chemin.
+  « chiffres ». Si on l'oublie, le jeu se termine à mi-chemin.
 - 📖 **Le nom du jeu n'est pas fixé dans le projet.** `productName: HackTheKey`,
   `companyName: DeathtreakCorp`. Le dossier de sauvegarde en dérive
   (`%userprofile%\AppData\LocalLow\DeathtreakCorp\HackTheKey\`) : renommer après une démo publique
@@ -100,7 +100,7 @@ Le détail chiffré et les chantiers d'équilibrage sont dans `etat-des-lieux.md
 - 📖 **Trois changements d'économie de `a772e67` (2026-10-02) n'avaient été consignés nulle part**
   — rattrapé dans le GDD le 2026-10-13 : modèle des boîtes pour les points, premier point
   abaissé de 5e6 à 2e6, saisie versant 30 % au lieu de rien. ⚖️ **Aucune campagne n'a été
-  remesurée depuis** — voir `etat-des-lieux.md`, chantier 1.
+  remesurée depuis** — voir la session « chiffres » de la feuille de route, dans `etat-des-lieux.md`.
 
 ## 4. Défauts d'affichage et de texte
 
@@ -215,6 +215,10 @@ Pas des bugs : des arbitrages que seul le GD peut rendre. Les trancher débloque
   erreur `[BOOT]` et la scène reste inerte (GameScene comme MainMenuScene) ; avant, VContainer
   accusait un `LocalizedText` (« No such registration of type: ILocalizationService »), ce qui se
   lisait comme un bug de localisation.
+- **Le `VictorySystem` voit chaque valeur intermédiaire des TFlops nettes**, pas seulement la
+  valeur finale d'une opération. Tout ce qui les ABAISSE (le sacrifice du Data Wiper) se pose donc
+  AVANT les générateurs et se retire APRÈS eux — au wipe de fin de run comme au chargement. Inverser
+  l'ordre a déclenché une victoire à tort le 2026-10-15. Même vigilance pour tout futur malus.
 - **Les valeurs de `PrestigeBonusType` s'appendent en FIN d'enum.** L'index est sérialisé dans les
   `.asset` : une insertion au milieu redéfinit silencieusement des nœuds existants. Déjà arrivé.
   Retirer une valeur n'est permis qu'en relançant **dans la foulée** le générateur de l'arbre,

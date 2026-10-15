@@ -41,7 +41,11 @@ SaveScheduler (IAsyncStartable + IDisposable, EntryPoint du Root)
   fichier abîmé ne puisse pas effacer une victoire acquise.
   ⚠️ **L'ordre de restauration est porteur de sens ici.** `_victory.Restore(data.HasWon)` doit précéder `_upgradeManager.InitializeFromSave` : celui-ci recalcule les totaux et pousse une valeur dans `NetTFlops`, que le `VictorySystem` observe. Poser le drapeau après rejouerait la victoire à chaque chargement.
   `EmergencyUsesInRun` : le sacrifice de TFlops du Data Wiper en découle (30 % par usage) ; le
-  sauvegarder empêche qu'une fermeture rende la puissance engloutie.
+  sauvegarder empêche qu'une fermeture rende la puissance engloutie. ⚠️ **Restauré lui aussi AVANT
+  `InitializeFromSave`** (depuis le 2026-10-15) : le `VictorySystem` écoute déjà pendant le
+  chargement, et un parc restauré sans son sacrifice vaudrait un instant sa pleine puissance — de
+  quoi déclencher une victoire à tort. Le sacrifice est une fraction tenue par l'`UpgradeManager`,
+  il s'applique aux générateurs recréés ensuite.
   `PendingRunEnd` (struct à plat, copie du `RunSummary`) : le bilan de la run terminée tant que le
   joueur n'a pas relancé. Restauré, il désarme la partie (`GameSessionManager.RestorePendingRunEnd`),
   et le `GameOverPresenter` rouvre l'écran de fin en `PostStart` — après le `Start` du panneau de

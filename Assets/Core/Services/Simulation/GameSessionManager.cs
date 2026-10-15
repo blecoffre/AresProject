@@ -318,11 +318,17 @@ namespace Core.Services.Simulation
         {
             _userCurrencies.Money.Reset(_balancing.BaseStartingMoney);
             _userCurrencies.ResetRunCounters();
-            _emergencyProtocolSystem.ResetSystem();
             _runElapsedSeconds = 0f;
 
             _threatManager.ResetTrace();
             _upgradeManager.InitializeFromSave(EmptyLevels);
+
+            // ⚠️ Le sacrifice du Data Wiper est rendu APRÈS le vidage du parc, jamais avant.
+            // Rendu d'abord, il faisait recalculer les TFlops nettes sur tout le Hardware de la run
+            // sans plus aucun sacrifice : un instant à pleine puissance, que le VictorySystem
+            // observe. Une run finie avec deux usages et un parc au-dessus du seuil déclenchait
+            // ainsi la victoire à la sortie (constaté par Bertrand le 2026-10-15).
+            _emergencyProtocolSystem.ResetSystem();
         }
 
         /// <summary>

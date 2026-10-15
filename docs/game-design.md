@@ -646,8 +646,8 @@ qu'une sortie, qui verse 100 % **et** le bonus de palier. ⚠️ Le ratio doit r
 
 ⚠️ **Rien de tout cela n'a été mesuré en campagne.** Estimation arithmétique, à cumul égal : les
 boîtes retirent ~19 points, le seuil à 2e6 en rend ~8 — soit ~220 points par campagne au lieu des
-~232 mesurés le 2026-09-16, pour un arbre passé de 147 à **239** rangs dans le même commit. Voir
-`etat-des-lieux.md`, chantier 1.
+~232 mesurés le 2026-09-16, pour un arbre passé de 147 à **239** rangs dans le même commit. Pour la
+mesure, voir la session « chiffres » de la feuille de route, dans `etat-des-lieux.md`.
 
 ### Ce que doit rapporter une première run (tranché le 2026-09-16)
 

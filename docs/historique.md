@@ -98,6 +98,24 @@ remarques, et leur suite :
 | 7.4 | **Inspecteur de nœud** | Écran de fin, arbre : cliquer « Extraction Haut Risque » (la plus longue description), puis la racine, puis « Cage de Faraday ». | Nom (plus gros), description, effet, puis prérequis, coût et avertissement s'empilent sans se chevaucher, à taille fixe — plus de texte géant ni minuscule. Rien n'atteint le bouton d'achat à 100 % de taille d'interface. |
 | 7.5 | **Play lancé depuis la mauvaise scène** | Éditeur : ouvrir la GameScene seule et lancer le Play. Stop, puis Play depuis la RootScene. | La première erreur en console est « [BOOT] … : la RootScene n'est pas chargée, … Lancer le Play depuis Assets/Data/Scenes/RootScene.unity. », et plus l'erreur VContainer sur `ILocalizationService`. Depuis la RootScene, tout fonctionne. |
 
+**Retours rejoués le jour même — tous passés** (8.1 à 8.8), lignes retirées de `a-tester.md` :
+
+| # | Quoi | Comment | Ce qu'on doit voir |
+|---|---|---|---|
+| 8.1 | **La console défile comme un terminal** — *15/10 : les nouvelles lignes restaient cachées sous le bord* | Partie neuve. Regarder les premières lignes, puis acheter et overclocker jusqu'à remplir la console, et continuer. | Les premières lignes partent du **haut**. Une fois la console pleine, chaque nouvelle ligne apparaît **aussitôt en bas, entière**, et la plus ancienne sort par le haut. La console descend maintenant jusqu'au bas de l'écran. |
+| 8.2 | **La rangée d'actions** — *15/10 : demandée par Bertrand* | Regarder le bas de la colonne de droite. | « Overclock » sur toute la largeur ; dessous, côte à côte et de même hauteur : le Data Wiper à gauche, la sortie à droite (avec sa fine barre rouge). Les listes de générateurs s'arrêtent au-dessus d'« Overclock », sans chevauchement. |
+| 8.3 | **Les libellés courts** | Faire passer chaque bouton par ses états : Data Wiper verrouillé (sans « Protocole d'Urgence »), prêt, épuisé (trois usages) ; sortie verrouillée, puis prête. | Chaque libellé tient dans son bouton, sur deux ou trois lignes : « [VERROUILLÉ] DATA WIPER / Requiert le nœud / Protocole d'Urgence », « [PRÊT] DATA WIPER · reste 3 / Jauge −2500 UT / TFlops sacrifiées : 30 % », « [ÉPUISÉ] DATA WIPER / 90 % des TFlops sacrifiées / jusqu'à la fin de la run », « [VERROUILLÉ] WIPE SYSTÈME / 1er Cycle CPU : N % », « [PRÊT] WIPE SYSTÈME / Cycles CPU : +N / Prochain à N Datas ». Rien ne déborde. |
+| 8.4 | **Gain à l'achat** — *15/10 : « Fournit 0 TFlops » au niveau 0* | Onglet Hardware, « Vieux PC Recyclé » au niveau 0 en ×1 ; l'acheter ; passer en ×10. Onglet Acquisition, « Campagne de Phishing Basique » au niveau 0. | « Fournit 0 TFlops (+2) », puis « Fournit 2 TFlops (+2) » ; en ×10, le gain suit le lot affiché (« +27 » au niveau 1 : un palier est franchi dans le lot). « Génère 0 Datas (+1) toutes les 1,5 s ». |
+| 8.5 | **Proxy en lot** | Onglet Furtivité, « VPN Public Décentralisé » au niveau 0, sans Interception : passer de ×1 à ×10. | « Efface 2,5 s de traque par achat », puis « 25,8 s » en ×10 — le répit que l'achat du lot efface vraiment. Avant, la ligne restait à 2,5 s. |
+| 8.6 | **Un Script suit le Hardware** | Noter la ligne de « Campagne de Phishing Basique » (montant et durée), puis acheter un « Vieux PC Recyclé » sans toucher au Script. | La ligne du Script change aussitôt : durée plus courte, montant égal ou plus haut. Avant, elle restait figée jusqu'au prochain achat du Script. |
+| 8.7 | **Le Data Wiper prévient** | Utiliser le Data Wiper ; puis, sur l'écran de fin, cliquer « Protocole d'Urgence » dans l'arbre. | Console : « … 30 % des TFlops englouties jusqu'à la fin de la run — Hardware acheté ensuite compris. » La description du nœud le dit aussi. |
+| 8.8 | **La pénalité ne bouge pas** (reprise du 2.4) | Un Overclock juste avant le Data Wiper, un juste après, **sans rien acheter entre les deux**. | Les deux lignes de console annoncent la même « Jauge +N UT ». Un Hardware acheté entre les deux la fait monter, et c'est normal : l'A.M.I. accélère avec les TFlops brutes. |
+
+Dans la même session, le 1.12 (victoire) a révélé un défaut : la victoire se déclenchait à la sortie
+d'une run finie avec deux Data Wiper et un parc au-dessus du seuil sans sacrifice. `WipeRun`
+rendait le sacrifice avant de vider le parc ; le chargement d'une sauvegarde restaurait le parc
+avant le sacrifice. Les deux ordres sont inversés (`a-tester.md` § 0, tests 9.1 à 9.3).
+
 ## Correctifs du backlog, suite — 2026-10-15
 
 Bertrand : « ne te gêne pas pour les fixs ». Cinq entrées soldées, et deux défauts trouvés en route :

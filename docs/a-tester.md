@@ -28,27 +28,32 @@
   avant de la retoucher. ⚠️ **Plus aucune migration** (lot 5) : la branche
   `chantier/refonte-time-attack` remplace toute sauvegarde d'un autre format par une partie neuve.
   Copier le fichier AVANT le premier lancement, pour pouvoir revenir sur `main`.
-- **La refonte a été jouée d'un bloc le 2026-10-15** (`historique.md`). Le § 0 ne porte plus que
-  les retours de cette passe.
+- **La refonte a été jouée d'un bloc le 2026-10-15**, ses retours aussi (`historique.md`). Restent
+  le correctif de la victoire (§ 0) et la victoire elle-même (§ 1).
 
 ---
 
-## 0. Retours de la passe de test de la refonte (2026-10-15)
+## 0. La victoire déclenchée à tort (corrigé le 2026-10-15)
 
-Compilés (Unity et `dotnet build`, zéro erreur, zéro warning), **jamais joués**. Les gains de la
-ligne de stats ont été calculés dans l'éditeur ; la console et la rangée d'actions, mesurées dans
-l'éditeur, jamais regardées à l'écran.
+Constaté par Bertrand pendant le 1.12 : deux Data Wiper, un énorme parc de Hardware qui ne suffisait
+pas, puis « [PRÊT] WIPE SYSTÈME »… et la victoire. En fin de run, le sacrifice était rendu **avant**
+le vidage du parc : un instant, les TFlops nettes valaient le parc entier sans sacrifice, et la
+victoire le voyait. Même faille au chargement d'une sauvegarde. Compilé (Unity et `dotnet build`,
+zéro erreur, zéro warning), **jamais joué**.
+
+**Mise en place, commune aux trois lignes.** Jeu fermé, dans `savegame.json`, passer `"HasWon"` à
+`false` : la victoire fausse du 15/10 l'a posé à `true`, et sans ça elle ne se rejouera jamais. Avec
+« Protocole d'Urgence », acheter du Hardware et noter les TFlops de l'en-tête : **N**. Utiliser deux
+fois le Data Wiper : l'en-tête tombe à 40 % de N. En Play Mode, régler `_victoryTFlops` de
+`BalancingConfig.asset` à **0,5 × N** — au-dessus des 40 % qu'il reste, bien en dessous de la pleine
+puissance. (Pas plus haut : au chargement, l'ancien code comptait le parc sans le Noyau Compilé,
+et un seuil trop haut laisserait passer le test même sans le correctif.)
 
 | # | Quoi | Comment | Ce qu'on doit voir |
 |---|---|---|---|
-| 8.1 | **La console défile comme un terminal** — *15/10 : les nouvelles lignes restaient cachées sous le bord* | Partie neuve. Regarder les premières lignes, puis acheter et overclocker jusqu'à remplir la console, et continuer. | Les premières lignes partent du **haut**. Une fois la console pleine, chaque nouvelle ligne apparaît **aussitôt en bas, entière**, et la plus ancienne sort par le haut. La console descend maintenant jusqu'au bas de l'écran. |
-| 8.2 | **La rangée d'actions** — *15/10 : demandée par Bertrand* | Regarder le bas de la colonne de droite. | « Overclock » sur toute la largeur ; dessous, côte à côte et de même hauteur : le Data Wiper à gauche, la sortie à droite (avec sa fine barre rouge). Les listes de générateurs s'arrêtent au-dessus d'« Overclock », sans chevauchement. |
-| 8.3 | **Les libellés courts** | Faire passer chaque bouton par ses états : Data Wiper verrouillé (sans « Protocole d'Urgence »), prêt, épuisé (trois usages) ; sortie verrouillée, puis prête. | Chaque libellé tient dans son bouton, sur deux ou trois lignes : « [VERROUILLÉ] DATA WIPER / Requiert le nœud / Protocole d'Urgence », « [PRÊT] DATA WIPER · reste 3 / Jauge −2500 UT / TFlops sacrifiées : 30 % », « [ÉPUISÉ] DATA WIPER / 90 % des TFlops sacrifiées / jusqu'à la fin de la run », « [VERROUILLÉ] WIPE SYSTÈME / 1er Cycle CPU : N % », « [PRÊT] WIPE SYSTÈME / Cycles CPU : +N / Prochain à N Datas ». Rien ne déborde. |
-| 8.4 | **Gain à l'achat** — *15/10 : « Fournit 0 TFlops » au niveau 0* | Onglet Hardware, « Vieux PC Recyclé » au niveau 0 en ×1 ; l'acheter ; passer en ×10. Onglet Acquisition, « Campagne de Phishing Basique » au niveau 0. | « Fournit 0 TFlops (+2) », puis « Fournit 2 TFlops (+2) » ; en ×10, le gain suit le lot affiché (« +27 » au niveau 1 : un palier est franchi dans le lot). « Génère 0 Datas (+1) toutes les 1,5 s ». |
-| 8.5 | **Proxy en lot** | Onglet Furtivité, « VPN Public Décentralisé » au niveau 0, sans Interception : passer de ×1 à ×10. | « Efface 2,5 s de traque par achat », puis « 25,8 s » en ×10 — le répit que l'achat du lot efface vraiment. Avant, la ligne restait à 2,5 s. |
-| 8.6 | **Un Script suit le Hardware** | Noter la ligne de « Campagne de Phishing Basique » (montant et durée), puis acheter un « Vieux PC Recyclé » sans toucher au Script. | La ligne du Script change aussitôt : durée plus courte, montant égal ou plus haut. Avant, elle restait figée jusqu'au prochain achat du Script. |
-| 8.7 | **Le Data Wiper prévient** | Utiliser le Data Wiper ; puis, sur l'écran de fin, cliquer « Protocole d'Urgence » dans l'arbre. | Console : « … 30 % des TFlops englouties jusqu'à la fin de la run — Hardware acheté ensuite compris. » La description du nœud le dit aussi. |
-| 8.8 | **La pénalité ne bouge pas** (reprise du 2.4) | Un Overclock juste avant le Data Wiper, un juste après, **sans rien acheter entre les deux**. | Les deux lignes de console annoncent la même « Jauge +N UT ». Un Hardware acheté entre les deux la fait monter, et c'est normal : l'A.M.I. accélère avec les TFlops brutes. |
+| 9.1 | **La sortie ne déclenche plus la victoire** | Après la mise en place, « [PRÊT] WIPE SYSTÈME ». | L'écran de fin habituel, **aucune** séquence de victoire. Pas de ligne « [Victory] Seuil atteint » dans la console d'Unity. |
+| 9.2 | **Le rechargement non plus** | Refaire la mise en place sur une nouvelle run, mais au lieu de sortir : arrêter le Play Mode en pleine run, le relancer, « Continuer ». | Aucune victoire au chargement. Le Data Wiper annonce toujours « reste 1 », l'en-tête toujours ~40 % de N. |
+| 9.3 | **La vraie victoire passe toujours** | Run suivante, seuil inchangé : racheter du Hardware, sans Data Wiper, jusqu'à dépasser 0,5 × N. | La victoire se déclenche à l'achat qui franchit le seuil. Enchaîner 1.12 à 1.14 à partir de là, puis **remettre `_victoryTFlops` à 5e11**. |
 
 ## 1. Fin de partie et économie — d'avant la refonte, jamais jouées
 
@@ -59,7 +64,7 @@ Attack » a réécrit le brouillard (lot 3) ; il ne reste ici que la victoire, �
 
 | # | Quoi | Comment | Ce qu'on doit voir |
 |---|---|---|---|
-| 1.12 | **Victoire : séquence et écran** — *14/10 : séquence OK, écran absent (objet `VictoryPanel` éteint dans la scène), corrigé le jour même* | Abaisser `_victoryTFlops` sous les TFlops courants (cf. « Avant de commencer »). | La console déroule la séquence (« Attaque du chiffrement… C'est un chat. »), puis l'écran « ACCÈS TOTAL » apparaît, textes résolus (aucune clé entre crochets), fond opaque qui capte les clics. La simulation **continue derrière** : la Trace monte. |
+| 1.12 | **Victoire : séquence et écran** — *14/10 : séquence OK, écran absent (objet `VictoryPanel` éteint dans la scène), corrigé le jour même ; 15/10 : déclenchée à tort par la sortie, voir § 0* | Abaisser `_victoryTFlops` sous les TFlops courants (cf. « Avant de commencer »). | La console déroule la séquence (« Attaque du chiffrement… C'est un chat. »), puis l'écran « ACCÈS TOTAL » apparaît, textes résolus (aucune clé entre crochets), fond opaque qui capte les clics. La simulation **continue derrière** : la Trace monte. |
 | 1.13 | **Victoire : fermeture** | Cliquer « Reprendre ». | L'écran se ferme, la partie continue où elle en était. |
 | 1.14 | **Victoire : jamais deux fois** | Remettre `_victoryTFlops`, sauvegarder (retour au menu), relancer le jeu, revenir en jeu. | Aucune séquence ni écran de victoire au rechargement. (Vérifié hors Play Mode sur le code ; jamais sur le chemin complet.) |
 
@@ -86,6 +91,6 @@ soldés dans `historique.md`. Rien en attente.
 
 | Après | Quoi |
 |---|---|
-| Le § 0 (la refonte elle-même est jouée depuis le 2026-10-15) | Session de jeu « chiffres » sur une campagne : durée des runs, points par run, part de l'arbre à la victoire, valeurs de l'Interception. Victoire remise à 1e12. |
+| Le § 0 et le § 1 (la refonte elle-même est jouée depuis le 2026-10-15) | Session de jeu « chiffres » sur une campagne : durée des runs, points par run, part de l'arbre à la victoire, valeurs de l'Interception. Victoire remise à 1e12. |
 | Steam | Lisibilité sur un écran 1280×800. Navigation complète à la manette, sans souris. Overlay Steam. Synchronisation cloud entre deux machines. |
 | Traductions | **Langue à chaud** (ex-2.5) : basculer de langue en pleine partie, parcourir tous les écrans ; aucun texte ne doit rester dans l'ancienne langue, hors lignes déjà écrites dans la console. **Premier lancement** : l'écran de choix propose toutes les langues, celle du système présélectionnée. D'ici là, la technique du `zz.json` (chaque valeur de `fr.json` préfixée « ZZ· ») permet de traquer les textes en dur ; supprimer le fichier et sa `.meta` après. |
