@@ -134,6 +134,20 @@ Le détail chiffré et les chantiers d'équilibrage sont dans `etat-des-lieux.md
   (`a-tester.md` § 5).
 - 🔬 **Le trait des nœuds verrouillés n'est pas pointillé** comme sur la maquette (le sprite du
   cadre est plein ; constat du 2026-08-30). Les liens, eux, le sont depuis le 2026-08-30.
+- 📖 **Des textes du jeu ne suivent pas le lore du 2026-10-16** (GDD, « Lore »). Relevé dans
+  `fr.json` le jour même. À reprendre avec le tutoriel et les messages de la console, que ce lore
+  doit nourrir (demande de Bertrand) ; on ne change que les valeurs, les clés restent :
+  - **Contredisent le lore.** `UI_VICTORY_BODY` dit « L'A.M.I., elle, te cherche toujours » alors
+    qu'elle vient d'être effacée : dire qu'elle se reconstruit. `LOG_PURGE_5` compile le Noyau
+    avec « les erreurs » : c'est désormais la paie du client. `UI_RUN_END_CLEAN_NARRATIVE` (« Ils
+    fouillent un appartement vide ») suppose une planque trouvée, alors qu'une extraction se fait
+    avant la triangulation.
+  - **Manquent au récit.** La séquence de victoire (`LOG_VICTORY_1` à `_6`) ouvre la clé sans
+    que le joueur retourne d'abord sa puissance contre l'A.M.I. `UI_RUN_END_SEIZED_NARRATIVE` ne
+    dit pas qu'il s'enfuit avec la clé, sans quoi il ne pourrait pas la rebrancher. Le début de
+    run (`LOG_NETWORK_CONNECTED`, `LOG_BREACH_STARTED`) ne parle ni de la clé, ni de l'A.M.I.
+  - **Vocabulaire.** `LOG_PROXY_WIPE` dit « Brouillage » là où le lore dit qu'un proxy est
+    « brûlé ».
 
 ## 5. Architecture et cycle de vie
 
@@ -198,6 +212,7 @@ Pas des bugs : des arbitrages que seul le GD peut rendre. Les trancher débloque
 | Brouillard sur les nœuds verrouillés : le nom reste visible (choix de Bertrand, pour planifier). À rediscuter si le GD tient au mystère. | — |
 | Branche de prestige dédiée aux capteurs : la visibilité ne s'achète aujourd'hui qu'en Hardware (GDD, § Capteur). | — |
 | Taille d'interface : jusqu'où la proposer ? Aujourd'hui 80 à 150 % ; à 150 % le canvas ne fait plus que 720 unités de haut, et le panneau d'options n'y tient pas. | § 4 |
+| Le tutoriel : quelle forme (écran au premier lancement, run 1 guidée, messages de console) ? Le jeu n'en a aucun ; le GD veut la run 1 en « tutoriel déguisé » (cibles du 2026-10-15) ; le lore du 2026-10-16 lui fournit son pitch. | § 4 |
 
 ---
 

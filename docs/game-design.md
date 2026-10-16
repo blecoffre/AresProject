@@ -364,7 +364,8 @@ Les cycles sont **gelés** en fin de run et remis à zéro au redémarrage. La p
 
 ## La VICTOIRE — atteindre 1e12 TFlops (tranché le 2026-09-15)
 
-Le lore est le hack d'une clé USB surpuissante : la fin se mesure en **capacité de calcul**.
+Dans la fiction, la puissance du joueur finit par dépasser celle de l'A.M.I. et ouvre la clé
+ARES (« Lore ») : la fin se mesure en **capacité de calcul**.
 
 Le critère s'est d'abord jugé sur « le dernier Hardware est débloqué », ce qui tombait au premier
 exemplaire acheté — au moment où le joueur DÉCOUVRE la machine, pas au moment où il en a fait
@@ -381,7 +382,8 @@ déclenche une fois, au franchissement. `VictoryPresenter` déroule la séquence
 C'est un incrémental : il lui reste presque toujours de l'arbre à finir, et figer la partie au
 meilleur moment de sa courbe lui retirerait ce qu'il vient de gagner. Le drapeau `HasWon` est de la
 méta-progression (`SaveData` v10) — il survit au wipe, et n'existe que pour ne pas rejouer la
-séquence à chaque ouverture.
+séquence à chaque ouverture. Dans la fiction, l'A.M.I. effacée se recompile depuis la clé
+(« Lore », 2026-10-16).
 
 ⚠️ **Seuil abaissé à 5e11 à titre PROVISOIRE** (GD, 2026-09-16), pour pouvoir tester la fin de
 campagne sans grinder : le pic mesuré est de 6,44e11, la cible de 1e12 obligeait à repasser deux
@@ -892,9 +894,105 @@ main sans qu'un générateur ne l'écrase.
 Chaque champ porte un tooltip qui dit ce qu'il fait et dans quel sens il pousse. Les `[Range]` ne
 sont pas décoratifs : ils empêchent de saisir une valeur qui casserait une formule.
 
-## Lore
+## Lore — le Projet ARES (revu avec le GD le 2026-10-16)
 
-L'objectif ultime du joueur est de récupérer **une photo de chat sur une clé USB verrouillée**. Chaque wipe = déménagement dans un nouveau sous-sol avec un noyau IA amélioré, compilé à partir des tentatives ratées. Ton absurde assumé.
+Revu par le GD et Bertrand, transmis le 2026-10-16 et arbitré le même jour. Il remplace la ligne
+du 2026-08-25
+(« une photo de chat sur une clé USB verrouillée […] Ton absurde assumé »), dont il garde la chute
+et le sous-sol ; seul le Noyau « compilé à partir des tentatives ratées » disparaît, au profit de
+la paie du client.
+
+**Le ton : un thriller de hacking pris au sérieux, qui finit sur une chute absurde.** L'humour
+pince-sans-rire des descriptions de générateurs et de nœuds (le grillage de poulailler, la réserve
+de nouilles) n'est pas remis en cause.
+
+**À quoi il sert.** Chaque mécanique a sa traduction dans la fiction : c'est dans ces tableaux que
+le tutoriel et les messages de la console puisent. Un texte du jeu qui les contredit est un défaut
+de texte (`backlog.md`, § 4). Comme tout texte affiché, il passe par une clé de `fr.json`.
+
+**Le pitch du premier lancement** (GD) : *« Branche la clé, vole ce que tu peux, et débranche avant
+que l'A.M.I. n'atteigne 10 000, sinon on perd tout. »* ⚠️ Deux réserves pour qui l'écrira à
+l'écran : la jauge s'affiche en **pour cent**, et les UT n'apparaissent qu'en variations (console,
+bouton du Data Wiper) — le plafond de 10 000 ne se lit nulle part, « 100 % » si ; et une saisie ne
+fait pas **tout** perdre : le Noyau survit et la paie est versée à 30 %.
+
+### Le point de départ
+
+Le joueur incarne un **Extracteur**, un hacker freelance de haut vol. Un client anonyme lui a fait
+parvenir un support physique, une clé USB : le **Projet ARES**, protégée par un chiffrement
+militaire polymorphe de classe mondiale, impossible à craquer d'une traite.
+
+| Mécanique | Dans la fiction |
+|---|---|
+| **Une run** | Une session de décryptage : brancher la clé, arracher ce qu'on peut, débrancher avant que l'A.M.I. ne remonte jusqu'à soi |
+| **Le Hardware remis à zéro**, même après une extraction réussie | Chaque run repart d'un **sous-sol neuf** (lore d'août, conservé). Les machines sont formatées et abandonnées (Protocole Terre Brûlée), ou laissées aux fédéraux |
+| **L'arbre de prestige, qui survit** | **Le Noyau** : l'équipement logiciel et physique de l'Extracteur, qui le suit d'une planque à l'autre — avec la clé |
+
+### La menace — l'A.M.I.
+
+**Algorithme de Menace et d'Interception** : le chien de garde (une ICE) intégré à la clé ARES. Il
+triangule la position physique du joueur en analysant les micro-fluctuations du réseau électrique
+et du trafic internet.
+
+| Mécanique | Dans la fiction |
+|---|---|
+| **La traque ne démarre qu'au premier paquet volé ou au premier Hardware** | L'A.M.I. dort tant que la clé est inerte, et se réveille au **premier bruit**. *Le texte du GD la réveillait au branchement ; la règle du 2026-09-21, qu'il a reconduite le 2026-10-13, prime.* |
+| **Les Unités de Trace (UT)**, 10 000 au plafond | L'avancement de la triangulation : 10 000 UT, soit 100 % de la jauge, c'est la position exacte |
+| **La vitesse, indexée sur les TFlops brutes** | Le bruit thermique et réseau : plus la machine calcule, plus elle se fait entendre |
+| **La Saisie Fédérale**, à 10 000 UT | L'A.M.I. tient l'adresse IP réelle et l'adresse physique. Le FAI coupe la connexion, le SWAT enfonce la porte, le matériel est saisi. **Le joueur arrache la clé à temps et s'enfuit avec** — c'est ce qui lui permet de la rebrancher à la run suivante (arbitrage du 2026-10-16) |
+| **Le Blindage** | Étouffer les fuites que l'A.M.I. écoute : cage de Faraday de fortune, chaleur masquée, bunker (textes des nœuds `P_HARDEN_*`) |
+
+**Le brouillard.** L'A.M.I. est une IA furtive : le joueur ne voit pas la triangulation, il n'en
+reçoit que des **pings** asynchrones.
+
+| Sur la jauge | Dans la fiction |
+|---|---|
+| **Un relevé** : l'aiguille saute sur la vraie valeur, la barre rouge s'y recale | Un ping intercepté — la dernière position connue de la traque |
+| **La barre rouge** (borne pessimiste), qui avance entre deux relevés | Là où l'A.M.I. peut en être, au pire, depuis le dernier ping |
+| **Le capteur**, acheté en TFlops nettes | Plus de calcul, meilleure écoute : les pings arrivent plus souvent |
+
+### L'économie — Datas, TFlops, Proxies
+
+| Mécanique | Dans la fiction |
+|---|---|
+| **Les Datas**, la monnaie de la run | Les paquets de données brutes décryptés par les Scripts, revendus à l'instant, en arrière-plan, sur le Darknet. Elles ne survivent pas à la run |
+| **Les TFlops** | La force brute : serveurs et processeurs. Les **nettes** compriment le décryptage ; les **brutes** font le bruit qui attire l'A.M.I. plus vite |
+| **L'Overclock** | Le joueur court-circuite les sécurités thermiques de sa carte mère. Le calcul gagne une demi-seconde (davantage avec la branche Overclock), et l'appel de courant, anomalie flagrante sur le réseau, offre à l'A.M.I. **cinq secondes de pistage gratuit** |
+| **Les Proxies** | Des serveurs relais achetés à travers le monde — VPN, machines zombies, réseaux en oignon — et **brûlés** à l'instant de l'achat : l'A.M.I. perd du temps à remonter la fausse piste (le Wipe) |
+| **L'Interception** | Chaque proxy brûlé brouille davantage la piste : machines hors registre, grille-pain connectés (textes des nœuds `P_INTERCEPT_*`) |
+| **Le Data Wiper** | Un ver envoyé dans les serveurs fédéraux, qui efface une part du dossier — et engloutit la puissance qu'il mobilise (lot 2, conservé) |
+
+### L'extraction — ce que paie le client
+
+Arracher la clé met fin à la run, et c'est un pari. Le client paie un **bonus si les données lui
+parviennent par gros blocs cohérents** : plus le joueur reste branché en narguant l'A.M.I., plus le
+bloc reconstitué vaut cher au marché noir. Partir tôt garantit la survie, mais ne rapporte que des
+miettes.
+
+| Mécanique | Dans la fiction |
+|---|---|
+| **Les Cycles CPU**, la seule monnaie qui survit au wipe | **La paie du client, en temps de calcul** sur sa propre grille. Ce temps compile le Noyau (arbitrage du 2026-10-16) |
+| **Les paliers 50 / 75 / 90 %** | La valeur du bloc reconstitué : plus il est complet, plus la prime est grosse. Sous 50 %, pas de prime — la paie de base reste due |
+| **Une saisie verse 30 %** de sa contribution | Le client paie ce qu'il a reçu avant la coupure du FAI |
+| **L'Effacement Propre** et sa séquence `PURGE.exe` | Le Protocole Terre Brûlée : clé arrachée, disques formatés, adresse MAC brouillée, matériel abandonné |
+
+### La victoire — le cœur de la clé
+
+À **1e12 TFlops nettes** — mille milliards de TFlops, soit 10²⁴ opérations par seconde, un
+yottaflop —, la puissance du joueur dépasse l'architecture même de l'A.M.I. Il ne fuit plus : il
+retourne son calcul contre elle et l'efface du réseau. Le cœur de la clé ARES s'ouvre.
+
+*Le texte du GD écrit « 1 Teraflop/s » : c'est 10¹² opérations par seconde, mille milliards de fois
+moins que le seuil.*
+
+**Il contient une photo de chat** (arbitrage du 2026-10-16). Les trois secrets que proposait le GD
+— une IA libre, le code source du système bancaire mondial, la preuve d'un complot d'État — ne sont
+pas retenus comme contenu de la clé.
+
+**L'A.M.I. se reconstruit** (arbitrage du 2026-10-16). Polymorphe, elle se recompile depuis la clé
+après son effacement : c'est ce qui justifie que la partie continue (« La VICTOIRE ») et que la
+Trace remonte derrière l'écran de victoire. Le texte du GD parlait de « fin du jeu » : c'est la fin
+de l'histoire, pas celle de la partie.
 
 ## Échelle de contenu
 
