@@ -37,7 +37,7 @@ sauvegarde ne bougent pas.
 | **Brouillard** — relevé en UT (800 → 200), borne sur la vitesse de l'A.M.I., relevé sauvegardé | **Refonte lot 3, livré le 2026-10-14** | Oui (2026-10-15) |
 | Paliers d'extraction, leur affichage, verrou du 90 % | Livré le 2026-09-16 ; branche Extraction refaite au lot 4 (×8,5 au max) | Oui (2026-10-14) ; nouvelles valeurs oui (2026-10-15) |
 | Points de prestige — cumul de campagne, modèle des boîtes, saisie à 30 % | Livré le 2026-10-02, inchangé par la refonte | Oui (2026-10-14) |
-| **Arbre de prestige** — 21 nœuds en éventail, Noyau Compilé, `P_CORE_OVERRIDE` infini | **Refonte lot 4, livré le 2026-10-14** | Oui (2026-10-15) ; éventail gardé tel quel |
+| **Arbre de prestige** — 27 nœuds en éventail (six ajoutés le 2026-10-16, **non joués**), Noyau Compilé, `P_CORE_OVERRIDE` infini | **Refonte lot 4, livré le 2026-10-14** | Oui (2026-10-15) ; éventail gardé tel quel |
 | Zéro-Day Exploit / Ghost Cache | **Retirés** le 2026-10-13 | — |
 | **Data Wiper** — −2 500 UT, sacrifice de 30 % des TFlops nettes par usage, trois usages | **Refonte lot 2, livré le 2026-10-14** | Oui (2026-10-15) ; règle gardée, joueur prévenu du sacrifice sur les achats suivants |
 | Victoire — 1e12 TFlops nettes | Livrée le 2026-09-16, **seuil provisoire à 5e11** | Oui (2026-10-15) : séquence, écran, reprise, jamais deux fois ; déclenchement à tort par le Data Wiper corrigé le même jour |
@@ -75,8 +75,9 @@ Branche `chantier/session-chiffres`. Le GD a fixé les cibles (GDD, « Les cible
 | # | Lot | Contenu | Statut |
 |---|---|---|---|
 | C1 | **Cibles et calibrage** | Cibles du GD consignées ; `_proxyWipeScale` ; journal de fin de run (`journal-runs.csv`) pour caler le bot sur trois runs jouées | ✅ livré le 2026-10-15, **à jouer** (`a-tester.md` § 0) |
-| C2 | **Harnais** | Les vrais systèmes du jeu sur une horloge virtuelle, un bot « joueur actif moyen » (meilleur gain par Data, Blindage d'abord), un rapport par run et un bilan face aux cibles | à faire |
-| C3 | **Réglage** | Leviers autorisés jusqu'à entrer dans les ±20 %, victoire remise à 1e12, consigné au GDD | à faire |
+| C2 | **Six nœuds du GD** | Saisie Multiplexée (l'Espace s'achète), Instabilité Zéro-Day (critique, son dédié), Capital de Départ (8ᵉ chaîne), État d'Alerte, Routine Pare-Feu. Placé avant le harnais : le réglage doit se faire sur l'arbre définitif | ✅ livré le 2026-10-16, **à jouer** (`a-tester.md` § 0 bis) |
+| C3 | **Harnais** | Les vrais systèmes du jeu sur une horloge virtuelle, un bot « joueur actif moyen » (meilleur gain par Data, Blindage d'abord), un rapport par run et un bilan face aux cibles | à faire |
+| C4 | **Réglage** | Leviers autorisés jusqu'à entrer dans les ±20 %, victoire remise à 1e12, consigné au GDD | à faire |
 
 Ensuite reprend la feuille de route d'avant : **dette technique groupée** (`backlog.md` § 4 à 7),
 **Steam et Steam Deck**, **traductions**.
@@ -98,8 +99,8 @@ dynamique, saturation des Proxies, plafond suivant la puissance). Elles sont arc
 | Run sans Hardware ni Blindage | 5 min (33 UT/s) |
 | Run de victoire, Blindage max | ⚖️ ~5 min 30 — la cible de pacing du GD |
 | Overclock | rentable au-delà de ~13 points dans sa branche (avance > 5 s) |
-| Arbre utile (lot 4) | **107 points** : Blindage 20, Interception 20, Overclock 20, Économie 30, Extraction 16, Data Wiper 1 |
-| Noyau Compilé | coûts −66 % et rendement ×2,07 à 107 points ; plancher −95 % vers 299 points |
+| Arbre utile | **152 points** depuis le 2026-10-16 : Blindage 20, Interception 35 (Pare-Feu compris), Overclock 30, Économie 30, Extraction 26, Capital 10, Data Wiper 1 |
+| Noyau Compilé | coûts −78 % et rendement ×2,52 à 152 points ; plancher −95 % vers 299 points |
 | Interception max | ×19,5 — **validée** par le critère du GD (2026-10-15) |
 | Condition de victoire | **1e12 TFlops nettes** — l'asset porte **5e11**, à titre provisoire |
 | Premier point de prestige | **2e6** de cumul, boîte suivante +12 % (modèle des boîtes) |

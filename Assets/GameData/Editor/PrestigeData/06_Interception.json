@@ -42,6 +42,17 @@
       "posY": -3.0,
       "prerequisiteId": "P_INTERCEPT_3",
       "requiredLevel": 0
+    },
+    {
+      "id": "P_FIREWALL_ROUTINE",
+      "bonusType": "UnlockAutoProxy",
+      "maxLevel": 1,
+      "baseCost": 15.0,
+      "bonus": 1.0,
+      "posX": -3.0,
+      "posY": -4.0,
+      "prerequisiteId": "P_INTERCEPT_4",
+      "requiredLevel": 0
     }
   ]
 }

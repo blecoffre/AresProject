@@ -25,6 +25,7 @@ namespace Core.UI.Game
         private string _successPrefix = string.Empty;
         private string _narrativePrefix = string.Empty;
         private string _standardPrefix = string.Empty;
+        private string _criticalPrefix = string.Empty;
 
         public void AppendLog(string message, ConsoleLogType type)
         {
@@ -42,11 +43,12 @@ namespace Core.UI.Game
         /// Les étiquettes de début de ligne, déjà colorées et localisées par le presenter. Les
         /// lignes déjà affichées gardent les leurs : c'est un historique.
         /// </summary>
-        public void SetTagPrefixes(string success, string narrative, string standard)
+        public void SetTagPrefixes(string success, string narrative, string standard, string critical)
         {
             _successPrefix = success;
             _narrativePrefix = narrative;
             _standardPrefix = standard;
+            _criticalPrefix = critical;
         }
 
         private string FormatMessage(string message, ConsoleLogType type)
@@ -55,6 +57,7 @@ namespace Core.UI.Game
             {
                 ConsoleLogType.Success => _successPrefix + message,
                 ConsoleLogType.Narrative => _narrativePrefix + message,
+                ConsoleLogType.Critical => _criticalPrefix + message,
                 _ => _standardPrefix + message
             };
         }

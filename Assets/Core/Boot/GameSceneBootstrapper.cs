@@ -81,8 +81,9 @@ namespace Core.Boot
             // Une pression = un Overclock, exactement comme un clic. Pas de répétition au maintien :
             // chaque appui coûte cinq secondes de survie, une touche gardée enfoncée viderait la
             // jauge sans que le joueur l'ait décidé. L'OverclockSystem impose en plus 0,1 s entre
-            // deux appuis pris en compte, contre le double clic et la touche martelée.
-            if (keyboard.spaceKey.wasPressedThisFrame) _clickerPresenter.OnClickActionTriggered();
+            // deux appuis pris en compte, partagés avec le clic. Depuis le 2026-10-16, l'Espace
+            // s'achète (« Saisie Multiplexée ») : c'est le presenter qui vérifie le déblocage.
+            if (keyboard.spaceKey.wasPressedThisFrame) _clickerPresenter.OnKeyboardOverclockRequested();
         }
 
         /// <summary>

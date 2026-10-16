@@ -309,14 +309,16 @@ namespace Core.Services.Simulation
         }
 
         /// <summary>
-        /// Remet la run à son état de départ. Aucun nœud ne donne plus d'argent de départ depuis
-        /// le lot 4 : le prestige agit par le Noyau Compilé, sur les coûts et les rendements.
+        /// Remet la run à son état de départ. L'argent de départ est la base du BalancingConfig
+        /// PLUS la branche « Capital de Départ » (2026-10-16) ; ResetSession repasse ici, donc un
+        /// nœud acheté sur l'écran de fin compte dès la run suivante.
         /// Les TFlops n'y figurent pas : elles sont dérivées du parc Hardware, donc elles
         /// retombent d'elles-mêmes quand les niveaux sont remis à zéro.
         /// </summary>
         private void WipeRun()
         {
-            _userCurrencies.Money.Reset(_balancing.BaseStartingMoney);
+            _userCurrencies.Money.Reset(
+                _balancing.BaseStartingMoney + _prestigeManager.TotalStartingMoneyBonus.CurrentValue);
             _userCurrencies.ResetRunCounters();
             _runElapsedSeconds = 0f;
 

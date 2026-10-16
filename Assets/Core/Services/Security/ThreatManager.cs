@@ -39,7 +39,7 @@ namespace Core.Services.Security
         private readonly ReactiveProperty<float> _normalizedThreat = new(0f);
         private readonly ReactiveProperty<float> _speed = new(0f);
         private readonly Subject<Unit> _onCriticalLockdown = new();
-        private readonly Subject<float> _onOverclockPenalty = new();
+        private readonly Subject<Unit> _onRaisedAboveAutoProxyThreshold = new();
 
         private DisposableBag _disposables;
 
@@ -63,11 +63,19 @@ namespace Core.Services.Security
         public Observable<Unit> OnCriticalLockdown => _onCriticalLockdown;
 
         /// <summary>
-        /// Émis à chaque pénalité d'Overclock infligée, avec les UT ajoutées. Lu par le journal de
-        /// fin de run (session « chiffres », 2026-10-15), qui compte les appuis d'un joueur réel
-        /// pour caler le bot du harnais.
+        /// Émis à chaque MONTÉE de la jauge qui la laisse au-dessus du seuil de la Routine
+        /// Pare-Feu (<see cref="BalancingConfigSO.AutoProxyTriggerFraction"/>, 95 %). C'est la
+        /// routine qui décide d'agir ou non : elle n'achète qu'une fois par passage au-dessus,
+        /// mais réessaie tant qu'elle n'a rien pu payer.
+        ///
+        /// Émis par la montée elle-même, AVANT le test de saisie : le Proxy acheté en réponse
+        /// redescend la jauge dans le même appel, et un Overclock qui l'aurait poussée au plafond
+        /// ne saisit plus le joueur. C'est l'assurance-vie voulue par le GD.
         /// </summary>
-        public Observable<float> OnOverclockPenalty => _onOverclockPenalty;
+        public Observable<Unit> OnRaisedAboveAutoProxyThreshold => _onRaisedAboveAutoProxyThreshold;
+
+        /// <summary>Le seuil de la Routine Pare-Feu, en UT.</summary>
+        public float AutoProxyThreshold => TraceCap * _balancing.AutoProxyTriggerFraction;
 
         public ThreatManager(BalancingConfigSO balancing, UpgradeManager upgrades, PrestigeManager prestige)
         {
@@ -121,7 +129,6 @@ namespace Core.Services.Security
         {
             float penalty = _speed.CurrentValue * Mathf.Max(0f, _balancing.OverclockPenaltySeconds);
             AddTrace(penalty);
-            _onOverclockPenalty.OnNext(penalty);
             return penalty;
         }
 
@@ -185,10 +192,18 @@ namespace Core.Services.Security
 
             // Déjà saisi : la run est en cours de résolution, on n'y ajoute rien.
             float cap = TraceCap;
-            if (_currentTrace.CurrentValue >= cap) return;
+            float before = _currentTrace.CurrentValue;
+            if (before >= cap) return;
 
-            _currentTrace.Value = Mathf.Min(cap, _currentTrace.CurrentValue + amount);
+            _currentTrace.Value = Mathf.Min(cap, before + amount);
             RefreshNormalized();
+
+            // Au-dessus du seuil de la Routine Pare-Feu après CETTE montée. Les abonnés peuvent
+            // faire redescendre la jauge : le test de saisie ci-dessous relit donc la valeur.
+            if (_currentTrace.CurrentValue >= AutoProxyThreshold)
+            {
+                _onRaisedAboveAutoProxyThreshold.OnNext(Unit.Default);
+            }
 
             if (_currentTrace.CurrentValue >= cap)
             {
@@ -226,7 +241,7 @@ namespace Core.Services.Security
         {
             _disposables.Dispose();
             _onCriticalLockdown.Dispose();
-            _onOverclockPenalty.Dispose();
+            _onRaisedAboveAutoProxyThreshold.Dispose();
             _normalizedThreat.Dispose();
             _currentTrace.Dispose();
             _speed.Dispose();

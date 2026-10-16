@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08038215e9d14fa45ae47737875bf522, type: 3}
+  m_Name: P_OVERCLOCK_CRIT
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Models.Economy.PrestigeConfigSO
+  _id: P_OVERCLOCK_CRIT
+  _displayNameKey: PRESTIGE_P_OVERCLOCK_CRIT_NAME
+  _displayDescriptionKey: PRESTIGE_P_OVERCLOCK_CRIT_DESC
+  _bonusType: 12
+  _maxLevel: 5
+  _baseCost: 1
+  _bonusPerLevel: 0.05
+  _uiPosition: {x: 4, y: -4}
+  _requirement:
+    _node: {fileID: 11400000, guid: ce03bb19d3595b1419f686a6077b55a9, type: 2}
+    _requiredLevel: 0

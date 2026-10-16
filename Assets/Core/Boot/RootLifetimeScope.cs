@@ -159,6 +159,18 @@ namespace Core.Infrastructure
             builder.Register<EmergencyProtocolSystem>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
             builder.Register<GameSessionManager>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
 
+            // Le hasard du jeu, injecté comme le temps : le harnais d'équilibrage lui substitue
+            // une source graine pour rejouer une campagne à l'identique.
+            builder.Register<UnityRandomSource>(Lifetime.Singleton).As<IRandomSource>();
+
+            // L'Overclock, monté de la scène au Root le 2026-10-16 : le son de son coup critique
+            // et le journal de fin de run l'écoutent d'ici. IDisposable pour son sujet.
+            builder.Register<OverclockSystem>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
+
+            // La Routine Pare-Feu (P_FIREWALL_ROUTINE) : à 95 % de jauge, un Proxy acheté
+            // d'office. AsSelf pour le presenter de la scène qui la raconte dans la console.
+            builder.Register<FirewallRoutine>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
+
             // La sortie volontaire termine une run : elle appartient à la partie, pas à
             // l'affichage, donc au scope racine comme le reste.
             builder.Register<ExfiltrationSystem>(Lifetime.Singleton);

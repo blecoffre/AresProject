@@ -43,6 +43,11 @@ namespace Core.Services.Audio
         [Tooltip("Victoire de la campagne.")]
         [SerializeField] private SoundSetSO _victorySet;
 
+        [Tooltip("Overclock critique (« Instabilité Zéro-Day ») : l'appui n'a rien coûté. Un " +
+                 "signal de gain, net et bref — on peut l'entendre plusieurs fois par seconde " +
+                 "au clavier. Vide = critique muet.")]
+        [SerializeField] private SoundSetSO _overclockCriticalSet;
+
         [Tooltip("Un palier d'extraction franchi sur la jauge RELEVÉE, un élément par palier dans " +
                  "l'ordre des CleanExitTiers (50 %, 75 %, 90 %). Des sons de plus en plus tendus " +
                  "font monter l'alerte ; s'il y a moins de familles que de paliers, la dernière sert " +
@@ -56,6 +61,7 @@ namespace Core.Services.Audio
         public SoundSetSO RefusalSet => _refusalSet;
         public SoundSetSO SeizureSet => _seizureSet;
         public SoundSetSO VictorySet => _victorySet;
+        public SoundSetSO OverclockCriticalSet => _overclockCriticalSet;
 
         /// <summary>La famille d'alerte du palier d'index donné, ou null si aucune n'est prévue.</summary>
         public SoundSetSO GetTraceTierSet(int tierIndex)

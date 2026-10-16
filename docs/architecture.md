@@ -8,7 +8,8 @@ Stack : **VContainer** (DI), **R3** (réactif), **UniTask** (async), MVP strict,
 
 - Instances posées dans l'inspecteur : catalogues (`UpgradeCatalogSO`, `PrestigeCatalogSO`), `BalancingConfigSO`, `UiPaletteCatalogSO`, et pour l'audio le mixer, `AudioLibrarySO`, `UiSoundChannelSO`
 - Économie : `UserCurrencies`, `BuyQuantitySelector`, `UpgradeManager`, `PrestigeManager`
-- Trace et run : `ThreatManager` (la jauge de l'A.M.I. ; IStartable, seul à la modifier), `TraceReadout` (le relevé imparfait, en lecture seule sur la vérité), `EmergencyProtocolSystem` (Data Wiper), `GameSessionManager`, `ExfiltrationSystem`, `VictorySystem`
+- Trace et run : `ThreatManager` (la jauge de l'A.M.I. ; IStartable, seul à la modifier), `TraceReadout` (le relevé imparfait, en lecture seule sur la vérité), `EmergencyProtocolSystem` (Data Wiper), `GameSessionManager`, `ExfiltrationSystem`, `VictorySystem`, `OverclockSystem` (monté de la scène le 2026-10-16), `FirewallRoutine` (Routine Pare-Feu, IStartable)
+- `UnityRandomSource` (`IRandomSource`) — le hasard du jeu, injecté comme le temps pour que le harnais le remplace par une source graine
 - Persistance : `LocalJsonSaveService` (`ISaveService` + `ISyncSaveService`), `GameStateGateway`
 - `JsonLocalizationService`, `SceneLoader`, `ApplicationQuitter`
 - `SimulationClock` (`ITimeSource` + `ISimulationClock`) — voir « Pause » plus bas
@@ -18,8 +19,7 @@ Stack : **VContainer** (DI), **R3** (réactif), **UniTask** (async), MVP strict,
 
 **`GameSceneLifetimeScope`** (fichier dans `Services/`, namespace `Core.Boot`) — l'UI, en `Scoped`.
 
-- Views (`RegisterComponent`) + Presenters
-- `OverclockSystem`
+- Views (`RegisterComponent`) + Presenters, dont `FirewallRoutinePresenter` (sans vue : raconte la Routine Pare-Feu dans la console)
 - EntryPoints : `GameSceneBootstrapper` (clavier, Échap, retenue de la simulation), `SimulationTicker`, `SceneMusic`
 
 > **Piège :** un service enregistré en `Lifetime.Scoped` **dans le Root** est ré-instancié dans chaque scope enfant. Le scope de scène manipulerait alors une seconde instance, désynchronisée. Tout ce qui est métier va en `Singleton`.
@@ -166,9 +166,17 @@ EmergencyProtocolSystem (Root) — clic sur le Data Wiper, trois fois par run au
    → ThreatManager.Wipe(2 500 UT)
    → UpgradeManager.SetTFlopsSacrificedFraction(30 / 60 / 90 %)   TFlops NETTES seules
 
-OverclockSystem (Scene) — appui sur Espace ou sur le bouton
-   → ScriptCycleRunner.AdvanceAllActive(0,5 s + Σ Overclock) ; rien ne tourne → ni effet ni coût
-   → ThreatManager.ApplyOverclockPenalty()     jauge += V_AMI × 5 s
+OverclockSystem (Root) — bouton à l'écran, ou Espace avec « Saisie Multiplexée »
+   → tirage du critique (IRandomSource, chance de l'arbre)
+   → ScriptCycleRunner.AdvanceAllActive(0,5 s + Σ Overclock, ×3 sur un critique)
+     rien ne tourne → ni effet ni coût
+   → ThreatManager.ApplyOverclockPenalty()     jauge += V_AMI × 5 s, sauf sur un critique
+   → OnApplied → GameEventSounds (son du critique), RunJournal
+
+ThreatManager.AddTrace — jauge au-dessus de 95 % après une montée
+   → OnRaisedAboveAutoProxyThreshold → FirewallRoutine (si P_FIREWALL_ROUTINE)
+     → UpgradeManager.TryPurchaseUpgrade(Proxy visible le plus cher abordable) → Wipe
+     → AVANT le test de saisie : l'achat peut l'éviter
 
 TraceReadout (Root) — ce que l'UI affiche, en lecture seule sur le ThreatManager
    → un relevé tous les 800 à 200 UT remplis (capteur : TFlops NETTES) → l'aiguille

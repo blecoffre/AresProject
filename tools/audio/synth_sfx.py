@@ -293,6 +293,21 @@ def data_wiper():
     return finish(x, -16, fade_out=0.06)
 
 
+def overclock_critical():
+    """Overclock critique (« Instabilité Zéro-Day », 2026-10-16) : « accès contourné ». Trois bips
+    montants très brefs, timbre numérique légèrement écrasé, un tic de données à l'attaque et un
+    reflet aigu. Court et sans traîne : au clavier, il peut sonner plusieurs fois par seconde."""
+    x = []
+    mix(x, env(highpass(noise(0.004), 3500), attack=0.0005, release=0.002), 0, 0.3)
+    for k, f in enumerate((1046.5, 1568.0, 2093.0)):
+        b = osc(f, 0.05, "soft", drive=2.0)
+        b = env(b, attack=0.002, hold=0.025, decay=0.015, release=0.008)
+        mix(x, b, k * 0.045, 0.9 if k < 2 else 1.0)
+    x = crush(x, lambda t: 2, lambda t: 7)
+    mix(x, tone(4186.0, 0.12, ((1, 1.0),), attack=0.004, decay=0.06, release=0.03), 0.09, 0.08)
+    return finish(x, -19, fade_out=0.03)
+
+
 SOUNDS = [
     ("sfx_refusal_01", lambda: refusal(196.0, 0.75)),
     ("sfx_refusal_02", lambda: refusal(185.0, 0.7)),
@@ -304,6 +319,9 @@ SOUNDS = [
     ("sfx_prestige_purchase", prestige_purchase),
     ("sfx_exfiltration", exfiltration),
     ("sfx_data_wiper", data_wiper),
+    # TOUJOURS en fin de liste : la graine est partagée, un son inséré plus haut changerait
+    # tous ceux qui le suivent.
+    ("sfx_overclock_critical", overclock_critical),
 ]
 
 if __name__ == "__main__":

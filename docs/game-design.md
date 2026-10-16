@@ -167,7 +167,8 @@ totales et aveugles, dont l'excédent part dans le vide ; le joueur qui veut éc
 | Coût | `V_AMI × 5 s` d'UT ajoutées à la jauge : **toujours cinq secondes de survie** |
 | Sans cycle en cours | Ne fait **rien** et ne coûte **rien** (la console le dit) |
 | Cadence | 0,1 s minimum entre deux appuis pris en compte ; pas de répétition au maintien |
-| Gestes | Barre d'espace **et** bouton à l'écran, mêmes règles |
+| Gestes | Bouton à l'écran dès le départ ; barre d'Espace avec « Saisie Multiplexée » (2026-10-16). Mêmes règles, délai partagé |
+| Critique | Avec « Instabilité Zéro-Day » : avance ×3, aucune pénalité (2026-10-16) |
 
 **La pénalité est indexée sur la vitesse, pas fixe.** La première version (+500 UT fixes) coûtait
 15 s de survie au départ et une fraction de seconde en fin de partie. En secondes, la prise de
@@ -184,11 +185,12 @@ investissement. »*
 **L'avance passe avant la pénalité.** Un appui qui déclenche la saisie verse quand même les cycles
 qu'il vient d'achever : le joueur a payé, il touche, puis il tombe.
 
-**Disparus avec la refonte :** le « réveil » des Scripts à l'arrêt (`P_OVERCLOCK_AWAKE`) et le
-verrou de la barre d'espace (`P_OVERCLOCK_SPACEBAR`). L'Espace est libre dès le départ — la
-pénalité suffit à décourager le spam.
+**Disparu avec la refonte :** le « réveil » des Scripts à l'arrêt (`P_OVERCLOCK_AWAKE`). Le verrou
+de la barre d'espace (`P_OVERCLOCK_SPACEBAR`), retiré le 2026-10-13 (« la pénalité suffit à
+décourager le spam »), **revient le 2026-10-16** sous le nom « Saisie Multiplexée », avec le coup
+critique — voir « Six nœuds ajoutés le 2026-10-16 ».
 
-## L'arbre de compilation — 21 nœuds (refonte, lots 1 et 4)
+## L'arbre de compilation — 27 nœuds (refonte, lots 1 et 4 ; six nœuds le 2026-10-16)
 
 Le GD a remplacé les 140 nœuds de l'arbre — dont 120 nœuds ciblés, un rabot de coût et un de
 rendement par générateur — par **20 nœuds majeurs**, le **Noyau Compilé** et un puits à points
@@ -210,8 +212,9 @@ son niveau maximum** (`requiredLevel: 0`, voir « Prérequis de prestige »).
 Au maximum : Blindage Σ 10 (jauge ×11 en durée, 20 points), Interception Σ 18,5 (Wipe ×19,5,
 20 points), Overclock Σ 22 s (avance 22,5 s, 20 points), `P_REFAC` ×1,15 → ×1,05 sur la courbe de
 prix (10 points), `P_DATAM` ×2 (20 points), Extraction ×8,5 (15 points), plus `P_EMERG` et
-`P_EXTRACT_HIGHRISK`. **L'arbre utile coûte 107 points** ; une campagne en produirait ~220
-(estimation, voir « Les points de prestige »).
+`P_EXTRACT_HIGHRISK`. **L'arbre utile coûtait 107 points** ; une campagne en produirait ~220
+(estimation, voir « Les points de prestige »). **152 points depuis l'ajout de six nœuds le
+2026-10-16** — voir plus bas.
 
 Ces sommes sont exposées par le `PrestigeManager`, toutes en lecture seule (`TotalHardenBonus`,
 `TotalInterceptBonus`, `TotalOverclockBonus`, `GlobalComputeMultiplier`, `CostMultiplierReduction`,
@@ -231,7 +234,8 @@ Datas des Scripts ET TFlops nettes                          × (1 + 0,01 × poin
 |---|---|---|
 | 10 | −10 % | ×1,10 |
 | 50 | −39 % | ×1,50 |
-| 107 — l'arbre utile complet | −66 % | ×2,07 |
+| 107 — l'arbre utile du lot 4 | −66 % | ×2,07 |
+| 152 — l'arbre utile complet depuis le 2026-10-16 | −78 % | ×2,52 |
 | 220 — ~une campagne | −89 % | ×3,20 |
 | 299 et au-delà | −95 %, le plancher | ×3,99, puis sans plafond |
 
@@ -265,6 +269,57 @@ est absent).
 La racine en haut, sept colonnes en dessous : Interception, Blindage, Data Wiper, Noyau, Économie,
 Extraction, Overclock. Chaque chaîne se lit de haut en bas. *Provisoire : Bertrand veut voir en jeu
 si ça ne fait pas trop « arbre de talents de RPG » (2026-10-14).*
+
+### Six nœuds ajoutés le 2026-10-16 (GD)
+
+Demandés par le GD, arbitrés par Bertrand. L'arbre passe de 21 à **27 nœuds**, l'arbre utile de
+107 à **152 points** (+45).
+
+| Nœud | Nom affiché | Chaîne, après | Rangs | Coût | Effet |
+|---|---|---|---|---|---|
+| `P_OVERCLOCK_SPACEBAR` | Saisie Multiplexée | Overclock, `P_OVERCLOCK_POWER_2` au max (parallèle à `_3`) | 1 | **5** | Débloque l'Overclock à la barre d'Espace |
+| `P_OVERCLOCK_CRIT` | Instabilité Zéro-Day | Overclock, `P_OVERCLOCK_SPACEBAR` | 5 | 1 / rang | +5 % de chance de critique par rang (25 % au max) |
+| `P_STARTING_FUNDS_1` | Capital d'Amorçage | **8ᵉ chaîne**, depuis `P_ROOT` | 5 | 1 / rang | +10 Datas au départ de chaque run par rang |
+| `P_STARTING_FUNDS_2` | Financement Occulte | Capital, `P_STARTING_FUNDS_1` au max | 5 | 1 / rang | +50 Datas au départ par rang (310 au total, au max) |
+| `P_ALERT_STATE` | État d'Alerte | Extraction, `P_EXTRACT_3` au max (parallèle à `_HIGHRISK`) | 10 | 1 / rang | Rendement des Scripts × `(1 + jauge × Σ)`, +0,1 par rang |
+| `P_FIREWALL_ROUTINE` | Routine Pare-Feu | Interception, `P_INTERCEPT_4` au max | 1 | **15** | À 95 % de jauge, achète d'office le Proxy le plus cher abordable |
+
+**La barre d'Espace s'achète** — décision de Bertrand du 2026-10-16, qui suit le GD et revient sur
+celle du 2026-10-13 (« l'Espace est libre dès le départ »). Le bouton à l'écran reste libre dès la
+première seconde ; seul le clavier est verrouillé. Un appui verrouillé l'explique une fois par run
+dans la console. Le délai de 0,1 s entre deux appuis est **partagé** entre le clic et l'Espace.
+Le prérequis représente **15 points** investis dans la chaîne (le document du GD disait 11).
+
+**Le coup critique** : un tirage par Overclock appliqué ; sur un critique, l'avance est multipliée
+par `_overclockCriticalAdvanceMultiplier` (×3) et **aucune pénalité** n'est infligée. La console
+l'annonce sous l'étiquette verte « [CRITICAL BYPASS] », avec un son dédié
+(`sfx_overclock_critical`, synthétisé comme les autres). Le tirage passe par une source de hasard
+injectée (`IRandomSource`), pour que le harnais rejoue une campagne à l'identique.
+
+**L'État d'Alerte lit la VRAIE jauge** (choix de Bertrand), à l'instant où le cycle verse — jamais
+par frame. Le brouillard (lot 3) résout le gain de sortie sur le relevé ; ici, le risque réel paie
+réellement, et un revenu noyé dans les cycles de nombreux Scripts ne trahit presque rien. Le
+« + … /s » de l'en-tête ne l'inclut pas.
+
+**La Routine Pare-Feu** ne choisit que parmi les Proxies **visibles** (possédés, et le suivant que
+leur achat a révélé). Elle achète **une fois par passage au-dessus de 95 %** (`_autoProxyTriggerFraction`),
+se réarme quand la jauge repasse dessous, et **réessaie à chaque montée** tant qu'elle n'a rien pu
+payer. Elle agit AVANT le test de saisie : un Overclock qui pousserait la jauge au plafond ne
+saisit plus le joueur s'il peut payer un Proxy. Le GD supposait qu'un seul Wipe suffit à repasser
+sous le seuil ; c'est vrai avec son prérequis (Interception ×19,5 : même `PRX_01` efface ~15 % de la
+jauge), et la règle d'un achat par passage le garantit de toute façon.
+⚠️ **Elle joue contre l'État d'Alerte et le palier de sortie des 90 %** : purger à 95 % fait
+perdre les deux. Assumé tel quel.
+
+**Le Capital de Départ arme la traque d'entrée** : posséder du Hardware suffit à lancer l'A.M.I.
+(« La traque ne démarre QUE lorsque le joueur s'est manifesté »). Acheter un Hardware avec l'argent
+de départ la lance dès la première seconde — c'est le départ « ultra-nerveux » voulu par le GD.
+
+**Disposition** : dans l'éventail, sur des colonnes entières (un nœud fait 500 × 200 pour des
+cases de 600 × 300, les demi-colonnes se chevaucheraient). Capital de Départ en nouvelle colonne
+tout à gauche ; Routine Pare-Feu sous « Nuage de témoins » ; Saisie Multiplexée et Instabilité
+Zéro-Day dans une nouvelle colonne à droite de « Surtension III » ; État d'Alerte en diagonale sous
+« Sortie chirurgicale ». La dispersion de l'arbre reste à revoir (Bertrand, 2026-10-15).
 
 ### L'Interception rabotée — validée par le GD (2026-10-15)
 
@@ -356,7 +411,8 @@ au-delà du niveau 10 est injouable. La tension viendra de la jauge, plus de l'A
 l'abaisse depuis le retrait de `P_AUTO_GLOBAL` (2026-10-02) puis des nœuds ciblés (2026-10-14).
 
 **La BARRE ESPACE déclenche un Overclock (ajoutée le 2026-09-16)**, comme le bouton à l'écran — voir
-« L'Overclock ». Ajoutée sur retour de jeu : *« le clic m'épuise »*.
+« L'Overclock ». Ajoutée sur retour de jeu : *« le clic m'épuise »*. **Verrouillée depuis le
+2026-10-16** derrière le nœud « Saisie Multiplexée » (GD, décision de Bertrand).
 
 ⚠️ **Effet de bord traité : Espace est aussi la touche `UI/Submit`.** uGUI sélectionne un bouton
 quand on le clique, et la liaison générique `*/{Submit}` couvre Entrée ET Espace. Sans correctif,
@@ -568,7 +624,7 @@ sur les temps et les revenus.
 | Nombre de runs | **80 à 100** |
 | Durée d'une run | en **cloche asymétrique** : ~5 min au début, 8 à 11 min en milieu de campagne, ~5 min 30 en fin de partie |
 | Premier point de prestige | à la fin de la **run 2** |
-| Arbre utile (107 points) | complété vers **85 à 90 %** de la campagne |
+| Arbre utile (152 points depuis le 2026-10-16 ; 107 quand la cible a été fixée) | complété vers **85 à 90 %** de la campagne |
 | Interception | en fin de partie (jauge de ~330 s, Blindage max), `PRX_05` niveau 1 vide **50 à 60 %** de la jauge |
 
 **Une campagne dense, pour le Steam Deck** : 10 à 12 heures sans grind infini, au rythme haché
@@ -587,7 +643,8 @@ méta-progression. Le seuil de 2 M de Datas peut baisser pour tenir ce rendez-vo
 (« Recompilation Forcée ») ne doit servir de puits qu'au dernier sprint vers la victoire. Si la
 campagne produit ~220 points, comme l'estimait l'ancien modèle, sa génération doit être divisée
 par deux — par le seuil du premier point ou par la croissance des boîtes (voir « Les points de
-prestige »).
+prestige »). *Avec les six nœuds du 2026-10-16, l'arbre utile vaut 152 points : la cible devient
+~170 à 180 points générés, et non plus ~120.*
 
 **L'Interception est validée.** Le critère tient avec les valeurs du lot 4 : `PRX_05` efface 10 s,
 ×19,5 au maximum, soit 195 s, **59,6 %** d'une jauge de ~327 s ; `PRX_07` (19 s) la vide entière, ce

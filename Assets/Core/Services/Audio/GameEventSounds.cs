@@ -11,8 +11,9 @@ using VContainer.Unity;
 namespace Core.Services.Audio
 {
     /// <summary>
-    /// Les sons qui ne viennent pas d'un clic : la Saisie Fédérale, la victoire, et l'alerte
-    /// quand la jauge franchit un palier d'extraction.
+    /// Les sons qui ne viennent pas d'un clic : la Saisie Fédérale, la victoire, l'alerte quand
+    /// la jauge franchit un palier d'extraction, et l'Overclock critique (2026-10-16) — il suit
+    /// bien un clic, mais c'est le hasard de l'arbre qu'il annonce, pas le bouton.
     ///
     /// Vit dans le Root, à côté des systèmes qu'il écoute : il les observe en lecture seule et
     /// ne décide de rien. Ses sources sont distinctes de celles de l'interface (une rafale de
@@ -38,6 +39,7 @@ namespace Core.Services.Audio
         private readonly TraceReadout _readout;
         private readonly BalancingConfigSO _balancing;
         private readonly PrestigeManager _prestige;
+        private readonly OverclockSystem _overclock;
         private readonly ITimeSource _time;
 
         private SoundSetVoices _voices;
@@ -50,7 +52,8 @@ namespace Core.Services.Audio
 
         public GameEventSounds(AudioLibrarySO library, AudioHost host, ThreatManager threat,
                                VictorySystem victory, TraceReadout readout,
-                               BalancingConfigSO balancing, PrestigeManager prestige, ITimeSource time)
+                               BalancingConfigSO balancing, PrestigeManager prestige,
+                               OverclockSystem overclock, ITimeSource time)
         {
             _library = library;
             _host = host;
@@ -59,6 +62,7 @@ namespace Core.Services.Audio
             _readout = readout;
             _balancing = balancing;
             _prestige = prestige;
+            _overclock = overclock;
             _time = time;
         }
 
@@ -71,6 +75,12 @@ namespace Core.Services.Audio
                    .AddTo(ref _disposables);
             _victory.OnVictory.Subscribe(this, (_, self) => self._voices.Play(self._library.VictorySet))
                     .AddTo(ref _disposables);
+
+            _overclock.OnApplied.Subscribe(this, (result, self) =>
+                      {
+                          if (result.IsCritical) self._voices.Play(self._library.OverclockCriticalSet);
+                      })
+                      .AddTo(ref _disposables);
 
             // Émet la valeur courante tout de suite : sert de point de départ, sans alerte.
             _readout.LastKnownFraction.Subscribe(this, (fraction, self) => self.HandleTraceReading(fraction))

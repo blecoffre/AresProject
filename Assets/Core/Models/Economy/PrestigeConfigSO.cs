@@ -71,9 +71,41 @@ namespace Core.Models.Economy
         /// <summary>
         /// Le puits à points (P_CORE_OVERRIDE, 2026-10-14). Aucun effet propre : chaque rang est
         /// un point DÉPENSÉ, et c'est tout ce que lit le Noyau Compilé. Il absorbe les points
-        /// qu'une campagne produit au-delà des 107 de l'arbre utile.
+        /// qu'une campagne produit au-delà de l'arbre utile (152 points depuis le 2026-10-16).
         /// </summary>
-        CoreOverride
+        CoreOverride,
+
+        // ---- Nœuds ajoutés le 2026-10-16 (GD). ⚠️ Toujours EN FIN : l'index est sérialisé. ----
+
+        /// <summary>
+        /// Saisie Multiplexée (P_OVERCLOCK_SPACEBAR) — déverrouille l'Overclock à la barre
+        /// d'Espace. Le bouton à l'écran, lui, est libre dès le départ. Déblocage booléen.
+        /// </summary>
+        UnlockSpacebar,
+
+        /// <summary>
+        /// Capital de Départ (P_STARTING_FUNDS_1 et _2) — Datas AJOUTÉES à l'argent de départ de
+        /// chaque run : <c>base + Σ</c>.
+        /// </summary>
+        StartingMoneyBonus,
+
+        /// <summary>
+        /// Instabilité Zéro-Day (P_OVERCLOCK_CRIT) — chance qu'un Overclock soit critique : avance
+        /// ×3 et aucune pénalité. Somme des rangs, en fraction (0,05 = 5 %).
+        /// </summary>
+        OverclockCritChance,
+
+        /// <summary>
+        /// État d'Alerte (P_ALERT_STATE) — rendement des Scripts × <c>(1 + jauge × Σ)</c>, la
+        /// jauge étant la VRAIE (0 à 1) à l'instant où le cycle verse.
+        /// </summary>
+        AlertStateYieldBonus,
+
+        /// <summary>
+        /// Routine Pare-Feu (P_FIREWALL_ROUTINE) — à 95 % de jauge, achète d'office le Proxy le
+        /// plus cher que le joueur peut s'offrir. Déblocage booléen.
+        /// </summary>
+        UnlockAutoProxy
     }
 
     [CreateAssetMenu(fileName = "NewPrestigeConfig", menuName = "Core/Economy/Prestige Config")]

@@ -35,8 +35,9 @@ namespace Core.UI.Game
         }
 
         /// <summary>
-        /// Compose les trois préfixes UNE fois par changement de langue ou de palette — jamais
-        /// par ligne de log.
+        /// Compose les quatre préfixes UNE fois par changement de langue ou de palette — jamais
+        /// par ligne de log. Le critique de l'Overclock prend la couleur du succès : c'est un
+        /// gain, et le vert est déjà celui du jeu pour « c'est passé ».
         /// </summary>
         private void RenderTagPrefixes()
         {
@@ -44,7 +45,8 @@ namespace Core.UI.Game
             _view.SetTagPrefixes(
                 "<color=" + p.ConsoleSuccessHex + ">" + _loc.GetText("CONSOLE_TAG_SUCCESS") + "</color> ",
                 "<color=" + p.ConsoleNarrativeHex + ">" + _loc.GetText("CONSOLE_TAG_NARRATIVE") + "</color> ",
-                "<color=" + p.ConsoleStandardHex + ">" + _loc.GetText("CONSOLE_TAG_STANDARD") + "</color> ");
+                "<color=" + p.ConsoleStandardHex + ">" + _loc.GetText("CONSOLE_TAG_STANDARD") + "</color> ",
+                "<color=" + p.ConsoleSuccessHex + ">" + _loc.GetText("CONSOLE_TAG_CRITICAL") + "</color> ");
         }
 
         public void Log(string message, ConsoleLogType type = ConsoleLogType.Standard)

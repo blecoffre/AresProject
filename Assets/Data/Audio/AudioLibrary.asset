@@ -21,6 +21,7 @@ MonoBehaviour:
   _refusalSet: {fileID: 11400000, guid: a639e06d5ab920e45b472e6c5e101702, type: 2}
   _seizureSet: {fileID: 11400000, guid: d80d4e74b0375424eafff5d6eeb79c27, type: 2}
   _victorySet: {fileID: 11400000, guid: 6bf0bb4f96e2a8d4b99ba3242a85d33e, type: 2}
+  _overclockCriticalSet: {fileID: 11400000, guid: 5d968d9889211dc4a9f50bf1b2b66c6c, type: 2}
   _traceTierSets:
   - {fileID: 11400000, guid: 47177a1dd9971c142845001d921a88d2, type: 2}
   - {fileID: 11400000, guid: 535935305049c0e4fb8dd72e75844ed8, type: 2}

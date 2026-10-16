@@ -1,0 +1,25 @@
+{
+  "items": [
+    {
+      "id": "P_STARTING_FUNDS_1",
+      "bonusType": "StartingMoneyBonus",
+      "maxLevel": 5,
+      "baseCost": 1.0,
+      "bonus": 10.0,
+      "posX": -4.0,
+      "posY": 0.0,
+      "prerequisiteId": "P_ROOT"
+    },
+    {
+      "id": "P_STARTING_FUNDS_2",
+      "bonusType": "StartingMoneyBonus",
+      "maxLevel": 5,
+      "baseCost": 1.0,
+      "bonus": 50.0,
+      "posX": -4.0,
+      "posY": -1.0,
+      "prerequisiteId": "P_STARTING_FUNDS_1",
+      "requiredLevel": 0
+    }
+  ]
+}

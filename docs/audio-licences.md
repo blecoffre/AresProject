@@ -6,7 +6,7 @@ Tout fichier audio ajouté au projet est inscrit ici **au moment où il entre da
 |---|---|---|---|---|---|
 | `Data/Audio/Button/Typing/ui_key_b_*.wav` (36) | Famille `KeyPress` | [Pixabay — « Keyboard Typing »](https://pixabay.com/fr/sound-effects/la-technologie-keyboard-typing-5997/), publié le 2021-08-05 par le compte freesound_community (republication depuis Freesound) | Trollarch2 (Freesound) | Licence de contenu Pixabay (usage commercial gratuit, modification autorisée) | Non, confirmé par le résumé de la licence (créditer Trollarch2 reste apprécié) |
 | `Data/Audio/Button/Validation/ui_validation_*.wav` (5) | Famille `Validation` | Dérivés de la même prise (frappes les plus graves, ralenties, impact grave ajouté) | idem | idem | idem |
-| `Data/Audio/Events/sfx_*.wav` (10) | Refus, paliers de Trace, saisie, victoire, prestige, exfiltration, Data Wiper | Synthétisés par `tools/audio/synth_sfx.py` (2026-10-12) | Projet Ares | Propriété du projet | Non |
+| `Data/Audio/Events/sfx_*.wav` (11) | Refus, paliers de Trace, saisie, victoire, prestige, exfiltration, Data Wiper, Overclock critique (2026-10-16) | Synthétisés par `tools/audio/synth_sfx.py` (2026-10-12) | Projet Ares | Propriété du projet | Non |
 | `Data/Audio/Music/music_*_placeholder.wav` (2) | Musiques menu et jeu, **bouche-trou** | Synthétisées par `tools/audio/synth_music.py` (2026-10-12) | Projet Ares | Propriété du projet | Non |
 
 **Contenu produit avec une IA.** Les sons synthétisés l'ont été par des scripts écrits par Claude (Anthropic). Steam demande de déclarer le contenu créé avec l'aide d'outils d'IA : par prudence, le mentionner dans le questionnaire de la page du jeu tant que ces sons y sont.

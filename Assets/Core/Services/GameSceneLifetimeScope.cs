@@ -59,10 +59,9 @@ namespace Core.Boot
 
         protected override void Configure(IContainerBuilder builder)
         {
-            // Services locaux à la scène.
-            // Le ScriptCycleRunner, lui, vit dans le scope racine : les cycles appartiennent à la
+            // Aucun service local : l'OverclockSystem est monté dans le scope racine le 2026-10-16,
+            // à côté du ScriptCycleRunner — les cycles et leur accélération appartiennent à la
             // partie, pas à l'affichage.
-            builder.Register<OverclockSystem>(Lifetime.Scoped);
 
             // Vues
             builder.RegisterComponent(_consoleView);
@@ -124,6 +123,9 @@ namespace Core.Boot
             builder.Register<HeaderPresenter>(Lifetime.Scoped).AsImplementedInterfaces().AsSelf();
             builder.Register<UpgradePanelPresenter>(Lifetime.Scoped).AsImplementedInterfaces().AsSelf();
             builder.Register<GameOverPresenter>(Lifetime.Scoped).AsImplementedInterfaces().AsSelf();
+
+            // Sans vue : raconte dans la console les achats d'office de la Routine Pare-Feu.
+            builder.Register<FirewallRoutinePresenter>(Lifetime.Scoped).AsImplementedInterfaces();
 
             // N'a AUCUNE vue : il ne fait que raconter la victoire dans la console, donc rien à
             // câbler dans la scène. L'écran dédié viendra s'ajouter ici quand il existera.

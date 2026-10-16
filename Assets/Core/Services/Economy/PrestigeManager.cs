@@ -68,6 +68,11 @@ namespace Core.Services.Economy
         private readonly ReactiveProperty<float> _cleanExitBonusMultiplier = new(1f);
         private readonly ReactiveProperty<bool> _isEmergencyUnlocked = new(false);
         private readonly ReactiveProperty<bool> _isHighRiskExtractionUnlocked = new(false);
+        private readonly ReactiveProperty<bool> _isSpacebarUnlocked = new(false);
+        private readonly ReactiveProperty<double> _totalStartingMoneyBonus = new(0d);
+        private readonly ReactiveProperty<float> _totalOverclockCritChance = new(0f);
+        private readonly ReactiveProperty<float> _totalAlertBonus = new(0f);
+        private readonly ReactiveProperty<bool> _isAutoProxyUnlocked = new(false);
         private readonly ReactiveProperty<int> _totalPointsSpent = new(0);
         private readonly ReactiveProperty<float> _totalCostMultiplier = new(1f);
         private readonly ReactiveProperty<float> _totalYieldBonus = new(1f);
@@ -119,6 +124,34 @@ namespace Core.Services.Economy
         /// proposé dès la première run, alors que le joueur pilote encore à l'aveugle.
         /// </summary>
         public ReadOnlyReactiveProperty<bool> IsHighRiskExtractionUnlocked => _isHighRiskExtractionUnlocked;
+
+        /// <summary>
+        /// La barre d'Espace déclenche-t-elle l'Overclock (`P_OVERCLOCK_SPACEBAR`, « Saisie
+        /// Multiplexée »). Faux par défaut depuis le 2026-10-16 : le bouton à l'écran est libre
+        /// dès le départ, le clavier s'achète.
+        /// </summary>
+        public ReadOnlyReactiveProperty<bool> IsSpacebarUnlocked => _isSpacebarUnlocked;
+
+        /// <summary>
+        /// Datas AJOUTÉES à l'argent de départ de chaque run (branche « Capital de Départ »).
+        /// Vaut 0 sans aucun nœud.
+        /// </summary>
+        public ReadOnlyReactiveProperty<double> TotalStartingMoneyBonus => _totalStartingMoneyBonus;
+
+        /// <summary>
+        /// Chance qu'un Overclock soit critique (`P_OVERCLOCK_CRIT`), entre 0 et 1 : avance ×3,
+        /// aucune pénalité. Vaut 0 sans le nœud.
+        /// </summary>
+        public ReadOnlyReactiveProperty<float> TotalOverclockCritChance => _totalOverclockCritChance;
+
+        /// <summary>
+        /// État d'Alerte (`P_ALERT_STATE`) : le rendement d'un Script est multiplié par
+        /// <c>1 + jauge × cette somme</c> au versement. Vaut 0 sans le nœud.
+        /// </summary>
+        public ReadOnlyReactiveProperty<float> TotalAlertBonus => _totalAlertBonus;
+
+        /// <summary>La Routine Pare-Feu achète-t-elle d'office un Proxy à 95 % de jauge (`P_FIREWALL_ROUTINE`).</summary>
+        public ReadOnlyReactiveProperty<bool> IsAutoProxyUnlocked => _isAutoProxyUnlocked;
 
         /// <summary>
         /// Points de prestige DÉPENSÉS dans tout l'arbre, `P_CORE_OVERRIDE` compris. C'est la
@@ -291,6 +324,11 @@ namespace Core.Services.Economy
             float cleanExitBonus = 0f;
             bool emergencyUnlocked = false;
             bool highRiskExtraction = false;
+            bool spacebarUnlocked = false;
+            double startingMoneyBonus = 0d;
+            float critChance = 0f;
+            float alertBonus = 0f;
+            bool autoProxyUnlocked = false;
             double pointsSpent = 0d;
 
             foreach (var kvp in _prestigeLevels)
@@ -344,6 +382,27 @@ namespace Core.Services.Economy
                         if (currentLevel > 0) highRiskExtraction = true;
                         break;
 
+                    // Nœuds ajoutés le 2026-10-16 (GD).
+                    case PrestigeBonusType.UnlockSpacebar:
+                        if (currentLevel > 0) spacebarUnlocked = true;
+                        break;
+
+                    case PrestigeBonusType.StartingMoneyBonus:
+                        startingMoneyBonus += totalBonus;
+                        break;
+
+                    case PrestigeBonusType.OverclockCritChance:
+                        critChance += totalBonus;
+                        break;
+
+                    case PrestigeBonusType.AlertStateYieldBonus:
+                        alertBonus += totalBonus;
+                        break;
+
+                    case PrestigeBonusType.UnlockAutoProxy:
+                        if (currentLevel > 0) autoProxyUnlocked = true;
+                        break;
+
                     // Ni la racine ni le puits à points n'ont d'effet propre. Le second ne sert
                     // qu'au Noyau, par ses points déjà comptés ci-dessus. Les cas sont écrits pour
                     // que le switch reste exhaustif et qu'un futur type oublié se remarque.
@@ -367,6 +426,14 @@ namespace Core.Services.Economy
             _cleanExitBonusMultiplier.Value = UnityEngine.Mathf.Max(1f, 1f + cleanExitBonus);
             _isEmergencyUnlocked.Value = emergencyUnlocked;
             _isHighRiskExtractionUnlocked.Value = highRiskExtraction;
+
+            // Mêmes bornes que les branches ci-dessus : un nœud ne peut que donner. La chance de
+            // critique est une probabilité, plafonnée à 1.
+            _isSpacebarUnlocked.Value = spacebarUnlocked;
+            _totalStartingMoneyBonus.Value = Math.Max(0d, startingMoneyBonus);
+            _totalOverclockCritChance.Value = UnityEngine.Mathf.Clamp01(critChance);
+            _totalAlertBonus.Value = UnityEngine.Mathf.Max(0f, alertBonus);
+            _isAutoProxyUnlocked.Value = autoProxyUnlocked;
 
             ApplyCore((int)Math.Round(pointsSpent));
 
@@ -415,6 +482,11 @@ namespace Core.Services.Economy
             _cleanExitBonusMultiplier.Dispose();
             _isEmergencyUnlocked.Dispose();
             _isHighRiskExtractionUnlocked.Dispose();
+            _isSpacebarUnlocked.Dispose();
+            _totalStartingMoneyBonus.Dispose();
+            _totalOverclockCritChance.Dispose();
+            _totalAlertBonus.Dispose();
+            _isAutoProxyUnlocked.Dispose();
             _totalPointsSpent.Dispose();
             _totalCostMultiplier.Dispose();
             _totalYieldBonus.Dispose();

@@ -238,6 +238,11 @@ namespace Core.Models.Economy
                  "quelques secondes.")]
         [SerializeField, Range(0f, 1f)] private float _overclockMinIntervalSeconds = 0.1f;
 
+        [Tooltip("Coup critique de l'Overclock (nœud « Instabilité Zéro-Day », 2026-10-16) : " +
+                 "l'avance de l'appui est multipliée par cette valeur, et la pénalité tombe à " +
+                 "zéro. La chance de critique, elle, vient de l'arbre.")]
+        [SerializeField, Min(1f)] private float _overclockCriticalAdvanceMultiplier = 3f;
+
         // ------------------------------------------------------------------
         // Proxies — l'échelle commune du Wipe
         // ------------------------------------------------------------------
@@ -249,6 +254,12 @@ namespace Core.Models.Economy
                  "seul chiffre pour régler le poids des Proxies dans la campagne, sans retoucher " +
                  "quinze générateurs. Il change aussi ce qu'annonce la carte de chaque Proxy.")]
         [SerializeField, Min(0f)] private float _proxyWipeScale = 1f;
+
+        [Tooltip("Routine Pare-Feu (nœud P_FIREWALL_ROUTINE, 2026-10-16) : part de la jauge à " +
+                 "laquelle le Proxy le plus cher abordable s'achète d'office. 0,95 = 9 500 UT. " +
+                 "Se déclenche au FRANCHISSEMENT, une fois : la jauge doit repasser dessous pour " +
+                 "réarmer.")]
+        [SerializeField, Range(0.5f, 1f)] private float _autoProxyTriggerFraction = 0.95f;
 
         // ------------------------------------------------------------------
         // Bouton d'Urgence / Data Wiper
@@ -351,6 +362,12 @@ namespace Core.Models.Economy
 
         /// <summary>Échelle commune du Wipe des Proxies, avant l'Interception.</summary>
         public float ProxyWipeScale => _proxyWipeScale;
+
+        /// <summary>Multiplicateur d'avance d'un Overclock critique.</summary>
+        public float OverclockCriticalAdvanceMultiplier => _overclockCriticalAdvanceMultiplier;
+
+        /// <summary>Part de la jauge qui déclenche la Routine Pare-Feu.</summary>
+        public float AutoProxyTriggerFraction => _autoProxyTriggerFraction;
 
         public float EmergencyTraceRemoval => _emergencyTraceRemoval;
         public float EmergencySacrificeStep => _emergencySacrificeStep;

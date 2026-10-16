@@ -1,7 +1,6 @@
 using Core.Models.Economy;
 using Core.Models.Simulation;
 using Core.Services.Economy;
-using Core.Services.Security;
 using R3;
 using System;
 using System.Globalization;
@@ -41,7 +40,7 @@ namespace Core.Services.Simulation
 
         private readonly GameSessionManager _session;
         private readonly UpgradeManager _upgrades;
-        private readonly ThreatManager _threat;
+        private readonly OverclockSystem _overclock;
         private readonly PrestigeManager _prestige;
         private readonly UserCurrencies _currencies;
         private readonly VictorySystem _victory;
@@ -62,14 +61,14 @@ namespace Core.Services.Simulation
         public RunJournal(
             GameSessionManager session,
             UpgradeManager upgrades,
-            ThreatManager threat,
+            OverclockSystem overclock,
             PrestigeManager prestige,
             UserCurrencies currencies,
             VictorySystem victory)
         {
             _session = session;
             _upgrades = upgrades;
-            _threat = threat;
+            _overclock = overclock;
             _prestige = prestige;
             _currencies = currencies;
             _victory = victory;
@@ -90,7 +89,8 @@ namespace Core.Services.Simulation
                 .Subscribe(this, (value, self) => { if (value > self._peakGrossTFlops) self._peakGrossTFlops = value; })
                 .AddTo(ref _disposables);
 
-            _threat.OnOverclockPenalty
+            // Tout Overclock appliqué, critique compris (il ne coûte rien, mais c'est un appui).
+            _overclock.OnApplied
                 .Subscribe(this, (_, self) => self._overclocks++)
                 .AddTo(ref _disposables);
 

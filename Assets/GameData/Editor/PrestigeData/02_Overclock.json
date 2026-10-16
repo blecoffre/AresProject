@@ -42,6 +42,28 @@
       "posY": -3.0,
       "prerequisiteId": "P_OVERCLOCK_POWER_2",
       "requiredLevel": 0
+    },
+    {
+      "id": "P_OVERCLOCK_SPACEBAR",
+      "bonusType": "UnlockSpacebar",
+      "maxLevel": 1,
+      "baseCost": 5.0,
+      "bonus": 1.0,
+      "posX": 4.0,
+      "posY": -3.0,
+      "prerequisiteId": "P_OVERCLOCK_POWER_2",
+      "requiredLevel": 0
+    },
+    {
+      "id": "P_OVERCLOCK_CRIT",
+      "bonusType": "OverclockCritChance",
+      "maxLevel": 5,
+      "baseCost": 1.0,
+      "bonus": 0.05,
+      "posX": 4.0,
+      "posY": -4.0,
+      "prerequisiteId": "P_OVERCLOCK_SPACEBAR",
+      "requiredLevel": 0
     }
   ]
 }

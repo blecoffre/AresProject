@@ -42,7 +42,9 @@ La feuille de route des lots est dans `etat-des-lieux.md`. Ici, les points ouver
 - ⚖️ **La disposition de l'arbre en éventail est provisoire** (lot 4). Vue en jeu le 2026-10-15 :
   « ça fait un peu arbre de RPG, MAIS on va ajouter quelques autres nœuds » — la dispersion se
   décidera avec eux. **Ne rien changer d'ici là** (Bertrand). À zoom 1, l'écran ne montre que trois
-  des sept colonnes ; il faut dézoomer à la molette.
+  des sept colonnes ; il faut dézoomer à la molette. **Les six nœuds sont arrivés le 2026-10-16** :
+  27 nœuds sur neuf colonnes, rangés provisoirement dans l'éventail — la dispersion peut maintenant
+  se décider.
 
 ## 1. Bloquant pour une sortie publique
 

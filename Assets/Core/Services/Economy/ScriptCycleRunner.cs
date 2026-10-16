@@ -1,5 +1,6 @@
 using Core.Models.Economy;
 using Core.Services.Platform;
+using Core.Services.Security;
 using Core.Services.Simulation;
 using R3;
 using System;
@@ -39,6 +40,8 @@ namespace Core.Services.Economy
         private readonly UserCurrencies _currencies;
         private readonly UpgradeManager _upgradeManager;
         private readonly GameSessionManager _sessionManager;
+        private readonly ThreatManager _threat;
+        private readonly PrestigeManager _prestige;
         private readonly ITimeSource _time;
 
         private CycleSlot[] _slots = Array.Empty<CycleSlot>();
@@ -52,11 +55,15 @@ namespace Core.Services.Economy
             UserCurrencies currencies,
             UpgradeManager upgradeManager,
             GameSessionManager sessionManager,
+            ThreatManager threat,
+            PrestigeManager prestige,
             ITimeSource time)
         {
             _currencies = currencies;
             _upgradeManager = upgradeManager;
             _sessionManager = sessionManager;
+            _threat = threat;
+            _prestige = prestige;
             _time = time;
         }
 
@@ -169,6 +176,21 @@ namespace Core.Services.Economy
             }
         }
 
+        /// <summary>
+        /// État d'Alerte (`P_ALERT_STATE`, GD, 2026-10-16) : <c>1 + jauge × Σ</c>, lu à
+        /// l'instant précis où le cycle verse — jamais recalculé par frame. La jauge est la VRAIE
+        /// (choix de Bertrand) : le risque réel paie réellement, et un revenu noyé dans les cycles
+        /// de nombreux Scripts ne trahit presque rien de ce que le brouillard cache.
+        /// Vaut 1 sans le nœud.
+        /// </summary>
+        private double AlertStateMultiplier()
+        {
+            float bonus = _prestige.TotalAlertBonus.CurrentValue;
+            if (bonus <= 0f) return 1d;
+
+            return 1d + _threat.NormalizedThreat.CurrentValue * bonus;
+        }
+
         private void AdvanceSlot(int index, float seconds)
         {
             UpgradeModel model = _slots[index].Model;
@@ -181,7 +203,7 @@ namespace Core.Services.Economy
             while (elapsed >= duration)
             {
                 elapsed -= duration;
-                _currencies.AddMoney(model.GetCurrentYield());
+                _currencies.AddMoney(model.GetCurrentYield() * AlertStateMultiplier());
 
                 if (!model.IsAutomated)
                 {

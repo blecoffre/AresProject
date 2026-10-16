@@ -1263,6 +1263,90 @@
     {
       "Key": "UI_EMERGENCY_EXHAUSTED",
       "Value": "[ÉPUISÉ] DATA WIPER\n{0} % des TFlops sacrifiées\njusqu'à la fin de la run"
+    },
+    {
+      "Key": "PRESTIGE_P_OVERCLOCK_SPACEBAR_NAME",
+      "Value": "Saisie Multiplexée"
+    },
+    {
+      "Key": "PRESTIGE_P_OVERCLOCK_SPACEBAR_DESC",
+      "Value": "Un pilote de clavier bricolé branche ta barre d'Espace droit sur le bus d'overclock. Le bouton à l'écran ne suivait plus la cadence."
+    },
+    {
+      "Key": "PRESTIGE_P_OVERCLOCK_CRIT_NAME",
+      "Value": "Instabilité Zéro-Day"
+    },
+    {
+      "Key": "PRESTIGE_P_OVERCLOCK_CRIT_DESC",
+      "Value": "Une faille jamais corrigée dans le contrôleur de fréquence. Parfois, l'overclock passe sous les radars de l'A.M.I. : triple avance, aucune trace."
+    },
+    {
+      "Key": "PRESTIGE_P_STARTING_FUNDS_1_NAME",
+      "Value": "Capital d'Amorçage"
+    },
+    {
+      "Key": "PRESTIGE_P_STARTING_FUNDS_1_DESC",
+      "Value": "Quelques Datas mises de côté avant chaque intrusion. Assez pour ne plus repartir les poches vides."
+    },
+    {
+      "Key": "PRESTIGE_P_STARTING_FUNDS_2_NAME",
+      "Value": "Financement Occulte"
+    },
+    {
+      "Key": "PRESTIGE_P_STARTING_FUNDS_2_DESC",
+      "Value": "Un commanditaire anonyme alimente ton compte avant chaque run. Il ne pose pas de questions ; fais de même."
+    },
+    {
+      "Key": "PRESTIGE_P_ALERT_STATE_NAME",
+      "Value": "État d'Alerte"
+    },
+    {
+      "Key": "PRESTIGE_P_ALERT_STATE_DESC",
+      "Value": "Sous la pression de l'A.M.I., tes scripts tournent à plein régime. Plus la jauge est haute, plus chaque cycle rapporte — et plus la chute serait rude."
+    },
+    {
+      "Key": "PRESTIGE_P_FIREWALL_ROUTINE_NAME",
+      "Value": "Routine Pare-Feu"
+    },
+    {
+      "Key": "PRESTIGE_P_FIREWALL_ROUTINE_DESC",
+      "Value": "Un script de dernier recours. Quand l'A.M.I. touche au but, il achète le meilleur Proxy que tu peux t'offrir, sans te demander ton avis."
+    },
+    {
+      "Key": "UI_PRESTIGE_EFFECT_UNLOCK_SPACEBAR",
+      "Value": "> Débloque l'Overclock à la barre d'Espace"
+    },
+    {
+      "Key": "UI_PRESTIGE_EFFECT_STARTING_MONEY",
+      "Value": "> Datas au départ de chaque run : +{0:0} par niveau"
+    },
+    {
+      "Key": "UI_PRESTIGE_EFFECT_OVERCLOCK_CRIT",
+      "Value": "> Chance de critique de l'Overclock : +{0:0.##} % par niveau (avance ×3, aucune pénalité)"
+    },
+    {
+      "Key": "UI_PRESTIGE_EFFECT_ALERT_STATE",
+      "Value": "> Rendement des Scripts : jusqu'à +{0:0.##} % par niveau, au prorata de la jauge"
+    },
+    {
+      "Key": "UI_PRESTIGE_EFFECT_UNLOCK_AUTO_PROXY",
+      "Value": "> À 95 % de jauge, achète d'office le Proxy le plus cher abordable"
+    },
+    {
+      "Key": "CONSOLE_TAG_CRITICAL",
+      "Value": "[CRITICAL BYPASS]"
+    },
+    {
+      "Key": "LOG_MANUAL_OVERCLOCK_CRITICAL",
+      "Value": "Overclock ×3 : +{0:0.#} s sur les cycles en cours. Jauge intacte."
+    },
+    {
+      "Key": "LOG_SPACEBAR_LOCKED",
+      "Value": "Barre d'Espace inactive : l'Overclock au clavier s'installe avec le nœud Saisie Multiplexée. Le bouton à l'écran reste disponible."
+    },
+    {
+      "Key": "LOG_FIREWALL_ROUTINE",
+      "Value": "> Routine Pare-Feu : {0} acheté d'office. Jauge −{1:0} UT."
     }
   ]
 }

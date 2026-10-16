@@ -42,6 +42,17 @@
       "posY": -3.0,
       "prerequisiteId": "P_EXTRACT_3",
       "requiredLevel": 0
+    },
+    {
+      "id": "P_ALERT_STATE",
+      "bonusType": "AlertStateYieldBonus",
+      "maxLevel": 10,
+      "baseCost": 1.0,
+      "bonus": 0.1,
+      "posX": 1.0,
+      "posY": -3.0,
+      "prerequisiteId": "P_EXTRACT_3",
+      "requiredLevel": 0
     }
   ]
 }

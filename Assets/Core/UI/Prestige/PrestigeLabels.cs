@@ -85,6 +85,24 @@ namespace Core.UI.Prestige
                 case PrestigeBonusType.Root:
                     return loc.GetText("UI_PRESTIGE_EFFECT_ROOT");
 
+                // ---- Nœuds ajoutés le 2026-10-16 (GD) ----------------------------------------
+                case PrestigeBonusType.UnlockSpacebar:
+                    return loc.GetText("UI_PRESTIGE_EFFECT_UNLOCK_SPACEBAR");
+
+                // Des Datas, pas un pourcentage : un montant ajouté à l'argent de départ.
+                case PrestigeBonusType.StartingMoneyBonus:
+                    return loc.GetText("UI_PRESTIGE_EFFECT_STARTING_MONEY", perLevel);
+
+                case PrestigeBonusType.OverclockCritChance:
+                    return loc.GetText("UI_PRESTIGE_EFFECT_OVERCLOCK_CRIT", AsPercent(perLevel));
+
+                // Un plafond, atteint jauge pleine : à mi-jauge, le joueur n'en touche que la moitié.
+                case PrestigeBonusType.AlertStateYieldBonus:
+                    return loc.GetText("UI_PRESTIGE_EFFECT_ALERT_STATE", AsPercent(perLevel));
+
+                case PrestigeBonusType.UnlockAutoProxy:
+                    return loc.GetText("UI_PRESTIGE_EFFECT_UNLOCK_AUTO_PROXY");
+
                 default:
                     // Un type de bonus ajouté à l'enum sans gabarit ici afficherait du vide dans
                     // l'inspecteur, sans rien casser : on le dit au développeur, pas au joueur.
