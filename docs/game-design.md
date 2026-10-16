@@ -924,7 +924,7 @@ militaire polymorphe de classe mondiale, impossible à craquer d'une traite.
 
 | Mécanique | Dans la fiction |
 |---|---|
-| **Une run** | Une session de décryptage : brancher la clé, arracher ce qu'on peut, débrancher avant que l'A.M.I. ne remonte jusqu'à soi |
+| **Une run** | Une session de décryptage : **tant que la clé est branchée, le décryptage d'ARES avance** et le bloc reconstitué grossit. Pendant ce temps, les Scripts pillent le monde pour financer la session. Il faut débrancher avant que l'A.M.I. ne remonte jusqu'à soi |
 | **Le Hardware remis à zéro**, même après une extraction réussie | Chaque run repart d'un **sous-sol neuf** (lore d'août, conservé). Les machines sont formatées et abandonnées (Protocole Terre Brûlée), ou laissées aux fédéraux |
 | **L'arbre de prestige, qui survit** | **Le Noyau** : l'équipement logiciel et physique de l'Extracteur, qui le suit d'une planque à l'autre — avec la clé |
 
@@ -955,8 +955,8 @@ reçoit que des **pings** asynchrones.
 
 | Mécanique | Dans la fiction |
 |---|---|
-| **Les Datas**, la monnaie de la run | Les paquets de données brutes décryptés par les Scripts, revendus à l'instant, en arrière-plan, sur le Darknet. Elles ne survivent pas à la run |
-| **Les TFlops** | La force brute : serveurs et processeurs. Les **nettes** compriment le décryptage ; les **brutes** font le bruit qui attire l'A.M.I. plus vite |
+| **Les Datas**, la monnaie de la run | **Le butin des Scripts** (arbitrage du 2026-10-16) : identités, cartes, comptes, marchés — tout ce qu'ils volent au monde, revendu à l'instant, en arrière-plan, sur le Darknet. Elles ne survivent pas à la run. *Le texte du GD en faisait des fragments d'ARES décryptés par les Scripts : il aurait fallu réécrire les 25 Scripts, qui volent le monde depuis le phishing jusqu'au registre financier mondial.* |
+| **Les TFlops** | La force brute : serveurs et processeurs. Les **nettes** accélèrent les Scripts, et c'est leur total qui finira par briser la clé (la victoire) ; les **brutes** font le bruit qui attire l'A.M.I. plus vite |
 | **L'Overclock** | Le joueur court-circuite les sécurités thermiques de sa carte mère. Le calcul gagne une demi-seconde (davantage avec la branche Overclock), et l'appel de courant, anomalie flagrante sur le réseau, offre à l'A.M.I. **cinq secondes de pistage gratuit** |
 | **Les Proxies** | Des serveurs relais achetés à travers le monde — VPN, machines zombies, réseaux en oignon — et **brûlés** à l'instant de l'achat : l'A.M.I. perd du temps à remonter la fausse piste (le Wipe) |
 | **L'Interception** | Chaque proxy brûlé brouille davantage la piste : machines hors registre, grille-pain connectés (textes des nœuds `P_INTERCEPT_*`) |
@@ -971,7 +971,7 @@ miettes.
 
 | Mécanique | Dans la fiction |
 |---|---|
-| **Les Cycles CPU**, la seule monnaie qui survit au wipe | **La paie du client, en temps de calcul** sur sa propre grille. Ce temps compile le Noyau (arbitrage du 2026-10-16) |
+| **Les Cycles CPU**, la seule monnaie qui survit au wipe | **La paie du client, en temps de calcul** sur sa propre grille. Ce temps compile le Noyau (arbitrage du 2026-10-16). ⚠️ Mécaniquement, elle se calcule sur les **Datas de la run**, prime du palier en sus (« Les points de prestige ») : aucun texte ne doit laisser croire qu'elle ne dépend que du temps branché |
 | **Les paliers 50 / 75 / 90 %** | La valeur du bloc reconstitué : plus il est complet, plus la prime est grosse. Sous 50 %, pas de prime — la paie de base reste due |
 | **Une saisie verse 30 %** de sa contribution | Le client paie ce qu'il a reçu avant la coupure du FAI |
 | **L'Effacement Propre** et sa séquence `PURGE.exe` | Le Protocole Terre Brûlée : clé arrachée, disques formatés, adresse MAC brouillée, matériel abandonné |

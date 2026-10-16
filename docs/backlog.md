@@ -135,10 +135,14 @@ Le détail chiffré et les chantiers d'équilibrage sont dans `etat-des-lieux.md
 - 🔬 **Le trait des nœuds verrouillés n'est pas pointillé** comme sur la maquette (le sprite du
   cadre est plein ; constat du 2026-08-30). Les liens, eux, le sont depuis le 2026-08-30.
 - 📖 **Des textes du jeu ne suivent pas le lore du 2026-10-16** (GDD, « Lore »). Relevé dans
-  `fr.json` le jour même. À reprendre avec le tutoriel et les messages de la console, que ce lore
-  doit nourrir (demande de Bertrand) ; on ne change que les valeurs, les clés restent :
+  `fr.json` le jour même, puis relu en entier (337 clés, nœuds du lot C2 compris). À reprendre
+  avec le tutoriel et les messages de la console, que ce lore doit nourrir (demande de Bertrand) ;
+  on ne change que les valeurs, les clés restent :
   - **Contredisent le lore.** `UI_VICTORY_BODY` dit « L'A.M.I., elle, te cherche toujours » alors
-    qu'elle vient d'être effacée : dire qu'elle se reconstruit. `LOG_PURGE_5` compile le Noyau
+    qu'elle vient d'être effacée : dire qu'elle se reconstruit. Il dit aussi « Tu le savais
+    déjà » de la photo de chat, alors que le thriller garde le contenu de la clé secret jusqu'au
+    bout. `PRESTIGE_P_STARTING_FUNDS_2_DESC` (lot C2) invente « un commanditaire anonyme » à côté
+    du client anonyme : en faire le client, qui avance des fonds. `LOG_PURGE_5` compile le Noyau
     avec « les erreurs » : c'est désormais la paie du client. `UI_RUN_END_CLEAN_NARRATIVE` (« Ils
     fouillent un appartement vide ») suppose une planque trouvée, alors qu'une extraction se fait
     avant la triangulation.
@@ -146,8 +150,19 @@ Le détail chiffré et les chantiers d'équilibrage sont dans `etat-des-lieux.md
     que le joueur retourne d'abord sa puissance contre l'A.M.I. `UI_RUN_END_SEIZED_NARRATIVE` ne
     dit pas qu'il s'enfuit avec la clé, sans quoi il ne pourrait pas la rebrancher. Le début de
     run (`LOG_NETWORK_CONNECTED`, `LOG_BREACH_STARTED`) ne parle ni de la clé, ni de l'A.M.I.
-  - **Vocabulaire.** `LOG_PROXY_WIPE` dit « Brouillage » là où le lore dit qu'un proxy est
-    « brûlé ».
+  - **Vocabulaire.** `LOG_PROXY_WIPE`, `UI_PRESTIGE_EFFECT_INTERCEPT` et `LOG_FIREWALL_ROUTINE`
+    (lot C2) disent « Brouillage » ou « acheté » là où le lore dit qu'un proxy est « brûlé ». La
+    sortie volontaire porte **quatre noms** : « WIPE SYSTÈME » (`UI_EXFIL_LOCKED`, `_READY`),
+    « EFFACEMENT PROPRE » (`UI_RUN_END_CLEAN_NARRATIVE`), « Clean Exit », en anglais
+    (`UI_RUN_END_STAT_CLEAN_BONUS`), et « Extraction » (paliers, nœuds, lore). Le tutoriel aura
+    besoin d'un seul verbe : « Extraction », celui du lore.
+  - **Mineur.** `PRESTIGE_P_EXTRACT_1` à `_3` racontent la fuite (trajet à blanc, tunnel) alors
+    que la branche augmente la prime du client sur le bloc : parler d'assemblage ou de négociation.
+  - **À garder, proposition à confirmer avec le GD.** `UPG_HW_20_DESC` (Singularité Contenue :
+    « Elle tient dans une clé USB ») laisse croire qu'ARES est une IA — c'est la fausse piste qui
+    fait tomber la photo de chat, et ce qui survit de l'« IA libre » écartée.
+- 📖 **Le `CLAUDE.md` décrit l'A.M.I. comme « le système de sécurité du réseau »** (§ « Le projet
+  en trois phrases ») ; le lore du 2026-10-16 en fait la sentinelle intégrée à la clé ARES.
 
 ## 5. Architecture et cycle de vie
 
