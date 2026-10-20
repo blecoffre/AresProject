@@ -45,7 +45,7 @@ supprimer `savegame.json` **et** `journal-runs.csv` s'il existe. Lancer depuis l
 
 | # | Quoi | Comment | Ce qu'on doit voir |
 |---|---|---|---|
-| 10.1 | **Le journal écrit** | Finir la run 1 (sortie ou saisie). | Console d'Unity : « [JOURNAL] Run 1 consignée dans … ». Le fichier `journal-runs.csv` apparaît, avec une ligne d'en-tête et une ligne de run. |
+| 10.1 | **Le journal écrit** | Finir la run 1 (sortie ou saisie). | Console d'Unity : « [JOURNAL] Run 1 consignée dans … ». Le fichier `journal-runs.csv` apparaît, avec une ligne d'en-tête et une ligne de run. Dernière colonne, ajoutée le 2026-10-20 : `proxies_s`, les secondes de survie achetées en Proxies. |
 | 10.2 | **Trois runs** | Enchaîner les runs 2 et 3, en dépensant les points éventuels sur l'écran de fin. | Trois lignes de run, numérotées 1 à 3. Me transmettre le fichier, ou me dire qu'il est là : je le lis directement. |
 | 10.3 | **L'échelle des Proxies** | En Play Mode, passer `_proxyWipeScale` de `BalancingConfig.asset` à 2, puis cliquer ×10 et ×1 (la carte ne se repeint qu'à un changement) et regarder une carte de Proxy. Remettre ensuite à 1. | La carte annonce le double de secondes (« Efface 5 s » pour le premier Proxy), et l'achat retire deux fois plus de jauge. Remis à 1, tout revient. |
 
@@ -74,6 +74,22 @@ sur l'écran de fin (« [PRÊT] WIPE SYSTÈME » reste cliquable en éditeur).
 | 11.6 | **État d'Alerte** | « État d'Alerte » 10/10. Ne posséder que la « Campagne de Phishing Basique », cycle manuel. Lancer un cycle jauge presque vide, noter le gain ; recommencer jauge vers 80 %. | Jauge vide : le gain vaut le « Génère X Datas » de la carte. Vers 80 % : environ 1,8 fois plus. (La vraie jauge compte, pas l'aiguille : l'écart peut être de quelques points.) |
 | 11.7 | **Routine Pare-Feu** | « Routine Pare-Feu » (15 points, « Nuage de témoins » au max). Posséder quelques Proxies, garder de l'argent, laisser monter la jauge au-delà de 95 %. | Console : « > Routine Pare-Feu : [Proxy] acheté d'office. Jauge −N UT. », le Proxy le plus cher qu'on puisse payer parmi ceux affichés ; la jauge redescend nettement. Un seul achat par passage. Overclocker à 96 % : la routine rachète un Proxy plutôt que de laisser saisir. |
 | 11.8 | **Pare-Feu sans argent** | Même chose, solde vide au moment de dépasser 95 %. | Aucun achat ; dès qu'un cycle verse de quoi payer, la routine achète à la montée suivante. Sans argent jusqu'au bout : saisie normale. |
+
+## 0 ter. Session « chiffres », lot C3 — le harnais d'équilibrage (2026-10-20)
+
+Compilé (`dotnet build` et Unity en ligne de commande, zéro erreur, zéro warning) et **lancé en
+ligne de commande** : les chiffres ci-dessous en sortent. La fenêtre d'éditeur, elle, n'a jamais
+été ouverte. Ces étapes ne demandent pas de jouer ; la 12.7 vient après les runs du § 0.
+
+| # | Quoi | Comment | Ce qu'on doit voir |
+|---|---|---|---|
+| 12.1 | **Compilation** | Ouvrir Unity sur la branche, laisser compiler. | Console : zéro erreur, zéro warning nouveau. |
+| 12.2 | **La fenêtre** | Hors Play Mode : `Tools > Core > Équilibrage > Simuler une campagne`. | Une fenêtre « Campagne simulée » : Victoire `1E+12`, Première boîte `2000000`, Croissance `1.12`, Échelle du Wipe `1`, Exposant `0.1` (les champs d'Unity écrivent le point décimal). Le volet « Joueur de référence et simulation » se déplie sur les seuils du bot. |
+| 12.3 | **Une campagne** | « Lancer la campagne ». | Une barre de progression « Run N — x h, y points, z TFlops » pendant une demi-minute environ, puis le rapport : « ISSUE : VICTOIRE à 32 h 08, pendant la run 208 », premier point à la run 117. Ce sont les chiffres de la ligne de commande : la campagne est déterministe. Une seule ligne « [SIMULATION] » dans la console, aucune rafale de saisies ou de Data Wiper. |
+| 12.4 | **Un levier** | Première boîte à `60000`, relancer ; puis « Reprendre les valeurs de l'asset ». | « VICTOIRE à 3 h 05, pendant la run 10 », premier point à la run 2. Après la reprise, `2000000` revient. `BalancingConfig.asset` n'est pas modifié (git ne le montre pas). |
+| 12.5 | **Les fichiers** | « Ouvrir le dossier des résultats ». | L'explorateur s'ouvre sur `Logs/Simulations` : par campagne, un `.txt` (le rapport), un `.csv` (une ligne par run, avec les nœuds achetés après chacune) et un `_trace.txt` (les gestes du bot sur ses trois premières runs). |
+| 12.6 | **Pas en Play Mode** | Lancer le Play Mode depuis la RootScene, regarder la fenêtre. | « Lancer la campagne » est grisé, avec « Hors Play Mode seulement ». |
+| 12.7 | **Le calage** | Après les trois runs du § 0, relancer une campagne. | Le rapport finit par « Calage — journal du joueur réel (journal-runs.csv) face au bot » : une ligne par run jouée, issue, durée, jauge, Datas, TFlops, Overclocks et Proxies, joueur et bot côte à côte. |
 
 ## 1. Fin de partie et économie
 

@@ -3,7 +3,6 @@ using Core.Services.Platform;
 using Core.Services.Security;
 using R3;
 using System;
-using UnityEngine;
 
 namespace Core.Services.Economy
 {
@@ -75,12 +74,15 @@ namespace Core.Services.Economy
         private readonly ThreatManager _threatManager;
         private readonly BalancingConfigSO _balancing;
         private readonly IRandomSource _random;
+        private readonly IRealtimeClock _clock;
 
         private readonly Subject<OverclockResult> _onApplied = new();
 
         /// <summary>
         /// Instant réel du dernier Overclock pris en compte. Temps RÉEL et non temps de
         /// simulation : le garde-fou protège contre une main qui martèle, pas contre la partie.
+        /// Lu sur une horloge injectée (<see cref="IRealtimeClock"/>), que le harnais d'équilibrage
+        /// remplace par le temps simulé.
         /// Un seul instant pour le clic ET l'Espace : le délai est partagé entre les deux gestes.
         /// </summary>
         private double _lastAppliedAt = double.NegativeInfinity;
@@ -90,13 +92,15 @@ namespace Core.Services.Economy
             PrestigeManager prestigeManager,
             ThreatManager threatManager,
             BalancingConfigSO balancing,
-            IRandomSource random)
+            IRandomSource random,
+            IRealtimeClock clock)
         {
             _cycleRunner = cycleRunner;
             _prestigeManager = prestigeManager;
             _threatManager = threatManager;
             _balancing = balancing;
             _random = random;
+            _clock = clock;
         }
 
         /// <summary>
@@ -120,7 +124,7 @@ namespace Core.Services.Economy
             // Un appui maintenu ne se répète pas (une pression = un appui), mais un double clic ou
             // une touche martelée peuvent arriver deux fois dans la même fraction de seconde. À
             // cinq secondes de survie l'appui, c'est un Game Over accidentel en puissance.
-            double now = Time.realtimeSinceStartupAsDouble;
+            double now = _clock.Now;
             if (now - _lastAppliedAt < _balancing.OverclockMinIntervalSeconds)
             {
                 return new OverclockResult(OverclockOutcome.Throttled, 0f, 0f, false);

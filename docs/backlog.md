@@ -16,6 +16,9 @@
 - 📖 **lecture de code ou de données** — constat statique, vrai par construction (lecteur absent,
   champ non lu, valeur dans un asset…)
 - ⚖️ **estimation** — plausible mais non mesuré ; ne pas planifier un lot dessus sans mesurer
+- 🧪 **simulé** (depuis le 2026-10-20) — mesuré par le harnais d'équilibrage, sur les vrais
+  systèmes du jeu mais joué par un bot : exact sur les règles, approché sur les Datas absolues
+  tant que le bot n'est pas calé sur le journal des runs jouées
 
 Un « X n'a aucun lecteur » est un constat de lecture. « La fonctionnalité est cassée » est un
 constat de comportement, et demande le Play Mode. Ne pas confondre les deux : l'audit du 25/08
@@ -97,8 +100,35 @@ Le détail chiffré et les chantiers d'équilibrage sont dans `etat-des-lieux.md
 
 - 📖 **Trois changements d'économie de `a772e67` (2026-10-02) n'avaient été consignés nulle part**
   — rattrapé dans le GDD le 2026-10-13 : modèle des boîtes pour les points, premier point
-  abaissé de 5e6 à 2e6, saisie versant 30 % au lieu de rien. ⚖️ **Aucune campagne n'a été
-  remesurée depuis** — voir la session « chiffres » de la feuille de route, dans `etat-des-lieux.md`.
+  abaissé de 5e6 à 2e6, saisie versant 30 % au lieu de rien. Remesurés par le harnais le
+  2026-10-20 : voir les entrées suivantes.
+- 🧪 **Avant le premier point, la campagne est bloquée** (2026-10-20). Sans point, rien ne change
+  d'une run à l'autre — c'est vrai par construction (📖) : le prestige est la seule
+  méta-progression, et la sortie exige un point. Le bot gagne 56 k Datas par run et se fait
+  saisir à 6 min 04 ; la saisie en verse 30 %, et la première boîte de 2 M demande **116 runs
+  identiques** (premier point à la run 117, victoire à 32 h). À 60 k, le premier point tombe à la
+  fin de la run 2, comme le veut le GD. Levier autorisé : `_prestigeFirstThresholdDatas`, ou les
+  premiers Scripts et Hardware pour enrichir la run 1 — d'un facteur ~35. **Question au GD.**
+- 📖 **La run 1 ne peut pas « sortir à 50 % »** (2026-10-20). Le GDD veut à la fois une run 1 qui
+  sort à 50 % et un premier point à la fin de la run 2 ; or la sortie exige au moins un point
+  (`ExfiltrationSystem.IsUnlocked`). Une run 1 qui sort a donc gagné son point. Trois issues :
+  la run 1 se fait saisir (ce que fait le bot), le premier point tombe à la run 1, ou la règle de
+  sortie s'assouplit pour le tutoriel. **Question au GD.**
+- 🧪 **L'économie s'emballe après `P_REFAC`** (2026-10-20). Première boîte à 60 k : la run 6 achète
+  Blindage 4, `P_REFAC` ×10 et `P_DATAM` ×4, et les TFlops nettes passent de 3,5e4 (run 6) à
+  4,3e7 (run 7) puis 2,2e11 (run 8). −0,10 sur tous les multiplicateurs de coût (1,15 → 1,05,
+  1,23 → 1,13 pour HW_01) aplatit les courbes : la victoire tombe à 3 h 05 en 10 runs, l'arbre
+  utile est fini à 61 % de la campagne. `P_REFAC` n'est pas un levier autorisé. **Question au GD.**
+- 🧪 **La durée des runs dépend de l'appétit du joueur pour les Proxies** (2026-10-20). Achetés
+  dès qu'ils rendent plus qu'ils ne coûtent, ils figent la jauge : sans plafond, la run 7 dépasse
+  45 min à 4 % de jauge. Le bot est donc borné à 40 Proxies par run (`MaxProxiesPerRun`), un
+  chiffre **arbitraire à caler sur le journal** — mais en fin de partie, avec Blindage et
+  Interception au maximum, un seul Proxy rend plusieurs minutes, et les dernières runs durent
+  encore ~43 min. Le « ~5 min 30 » de fin de partie suppose un joueur qui n'en rachète presque
+  pas. **Question au GD** : est-ce un comportement voulu, que le réglage doit encadrer ?
+- 📖 **Le bot du harnais n'est pas calé** (2026-10-20). Ses seuils (`CampaignSettings`) sont des
+  valeurs de départ. Le journal des trois runs de calibrage (`a-tester.md` § 0) dira comment un
+  joueur réel achète, sort et use des Proxies ; le rapport du harnais les met côte à côte.
 
 ## 4. Défauts d'affichage et de texte
 

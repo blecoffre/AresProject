@@ -9,7 +9,7 @@ Stack : **VContainer** (DI), **R3** (réactif), **UniTask** (async), MVP strict,
 - Instances posées dans l'inspecteur : catalogues (`UpgradeCatalogSO`, `PrestigeCatalogSO`), `BalancingConfigSO`, `UiPaletteCatalogSO`, et pour l'audio le mixer, `AudioLibrarySO`, `UiSoundChannelSO`
 - Économie : `UserCurrencies`, `BuyQuantitySelector`, `UpgradeManager`, `PrestigeManager`
 - Trace et run : `ThreatManager` (la jauge de l'A.M.I. ; IStartable, seul à la modifier), `TraceReadout` (le relevé imparfait, en lecture seule sur la vérité), `EmergencyProtocolSystem` (Data Wiper), `GameSessionManager`, `ExfiltrationSystem`, `VictorySystem`, `OverclockSystem` (monté de la scène le 2026-10-16), `FirewallRoutine` (Routine Pare-Feu, IStartable)
-- `UnityRandomSource` (`IRandomSource`) — le hasard du jeu, injecté comme le temps pour que le harnais le remplace par une source graine
+- `UnityRandomSource` (`IRandomSource`) — le hasard du jeu, et `UnityRealtimeClock` (`IRealtimeClock`, depuis le 2026-10-20) — l'heure réelle, que seul l'anti-rafale de l'Overclock lit. Injectés comme le temps pour que le harnais les remplace (voir « Harnais d'équilibrage »)
 - Persistance : `LocalJsonSaveService` (`ISaveService` + `ISyncSaveService`), `GameStateGateway`
 - `JsonLocalizationService`, `SceneLoader`, `ApplicationQuitter`
 - `SimulationClock` (`ITimeSource` + `ISimulationClock`) — voir « Pause » plus bas
@@ -167,6 +167,7 @@ EmergencyProtocolSystem (Root) — clic sur le Data Wiper, trois fois par run au
    → UpgradeManager.SetTFlopsSacrificedFraction(30 / 60 / 90 %)   TFlops NETTES seules
 
 OverclockSystem (Root) — bouton à l'écran, ou Espace avec « Saisie Multiplexée »
+   → ignoré à moins de 0,1 s du précédent (IRealtimeClock : heure réelle, pas temps de jeu)
    → tirage du critique (IRandomSource, chance de l'arbre)
    → ScriptCycleRunner.AdvanceAllActive(0,5 s + Σ Overclock, ×3 sur un critique)
      rien ne tourne → ni effet ni coût
@@ -195,6 +196,31 @@ Fin de run, deux chemins vers GameSessionManager.ResolveRunEnd :
 Le wipe a lieu **avant** la notification, et ce n'est pas un détail : la sauvegarde de fin de run
 s'écrit sur `OnSessionEnded`. Si le wipe attendait le clic sur « Recommencer », fermer le jeu sur
 l'écran de fin sauvegarderait les générateurs au niveau max avec zéro Trace — une run gratuite.
+
+## Harnais d'équilibrage
+
+*Lot C3 de la session « chiffres », 2026-10-20. Usage et limites : `etat-des-lieux.md`, « Outillage ».*
+
+`Core/Editor/Balance/` déroule une campagne entière **hors Play Mode, sur les vrais systèmes** :
+`CampaignSimulator` les compose dans un `ContainerBuilder` VContainer d'éditeur, avec les mêmes
+enregistrements que le `RootLifetimeScope` (plus le `SimulationTicker` du scope de scène), moins
+l'affichage, le son, la sauvegarde et le journal. Trois substitutions, et trois seulement :
+
+| Dans le jeu | Dans le harnais | Pourquoi |
+|---|---|---|
+| `SimulationClock` (`ITimeSource`) + `UnityRealtimeClock` (`IRealtimeClock`) | `SimulatedClock`, les deux à la fois | une seule horloge, que la boucle fait avancer de 0,1 s par pas |
+| `UnityRandomSource` (`IRandomSource`) | `SeededRandomSource` | même graine, même campagne : deux réglages se comparent sans bruit |
+| `BalancingConfig.asset` | un clone en mémoire, leviers posés par `SerializedObject` | l'asset n'est jamais touché |
+
+Les `IStartable` sont démarrés à la main dans l'ordre d'enregistrement du Root ; chaque pas tique
+`TraceReadout`, `GameSessionManager`, `ScriptCycleRunner` puis `SimulationTicker`, l'ordre du jeu.
+Le bot (`ReferencePlayerBot`) n'agit que par les méthodes publiques qu'emploient les presenters.
+
+> **Piège :** un service ajouté au Root qui change le jeu (un nouveau système de run, un nœud qui
+> s'écoute) doit l'être aussi dans `CampaignSimulator`, sinon le harnais mesure un autre jeu. Une
+> dépendance de constructeur non enregistrée fait échouer `Build()` — c'est voulu, l'oubli se voit.
+> Le bot estime le revenu avec sa propre copie des formules des Scripts pour choisir ses achats :
+> s'il dérive d'`UpgradeModel`, le rapport l'écrit dans ses avertissements.
 
 ## Règles R3
 

@@ -163,6 +163,9 @@ namespace Core.Infrastructure
             // une source graine pour rejouer une campagne à l'identique.
             builder.Register<UnityRandomSource>(Lifetime.Singleton).As<IRandomSource>();
 
+            // L'heure réelle (anti-rafale de l'Overclock), injectée pour la même raison.
+            builder.Register<UnityRealtimeClock>(Lifetime.Singleton).As<IRealtimeClock>();
+
             // L'Overclock, monté de la scène au Root le 2026-10-16 : le son de son coup critique
             // et le journal de fin de run l'écoutent d'ici. IDisposable pour son sujet.
             builder.Register<OverclockSystem>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();

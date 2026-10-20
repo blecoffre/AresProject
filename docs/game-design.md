@@ -639,6 +639,11 @@ l'A.M.I. : la run retombe à ~5 min 30, un sprint sous haute tension.
 et sort à 50 %. La run 2 introduit l'optimisation et lui fait atteindre son premier point, donc la
 méta-progression. Le seuil de 2 M de Datas peut baisser pour tenir ce rendez-vous.
 
+> ⚠️ **Contradiction relevée le 2026-10-20, question ouverte au GD** (`backlog.md` § 3) : la
+> sortie exige au moins un point (« Exfiltration volontaire — Protocole Terre Brûlée »,
+> Déblocage). Une run 1 qui sort à 50 % a donc gagné son point, et le premier point tombe à la
+> run 1, pas à la run 2. Le harnais, qui suit les règles, fait saisir sa run 1.
+
 **L'arbre se finit tard.** Le finir à mi-campagne est un défaut de pacing : `P_CORE_OVERRIDE`
 (« Recompilation Forcée ») ne doit servir de puits qu'au dernier sprint vers la victoire. Si la
 campagne produit ~220 points, comme l'estimait l'ancien modèle, sa génération doit être divisée
@@ -673,7 +678,9 @@ Pour entrer dans les cibles, ceux-là et pas d'autres :
 
 Un **harnais de simulation hors Play Mode**, qui déroule une campagne de cent runs en quelques
 secondes (choix du GD). Il fait tourner les vrais systèmes du jeu, pas une réplique, et il est
-**calé sur des runs jouées** : un bot ne mesure que lui-même. Le journal de fin de run
+**calé sur des runs jouées** : un bot ne mesure que lui-même. *Livré le 2026-10-20 (lot C3) :
+`Tools/Core/Équilibrage/Simuler une campagne`, ou en ligne de commande ; usage, premières mesures
+et limites dans `etat-des-lieux.md`.* Le journal de fin de run
 (`journal-runs.csv`, à côté de la sauvegarde, en éditeur et en build de développement) consigne
 les runs d'un humain ; le bot est corrigé jusqu'à jouer comme lui. Choix de Bertrand pour le bot :
 le meilleur gain par Data à l'achat des générateurs, le Blindage d'abord dans l'arbre.

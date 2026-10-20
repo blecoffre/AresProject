@@ -36,7 +36,7 @@ namespace Core.Services.Simulation
         private const string Header =
             "horodatage;run;issue;duree_s;jauge_fin;datas_run;cycles_gagnes;cycles_avant_bonus;" +
             "cycles_cumules;points_depenses;tflops_nettes_max;tflops_brutes_max;overclocks;" +
-            "proxies;data_wiper;victoire";
+            "proxies;data_wiper;victoire;proxies_s";
 
         private readonly GameSessionManager _session;
         private readonly UpgradeManager _upgrades;
@@ -57,6 +57,13 @@ namespace Core.Services.Simulation
         private double _peakGrossTFlops;
         private int _overclocks;
         private int _proxies;
+
+        /// <summary>
+        /// Secondes de survie achetées en Proxies, avant la branche Interception. Le nombre de
+        /// Proxies ne dit pas le répit gagné : un PRX_10 en vaut dix-sept PRX_01. Ajouté le
+        /// 2026-10-20 pour caler l'appétit du bot du harnais.
+        /// </summary>
+        private double _proxySeconds;
 
         public RunJournal(
             GameSessionManager session,
@@ -95,7 +102,11 @@ namespace Core.Services.Simulation
                 .AddTo(ref _disposables);
 
             _upgrades.OnProxyWipe
-                .Subscribe(this, (_, self) => self._proxies++)
+                .Subscribe(this, (seconds, self) =>
+                {
+                    self._proxies++;
+                    self._proxySeconds += seconds;
+                })
                 .AddTo(ref _disposables);
 
             _session.OnSessionEnded
@@ -117,6 +128,7 @@ namespace Core.Services.Simulation
             _peakGrossTFlops = _upgrades.GrossTFlops.CurrentValue;
             _overclocks = 0;
             _proxies = 0;
+            _proxySeconds = 0d;
         }
 
         private void Append(RunSummary summary)
@@ -140,7 +152,8 @@ namespace Core.Services.Simulation
                  .Append(_overclocks.ToString(inv)).Append(';')
                  .Append(_proxies.ToString(inv)).Append(';')
                  .Append(summary.EmergencyUses.ToString(inv)).Append(';')
-                 .Append(_victory.HasWon.CurrentValue ? "oui" : "non")
+                 .Append(_victory.HasWon.CurrentValue ? "oui" : "non").Append(';')
+                 .Append(_proxySeconds.ToString("0.0", inv))
                  .Append(Environment.NewLine);
 
             try

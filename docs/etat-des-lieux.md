@@ -47,7 +47,8 @@ sauvegarde ne bougent pas.
 | Audio — musiques, clics, événements | Livré le 2026-10-12 | Oui (GD) |
 | Traductions EN / ES | Reportées à la fin du contenu | — |
 | Steam et Steam Deck | **Rien** | — |
-| Tests automatisés, outil de mesure | **Aucun** — le harnais d'équilibrage a été supprimé avec l'ancien modèle | — |
+| Outil de mesure — **harnais d'équilibrage** : une campagne simulée sur les vrais systèmes, jouée par un bot « joueur actif moyen » | **Lot C3, livré le 2026-10-20** ; bot **pas encore calé** sur un joueur réel | En ligne de commande oui (2026-10-20) ; fenêtre d'éditeur jamais ouverte |
+| Tests automatisés | **Aucun** | — |
 
 ---
 
@@ -76,8 +77,8 @@ Branche `chantier/session-chiffres`. Le GD a fixé les cibles (GDD, « Les cible
 |---|---|---|---|
 | C1 | **Cibles et calibrage** | Cibles du GD consignées ; `_proxyWipeScale` ; journal de fin de run (`journal-runs.csv`) pour caler le bot sur trois runs jouées | ✅ livré le 2026-10-15, **à jouer** (`a-tester.md` § 0) |
 | C2 | **Six nœuds du GD** | Saisie Multiplexée (l'Espace s'achète), Instabilité Zéro-Day (critique, son dédié), Capital de Départ (8ᵉ chaîne), État d'Alerte, Routine Pare-Feu. Placé avant le harnais : le réglage doit se faire sur l'arbre définitif | ✅ livré le 2026-10-16, **à jouer** (`a-tester.md` § 0 bis) |
-| C3 | **Harnais** | Les vrais systèmes du jeu sur une horloge virtuelle, un bot « joueur actif moyen » (meilleur gain par Data, Blindage d'abord), un rapport par run et un bilan face aux cibles | à faire |
-| C4 | **Réglage** | Leviers autorisés jusqu'à entrer dans les ±20 %, victoire remise à 1e12, consigné au GDD | à faire |
+| C3 | **Harnais** | Les vrais systèmes du jeu sur une horloge virtuelle, un bot « joueur actif moyen » (meilleur gain par Data, Blindage d'abord), un rapport par run et un bilan face aux cibles, comparé au journal des runs jouées | ✅ livré le 2026-10-20, **à éprouver dans l'éditeur** (`a-tester.md` § 0 ter). Premières mesures plus bas (« Équilibrage ») : quatre constats à soumettre au GD |
+| C4 | **Réglage** | Leviers autorisés jusqu'à entrer dans les ±20 %, victoire remise à 1e12, consigné au GDD | à faire — attend le calage du bot sur le journal (`a-tester.md` § 0) et les réponses du GD aux constats du C3 |
 
 Ensuite reprend la feuille de route d'avant : **dette technique groupée** (`backlog.md` § 4 à 7),
 **Steam et Steam Deck**, **traductions**.
@@ -109,11 +110,41 @@ dynamique, saturation des Proxies, plafond suivant la puissance). Elles sont arc
 La refonte a été jouée pour le ressenti et les bugs (2026-10-15), pas pour les chiffres : la
 prochaine étape est une campagne réelle.
 
+### Premières mesures du harnais (2026-10-20) — 🧪 bot pas encore calé
+
+Trois campagnes, graine 1337, joueur de référence par défaut (sortie à 50 % à la run 1 puis 75 %,
+« Blindage d'abord », 40 Proxies par run au plus). Les **règles** et les **formules** sont celles du
+jeu ; les **Datas absolues** valent ce que vaut le bot, tant qu'il n'est pas calé sur le journal.
+
+| | Asset actuel (1re boîte 2 M) | 1re boîte à 60 k | 1re boîte à 60 k, Proxies sans plafond |
+|---|---|---|---|
+| Issue | victoire à **32 h 08**, run 208 | victoire à **3 h 05**, run 10 | coupée : run 7 au-delà de 45 min, jauge à 4 % |
+| Premier point | fin de la run **117** | fin de la run 2 | fin de la run 2 |
+| Avant le premier point | 116 runs **identiques** : saisie à 6 min 04, 56 k Datas | une saisie | une saisie |
+| Points générés | 240 | 256 | — |
+| Arbre utile complété | à 84 % de la campagne | à 61 % | jamais |
+| Dernières runs | ~35 min | ~43 min | 34 min, puis sans fin |
+
+Ce qu'elles disent, à soumettre au GD avant le réglage (détail dans `backlog.md` § 3) :
+
+1. **Sans point, rien ne change d'une run à l'autre** (📖 par construction) : avec 56 k Datas par
+   run et 30 % versés à la saisie, la première boîte de 2 M demande 116 runs. Elle doit tomber vers
+   ~60 k — ou la run 1 rapporter trente fois plus.
+2. **L'économie s'emballe après `P_REFAC`** : la run 6 achète Blindage 4, `P_REFAC` ×10 et
+   `P_DATAM` ; les TFlops nettes passent de 3,5e4 (run 6) à 2,2e11 (run 8). Les multiplicateurs de
+   coût perdent 0,10 (1,15 → 1,05) et les courbes s'aplatissent : la victoire tombe à 3 h.
+3. **La durée des runs se règle sur l'appétit du joueur pour les Proxies**, pas sur la jauge : sans
+   plafond, la run ne finit plus ; avec Blindage et Interception au maximum, un seul Proxy rend
+   plusieurs minutes. Le « ~5 min 30 » de fin de partie suppose un joueur qui n'en rachète presque pas.
+4. **La run 1 ne peut pas « sortir à 50 % »** : la sortie exige un point, et la run 1 n'en rapporte
+   pas avant la run 2 — les deux cibles se contredisent (📖).
+
 ### Ce qu'il faut savoir avant de toucher à l'équilibrage
 
 ⚠️ **Le réglage en vigueur n'a jamais été joué.** Chaque session du GD a trouvé un problème que
-le calcul ne voyait pas. Il n'existe plus d'outil de mesure : toute grandeur exprimée en Datas
-absolues se pose sur une partie **jouée**.
+le calcul ne voyait pas. Le harnais (C3) mesure une campagne entière, mais avec un bot : tant qu'il
+n'est pas calé sur le journal des runs jouées, toute grandeur en Datas absolues se confirme sur une
+partie **jouée**.
 
 ⚠️ **Un changement de réglage se consigne dans le GDD le jour même.** `BalancingConfig.asset` fait
 foi sur les valeurs, le GDD sur les intentions ; quand les deux divergent, c'est un bug de l'un ou
@@ -133,12 +164,35 @@ sans diviser son bonus multiplie sa puissance par N — c'est ce qui avait satur
 
 ## Outillage
 
-Le harnais d'équilibrage Unity (`Tools/Core/Équilibrage/`) et le simulateur Python
-(`tools/balance/`) ont été **supprimés** le 2026-10-13 : ils simulaient l'ancien modèle de Trace
-de bout en bout. Un nouveau harnais est en cours (session « chiffres », lot C2) ; la
-`SimulationClock` (`ITimeSource`) est son point d'entrée pour dérouler une campagne hors Play Mode.
+**Le harnais d'équilibrage** (lot C3, 2026-10-20 ; `Core/Editor/Balance/`, composition dans
+`architecture.md`) déroule une campagne entière, de la première run à la victoire, sur les vrais
+systèmes du jeu et en quelques secondes. Il remplace le harnais Unity et le simulateur Python
+supprimés le 2026-10-13, qui recopiaient les formules de l'ancien modèle.
+
+- **Dans l'éditeur** : `Tools/Core/Équilibrage/Simuler une campagne`, hors Play Mode. Les leviers du
+  GD sont préremplis depuis l'asset (victoire : 1e12, la cible) et posés sur une **copie** du
+  `BalancingConfig` — l'asset n'est jamais modifié.
+- **En ligne de commande**, Unity fermé — il ne s'ouvre pas deux fois sur le même projet :
+
+  ```
+  Unity.exe -batchmode -nographics -projectPath <projet> -logFile Logs/Simulations/batch.log
+            -executeMethod Core.Editor.Balance.CampaignSimulatorBatch.Run -quit
+            [-simFirstThreshold 60000] [-simGrowth 1.12] [-simProxyScale 1] [-simAmiExp 0.1]
+            [-simVictory 1e12] [-simExit 0.75] [-simMaxProxies 40] [-simSeed 1337]
+            [-simJournal <copie de journal-runs.csv>]
+  ```
+- **Sorties** dans `Logs/Simulations/` (ignoré par git) : le rapport `.txt` (cibles du GD et verdict,
+  cloche des durées, premiers franchissements de TFlops, comparaison au journal s'il existe), le
+  CSV des runs — mêmes colonnes que le journal, plus `campagne_h`, `arbre_utile_pct` et
+  `achats_arbre` —, et la trace geste par geste des trois premières runs.
+- **Le joueur de référence** (`ReferencePlayerBot`) : relance ses Scripts manuels, achète au
+  meilleur gain par Data, sort à 75 % sur l'aiguille (50 % à la run 1), Overclock pour forcer le
+  palier ou s'évader, Data Wiper si la sortie est verrouillée, Proxies rentables dans un plafond
+  par run, arbre « Blindage d'abord ». Tous ses seuils sont dans `CampaignSettings`.
+
 Le **journal de fin de run** (`journal-runs.csv`, dans le dossier de la sauvegarde) consigne une
-ligne par run jouée, en éditeur et en build de développement.
+ligne par run jouée, en éditeur et en build de développement. C'est contre lui qu'on cale le bot ;
+la colonne `proxies_s` (secondes de survie achetées en Proxies) y est arrivée le 2026-10-20.
 
 **Les générateurs de données**, sous `Tools/Core/`, à relancer après toute modification de
 `GameData/Editor/` — chacun pour ses propres JSON, ils ne dépendent plus l'un de l'autre :
