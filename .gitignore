@@ -53,6 +53,10 @@ Thumbs.db
 # ---- Ne PAS ignorer ----
 # Les .meta sont indispensables : Unity casse ses références sans eux.
 !*.meta
+# Les DLL NuGet : NuGetForUnity tient un paquet pour installé dès que son .nuspec
+# est présent, il ne les retéléchargerait donc pas sur un clone neuf. Cette règle
+# l'emporte sur un « *.dll » de gitignore global.
+!/Assets/Packages/**/*.dll
 
 # Mesures d'équilibrage générées par Tools/Core/Équilibrage — jamais versionnées.
 /BalanceReports/
